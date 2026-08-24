@@ -1,5 +1,5 @@
 import {
-  CloseWorkCenterRequest,
+  EmployeeCloseWorkCenterRequest,
   EmployeeCreateWorkCenterRequest,
   EmployeeUpdateWorkCenterRequest,
 } from '../../../core/api/generated/model/models';
@@ -31,7 +31,7 @@ export function mapWorkCenterCorrectDraftToRequest(draft: WorkCenterCorrectDraft
   };
 }
 
-export function mapWorkCenterCloseDateToRequest(endDate: string): CloseWorkCenterRequest {
+export function mapWorkCenterCloseDateToRequest(endDate: string): EmployeeCloseWorkCenterRequest {
   return {
     endDate: normalizeRequiredValue(endDate),
   };

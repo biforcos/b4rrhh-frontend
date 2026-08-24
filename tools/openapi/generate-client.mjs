@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,7 +49,6 @@ if (result.status !== 0) {
 }
 
 const generatedReadmePath = path.resolve(outputDirectory, 'README.md');
-const generatedModelsPath = path.resolve(outputDirectory, 'model', 'models.ts');
 const generatedReadme = `# Generated API client
 
 This folder is generated from the OpenAPI contract.
@@ -60,21 +59,3 @@ This folder is generated from the OpenAPI contract.
 `;
 
 writeFileSync(generatedReadmePath, generatedReadme, 'utf8');
-
-if (existsSync(generatedModelsPath)) {
-  let generatedModels = readFileSync(generatedModelsPath, 'utf8');
-
-  generatedModels = ensureModelExport(generatedModels, 'close-work-center-request');
-  generatedModels = ensureModelExport(generatedModels, 'replace-work-center-from-date-request');
-
-  writeFileSync(generatedModelsPath, generatedModels, 'utf8');
-}
-
-function ensureModelExport(modelsSource, fileName) {
-  const exportLine = `export * from './${fileName}';`;
-  if (modelsSource.includes(exportLine)) {
-    return modelsSource;
-  }
-
-  return `${modelsSource}${modelsSource.endsWith('\n') ? '' : '\n'}${exportLine}\n`;
-}
