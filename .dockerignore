@@ -4,3 +4,8 @@ dist/
 .git/
 .vscode/
 coverage/
+
+# El cliente generado NO entra en el contexto: se genera dentro de la imagen.
+# Si se colara, el build usaria tu copia de disco y dejaria de ser
+# reproducible: en tu maquina saldria una imagen y en el runner otra.
+src/app/core/api/generated/

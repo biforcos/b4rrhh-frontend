@@ -40,6 +40,11 @@ jobs:
           # --no-watch explicito: 'ng test' se queda escuchando cambios si no
           # detecta que esta en CI, y el job se quedaria colgado para siempre
           # con la suite en verde.
+          #
+          # La JRE y el api:generate no son opcionales: el cliente del contrato
+          # esta en .gitignore, asi que en un checkout limpio no existe y la
+          # mitad del codigo no compila. Se genera desde
+          # openapi/personnel-administration-api.yaml, que si esta versionado.
           docker create \
             --name "${{ env.NODE }}" \
             --cpus 5 \
@@ -49,7 +54,10 @@ jobs:
             -v b4rrhh-npm:/root/.npm \
             -w /app \
             node:22-alpine \
-            sh -c "npm ci && npm test -- --no-watch"
+            sh -c "apk add --no-cache openjdk21-jre-headless \
+                   && npm ci \
+                   && npm run api:generate \
+                   && npm test -- --no-watch"
 
           # El "/." copia el CONTENIDO: docker create -w /app ya ha creado
           # /app, y sin el la carpeta entraria dentro (/app/frontend/...).
