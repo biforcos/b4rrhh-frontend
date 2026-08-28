@@ -60,7 +60,7 @@ const trackPriorityByCode: Readonly<Record<string, number>> = {
 const secondaryTrackLabelByCode: Readonly<Record<string, string>> = {
   PRESENCE: 'Presencia',
   CONTRACT: 'Contrato',
-  LABOR_CLASSIFICATION: 'Clasificacion',
+  LABOR_CLASSIFICATION: 'Clasificación',
 };
 
 const compactEventLabelByTrackCode: Readonly<Record<string, string>> = {
@@ -309,7 +309,7 @@ export class EmployeeJourneyTimelineComponent {
     const presenceNumber = this.toDisplayableValue((details as any)['presenceNumber']);
 
     if (companyCode && presenceNumber) {
-      return `${companyCode} · periodo #${presenceNumber}`;
+      return `${companyCode} · período #${presenceNumber}`;
     }
 
     if (companyCode) {
@@ -317,7 +317,7 @@ export class EmployeeJourneyTimelineComponent {
     }
 
     if (presenceNumber) {
-      return `periodo #${presenceNumber}`;
+      return `período #${presenceNumber}`;
     }
 
     return this.normalizeNarrativeValue(fallbackSubtitle);
@@ -344,7 +344,7 @@ export class EmployeeJourneyTimelineComponent {
       return null;
     }
 
-    return normalizedValue.replace(/\bperiod\s*#/gi, 'periodo #');
+    return normalizedValue.replace(/\bperiod\s*#/gi, 'período #');
   }
 
   private isPresenceTrack(trackCode: string): boolean {

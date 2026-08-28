@@ -16,7 +16,7 @@ export class OperacionesPageComponent {
   protected readonly store = inject(OperacionesStore);
 
   protected readonly targetModes: ReadonlyArray<{ value: TargetSelectionMode; label: string }> = [
-    { value: 'ALL', label: 'Todos del periodo' },
+    { value: 'ALL', label: 'Todos del período' },
     { value: 'LIST', label: 'Lista' },
     { value: 'SINGLE', label: 'Empleado único' },
   ];

@@ -15,7 +15,7 @@ import { SectionActionContract, SectionUiState } from './section-ui-state.model'
 const slotKeyOptions: ReadonlyArray<SlotKeyOption<string>> = [
   { value: 'EMAIL', label: 'Email' },
   { value: 'MOBILE', label: 'Movil' },
-  { value: 'PHONE', label: 'Telefono' },
+  { value: 'PHONE', label: 'Teléfono' },
 ];
 
 const initialRows: ReadonlyArray<SlotRowViewModel<string>> = [
