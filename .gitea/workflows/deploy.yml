@@ -45,6 +45,9 @@ jobs:
           # esta en .gitignore, asi que en un checkout limpio no existe y la
           # mitad del codigo no compila. Se genera desde
           # openapi/personnel-administration-api.yaml, que si esta versionado.
+          #
+          # lint:styles es el candado del sistema de color (#3): tumba el
+          # build si un .scss de componente trae un color literal.
           docker create \
             --name "${{ env.NODE }}" \
             --cpus 5 \
@@ -56,6 +59,7 @@ jobs:
             node:22-alpine \
             sh -c "apk add --no-cache openjdk21-jre-headless \
                    && npm ci \
+                   && npm run lint:styles \
                    && npm run api:generate \
                    && npm test -- --no-watch"
 

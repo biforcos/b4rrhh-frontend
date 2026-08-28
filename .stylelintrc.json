@@ -1,0 +1,21 @@
+{
+  "customSyntax": "postcss-scss",
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Color literal en un componente. Usa var(--token); si no hay token, se anade al :root de src/styles.scss."
+      }
+    ],
+    "declaration-property-value-disallowed-list": [
+      {
+        "font-family": [
+          "/^(?!(var\\(--font-|inherit$))/"
+        ]
+      },
+      {
+        "message": "Tipografia literal en un componente. Usa var(--font-body|heading|mono); la tipografia se declara en el :root o no se declara."
+      }
+    ]
+  }
+}

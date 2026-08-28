@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint:styles": "stylelint \"src/app/**/*.scss\"",
     "api:pull": "node ./tools/openapi/pull-contract.mjs",
     "api:generate": "node ./tools/openapi/generate-client.mjs",
     "api:refresh": "npm run api:pull && npm run api:generate",
@@ -35,7 +36,9 @@
     "@angular/compiler-cli": "^21.2.0",
     "@openapitools/openapi-generator-cli": "^2.25.0",
     "jsdom": "^28.0.0",
+    "postcss-scss": "^4.0.9",
     "prettier": "^3.8.1",
+    "stylelint": "^17.14.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }
