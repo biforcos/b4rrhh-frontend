@@ -55,7 +55,7 @@
 .employee-contact-section__form-field :where(select.employee-contact-section__form-input:focus-visible) {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .employee-contact-section__list {

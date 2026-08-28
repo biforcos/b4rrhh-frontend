@@ -20,9 +20,9 @@
 
 .editable-slot-section__empty {
   margin: 0;
-  border: 1px dashed rgba(79, 70, 229, 0.28);
+  border: 1px dashed var(--accent-border);
   border-radius: 0.56rem;
-  background: rgba(79, 70, 229, 0.03);
+  background: var(--surface-accent);
   color: var(--text-secondary);
   font-size: 0.82rem;
   line-height: 1.4;
@@ -54,12 +54,12 @@
 }
 
 .editable-slot-section__row:hover {
-  border-color: rgba(79, 70, 229, 0.3);
+  border-color: var(--accent-border);
   background: var(--surface-hover);
 }
 
 .editable-slot-section__row--draft {
-  border-color: rgba(79, 70, 229, 0.25);
+  border-color: var(--accent-border);
   background: var(--surface-hover);
 }
 
@@ -182,7 +182,7 @@
 .editable-slot-section__fields select:focus-visible {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .editable-slot-section__row-actions {

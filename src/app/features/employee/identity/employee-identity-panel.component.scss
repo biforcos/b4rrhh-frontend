@@ -27,7 +27,7 @@
   height: 80px;
   border-radius: 50%;
   background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 26px;
   font-weight: 700;
   display: grid;
@@ -46,7 +46,7 @@
   height: 72px;
   font-size: 22px;
   margin-bottom: 16px;
-  box-shadow: 0 0 0 3px var(--surface-accent, #e0e7ff);
+  box-shadow: 0 0 0 3px var(--surface-accent);
 }
 
 .identity-panel__avatar--clickable {
@@ -75,11 +75,11 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--surface-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--text-inverse);
   opacity: 0;
   transition: opacity 0.15s ease;
   font-size: 1.1rem;
@@ -93,14 +93,14 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #6b7280;
-  border: 2px solid var(--surface-panel, #fff);
+  background: var(--text-soft);
+  border: 2px solid var(--surface-panel);
   opacity: 0;
   transition: opacity 0.25s;
 }
 
 .identity-panel__status-dot--active {
-  background: #059669;
+  background: var(--success-text);
 }
 
 :host.identity-panel--collapsed .identity-panel__status-dot {
@@ -155,7 +155,7 @@
   border: none;
   background: transparent;
   border-radius: 4px;
-  color: var(--text-tertiary, #9ca3af);
+  color: var(--text-tertiary);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -165,8 +165,8 @@
   transition: opacity 0.15s, color 0.12s, background 0.12s;
 
   &:hover {
-    background: var(--surface-hover, #f3f4f6);
-    color: var(--text-primary, #374151);
+    background: var(--surface-hover);
+    color: var(--text-primary);
   }
 }
 
@@ -177,7 +177,7 @@
 
 /* Matrícula hero block — hidden in rail mode */
 .identity-panel__mat-block {
-  background: var(--accent-primary, #4f46e5);
+  background: var(--accent-primary);
   border-radius: 8px;
   padding: 8px 10px;
   margin-bottom: 6px;
@@ -187,7 +187,7 @@
 }
 
 .identity-panel__mat-block--terminated {
-  background: #6b7280;
+  background: var(--text-soft);
 }
 
 :host.identity-panel--collapsed .identity-panel__mat-block {
@@ -214,8 +214,8 @@
 .identity-panel__mat-value {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
-  font-family: 'Courier New', monospace;
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
   letter-spacing: 0.02em;
 }
 
@@ -223,7 +223,7 @@
   background: rgba(255, 255, 255, 0.18);
   border: none;
   border-radius: 4px;
-  color: #fff;
+  color: var(--text-inverse);
   width: 28px;
   height: 28px;
   display: grid;
@@ -241,7 +241,7 @@
 /* Hire date — hidden in rail mode */
 .identity-panel__hire-date {
   font-size: 11px;
-  color: var(--text-tertiary, #9ca3af);
+  color: var(--text-tertiary);
   text-align: center;
   margin-bottom: 8px;
   transition: opacity 0.25s, max-height 0.4s;
@@ -277,19 +277,19 @@
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary);
   padding: 0 10px;
   overflow: hidden;
   transition: background 0.12s, color 0.12s, padding 0.45s, justify-content 0.45s, height 0.45s;
 
   &:hover {
-    background: var(--surface-hover, #f3f4f6);
-    color: var(--text-primary, #374151);
+    background: var(--surface-hover);
+    color: var(--text-primary);
   }
 
   &.active {
-    background: var(--accent-primary, #4f46e5);
-    color: #fff;
+    background: var(--accent-primary);
+    color: var(--text-inverse);
     font-weight: 600;
   }
 }
@@ -325,12 +325,12 @@
   font-size: 0.65rem;
   padding: 0.15rem 0.5rem;
   border-radius: 0.25rem;
-  border: 1px solid var(--red-200, #fca5a5);
-  background: var(--red-50, #fee2e2);
-  color: var(--red-600, #dc2626);
+  border: 1px solid var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-text);
   cursor: pointer;
 
   &:hover {
-    background: var(--red-100, #fecaca);
+    background: var(--error-border);
   }
 }

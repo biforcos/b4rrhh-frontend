@@ -53,13 +53,13 @@
 .employee-identifier-section__form-grid select:focus-visible {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .employee-identifier-section__form-grid .employee-identifier-section__input--invalid,
 .employee-identifier-section__form-grid .employee-identifier-section__input--invalid:focus-visible {
   border-color: var(--error-text);
-  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.16);
+  box-shadow: 0 0 0 2px var(--error-border);
 }
 
 .employee-identifier-section__field-error {

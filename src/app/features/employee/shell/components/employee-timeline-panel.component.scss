@@ -11,7 +11,7 @@
   margin: 0;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #273f54;
+  color: var(--text-primary);
 }
 
 .employee-timeline-panel__list {
@@ -34,8 +34,8 @@
   height: 0.52rem;
   border-radius: 999px;
   margin-top: 0.25rem;
-  border: 1px solid #b8c7d7;
-  background: #eef3f9;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-muted);
 }
 
 .employee-timeline-panel__content {
@@ -51,26 +51,26 @@
 
 .employee-timeline-panel__item-title {
   font-size: 0.8rem;
-  color: #4a6074;
+  color: var(--text-secondary);
 }
 
 .employee-timeline-panel__item-period {
   font-size: 0.73rem;
-  color: #73889d;
+  color: var(--text-soft);
 }
 
 .employee-timeline-panel__item--current .employee-timeline-panel__dot {
-  border-color: #8db2d8;
-  background: #d7e9fa;
+  border-color: var(--accent-border);
+  background: var(--accent-muted);
 }
 
 .employee-timeline-panel__item--current .employee-timeline-panel__item-title {
-  color: #1f3850;
+  color: var(--text-accent);
   font-weight: 700;
 }
 
 .employee-timeline-panel__item--current .employee-timeline-panel__item-period {
-  color: #567089;
+  color: var(--text-tertiary);
 }
 
 .employee-timeline-panel__item--previous {

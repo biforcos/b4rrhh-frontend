@@ -154,7 +154,7 @@
 .employee-address-section__form-grid select:focus-visible {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .employee-address-section__edit-hint {

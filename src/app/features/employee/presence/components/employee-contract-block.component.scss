@@ -12,7 +12,7 @@
 /* ─── HEADER ─── */
 .employee-contract-block__header {
   padding: 0.62rem 1rem;
-  background: linear-gradient(180deg, rgba(79, 70, 229, 0.06) 0%, rgba(79, 70, 229, 0.02) 100%);
+  background: var(--surface-raised);
   border-bottom: 1px solid var(--border-default);
 }
 
@@ -29,7 +29,7 @@
   gap: 0.72rem;
   padding: 0.88rem 1rem 0.96rem;
   border-bottom: 1px solid var(--border-default);
-  border-left: 3px solid #059669; /* green accent — intentional semantic color */
+  border-left: 3px solid var(--success-text); /* green accent — intentional semantic color */
   background: var(--surface-hover);
 }
 
@@ -45,7 +45,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #059669; /* green accent — intentional semantic color */
+  color: var(--success-text); /* green accent — intentional semantic color */
 }
 
 /* ─── BADGE ─── */
@@ -65,9 +65,9 @@
 
 /* active badge uses semantic green — intentional */
 .employee-contract-block__badge--active {
-  border-color: #a7f3d0;
-  background: #ecfdf5;
-  color: #065f46;
+  border-color: var(--success-border);
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 
 /* ─── IDENTITY ─── */

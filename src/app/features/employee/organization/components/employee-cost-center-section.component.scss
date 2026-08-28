@@ -13,7 +13,7 @@
   }
 
   &__total--ok {
-    color: #166534; /* semantic green — intentional */
+    color: var(--success-text); /* semantic green — intentional */
     font-weight: 600;
   }
 

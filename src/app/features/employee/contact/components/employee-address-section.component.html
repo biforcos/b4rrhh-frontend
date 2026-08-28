@@ -2,6 +2,7 @@
   <div sectionCardActions class="employee-address-section__header-actions">
     <app-ui-button
       type="button"
+      [outlined]="true"
       size="small"
       [label]="texts.addressesSectionAddAction"
       [disabled]="sectionState().busy || creating()"
