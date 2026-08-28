@@ -5,9 +5,9 @@
 .entity-header {
   padding: 0;
   border-radius: 1rem;
-  border: 1px solid rgba(209, 213, 219, 0.65);
-  border-top: 2px solid rgba(14, 116, 144, 0.5);
-  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-top: 2px solid var(--accent-border);
+  background: var(--surface-panel);
   box-shadow: var(--elevation-2);
   overflow: hidden;
 }
@@ -27,12 +27,12 @@
   height: 3.2rem;
   min-width: 3.2rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3730a3 0%, #818cf8 100%);
-  color: #ffffff;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.01em;
-  box-shadow: 0 6px 18px -8px rgba(14, 116, 144, 0.7);
+  box-shadow: var(--shadow-card);
   flex-shrink: 0;
   align-self: center;
 }
@@ -50,7 +50,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5c7891;
+  color: var(--text-tertiary);
 }
 
 .entity-header__headline-row {
@@ -72,14 +72,14 @@
   font-size: 1.35rem;
   line-height: 1.08;
   font-weight: 800;
-  color: #0d2f45;
+  color: var(--text-primary);
 }
 
 .entity-header__subtitle {
   margin: 0;
   font-size: 0.84rem;
   line-height: 1.45;
-  color: #4f6980;
+  color: var(--text-secondary);
 }
 
 .entity-header__actions {
@@ -94,8 +94,8 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   margin: 0 -1.1rem;
-  border-top: 1px solid #f1f5f9;
-  background: #fafbfd;
+  border-top: 1px solid var(--surface-muted);
+  background: var(--surface-hover);
   padding: 0;
 }
 
@@ -104,7 +104,7 @@
   gap: 0.1rem;
   min-width: 0;
   padding: 0.56rem 0.9rem;
-  border-right: 1px solid rgba(14, 116, 144, 0.08);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .entity-header__metadata-item:last-child {
@@ -117,14 +117,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #6a8197;
+  color: var(--text-tertiary);
 }
 
 .entity-header__metadata-item dd {
   margin: 0;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #1a3f58;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -158,13 +158,13 @@
 }
 
 .entity-header__metadata-item--copyable:hover {
-  background: rgba(14, 116, 144, 0.06);
+  background: var(--surface-hover);
 }
 
 .entity-header__copy-icon {
   margin-left: 0.3rem;
   font-size: 0.68rem;
-  color: #7a9bb5;
+  color: var(--text-soft);
   opacity: 0;
   transition: opacity 120ms ease;
   vertical-align: middle;
@@ -180,7 +180,7 @@
   gap: 0.22rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #16a34a;
+  color: var(--success-text);
 }
 
 .entity-header__copied-feedback .pi {
@@ -198,7 +198,7 @@
 
   .entity-header__metadata-item {
     border-right: none;
-    border-bottom: 1px solid rgba(14, 116, 144, 0.08);
+    border-bottom: 1px solid var(--border-subtle);
     padding: 0.48rem 0.9rem;
   }
 }

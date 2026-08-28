@@ -39,7 +39,7 @@
   font-family: var(--font-heading);
   font-size: 0.8rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-inverse);
   background: var(--accent-primary);
   flex-shrink: 0;
 }
@@ -133,7 +133,7 @@
   min-width: 28px;
   border-radius: 50%;
   background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 0.62rem;
   font-weight: 800;
 }

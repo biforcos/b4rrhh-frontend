@@ -6,10 +6,10 @@
 .section-card {
   display: grid;
   gap: 0.9rem;
-  border: 1px solid rgba(209, 213, 219, 0.7);
+  border: 1px solid var(--border-default);
   border-top: none;
   border-radius: 0.82rem;
-  background: #ffffff;
+  background: var(--surface-panel);
   padding: 0;
   overflow: hidden;
   box-shadow: var(--elevation-2);
@@ -22,9 +22,9 @@
   justify-content: space-between;
   gap: 0.58rem;
   padding: 0.72rem 1rem;
-  background: linear-gradient(180deg, rgba(14, 116, 144, 0.07) 0%, rgba(14, 116, 144, 0.03) 100%);
-  border-top: 2px solid rgba(14, 116, 144, 0.4);
-  border-bottom: 1px solid rgba(14, 116, 144, 0.1);
+  background: var(--surface-raised);
+  border-top: 2px solid var(--accent-border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .section-card__heading {
@@ -39,14 +39,14 @@
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.25;
-  color: #0f3247;
+  color: var(--text-primary);
 }
 
 .section-card__description {
   margin: 0;
   font-size: 0.72rem;
   line-height: 1.35;
-  color: #5b748c;
+  color: var(--text-tertiary);
 }
 
 .section-card__actions {
@@ -72,13 +72,13 @@
 /* Cards sin header: el padding va directo */
 .section-card:not(:has(.section-card__header)) .section-card__body {
   padding: 1rem;
-  border-top: 2px solid rgba(14, 116, 144, 0.3);
+  border-top: 2px solid var(--accent-border);
 }
 
 .section-card__footer {
   display: grid;
   gap: 0.3rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
   padding: 0.5rem 1rem 0.75rem;
 }
 

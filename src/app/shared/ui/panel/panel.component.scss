@@ -1,19 +1,15 @@
 .panel {
-  border: 1px solid rgba(148, 163, 184, 0.26);
+  border: 1px solid var(--border-default);
   border-radius: 0.96rem;
   background: var(--surface-panel);
-  box-shadow:
-    0 24px 42px -40px rgba(14, 116, 144, 0.6),
-    0 5px 14px -10px rgba(15, 23, 42, 0.32);
+  box-shadow: var(--shadow-panel);
   overflow: clip;
 }
 
 .panel__header {
-  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 0.76rem 0.8rem 0.62rem;
-  background:
-    linear-gradient(180deg, rgba(248, 252, 255, 0.95) 0%, rgba(241, 248, 255, 0.82) 100%),
-    rgba(15, 23, 42, 0.015);
+  background: var(--surface-raised);
 }
 
 .panel__title {
@@ -38,6 +34,6 @@
 /* Reduce visual weight for nested panels by default (used in main content)
    Specific panels can override when a stronger border is needed. */
 .panel.panel--light {
-  border: 1px solid rgba(203, 213, 225, 0.42);
+  border: 1px solid var(--border-default);
   box-shadow: none;
 }
