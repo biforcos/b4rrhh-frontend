@@ -1,0 +1,260 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--surface-overlay);
+  z-index: 99;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 460px;
+  background: var(--surface-panel);
+  border-left: 1px solid var(--border-default);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--elevation-3);
+  animation: slideIn 280ms ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-header {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.drawer-title {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.drawer-subtitle {
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.close-btn {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  background: var(--surface-hover);
+}
+
+.search-bar {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.search-input {
+  width: 100%;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 7px 10px 7px 30px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--accent-border);
+  box-shadow: var(--focus-ring);
+}
+
+.search-input::placeholder {
+  color: var(--text-soft);
+}
+
+.legend {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.legend-item {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/*
+ * Naturaleza del concepto. Los devengos y las deducciones llevan el
+ * triplete semantico; las bases, el acento; lo tecnico y lo informativo,
+ * neutros. Se aplica igual a la franja, a la leyenda y al importe.
+ */
+.nature-earning {
+  color: var(--success-text);
+}
+
+.nature-deduction {
+  color: var(--error-text);
+}
+
+.nature-base {
+  color: var(--accent-primary);
+}
+
+.nature-technical {
+  color: var(--text-soft);
+}
+
+.nature-informational {
+  color: var(--warning-strong);
+}
+
+.nature-total_earning,
+.nature-total_deduction,
+.nature-net_pay,
+.nature-unknown {
+  color: var(--text-primary);
+}
+
+.col-stripe-cell {
+  width: 3px;
+  padding: 0;
+  background: currentColor;
+}
+
+.table-wrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.loading-msg {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  padding: 20px 18px;
+}
+
+.val-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.val-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--surface-raised);
+}
+
+.val-table th {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.col-stripe {
+  width: 10px;
+  text-align: left !important;
+}
+
+.col-period {
+  width: 70px;
+}
+
+.col-num {
+  width: 76px;
+  text-align: right !important;
+}
+
+.val-row {
+  border-bottom: 1px solid var(--surface-hover);
+}
+
+.val-row:hover {
+  background: var(--surface-raised);
+}
+
+.col-period-cell {
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+.col-code-cell {
+  padding: 6px 8px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.col-label-cell {
+  padding: 6px 8px;
+  color: var(--text-primary);
+}
+
+.col-num-cell {
+  padding: 6px 8px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.col-num-cell.col-amount {
+  font-weight: 500;
+}

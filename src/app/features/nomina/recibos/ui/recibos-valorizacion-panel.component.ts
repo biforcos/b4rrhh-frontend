@@ -10,16 +10,16 @@ import {
 import { CommonModule } from '@angular/common';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 
-const NATURE_COLOR: Record<string, string> = {
-  EARNING: '#a6e3a1',
-  DEDUCTION: '#f38ba8',
-  BASE: '#89b4fa',
-  TECHNICAL: '#cba6f7',
-  INFORMATIONAL: '#fab387',
-  TOTAL_EARNING: '#6c7086',
-  TOTAL_DEDUCTION: '#6c7086',
-  NET_PAY: '#6c7086',
-};
+const NATURES = new Set([
+  'EARNING',
+  'DEDUCTION',
+  'BASE',
+  'TECHNICAL',
+  'INFORMATIONAL',
+  'TOTAL_EARNING',
+  'TOTAL_DEDUCTION',
+  'NET_PAY',
+]);
 
 @Component({
   selector: 'app-recibos-valorizacion-panel',
@@ -53,7 +53,7 @@ const NATURE_COLOR: Record<string, string> = {
 
       <div class="legend">
         @for (item of legendItems; track item.nature) {
-          <span class="legend-item" [style.color]="item.color">■ {{ item.label }}</span>
+          <span class="legend-item" [class]="natureClass(item.nature)">■ {{ item.label }}</span>
         }
       </div>
 
@@ -78,16 +78,13 @@ const NATURE_COLOR: Record<string, string> = {
             <tbody>
               @for (c of filteredConcepts(); track c.lineNumber) {
                 <tr class="val-row">
-                  <td
-                    class="col-stripe-cell"
-                    [style.background]="colorFor(c.conceptNatureCode)"
-                  ></td>
+                  <td class="col-stripe-cell" [class]="natureClass(c.conceptNatureCode)"></td>
                   <td class="col-period-cell">{{ c.originPeriodCode ?? '—' }}</td>
                   <td class="col-code-cell">{{ c.conceptCode }}</td>
                   <td class="col-label-cell">{{ c.conceptLabel }}</td>
                   <td class="col-num-cell">{{ c.quantity != null ? fmt(c.quantity) : '—' }}</td>
                   <td class="col-num-cell">{{ c.rate != null ? fmt(c.rate) : '—' }}</td>
-                  <td class="col-num-cell" [style.color]="colorFor(c.conceptNatureCode)">
+                  <td class="col-num-cell col-amount" [class]="natureClass(c.conceptNatureCode)">
                     {{ c.amount != null ? fmt(c.amount) : '—' }}
                   </td>
                 </tr>
@@ -98,190 +95,7 @@ const NATURE_COLOR: Record<string, string> = {
       </div>
     </div>
   `,
-  styles: [
-    `
-      :host {
-        position: fixed;
-        inset: 0;
-        z-index: 99;
-      }
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        z-index: 99;
-      }
-      .drawer {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 460px;
-        background: #1e1e2e;
-        z-index: 100;
-        display: flex;
-        flex-direction: column;
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
-        animation: slideIn 280ms ease;
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-        }
-        to {
-          transform: translateX(0);
-        }
-      }
-      .drawer-header {
-        padding: 12px 16px;
-        border-bottom: 1px solid #313244;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-shrink: 0;
-      }
-      .drawer-title {
-        color: #cdd6f4;
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .drawer-subtitle {
-        color: #6c7086;
-        font-size: 10px;
-        margin-top: 2px;
-      }
-      .close-btn {
-        background: none;
-        border: 1px solid #45475a;
-        color: #cdd6f4;
-        width: 26px;
-        height: 26px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .close-btn:hover {
-        background: #313244;
-      }
-      .search-bar {
-        padding: 10px 16px;
-        border-bottom: 1px solid #313244;
-        flex-shrink: 0;
-      }
-      .search-wrap {
-        position: relative;
-      }
-      .search-icon {
-        position: absolute;
-        left: 9px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 12px;
-      }
-      .search-input {
-        width: 100%;
-        background: #313244;
-        border: 1px solid #45475a;
-        border-radius: 4px;
-        padding: 7px 10px 7px 28px;
-        color: #cdd6f4;
-        font-size: 12px;
-        box-sizing: border-box;
-        outline: none;
-      }
-      .search-input:focus {
-        border-color: #89b4fa;
-      }
-      .search-input::placeholder {
-        color: #585b70;
-      }
-      .legend {
-        padding: 6px 16px;
-        border-bottom: 1px solid #313244;
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        flex-shrink: 0;
-      }
-      .legend-item {
-        font-size: 9px;
-        font-weight: 600;
-      }
-      .table-wrap {
-        flex: 1;
-        overflow-y: auto;
-      }
-      .loading-msg {
-        color: #6c7086;
-        font-size: 12px;
-        padding: 20px 16px;
-      }
-      .val-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-      }
-      .val-table thead {
-        position: sticky;
-        top: 0;
-        background: #181825;
-      }
-      .val-table th {
-        padding: 6px 8px;
-        color: #6c7086;
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        text-align: left;
-      }
-      .col-stripe {
-        width: 10px;
-        text-align: left !important;
-      }
-      .col-period {
-        width: 70px;
-      }
-      .col-num {
-        width: 70px;
-        text-align: right !important;
-      }
-      .val-row {
-        border-bottom: 1px solid #313244;
-      }
-      .val-row:hover {
-        background: #24273a;
-      }
-      .col-stripe-cell {
-        width: 3px;
-        padding: 0;
-      }
-      .col-period-cell {
-        padding: 5px 8px;
-        color: #585b70;
-        font-size: 10px;
-      }
-      .col-code-cell {
-        padding: 5px 8px;
-        color: #cdd6f4;
-        font-family: monospace;
-        font-size: 10px;
-      }
-      .col-label-cell {
-        padding: 5px 8px;
-        color: #cdd6f4;
-      }
-      .col-num-cell {
-        padding: 5px 8px;
-        text-align: right;
-        color: #585b70;
-        font-weight: 600;
-      }
-    `,
-  ],
+  styleUrl: './recibos-valorizacion-panel.component.scss',
 })
 export class RecibosValorizacionPanelComponent {
   private readonly _concepts = signal<ReadonlyArray<PayrollConceptModel>>([]);
@@ -307,16 +121,17 @@ export class RecibosValorizacionPanelComponent {
   });
 
   readonly legendItems = [
-    { nature: 'EARNING', label: 'Devengo', color: '#a6e3a1' },
-    { nature: 'DEDUCTION', label: 'Deducción', color: '#f38ba8' },
-    { nature: 'BASE', label: 'Base', color: '#89b4fa' },
-    { nature: 'TECHNICAL', label: 'Técnico', color: '#cba6f7' },
-    { nature: 'INFORMATIONAL', label: 'Informativo', color: '#fab387' },
-    { nature: 'NET_PAY', label: 'Totales/Liq.', color: '#6c7086' },
+    { nature: 'EARNING', label: 'Devengo' },
+    { nature: 'DEDUCTION', label: 'Deducción' },
+    { nature: 'BASE', label: 'Base' },
+    { nature: 'TECHNICAL', label: 'Técnico' },
+    { nature: 'INFORMATIONAL', label: 'Informativo' },
+    { nature: 'NET_PAY', label: 'Totales/Liq.' },
   ];
 
-  colorFor(nature: string): string {
-    return NATURE_COLOR[nature] ?? '#6c7086';
+  /** El color de cada naturaleza vive en el .scss, no aqui. */
+  natureClass(nature: string): string {
+    return 'nature-' + (NATURES.has(nature) ? nature.toLowerCase() : 'unknown');
   }
 
   fmt(value: number): string {

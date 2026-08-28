@@ -1,0 +1,169 @@
+/* Lista maestra de recibos: papel, como la lista de empleados del canvas. */
+.list-panel {
+  width: 300px;
+  border-right: 1px solid var(--border-default);
+  background: var(--surface-panel);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.filters {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-bottom: 8px;
+}
+
+label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+input,
+select {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+}
+
+input::placeholder {
+  color: var(--text-soft);
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent-border);
+  box-shadow: var(--focus-ring);
+}
+
+.search-btn {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  padding: 7px 13px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: 500;
+  font-size: 12.5px;
+  border: 1px solid var(--accent-primary);
+  cursor: pointer;
+  width: 100%;
+}
+
+.search-btn:hover {
+  background: var(--accent-primary-hover);
+  border-color: var(--accent-primary-hover);
+}
+
+.results {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.payroll-row {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.payroll-row:hover {
+  background: var(--surface-raised);
+}
+
+.payroll-row.selected {
+  background: var(--surface-hover);
+  border-left-color: var(--accent-primary);
+}
+
+.row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.employee-number {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-size: 12.5px;
+}
+
+.employee-number.bold {
+  font-weight: 600;
+}
+
+.row-sub {
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+/* Estado del recibo: un triplete por estado, ninguno fuera del sistema. */
+.status-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-calculated {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.badge-not_valid {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.badge-explicit_validated {
+  background: var(--accent-muted);
+  color: var(--text-accent);
+}
+
+.badge-definitive {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+.list-msg {
+  padding: 14px 18px;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.list-msg.error {
+  color: var(--error-text);
+}
+
+.list-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-raised);
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
