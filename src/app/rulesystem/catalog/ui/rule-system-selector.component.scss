@@ -17,12 +17,12 @@
   min-height: 2.15rem;
   border-radius: 0.52rem;
   border: 1px solid var(--border-strong);
-  background: #ffffff;
+  background: var(--surface-panel);
   color: var(--text-primary);
   padding: 0 0.55rem;
 }
 
 .rule-system-selector select:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--accent-border);
   outline-offset: 1px;
 }

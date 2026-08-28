@@ -45,7 +45,7 @@
 .ops-page__input:focus-visible {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .ops-page__input:disabled {
@@ -109,9 +109,9 @@
 }
 
 .ops-page__target-tab--active {
-  background: #2d5fa6;
-  border-color: #2d5fa6;
-  color: #fff;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
   font-weight: 600;
 }
 
@@ -125,13 +125,13 @@
   font-size: 0.74rem;
   padding: 0.4rem 0.5rem;
   resize: vertical;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .ops-page__textarea:focus-visible {
   outline: none;
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .ops-page__single-employee {
@@ -156,13 +156,13 @@
 
 /* Semantic state panels — colors are intentional, not migrated */
 .ops-page__panel--invalidate {
-  border: 1px solid #fca5a5;
-  background: #fff8f8;
+  border: 1px solid var(--error-border);
+  background: var(--error-bg);
 }
 
 .ops-page__panel--calculate {
-  border: 1px solid #86efac;
-  background: #f6fff8;
+  border: 1px solid var(--success-border);
+  background: var(--success-bg);
 }
 
 .ops-page__panel-title {
@@ -172,7 +172,7 @@
 }
 
 .ops-page__panel-title--invalidate { color: var(--error-text); }
-.ops-page__panel-title--calculate  { color: #15803d; }
+.ops-page__panel-title--calculate  { color: var(--success-text); }
 
 .ops-page__engine-fields {
   display: grid;
@@ -209,10 +209,10 @@
 }
 
 /* Semantic counters — colors are intentional */
-.ops-page__counter--success { background: #dcfce7; }
-.ops-page__counter--warn    { background: #fef9c3; }
-.ops-page__counter--error   { background: #fee2e2; }
-.ops-page__counter--info    { background: #dbeafe; }
+.ops-page__counter--success { background: var(--success-bg); }
+.ops-page__counter--warn    { background: var(--warning-bg); }
+.ops-page__counter--error   { background: var(--error-bg); }
+.ops-page__counter--info    { background: var(--accent-muted); }
 
 .ops-page__counter-value {
   font-size: 1rem;
@@ -227,9 +227,9 @@
 }
 
 .ops-page__run-panel {
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--accent-border);
   border-radius: 6px;
-  background: #eff6ff;
+  background: var(--accent-muted);
   padding: 0.6rem;
   display: grid;
   gap: 0.45rem;
@@ -245,7 +245,7 @@
 .ops-page__run-title {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #1e40af;
+  color: var(--text-accent);
 }
 
 /* Semantic badges — colors are intentional */
@@ -256,21 +256,21 @@
   font-weight: 600;
 }
 
-.ops-badge--grey   { background: #e2e8f0; color: #475569; }
-.ops-badge--yellow { background: #fef9c3; color: #92400e; }
-.ops-badge--green  { background: #dcfce7; color: #15803d; }
-.ops-badge--orange { background: #ffedd5; color: #9a3412; }
-.ops-badge--red    { background: #fee2e2; color: #b91c1c; }
+.ops-badge--grey   { background: var(--surface-muted); color: var(--text-secondary); }
+.ops-badge--yellow { background: var(--warning-bg); color: var(--warning-text); }
+.ops-badge--green  { background: var(--success-bg); color: var(--success-text); }
+.ops-badge--orange { background: var(--warning-bg); color: var(--warning-text); }
+.ops-badge--red    { background: var(--error-bg); color: var(--error-text); }
 
 .ops-page__progress-bar {
-  background: #dbeafe;
+  background: var(--accent-muted);
   border-radius: 4px;
   height: 6px;
   overflow: hidden;
 }
 
 .ops-page__progress-fill {
-  background: #3b82f6;
+  background: var(--accent-primary);
   height: 100%;
   transition: width 0.5s ease;
 }

@@ -11,28 +11,28 @@
   display: grid;
   gap: 0.08rem;
   text-align: left;
-  border: 1px solid #d6e0eb;
+  border: 1px solid var(--border-default);
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--surface-panel);
   padding: 0.45rem 0.5rem;
 }
 
 .rule-entity-type-list__item:hover {
-  background: #f7fbff;
+  background: var(--surface-hover);
 }
 
 .rule-entity-type-list__item--selected {
-  border-color: #9db9d3;
-  background: #eaf3fc;
+  border-color: var(--accent-border);
+  background: var(--accent-muted);
 }
 
 .rule-entity-type-list__code {
   font-weight: 700;
   font-size: 0.76rem;
-  color: #18314a;
+  color: var(--text-primary);
 }
 
 .rule-entity-type-list__name {
   font-size: 0.72rem;
-  color: #526477;
+  color: var(--text-tertiary);
 }

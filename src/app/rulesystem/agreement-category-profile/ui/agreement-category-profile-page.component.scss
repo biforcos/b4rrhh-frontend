@@ -6,7 +6,7 @@
     margin-bottom: 1.5rem;
 
     h2 { margin: 0 0 0.25rem; }
-    p { margin: 0; color: var(--text-color-secondary, #666); font-size: 0.9rem; }
+    p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
   }
 
   &__selectors {
@@ -22,11 +22,11 @@
     margin: 0.75rem 0;
     font-size: 0.9rem;
 
-    &--error { color: var(--red-500, #ef4444); }
-    &--success { color: var(--green-600, #16a34a); }
+    &--error { color: var(--error-text); }
+    &--success { color: var(--success-text); }
   }
 
-  &__empty { color: var(--text-color-secondary, #666); }
+  &__empty { color: var(--text-secondary); }
 
   &__table {
     width: 100%;
@@ -36,20 +36,20 @@
     th, td {
       padding: 0.6rem 1rem;
       text-align: left;
-      border-bottom: 1px solid var(--surface-border, #e5e7eb);
+      border-bottom: 1px solid var(--border-default);
     }
 
     th {
       font-weight: 600;
-      background: var(--surface-50, #f9fafb);
+      background: var(--surface-raised);
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      color: var(--text-color-secondary, #666);
+      color: var(--text-secondary);
     }
   }
 
-  &__row--editing td { background: var(--surface-50, #f9fafb); }
+  &__row--editing td { background: var(--surface-raised); }
 
   &__cell--actions { width: 90px; }
 
@@ -57,11 +57,11 @@
 
   &__name {
     margin-left: 0.5rem;
-    color: var(--text-color-secondary, #666);
+    color: var(--text-secondary);
     font-size: 0.85rem;
   }
 
-  &__edit-row td { padding: 0; border-bottom: 2px solid var(--primary-color, #6366f1); }
+  &__edit-row td { padding: 0; border-bottom: 2px solid var(--accent-primary); }
 
   &__edit-form {
     display: flex;
@@ -69,7 +69,7 @@
     gap: 1rem;
     align-items: flex-end;
     padding: 1rem 1rem 1rem 1.5rem;
-    background: var(--surface-100, #f3f4f6);
+    background: var(--surface-muted);
   }
 
   &__edit-field {
@@ -78,7 +78,7 @@
     gap: 0.3rem;
     min-width: 220px;
 
-    span { font-size: 0.8rem; font-weight: 600; color: var(--text-color-secondary, #666); }
+    span { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
   }
 
   &__edit-actions {

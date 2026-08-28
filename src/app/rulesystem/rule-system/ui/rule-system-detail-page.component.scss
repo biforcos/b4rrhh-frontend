@@ -4,7 +4,7 @@
 
 .rule-system-detail-page {
   border: 1px solid var(--border-subtle);
-  background: #ffffff;
+  background: var(--surface-panel);
   border-radius: 0.82rem;
   box-shadow: var(--shadow-panel);
   padding: 0.95rem;
@@ -33,13 +33,13 @@
 }
 
 .rule-system-detail-page__feedback--loading {
-  background: #f4f9ff;
-  border-color: #cfe0f3;
-  color: #2c4861;
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  color: var(--text-accent);
 }
 
 .rule-system-detail-page__feedback--error {
-  background: #fff5f5;
-  border-color: #e9cdcd;
-  color: #8a1c1c;
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
 }

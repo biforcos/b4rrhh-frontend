@@ -15,14 +15,14 @@
 .create-rule-entity-form span {
   font-size: 0.74rem;
   font-weight: 600;
-  color: #3b4d61;
+  color: var(--text-secondary);
 }
 
 .create-rule-entity-form input,
 .create-rule-entity-form textarea {
   border: 1px solid var(--border-strong);
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--surface-panel);
   color: var(--text-primary);
   min-height: 2rem;
   padding: 0.36rem 0.55rem;
@@ -34,12 +34,12 @@
 
 .create-rule-entity-form input:focus-visible,
 .create-rule-entity-form textarea:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--accent-border);
   outline-offset: 1px;
 }
 
 .create-rule-entity-form__error {
-  color: #b42318;
+  color: var(--error-text);
   font-size: 0.69rem;
 }
 
