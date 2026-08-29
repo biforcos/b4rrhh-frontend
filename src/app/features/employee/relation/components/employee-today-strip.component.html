@@ -2,7 +2,11 @@
   <h2 class="today__title">{{ texts.todayTitle }}</h2>
   <dl class="today__grid">
     @for (item of items(); track item.anchor) {
-      <div class="today__item" [class.today__item--empty]="item.value === null">
+      <div
+        class="today__item"
+        [class.today__item--empty]="item.value === null"
+        [class.today__item--anomaly]="item.value === null && item.anomaly"
+      >
         <dt class="today__label">
           <b4-icon [name]="item.icon" [size]="16" />
           {{ item.label }}
@@ -12,13 +16,16 @@
             <button type="button" class="today__link" [title]="texts.todayGoToLaneAction" (click)="select(item)">
               {{ value }}
             </button>
-            @if (item.secondary; as secondary) {
-              <span class="today__secondary">{{ secondary }}</span>
+            @if (item.code; as code) {
+              <span class="today__code">{{ code }}</span>
             }
           } @else {
-            <span class="today__none">{{ texts.todayNoneLabel }}</span>
+            <span class="today__none">{{ item.emptyLabel }}</span>
           }
         </dd>
+        @if (item.since; as since) {
+          <dd class="today__since">{{ texts.todaySinceLabel }} {{ since }}</dd>
+        }
       </div>
     }
   </dl>

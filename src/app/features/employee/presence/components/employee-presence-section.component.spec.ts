@@ -52,11 +52,6 @@ describe('EmployeePresenceSectionComponent', () => {
       { presenceNumber: 2, companyCode: 'ES01', entryReasonCode: 'HIRING', exitReasonCode: null, startDate: '2024-03-11', endDate: null, isActive: true },
     ]);
     const fixture = render();
-    // Lo cerrado nace plegado: se ve la etapa en vigor y un enlace con la historia.
-    expect(fixture.nativeElement.querySelectorAll('.temporal-section__row')).toHaveLength(1);
-    expect(fixture.nativeElement.querySelector('.temporal-section__fold')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('1 periodo cerrado');
-    (fixture.nativeElement.querySelector('.temporal-section__fold') as HTMLElement).click();
-    fixture.detectChanges();
     const rows = Array.from(fixture.nativeElement.querySelectorAll('.temporal-section__row')) as HTMLElement[];
     expect(rows).toHaveLength(2);
     const first = rows[0].textContent!.replace(/\s+/g, ' ');

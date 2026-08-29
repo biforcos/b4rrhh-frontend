@@ -202,6 +202,7 @@ export const employeeTexts = {
   todayHoursPerDayLabel: 'h/día',
   todayAllocatedLabel: 'asignado',
   todayNoneLabel: 'sin vigencia',
+  todayUnassignedLabel: 'sin asignar',
   todayGoToLaneAction: 'Ir al carril',
   // --- La línea de vida (frontend#17) ---
   lifelineTitle: 'Línea de vida',

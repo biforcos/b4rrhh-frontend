@@ -8,7 +8,6 @@ import {
   computed,
   input,
   output,
-  signal,
 } from '@angular/core';
 
 import { formatDisplayDate } from '../../utils/local-date.util';
@@ -21,8 +20,9 @@ import { TemporalSectionRow } from './temporal-section-row.model';
  *
  * Dos secciones con el mismo modo se ven iguales. La jerarquía no viene del modo —todas las
  * secciones temporales lo comparten— sino de dentro (frontend#25, nota al ADR-051): **lo vigente
- * manda sobre lo cerrado**. Las filas en vigor se ven siempre y pesan; las cerradas retroceden
- * y, por defecto, se pliegan tras «N periodos cerrados».
+ * manda sobre lo cerrado**. La fila en vigor es la única en tinta plena; las cerradas, apagadas.
+ * La historia no se pliega: con el estado de hoy arriba ya es secundaria por posición, y
+ * esconderla añadiría un clic a algo que se abre a menudo.
  *
  * Lo único que distingue a la presencia es la marca de que **gobierna** sobre las demás
  * (ADR-047). No hay marca de «temporal»: si todas la llevaran, no distinguiría ninguna.
@@ -56,8 +56,6 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly governs = input(false);
   /** Id del elemento anfitrión, para las anclas del índice (`employee-section-…`). */
   readonly anchorId = input<string | null>(null);
-  /** Las filas cerradas se pliegan por defecto: la historia es la excepción. */
-  readonly foldClosed = input(true);
 
   readonly addClicked = output<void>();
   readonly editClicked = output<number>();
@@ -69,25 +67,8 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
     index: number;
   }> | null = null;
 
-  protected readonly closedShown = signal(false);
-
   protected readonly count = computed(() => this.rows().length);
   protected readonly activeCount = computed(() => this.rows().filter((row) => row.isActive).length);
-  protected readonly closedCount = computed(() => this.count() - this.activeCount());
-  protected readonly closedFolded = computed(
-    () => this.foldClosed() && !this.closedShown() && this.closedCount() > 0,
-  );
-
-  /** Las filas que se ven, con su índice original para que editar y borrar sigan apuntando bien. */
-  protected readonly visibleRows = computed(() =>
-    this.rows()
-      .map((row, index) => ({ row, index }))
-      .filter(({ row }) => row.isActive || !this.closedFolded()),
-  );
-
-  protected toggleClosed(): void {
-    this.closedShown.update((shown) => !shown);
-  }
 
   protected formatPeriod(row: T): string {
     const start = formatDisplayDate(row.startDate);

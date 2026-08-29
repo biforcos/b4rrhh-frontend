@@ -18,16 +18,25 @@ export interface TodayItem {
   label: string;
   /** El valor vigente hoy; `null` cuando no hay vigencia abierta. */
   value: string | null;
-  /** Lo que acompaña al valor: el código, la fecha desde la que rige. */
-  secondary: string | null;
+  /** El código del valor, debajo y en gris. */
+  code: string | null;
+  /** Desde cuándo rige, ya formateada. */
+  since: string | null;
+  /** Sin vigencia: lo normal («sin vigencia») o una anomalía que hay que ver («sin asignar»). */
+  emptyLabel: string;
+  anomaly: boolean;
 }
 
 const HOURS = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
 
 /**
- * La tira «Hoy» (frontend#25): qué es verdad hoy, una fila por vigencia, encima de la historia.
- * El noventa por ciento de las veces se quiere el estado de hoy; la historia es la excepción, y
- * vive debajo, en los carriles. Cada valor lleva a su carril.
+ * El bloque «Hoy» (frontend#25): qué es verdad hoy, una línea por vigencia, entre la línea de
+ * vida y la historia. Es el borde derecho de la línea de vida, escrito: el gráfico enseña la
+ * forma; el bloque da el valor, que es lo que se copia y se pega. El orden es el de los carriles
+ * del eje, del índice y de las secciones, para saltar de uno a otro sin releer.
+ *
+ * Y es donde aparece lo anómalo: un empleado sin centro de coste es un problema de imputación, y
+ * aquí se lee «sin asignar» en tono de aviso.
  */
 @Component({
   selector: 'app-employee-today-strip',
@@ -56,50 +65,69 @@ export class EmployeeTodayStripComponent {
     const classification = open(this.laborClassifications());
     const workCenter = open(this.workCenters());
     const cost = this.costCenter();
+    const since = (item: { startDate: string } | null) => (item ? formatDisplayDate(item.startDate) : null);
     return [
       {
         anchor: 'presence',
         icon: 'empleado',
         label: t.lifelineLanePresence,
         value: presence ? (presence.companyName ?? presence.companyCode) : null,
-        secondary: presence ? `${t.todaySinceLabel} ${formatDisplayDate(presence.startDate)}` : null,
+        code: presence?.companyName ? presence.companyCode : null,
+        since: since(presence),
+        emptyLabel: t.todayNoneLabel,
+        anomaly: false,
       },
       {
         anchor: 'contract',
         icon: 'documento-nuevo',
         label: t.lifelineLaneContract,
         value: contract ? (contract.contractTypeName ?? contract.contractCode) : null,
-        secondary: contract ? `${contract.contractCode}${contract.contractSubtypeCode ? ` / ${contract.contractSubtypeCode}` : ''}` : null,
+        code: contract ? `${contract.contractCode}${contract.contractSubtypeCode ? ` / ${contract.contractSubtypeCode}` : ''}` : null,
+        since: since(contract),
+        emptyLabel: t.todayNoneLabel,
+        anomaly: false,
       },
       {
         anchor: 'working-time',
         icon: 'jornada',
         label: t.lifelineLaneWorkingTime,
         value: workingTime ? `${workingTime.workingTimePercentage} % · ${HOURS.format(workingTime.weeklyHours)} ${t.lifelineHoursPerWeekLabel}` : null,
-        secondary: workingTime ? `${HOURS.format(workingTime.dailyHours)} ${t.todayHoursPerDayLabel}` : null,
+        code: workingTime ? `${HOURS.format(workingTime.dailyHours)} ${t.todayHoursPerDayLabel}` : null,
+        since: since(workingTime),
+        emptyLabel: t.todayNoneLabel,
+        anomaly: false,
       },
       {
         anchor: 'classification',
         icon: 'convenio',
         label: t.lifelineLaneClassification,
         value: classification ? (classification.agreementCategoryName ?? classification.agreementCategoryCode) : null,
-        secondary: classification
-          ? `${classification.agreementName ?? classification.agreementCode}${classification.grupoCotizacionCode ? ` · ${t.lifelineContributionGroupLabel} ${classification.grupoCotizacionCode}` : ''}`
+        code: classification
+          ? `${classification.agreementCode}${classification.grupoCotizacionCode ? ` · ${t.lifelineContributionGroupLabel} ${classification.grupoCotizacionCode}` : ''}`
           : null,
+        since: since(classification),
+        emptyLabel: t.todayNoneLabel,
+        anomaly: false,
       },
       {
         anchor: 'work-center',
         icon: 'centro-trabajo',
         label: t.lifelineLaneWorkCenter,
         value: workCenter ? (workCenter.workCenterName ?? workCenter.workCenterCode) : null,
-        secondary: workCenter?.workCenterName ? workCenter.workCenterCode : null,
+        code: workCenter?.workCenterName ? workCenter.workCenterCode : null,
+        since: since(workCenter),
+        emptyLabel: t.todayNoneLabel,
+        anomaly: false,
       },
       {
         anchor: 'cost-center',
         icon: 'centro-coste',
         label: t.costCenterSectionTitle,
         value: cost ? cost.items.map((i) => `${i.costCenterName || i.costCenterCode} ${i.allocationPercentage} %`).join(' · ') : null,
-        secondary: cost ? `${cost.totalAllocationPercentage} % ${t.todayAllocatedLabel}` : null,
+        code: cost ? `${cost.totalAllocationPercentage} % ${t.todayAllocatedLabel}` : null,
+        since: since(cost),
+        emptyLabel: t.todayUnassignedLabel,
+        anomaly: true,
       },
     ];
   });

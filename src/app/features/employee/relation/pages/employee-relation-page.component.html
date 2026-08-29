@@ -1,16 +1,4 @@
 <section class="employee-relation" [attr.aria-label]="texts.relationAreaLabel">
-  <!-- Primero el estado de hoy; después la historia (frontend#25). -->
-  <app-employee-today-strip
-    class="employee-relation__today"
-    [presences]="presences()"
-    [contracts]="contracts()"
-    [workingTimes]="workingTimes()"
-    [laborClassifications]="laborClassifications()"
-    [workCenters]="workCenters()"
-    [costCenter]="currentCostCenter()"
-    (laneRequested)="goToLane($event)"
-  />
-
   <!-- La línea de vida: la historia, de un vistazo. -->
   <div id="employee-section-lifeline" class="employee-relation__lane">
     <app-employee-lifeline
@@ -23,6 +11,18 @@
       (laneRequested)="goToLane($event)"
     />
   </div>
+
+  <!-- Hoy: el borde derecho de la línea de vida, escrito. Primero el estado actual, después la historia (frontend#25). -->
+  <app-employee-today-strip
+    class="employee-relation__today"
+    [presences]="presences()"
+    [contracts]="contracts()"
+    [workingTimes]="workingTimes()"
+    [laborClassifications]="laborClassifications()"
+    [workCenters]="workCenters()"
+    [costCenter]="currentCostCenter()"
+    (laneRequested)="goToLane($event)"
+  />
 
   <!-- Los carriles, en el mismo orden que en el eje. La presencia primero: gobierna. -->
   <app-employee-presence-section class="employee-relation__lane" [employeeKey]="activeEmployeeKey()" />

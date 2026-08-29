@@ -44,22 +44,29 @@ describe('EmployeeTodayStripComponent', () => {
     return fixture;
   }
 
-  it('dice qué es verdad hoy, una fila por vigencia, con lo que rige y desde cuándo', () => {
+  it('dice qué es verdad hoy, una línea por vigencia en el orden de los carriles: valor, código debajo y desde cuándo', () => {
     const el: HTMLElement = render().nativeElement;
-    const rows = Array.from(el.querySelectorAll('.today__item')).map((i) => i.textContent!.replace(/\s+/g, ' ').trim());
-    expect(rows).toHaveLength(6);
-    expect(rows[0]).toContain('Presencia Spain Company 01 desde 11/03/2024');
-    expect(rows[1]).toContain('Contrato Indefinido ordinario (tiempo parcial) 108 / 01');
-    expect(rows[2]).toContain('Jornada 100 % · 33,38 h/semana 6,68 h/día');
+    const items = Array.from(el.querySelectorAll('.today__item'));
+    expect(items.map((i) => i.querySelector('.today__label')?.textContent?.trim())).toEqual([
+      'Presencia', 'Contrato', 'Jornada', 'Convenio', 'Centro', 'Centros de coste',
+    ]);
+    expect(items[0].querySelector('.today__link')?.textContent?.trim()).toBe('Spain Company 01');
+    expect(items[0].querySelector('.today__code')?.textContent?.trim()).toBe('ES01');
+    expect(items[0].querySelector('.today__since')?.textContent?.trim()).toBe('desde 11/03/2024');
+    expect(items[1].querySelector('.today__link')?.textContent?.trim()).toBe('Indefinido ordinario (tiempo parcial)');
+    expect(items[1].querySelector('.today__code')?.textContent?.trim()).toBe('108 / 01');
+    expect(items[2].querySelector('.today__link')?.textContent?.trim()).toBe('100 % · 33,38 h/semana');
     expect(el.textContent).not.toContain('Sustitución'); // la historia no está aquí
     expect(el.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 
-  it('sin vigencia abierta lo dice en gris, sin inventar nada', () => {
+  it('sin vigencia lo dice en gris; sin centro de coste, «sin asignar» como aviso', () => {
     const el: HTMLElement = render().nativeElement;
-    const center = el.querySelectorAll('.today__item')[4];
-    expect(center.classList.contains('today__item--empty')).toBe(true);
-    expect(center.querySelector('.today__none')?.textContent?.trim()).toBe('sin vigencia');
+    const items = el.querySelectorAll('.today__item');
+    expect(items[4].querySelector('.today__none')?.textContent?.trim()).toBe('sin vigencia');
+    expect(items[4].classList.contains('today__item--anomaly')).toBe(false);
+    expect(items[5].querySelector('.today__none')?.textContent?.trim()).toBe('sin asignar');
+    expect(items[5].classList.contains('today__item--anomaly')).toBe(true);
   });
 
   it('cada valor lleva a su carril', () => {

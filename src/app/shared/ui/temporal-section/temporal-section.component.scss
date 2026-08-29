@@ -1,7 +1,7 @@
 /*
  * El contenedor de las secciones TEMPORAL_APPEND_CLOSE (ADR-051). Sin caja: una regla arriba y
  * la cabecera bastan para separar (frontend#25). La caja se reserva para lo que tiene otro modo.
- * La jerarquía viene de dentro: la fila en vigor pesa, las cerradas retroceden y se pliegan.
+ * La jerarquía viene de dentro: la fila en vigor es la única en tinta plena; las cerradas, apagadas.
  * La que gobierna lleva el filo del acento.
  *
  * Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor.
@@ -214,31 +214,6 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
 .temporal-section__total--err {
   color: var(--error-text);
   font-weight: 600;
-}
-
-/* La historia, plegada: un enlace bajo la tabla. */
-.temporal-section__fold {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  padding: 4px 6px;
-  border: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-}
-
-.temporal-section__fold:hover,
-.temporal-section__fold:focus-visible {
-  color: var(--text-primary);
-  background: var(--surface-hover);
-}
-
-.temporal-section__fold-icon--open {
-  transform: rotate(180deg);
 }
 
 /* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */

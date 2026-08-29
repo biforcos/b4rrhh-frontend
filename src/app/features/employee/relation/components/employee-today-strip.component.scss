@@ -1,51 +1,57 @@
-/* La tira «Hoy»: el estado actual, sin caja; una regla la separa de la historia. */
+/* El bloque «Hoy»: el estado actual, con caja. Es lo único de la relación que la lleva. */
 :host {
   display: block;
 }
 
 .today {
-  padding: 4px 0 14px;
-  border-bottom: 1px solid var(--border-strong);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px 12px;
 }
 
 .today__title {
-  margin: 0 0 10px;
-  font-size: 0.72rem;
-  font-family: var(--font-body);
+  margin: 0 0 8px;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-primary);
 }
 
+/* A dos columnas, para que no ocupe media pantalla. */
 .today__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
   margin: 0;
 }
 
+/* Una línea por vigencia: etiqueta | valor (código debajo) | desde ‹fecha› a la derecha. */
 .today__item {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--surface-muted);
 }
 
 .today__label {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+  gap: 6px;
+  padding-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.today__value {
-  margin: 2px 0 0;
+.today__value,
+.today__since {
+  margin: 0;
   min-width: 0;
 }
 
-/* El valor de hoy pesa: es lo que se viene a leer. */
+/* El valor de hoy pesa: es lo que se viene a leer, y lo que se copia. */
 .today__link {
   display: block;
   max-width: 100%;
@@ -53,7 +59,7 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   text-align: left;
@@ -70,7 +76,7 @@
   text-underline-offset: 3px;
 }
 
-.today__secondary {
+.today__code {
   display: block;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -80,7 +86,27 @@
   text-overflow: ellipsis;
 }
 
+.today__since {
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
 .today__none {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-soft);
+}
+
+/* Lo anómalo se ve: sin centro de coste no se imputa. */
+.today__item--anomaly .today__none {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .today__grid {
+    grid-template-columns: 1fr;
+  }
 }

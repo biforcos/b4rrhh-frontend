@@ -39,44 +39,44 @@
         </tr>
       </thead>
       <tbody>
-        @for (entry of visibleRows(); track entry.row.startDate) {
+        @for (row of rows(); track row.startDate; let index = $index) {
           <tr
             class="temporal-section__row"
-            [class.temporal-section__row--active]="entry.row.isActive"
-            [class.temporal-section__row--closed]="!entry.row.isActive"
+            [class.temporal-section__row--active]="row.isActive"
+            [class.temporal-section__row--closed]="!row.isActive"
           >
-            <td class="temporal-section__td temporal-section__td--period">{{ formatPeriod(entry.row) }}</td>
+            <td class="temporal-section__td temporal-section__td--period">{{ formatPeriod(row) }}</td>
             @if (cellContentTemplate) {
               <ng-container
                 [ngTemplateOutlet]="cellContentTemplate"
-                [ngTemplateOutletContext]="{ $implicit: entry.row, index: entry.index }"
+                [ngTemplateOutletContext]="{ $implicit: row, index: index }"
               />
             }
             <td class="temporal-section__td">
-              <span class="temporal-section__badge" [class.temporal-section__badge--active]="entry.row.isActive">
-                {{ entry.row.isActive ? 'Vigente' : 'Cerrado' }}
+              <span class="temporal-section__badge" [class.temporal-section__badge--active]="row.isActive">
+                {{ row.isActive ? 'Vigente' : 'Cerrado' }}
               </span>
             </td>
             <td class="temporal-section__td temporal-section__td--actions">
               <div class="temporal-section__actions">
-                @if (showEdit(entry.row)) {
+                @if (showEdit(row)) {
                   <button
                     type="button"
                     class="temporal-section__icon-btn"
-                    [attr.aria-label]="editLabel(entry.row)"
-                    [title]="editLabel(entry.row)"
-                    (click)="editClicked.emit(entry.index)"
+                    [attr.aria-label]="editLabel(row)"
+                    [title]="editLabel(row)"
+                    (click)="editClicked.emit(index)"
                   >
                     <b4-icon name="editar" [size]="16" />
                   </button>
                 }
-                @if (showDelete(entry.row)) {
+                @if (showDelete(row)) {
                   <button
                     type="button"
                     class="temporal-section__icon-btn temporal-section__icon-btn--danger"
-                    [attr.aria-label]="deleteLabel(entry.row)"
-                    [title]="deleteLabel(entry.row)"
-                    (click)="deleteClicked.emit(entry.index)"
+                    [attr.aria-label]="deleteLabel(row)"
+                    [title]="deleteLabel(row)"
+                    (click)="deleteClicked.emit(index)"
                   >
                     <b4-icon name="cerrar" [size]="16" />
                   </button>
@@ -87,16 +87,5 @@
         }
       </tbody>
     </table>
-    @if (foldClosed() && closedCount() > 0) {
-      <!-- La historia, a petición. -->
-      <button type="button" class="temporal-section__fold" [attr.aria-expanded]="closedShown()" (click)="toggleClosed()">
-        <b4-icon name="chevron-abajo" [size]="16" [class.temporal-section__fold-icon--open]="closedShown()" />
-        @if (closedShown()) {
-          Ocultar los {{ closedCount() }} {{ closedCount() === 1 ? 'periodo cerrado' : 'periodos cerrados' }}
-        } @else {
-          {{ closedCount() }} {{ closedCount() === 1 ? 'periodo cerrado' : 'periodos cerrados' }}
-        }
-      </button>
-    }
   }
 </section>
