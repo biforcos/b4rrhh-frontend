@@ -3,11 +3,12 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { AuthStore } from '../../auth/auth.store';
 import { appTexts } from '../../i18n/app-texts';
+import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
 
 @Component({
   selector: 'app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [B4IconComponent, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',
 })

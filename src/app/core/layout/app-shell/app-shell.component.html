@@ -13,45 +13,45 @@
 
       <span class="app-shell__nav-group-label">{{ texts.sectionPeople }}</span>
       <a class="app-shell__nav-item" routerLink="/personas/empleados" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-id-card app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="empleado" [size]="20" />
         <span>{{ texts.sectionEmployees }}</span>
       </a>
 
       <span class="app-shell__nav-group-label">{{ texts.sectionOrganization }}</span>
       <a class="app-shell__nav-item" routerLink="/organizacion/empresas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-building app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="empresa" [size]="20" />
         <span>{{ texts.sectionCompanies }}</span>
       </a>
       <a class="app-shell__nav-item" routerLink="/organizacion/centros-trabajo" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-map-marker app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="centro-trabajo" [size]="20" />
         <span>{{ texts.sectionWorkCenters }}</span>
       </a>
       <a class="app-shell__nav-item" routerLink="/organizacion/centros-coste" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-wallet app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="centro-coste" [size]="20" />
         <span>{{ texts.sectionCostCenters }}</span>
       </a>
       <a class="app-shell__nav-item" routerLink="/organizacion/catalogos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-book app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="catalogo" [size]="20" />
         <span>{{ texts.sectionCatalogs }}</span>
       </a>
       <a class="app-shell__nav-item" routerLink="/organizacion/convenios-categorias" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-sitemap app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="convenio" [size]="20" />
         <span>Convenios SS</span>
       </a>
 
       <span class="app-shell__nav-group-label">{{ texts.sectionPayroll }}</span>
       <a class="app-shell__nav-item" routerLink="/nomina/recibos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-receipt app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="recibo" [size]="20" />
         <span>{{ texts.sectionRecibos }}</span>
       </a>
       <a class="app-shell__nav-item" routerLink="/nomina/operaciones" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-bolt app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="operacion" [size]="20" />
         <span>{{ texts.sectionOperaciones }}</span>
       </a>
 
       <span class="app-shell__nav-group-label">{{ texts.sectionSettings }}</span>
       <a class="app-shell__nav-item" routerLink="/configuracion/rule-systems" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <i class="pi pi-cog app-shell__nav-icon"></i>
+        <b4-icon class="app-shell__nav-icon" name="rule-system" [size]="20" />
         <span>{{ texts.sectionRuleSystems }}</span>
       </a>
 
@@ -63,7 +63,7 @@
         <span class="app-shell__user-name">{{ auth.subject() ?? '—' }}</span>
       </div>
       <button class="app-shell__logout-btn" type="button" (click)="logout()" [title]="texts.authLogoutAction" [attr.aria-label]="texts.authLogoutAction">
-        <i class="pi pi-sign-out"></i>
+        <b4-icon name="salir" [size]="20" />
       </button>
     </footer>
   </aside>

@@ -94,10 +94,9 @@
   padding-left: 8px; /* compensate for 2px border */
 }
 
+/* 20 px: el tamaño de navegación de la guía. Hereda el color de la fila (activo incluido). */
 .app-shell__nav-icon {
-  font-size: 14px;
-  width: 16px;
-  text-align: center;
+  width: 20px;
   color: inherit;
   flex-shrink: 0;
 }
