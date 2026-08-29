@@ -14,46 +14,52 @@
   [railToggleLabel]="texts.railToggleLabel"
 >
 
-  <!-- Identidad: la miga con el nombre y, a la derecha, las acciones de página (ADR-050 §1). -->
-  <div slot="identidad" class="employee-detail__identity">
-    <nav class="employee-detail__breadcrumb" aria-label="Breadcrumb">
-      <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{ texts.masterTitle }}</a>
-      <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
-      <span class="employee-detail__breadcrumb-current">{{ selectedEmployee()?.displayName ?? '...' }}</span>
-    </nav>
-    @if (activeEmployeeKey() && !isRehireWorkflow()) {
-      <div class="employee-detail__actions" [attr.aria-label]="texts.pageActionsAriaLabel">
-        <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()">
-          <ng-template #item let-item>
-            <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
-              <b4-icon [name]="menuIcon(item)" [size]="16" />
-              <span class="p-menu-item-label">{{ item.label }}</span>
-            </a>
-          </ng-template>
-        </p-menu>
-        <button class="employee-detail__btn-secondary" type="button" (click)="showActionsMenu($event)">
-          {{ texts.pageActionsMenuLabel }} <b4-icon name="chevron-abajo" [size]="16" />
-        </button>
-        <button class="employee-detail__btn-primary" type="button" (click)="navigateToSection('payroll')">
-          <b4-icon name="nomina" [size]="16" />
-          {{ texts.pageActionCalculatePayroll }}
-        </button>
-      </div>
-    }
-  </div>
-
-  <!-- Identity panel (raíl) -->
+  <!-- Identidad (ADR-050 §1 y §6): la barra a ancho completo, la misma en todas las secciones,
+       con la miga encima y las acciones de página a la derecha. Nunca desaparece el nombre. -->
   @if (activeEmployeeKey(); as key) {
-    <app-employee-identity-panel
-      slot="rail"
+    <app-employee-identity-bar
+      slot="identidad"
       [employeeKey]="key"
       [employee]="selectedEmployee()"
       [hireDate]="headerHireDate()"
       [status]="headerStatus()"
       [isAdmin]="isAdmin()"
+      (editIdentityRequested)="openIdentityEditorFromHeader()"
+    >
+      <nav identityBreadcrumb class="employee-detail__breadcrumb" aria-label="Breadcrumb">
+        <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{ texts.masterTitle }}</a>
+        <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="employee-detail__breadcrumb-current">{{ selectedEmployee()?.displayName ?? '...' }}</span>
+      </nav>
+      @if (!isRehireWorkflow()) {
+        <div identityActions class="employee-detail__actions" [attr.aria-label]="texts.pageActionsAriaLabel">
+          <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()">
+            <ng-template #item let-item>
+              <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
+                <b4-icon [name]="menuIcon(item)" [size]="16" />
+                <span class="p-menu-item-label">{{ item.label }}</span>
+              </a>
+            </ng-template>
+          </p-menu>
+          <button class="employee-detail__btn-secondary" type="button" (click)="showActionsMenu($event)">
+            {{ texts.pageActionsMenuLabel }} <b4-icon name="chevron-abajo" [size]="16" />
+          </button>
+          <button class="employee-detail__btn-primary" type="button" (click)="navigateToSection('payroll')">
+            <b4-icon name="nomina" [size]="16" />
+            {{ texts.pageActionCalculatePayroll }}
+          </button>
+        </div>
+      }
+    </app-employee-identity-bar>
+  }
+
+  <!-- El índice (raíl) -->
+  @if (activeEmployeeKey(); as key) {
+    <app-employee-index-panel
+      slot="rail"
+      [employeeKey]="key"
       [activeSection]="activeDetailSection()"
       [activeAnchor]="activeAnchor()"
-      (editIdentityRequested)="openIdentityEditorFromHeader()"
     />
   }
 

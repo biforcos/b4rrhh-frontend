@@ -1,0 +1,90 @@
+<div class="identity-bar">
+  <div class="identity-bar__breadcrumb">
+    <ng-content select="[identityBreadcrumb]" />
+  </div>
+
+  <div class="identity-bar__row">
+    <!-- El retrato: foto si la hay, iniciales si no. Quien administra puede cambiarla. -->
+    <div
+      class="identity-bar__portrait"
+      [class.identity-bar__portrait--clickable]="isAdmin()"
+      [attr.role]="isAdmin() ? 'button' : null"
+      [attr.tabindex]="isAdmin() ? 0 : null"
+      [attr.aria-label]="isAdmin() ? texts.identityChangePhotoAction : null"
+      (click)="openUploadDialog()"
+      (keydown.enter)="openUploadDialog()"
+    >
+      @if (photoUrl(); as url) {
+        <img class="identity-bar__photo" [src]="url" [alt]="texts.identityPhotoAlt" />
+      } @else {
+        <span class="identity-bar__initials" aria-hidden="true">{{ initials() }}</span>
+      }
+      @if (isAdmin()) {
+        <span class="identity-bar__portrait-overlay" aria-hidden="true">
+          <b4-icon [name]="photoUrl() ? 'editar' : 'foto'" [size]="20" />
+        </span>
+      }
+    </div>
+
+    <div class="identity-bar__who">
+      <div class="identity-bar__name-row">
+        <h1 class="identity-bar__name">{{ displayName() }}</h1>
+        @if (statusLabel(); as status) {
+          <p-tag class="identity-bar__status" [value]="status" severity="danger" />
+        }
+        <button
+          class="identity-bar__icon-btn"
+          type="button"
+          [title]="texts.detailHeaderEditAction"
+          [attr.aria-label]="texts.detailHeaderEditAction"
+          (click)="requestEditIdentity()"
+        >
+          <b4-icon name="editar" [size]="16" />
+        </button>
+      </div>
+      <!-- La clave y el contexto, después de la persona y en pequeño. -->
+      <p class="identity-bar__meta">
+        <span class="identity-bar__mat">
+          {{ employeeKey().employeeNumber }}
+          <button
+            class="identity-bar__icon-btn identity-bar__icon-btn--inline"
+            type="button"
+            [title]="texts.identityCopyMatriculaAction"
+            [attr.aria-label]="texts.identityCopyMatriculaAction"
+            (click)="copyMatricula()"
+          >
+            <b4-icon name="copiar" [size]="16" />
+          </button>
+        </span>
+        <span class="identity-bar__sep" aria-hidden="true">·</span>
+        <span>{{ employeeKey().ruleSystemCode }} / {{ employeeKey().employeeTypeCode }}</span>
+        @if (hireDateLabel(); as hire) {
+          <span class="identity-bar__sep" aria-hidden="true">·</span>
+          <span>{{ texts.identityHireLabel }} {{ hire }}</span>
+        }
+        @if (seniorityLabel(); as seniority) {
+          <span class="identity-bar__sep" aria-hidden="true">·</span>
+          <span>{{ texts.identitySeniorityLabel }} {{ seniority }}</span>
+        }
+        @if (isAdmin() && photoUrl()) {
+          <span class="identity-bar__sep" aria-hidden="true">·</span>
+          <button class="identity-bar__text-btn" type="button" (click)="deletePhoto()">
+            {{ texts.identityDeletePhotoAction }}
+          </button>
+        }
+      </p>
+    </div>
+
+    <div class="identity-bar__actions">
+      <ng-content select="[identityActions]" />
+    </div>
+  </div>
+</div>
+
+@if (isAdmin()) {
+  <app-employee-photo-upload-dialog
+    [employeeKey]="employeeKey()"
+    [(visible)]="uploadDialogVisible"
+    (photoConfirmed)="onPhotoConfirmed()"
+  />
+}

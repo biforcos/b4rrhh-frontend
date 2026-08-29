@@ -1,0 +1,106 @@
+:host {
+  display: block;
+  width: 260px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+/* El raíl: solo el índice. Se pliega entero con el esqueleto; no lleva nada que no pueda esconderse. */
+.index-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-panel);
+  border-right: 1px solid var(--border-default);
+  padding: 12px 10px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* El índice de la página: grupos, entradas con recuento; en gris las vacías. */
+.index-panel__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.index-panel__nav-group {
+  display: block;
+  padding: 10px 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.index-panel__nav-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.index-panel__nav-item--empty {
+  color: var(--text-tertiary);
+}
+
+.index-panel__nav-item.active .index-panel__nav-count {
+  color: var(--text-inverse);
+}
+
+.index-panel__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0 10px;
+  overflow: hidden;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+    font-weight: 600;
+  }
+}
+
+
+.index-panel__nav-icon {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.index-panel__nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Delete photo button */
+.index-panel__delete-photo {
+  display: block;
+  margin: 0.35rem auto 0;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--error-border);
+  }
+}

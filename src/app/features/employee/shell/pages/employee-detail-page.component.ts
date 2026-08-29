@@ -16,7 +16,8 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from 
 import { hasRehireRefreshMarker } from '../../routing/employee-refresh-marker.util';
 import { filter, startWith } from 'rxjs';
 
-import { EmployeeIdentityPanelComponent } from '../../identity/employee-identity-panel.component';
+import { EmployeeIdentityBarComponent } from '../../identity/employee-identity-bar.component';
+import { EmployeeIndexPanelComponent } from '../../identity/employee-index-panel.component';
 import { EmployeeJourneyTimelineComponent } from '../components/employee-journey-timeline.component';
 import { EmployeeTerminatePanelComponent } from '../components/employee-terminate-panel.component';
 import { GlobalMessageRailComponent } from '../components/global-message-rail.component';
@@ -60,7 +61,8 @@ import { B4IconName } from '../../../../shared/ui/icon/icon-names';
   imports: [
     RouterLink,
     RouterOutlet,
-    EmployeeIdentityPanelComponent,
+    EmployeeIdentityBarComponent,
+    EmployeeIndexPanelComponent,
     EmployeeJourneyTimelineComponent,
     EmployeeTerminatePanelComponent,
     GlobalMessageRailComponent,

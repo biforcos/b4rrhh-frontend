@@ -1,31 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TagModule } from 'primeng/tag';
-import { ButtonModule } from 'primeng/button';
 
 import { employeeTexts } from '../employee.texts';
-import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../shared/ui/icon/icon-names';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
-import { EmployeeDetailModel } from '../models/employee-detail.model';
 import {
   buildEmployeeDetailRouteCommands,
   EmployeeRelationAnchor,
   EmployeeRouteSection,
 } from '../routing/employee-route-builder.util';
-import { EmployeePhotoUploadDialogComponent } from '../photo/employee-photo-upload-dialog.component';
-import { EmployeePhotoService } from '../data-access/employee-photo.service';
-import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 import { EmployeePresenceStore } from '../data-access/employee-presence.store';
 import { EmployeeContractStore } from '../data-access/employee-contract.store';
 import { EmployeeWorkingTimeStore } from '../data-access/employee-working-time.store';
@@ -55,59 +39,32 @@ export interface IdentityNavGroup {
 }
 
 /**
- * El raíl de la ficha: la identidad del empleado y el índice de la página. El índice no se
- * pliega a iconos (ADR-050 §4): es un sumario que se lee de reojo y se aprieta con tipografía.
+ * El raíl de la ficha: el índice de la página (frontend#24 le quitó la identidad, que ahora va
+ * en la barra de arriba). No se pliega a iconos (ADR-050 §4): es un sumario que se lee de reojo y
+ * se aprieta con tipografía; y como ya no lleva nada que no pueda esconderse, puede plegarse
+ * entero con el raíl.
  */
 @Component({
-  selector: 'app-employee-identity-panel',
+  selector: 'app-employee-index-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    DatePipe,
-    RouterLink,
-    TagModule,
-    ButtonModule,
-    B4IconComponent,
-    EmployeePhotoUploadDialogComponent,
-  ],
-  templateUrl: './employee-identity-panel.component.html',
-  styleUrl: './employee-identity-panel.component.scss',
+  imports: [RouterLink, B4IconComponent],
+  templateUrl: './employee-index-panel.component.html',
+  styleUrl: './employee-index-panel.component.scss',
 })
-export class EmployeeIdentityPanelComponent {
+export class EmployeeIndexPanelComponent {
   readonly employeeKey = input.required<EmployeeBusinessKey>();
-  readonly employee = input<EmployeeDetailModel | null>(null);
-  readonly hireDate = input<string | null>(null);
-  readonly status = input<'ACTIVE' | 'TERMINATED'>('TERMINATED');
-  readonly isAdmin = input(false);
   /** La sección de ruta activa y, dentro de la relación, el ancla activa. */
   readonly activeSection = input<EmployeeRouteSection>('relacion');
   readonly activeAnchor = input<EmployeeRelationAnchor | null>(null);
 
-  readonly editIdentityRequested = output<void>();
-
   protected readonly texts = employeeTexts;
-  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
-  protected readonly uploadDialogVisible = signal(false);
 
-  private readonly photoService = inject(EmployeePhotoService);
-  private readonly detailStore = inject(EmployeeDetailStore);
   private readonly presenceStore = inject(EmployeePresenceStore);
   private readonly contractStore = inject(EmployeeContractStore);
   private readonly workingTimeStore = inject(EmployeeWorkingTimeStore);
   private readonly laborClassificationStore = inject(EmployeeLaborClassificationStore);
   private readonly workCenterStore = inject(EmployeeWorkCenterStore);
   private readonly costCenterStore = inject(EmployeeCostCenterStore);
-
-  protected readonly initials = computed(() => {
-    const name = this.employee()?.displayName ?? '';
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return '?';
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return parts[0].slice(0, 2).toUpperCase() || '?';
-  });
-
-  protected readonly photoUrl = computed(() => this.employee()?.photoUrl ?? null);
 
   protected readonly navGroups = computed<ReadonlyArray<IdentityNavGroup>>(() => {
     const key = this.employeeKey();
@@ -176,43 +133,11 @@ export class EmployeeIdentityPanelComponent {
   /** Plano, para quien solo quiera recorrer las entradas (los tests, por ejemplo). */
   protected readonly navItems = computed(() => this.navGroups().flatMap((group) => group.items));
 
-  protected readonly statusSeverity = computed(() =>
-    this.status() === 'ACTIVE' ? 'success' : 'danger',
-  );
-
-  protected readonly statusLabel = computed(() =>
-    this.status() === 'ACTIVE'
-      ? this.texts.employeeStatusActiveLabel
-      : this.texts.employeeStatusInactiveLabel,
-  );
 
   protected isActive(item: IdentityNavItem): boolean {
     if (item.section !== this.activeSection()) return false;
     if (item.anchor === null) return true;
     // Dentro de la relación, sin ancla en la URL, la activa es la línea de vida.
     return item.anchor === (this.activeAnchor() ?? 'lifeline');
-  }
-
-  protected requestEditIdentity(): void {
-    this.editIdentityRequested.emit();
-  }
-
-  protected copyMatricula(): void {
-    void navigator.clipboard.writeText(this.employeeKey().employeeNumber);
-  }
-
-  protected openUploadDialog(): void {
-    if (!this.isAdmin()) return;
-    this.uploadDialogVisible.set(true);
-  }
-
-  protected onPhotoConfirmed(): void {
-    this.detailStore.refreshEmployeeDetailByBusinessKey(this.employeeKey());
-  }
-
-  protected deletePhoto(): void {
-    this.photoService.deletePhoto(this.employeeKey()).subscribe({
-      next: () => this.detailStore.refreshEmployeeDetailByBusinessKey(this.employeeKey()),
-    });
   }
 }

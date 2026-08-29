@@ -9,21 +9,12 @@
   min-height: 100dvh;
 }
 
-/* Identidad: la miga a la izquierda, las acciones de página a la derecha. */
-.employee-detail__identity {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 24px;
-  min-height: 52px;
-}
-
+/* La miga va dentro de la barra de identidad; las acciones, a su derecha. */
 .employee-detail__breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 12px;
   min-width: 0;
 }
 
