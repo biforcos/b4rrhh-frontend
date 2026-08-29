@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthStore } from '../../auth/auth.store';
 import { appTexts } from '../../i18n/app-texts';
+import { RuleSystemScopeStore } from '../../scope/rule-system-scope.store';
 import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
 
 @Component({
@@ -12,9 +13,10 @@ import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',
 })
-export class AppShellComponent {
+export class AppShellComponent implements OnInit {
   protected readonly texts = appTexts;
   protected readonly auth = inject(AuthStore);
+  protected readonly scope = inject(RuleSystemScopeStore);
 
   private readonly router = inject(Router);
 
@@ -22,6 +24,14 @@ export class AppShellComponent {
     const subject = this.auth.subject() ?? '';
     return subject.slice(0, 2).toUpperCase() || '?';
   });
+
+  ngOnInit(): void {
+    this.scope.load();
+  }
+
+  protected onScopeChange(event: Event): void {
+    this.scope.select((event.target as HTMLSelectElement).value);
+  }
 
   protected async logout(): Promise<void> {
     this.auth.logout();

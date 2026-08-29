@@ -45,6 +45,78 @@
   font-weight: 700;
 }
 
+/* Ámbito: el sistema de reglas activo, bajo la marca y siempre a la vista. */
+.app-shell__scope {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.app-shell__scope-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.app-shell__scope-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.app-shell__scope-control {
+  width: 100%;
+  height: 30px;
+  padding: 0 28px 0 8px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+
+.app-shell__scope-control:hover {
+  border-color: var(--border-strong);
+}
+
+.app-shell__scope-control:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
+.app-shell__scope-chevron {
+  position: absolute;
+  right: 8px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Un solo sistema: se muestra igual, pero apagado y sin desplegable. */
+.app-shell__scope-value {
+  display: block;
+  height: 30px;
+  line-height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Nav */
 .app-shell__nav {
   display: flex;

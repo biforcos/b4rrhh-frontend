@@ -9,15 +9,40 @@
       <span class="app-shell__brand-name"><strong>{{ texts.brandName }}</strong></span>
     </a>
 
+    <!-- El ámbito: el sistema de reglas activo (ADR-049). No es un destino, es el contexto
+         en el que vive casi todo lo demás; por eso va junto a la marca y no en el menú. -->
+    <div class="app-shell__scope">
+      <span class="app-shell__scope-label" id="app-shell-scope-label">{{ texts.scopeLabel }}</span>
+      @if (scope.selectable()) {
+        <div class="app-shell__scope-select">
+          <select
+            class="app-shell__scope-control"
+            aria-labelledby="app-shell-scope-label"
+            [value]="scope.activeCode()"
+            (change)="onScopeChange($event)"
+          >
+            @for (item of scope.items(); track item.code) {
+              <option [value]="item.code">{{ item.code }} · {{ item.name }}</option>
+            }
+          </select>
+          <b4-icon class="app-shell__scope-chevron" name="chevron-abajo" [size]="16" />
+        </div>
+      } @else if (scope.active(); as active) {
+        <span class="app-shell__scope-value" [title]="texts.scopeSingleHint">{{ active.code }} · {{ active.name }}</span>
+      } @else {
+        <span class="app-shell__scope-value">{{ scope.error() ? texts.scopeUnavailable : '…' }}</span>
+      }
+    </div>
+
     <nav class="app-shell__nav" [attr.aria-label]="texts.navigationAriaLabel">
 
-      <span class="app-shell__nav-group-label">{{ texts.sectionPeople }}</span>
+      <span class="app-shell__nav-group-label">{{ texts.groupEmployees }}</span>
       <a class="app-shell__nav-item" routerLink="/personas/empleados" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <b4-icon class="app-shell__nav-icon" name="empleado" [size]="20" />
-        <span>{{ texts.sectionEmployees }}</span>
+        <span>{{ texts.sectionDirectory }}</span>
       </a>
 
-      <span class="app-shell__nav-group-label">{{ texts.sectionOrganization }}</span>
+      <span class="app-shell__nav-group-label">{{ texts.groupOrganization }}</span>
       <a class="app-shell__nav-item" routerLink="/organizacion/empresas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <b4-icon class="app-shell__nav-icon" name="empresa" [size]="20" />
         <span>{{ texts.sectionCompanies }}</span>
@@ -30,16 +55,24 @@
         <b4-icon class="app-shell__nav-icon" name="centro-coste" [size]="20" />
         <span>{{ texts.sectionCostCenters }}</span>
       </a>
+      <!-- Destino provisional de la pantalla genérica de catálogos hasta que la fase 5 la
+           reparta entre Organización y Sociedad (ADR-049 §3). -->
       <a class="app-shell__nav-item" routerLink="/organizacion/catalogos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <b4-icon class="app-shell__nav-icon" name="catalogo" [size]="20" />
-        <span>{{ texts.sectionCatalogs }}</span>
-      </a>
-      <a class="app-shell__nav-item" routerLink="/organizacion/convenios-categorias" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="convenio" [size]="20" />
-        <span>Convenios SS</span>
+        <span>{{ texts.sectionMasters }}</span>
       </a>
 
-      <span class="app-shell__nav-group-label">{{ texts.sectionPayroll }}</span>
+      <span class="app-shell__nav-group-label">{{ texts.groupSociety }}</span>
+      <a class="app-shell__nav-item" routerLink="/organizacion/convenios-categorias" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <b4-icon class="app-shell__nav-icon" name="convenio" [size]="20" />
+        <span>{{ texts.sectionAgreements }}</span>
+      </a>
+      <a class="app-shell__nav-item" routerLink="/configuracion/rule-systems" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <b4-icon class="app-shell__nav-icon" name="rule-system" [size]="20" />
+        <span>{{ texts.sectionRuleSystems }}</span>
+      </a>
+
+      <span class="app-shell__nav-group-label">{{ texts.groupPayroll }}</span>
       <a class="app-shell__nav-item" routerLink="/nomina/recibos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <b4-icon class="app-shell__nav-icon" name="recibo" [size]="20" />
         <span>{{ texts.sectionRecibos }}</span>
@@ -47,12 +80,6 @@
       <a class="app-shell__nav-item" routerLink="/nomina/operaciones" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <b4-icon class="app-shell__nav-icon" name="operacion" [size]="20" />
         <span>{{ texts.sectionOperaciones }}</span>
-      </a>
-
-      <span class="app-shell__nav-group-label">{{ texts.sectionSettings }}</span>
-      <a class="app-shell__nav-item" routerLink="/configuracion/rule-systems" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="rule-system" [size]="20" />
-        <span>{{ texts.sectionRuleSystems }}</span>
       </a>
 
     </nav>
