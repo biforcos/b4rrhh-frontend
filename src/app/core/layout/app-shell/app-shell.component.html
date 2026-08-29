@@ -1,7 +1,11 @@
 <div class="app-shell">
   <aside class="app-shell__sidebar">
     <a class="app-shell__brand" [routerLink]="['/inicio']" [attr.aria-label]="texts.brandHomeAriaLabel">
-      <span class="app-shell__brand-mark">B4</span>
+      <!-- Isotipo (public/brand/isotipo-mono.svg): fill="currentColor", hereda el color por CSS.
+           aria-hidden porque el enlace ya lleva aria-label: sin esto el lector lo diría dos veces. -->
+      <svg class="app-shell__brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path fill="currentColor" fill-rule="evenodd" d="M4 4 H17.55 A5.45 5.45 0 0 1 17.55 14.9 H4 Z M8.4 7.7 H17.55 A1.75 1.75 0 0 1 17.55 11.2 H8.4 Z M4 17.1 H22.55 A5.45 5.45 0 0 1 22.55 28.0 H4 Z M8.4 20.8 H22.55 A1.75 1.75 0 0 1 22.55 24.3 H8.4 Z M4 14.9 H8.4 V17.1 H4 Z" />
+      </svg>
       <span class="app-shell__brand-name"><strong>{{ texts.brandName }}</strong></span>
     </a>
 

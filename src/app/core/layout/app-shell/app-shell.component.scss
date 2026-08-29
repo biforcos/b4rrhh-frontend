@@ -30,17 +30,12 @@
   flex-shrink: 0;
 }
 
+/* El isotipo en línea: rejilla de 32 con sus 4 de margen dentro del fichero, hereda el color. */
 .app-shell__brand-mark {
-  display: inline-grid;
-  place-items: center;
+  display: block;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-heading);
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--text-inverse);
-  background: var(--accent-primary);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
