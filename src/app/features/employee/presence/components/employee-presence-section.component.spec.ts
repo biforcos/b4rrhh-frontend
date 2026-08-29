@@ -40,7 +40,7 @@ describe('EmployeePresenceSectionComponent', () => {
   it('es la sección que gobierna, sin acción de añadir, y va anclada', () => {
     const fixture = render();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('gobierna · temporal');
+    expect(el.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('gobierna');
     expect(el.querySelector('.temporal-section__add-btn')).toBeNull();
     expect(el.querySelector('#employee-section-presence')).not.toBeNull();
     expect(el.querySelector('.temporal-section__empty')?.textContent).toContain('No hay presencias');
@@ -52,6 +52,11 @@ describe('EmployeePresenceSectionComponent', () => {
       { presenceNumber: 2, companyCode: 'ES01', entryReasonCode: 'HIRING', exitReasonCode: null, startDate: '2024-03-11', endDate: null, isActive: true },
     ]);
     const fixture = render();
+    // Lo cerrado nace plegado: se ve la etapa en vigor y un enlace con la historia.
+    expect(fixture.nativeElement.querySelectorAll('.temporal-section__row')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('.temporal-section__fold')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('1 periodo cerrado');
+    (fixture.nativeElement.querySelector('.temporal-section__fold') as HTMLElement).click();
+    fixture.detectChanges();
     const rows = Array.from(fixture.nativeElement.querySelectorAll('.temporal-section__row')) as HTMLElement[];
     expect(rows).toHaveLength(2);
     const first = rows[0].textContent!.replace(/\s+/g, ' ');

@@ -24,6 +24,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
       [governs]="governs()"
       [addLabel]="addLabel()"
       anchorId="employee-section-test"
+      [foldClosed]="foldClosed()"
       (addClicked)="adds = adds + 1"
       (editClicked)="editIdx = $event"
       (deleteClicked)="delIdx = $event"
@@ -38,6 +39,7 @@ class Host {
   readonly rows = signal<TestRow[]>([]);
   readonly governs = signal(false);
   readonly addLabel = signal<string | null>('+ Nuevo período');
+  readonly foldClosed = signal(false);
   adds = 0;
   editIdx: number | null = null;
   delIdx: number | null = null;
@@ -61,23 +63,43 @@ describe('TemporalSectionComponent', () => {
     expect(fix.nativeElement.querySelector('.temporal-section__empty')).toBeTruthy();
   });
 
-  it('lleva la marca del modo y el recuento, y el ancla en el anfitrión', () => {
+  it('no lleva marca de modo (todas serían iguales), sí el recuento y el ancla en el anfitrión', () => {
     const { fix } = createHost([row(), row({ startDate: '2022-01-01', endDate: '2023-12-31', isActive: false })]);
-    expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.trim()).toBe('temporal');
+    expect(fix.nativeElement.querySelector('.temporal-section__mode')).toBeNull();
     expect(fix.nativeElement.querySelector('.temporal-section__count')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
       '2 periodos · 1 en vigor',
     );
     expect(fix.nativeElement.querySelector('#employee-section-test')).toBeTruthy();
   });
 
-  it('la que gobierna lo dice', () => {
+  it('la que gobierna lo dice, y solo ella', () => {
     const { fix, host } = createHost([row()]);
     host.governs.set(true);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'gobierna · temporal',
-    );
+    expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.trim()).toBe('gobierna');
     expect(fix.nativeElement.querySelector('.temporal-section-host--governs')).toBeTruthy();
+  });
+
+  it('lo vigente manda: se ve siempre; lo cerrado se pliega por defecto tras «N periodos cerrados»', () => {
+    const { fix, host } = createHost([
+      row({ startDate: '2024-01-01', isActive: true }),
+      row({ startDate: '2022-01-01', endDate: '2023-12-31', isActive: false, canDelete: true }),
+      row({ startDate: '2020-01-01', endDate: '2021-12-31', isActive: false }),
+    ]);
+    host.foldClosed.set(true);
+    fix.detectChanges();
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(1);
+    expect(fix.nativeElement.querySelector('.temporal-section__row--active')).toBeTruthy();
+    const fold = fix.nativeElement.querySelector('.temporal-section__fold');
+    expect(fold?.textContent?.replace(/\s+/g, ' ').trim()).toBe('2 periodos cerrados');
+
+    fold.click();
+    fix.detectChanges();
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(3);
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row--closed').length).toBe(2);
+    // Borrar la cerrada emite su índice original, no el de la lista visible.
+    fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();
+    expect(host.delIdx).toBe(1);
   });
 
   it('sin etiqueta de añadir no hay acción de añadir', () => {

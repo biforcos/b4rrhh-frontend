@@ -32,6 +32,7 @@ import {
 } from '../../routing/employee-route-builder.util';
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
 import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
+import { EmployeeTodayStripComponent } from '../components/employee-today-strip.component';
 
 /**
  * La relación laboral en una sola página (ADR-051): la línea de vida arriba y, debajo, sus
@@ -45,6 +46,7 @@ import { EmployeeLifelineComponent } from '../components/employee-lifeline.compo
   selector: 'app-employee-relation-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    EmployeeTodayStripComponent,
     EmployeeLifelineComponent,
     EmployeePresenceSectionComponent,
     EmployeeContractSectionComponent,
@@ -85,6 +87,7 @@ export class EmployeeRelationPageComponent {
   protected readonly workingTimes = this.workingTimeStore.workingTimes;
   protected readonly laborClassifications = this.laborClassificationStore.laborClassifications;
   protected readonly workCenters = this.workCenterStore.workCenters;
+  protected readonly currentCostCenter = this.costCenterStore.currentDistribution;
   protected readonly lifelineLoading = computed(
     () => this.presenceStore.loading() || this.contractStore.loading(),
   );

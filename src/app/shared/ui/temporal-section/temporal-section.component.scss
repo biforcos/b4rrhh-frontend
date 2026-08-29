@@ -1,23 +1,24 @@
 /*
- * El contenedor de las secciones TEMPORAL_APPEND_CLOSE (ADR-051). Una caja, una cabecera, una
- * acción: todas las secciones de este modo se ven así. La que gobierna lleva el filo del acento.
+ * El contenedor de las secciones TEMPORAL_APPEND_CLOSE (ADR-051). Sin caja: una regla arriba y
+ * la cabecera bastan para separar (frontend#25). La caja se reserva para lo que tiene otro modo.
+ * La jerarquía viene de dentro: la fila en vigor pesa, las cerradas retroceden y se pliegan.
+ * La que gobierna lleva el filo del acento.
+ *
+ * Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor.
  */
-/* Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor. */
 app-temporal-section {
   display: block;
   scroll-margin-top: 16px;
 }
 
 .temporal-section {
-  background: var(--surface-panel);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px 12px;
+  padding: 14px 0 6px;
+  border-top: 1px solid var(--border-strong);
 }
 
 app-temporal-section.temporal-section-host--governs .temporal-section {
-  border-left: 3px solid var(--accent-primary);
-  padding-left: 14px;
+  border-top-width: 2px;
+  border-top-color: var(--accent-primary);
 }
 
 .temporal-section__header {
@@ -25,7 +26,7 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .temporal-section__heading {
@@ -42,14 +43,12 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   color: var(--text-primary);
 }
 
-/* La marca del modo: pequeña, en mayúsculas, la misma en todas. */
+/* La marca de la que gobierna: pequeña, en mayúsculas, y solo ella la lleva. */
 .temporal-section__mode {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-tertiary);
-  border: 1px solid var(--border-default);
   border-radius: 999px;
   padding: 1px 7px;
   white-space: nowrap;
@@ -57,7 +56,7 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
 
 .temporal-section__mode--governs {
   color: var(--accent-primary);
-  border-color: var(--accent-border);
+  border: 1px solid var(--accent-border);
   background: var(--surface-accent);
 }
 
@@ -68,23 +67,26 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   white-space: nowrap;
 }
 
+/* Añadir: un enlace discreto. La acción principal de la página está arriba, en la identidad. */
 .temporal-section__add-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--accent-muted);
-  color: var(--accent-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 5px 12px;
-  font-size: 13px;
+  gap: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0;
+  padding: 4px 6px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  border-radius: var(--radius-sm);
 }
 
-.temporal-section__add-btn:hover {
-  background: var(--surface-accent);
+.temporal-section__add-btn:hover,
+.temporal-section__add-btn:focus-visible {
+  color: var(--accent-primary);
+  background: var(--surface-hover);
 }
 
 .temporal-section__table {
@@ -97,8 +99,7 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   font-size: 11px;
   color: var(--text-tertiary);
   font-weight: 500;
-  padding: 8px 10px;
-  background: var(--surface-hover);
+  padding: 6px 10px;
   border-bottom: 1px solid var(--border-default);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -112,12 +113,23 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   border-bottom: 1px solid var(--surface-muted);
 }
 
+/* Lo vigente manda: pesa y lleva el filo del acento. */
 .temporal-section__row--active {
-  background: var(--success-bg);
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+.temporal-section__row--active .temporal-section__td {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Lo cerrado retrocede. */
+.temporal-section__row--closed .temporal-section__td {
+  color: var(--text-tertiary);
 }
 
 .temporal-section__td {
-  padding: 10px;
+  padding: 9px 10px;
   font-size: 13px;
   color: var(--text-secondary);
   vertical-align: middle;
@@ -137,12 +149,14 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   display: block;
   font-family: var(--font-mono);
   font-size: 11px;
+  font-weight: 400;
   color: var(--text-tertiary);
 }
 
 .temporal-section__secondary {
   color: var(--text-tertiary);
   font-size: 12px;
+  font-weight: 400;
 }
 
 .temporal-section__badge {
@@ -175,13 +189,13 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   justify-content: center;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
-  background: var(--surface-hover);
+  background: var(--surface-panel);
   color: var(--text-tertiary);
   cursor: pointer;
 }
 
 .temporal-section__icon-btn:hover {
-  background: var(--surface-muted);
+  background: var(--surface-hover);
   color: var(--text-primary);
 }
 
@@ -202,9 +216,34 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   font-weight: 600;
 }
 
+/* La historia, plegada: un enlace bajo la tabla. */
+.temporal-section__fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.temporal-section__fold:hover,
+.temporal-section__fold:focus-visible {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.temporal-section__fold-icon--open {
+  transform: rotate(180deg);
+}
+
 /* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */
 .temporal-section__empty {
   color: var(--text-soft);
   font-size: 13px;
-  padding: 12px 0 4px;
+  padding: 8px 0 4px;
 }

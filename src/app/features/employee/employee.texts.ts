@@ -196,6 +196,13 @@ export const employeeTexts = {
   payrollInputsDeleteSuccessMessage: 'Entrada eliminada correctamente.',
   payrollAreaLoadingMessage: 'Cargando entradas de nómina...',
   timelineTitle: 'Historial',
+  // --- La tira «Hoy» (frontend#25) ---
+  todayTitle: 'Hoy',
+  todaySinceLabel: 'desde',
+  todayHoursPerDayLabel: 'h/día',
+  todayAllocatedLabel: 'asignado',
+  todayNoneLabel: 'sin vigencia',
+  todayGoToLaneAction: 'Ir al carril',
   // --- La línea de vida (frontend#17) ---
   lifelineTitle: 'Línea de vida',
   lifelineLoadingMessage: 'Cargando la línea de vida…',

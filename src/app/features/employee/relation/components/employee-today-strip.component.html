@@ -1,0 +1,25 @@
+<section class="today" [attr.aria-label]="texts.todayTitle">
+  <h2 class="today__title">{{ texts.todayTitle }}</h2>
+  <dl class="today__grid">
+    @for (item of items(); track item.anchor) {
+      <div class="today__item" [class.today__item--empty]="item.value === null">
+        <dt class="today__label">
+          <b4-icon [name]="item.icon" [size]="16" />
+          {{ item.label }}
+        </dt>
+        <dd class="today__value">
+          @if (item.value; as value) {
+            <button type="button" class="today__link" [title]="texts.todayGoToLaneAction" (click)="select(item)">
+              {{ value }}
+            </button>
+            @if (item.secondary; as secondary) {
+              <span class="today__secondary">{{ secondary }}</span>
+            }
+          } @else {
+            <span class="today__none">{{ texts.todayNoneLabel }}</span>
+          }
+        </dd>
+      </div>
+    }
+  </dl>
+</section>

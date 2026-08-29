@@ -1,0 +1,86 @@
+/* La tira «Hoy»: el estado actual, sin caja; una regla la separa de la historia. */
+:host {
+  display: block;
+}
+
+.today {
+  padding: 4px 0 14px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.today__title {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.today__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.today__item {
+  min-width: 0;
+}
+
+.today__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.today__value {
+  margin: 2px 0 0;
+  min-width: 0;
+}
+
+/* El valor de hoy pesa: es lo que se viene a leer. */
+.today__link {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today__link:hover,
+.today__link:focus-visible {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.today__secondary {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today__none {
+  font-size: 15px;
+  color: var(--text-soft);
+}

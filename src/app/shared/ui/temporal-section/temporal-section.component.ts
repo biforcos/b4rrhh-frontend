@@ -8,6 +8,7 @@ import {
   computed,
   input,
   output,
+  signal,
 } from '@angular/core';
 
 import { formatDisplayDate } from '../../utils/local-date.util';
@@ -18,13 +19,17 @@ import { TemporalSectionRow } from './temporal-section-row.model';
  * El contenedor de una sección `TEMPORAL_APPEND_CLOSE` (ADR-010, ADR-016, ADR-051): una lista
  * de vigencias que se añaden por el final y se cierran, nunca se editan por dentro.
  *
- * Dos secciones con el mismo modo se ven iguales: al verla ya se sabe qué se puede hacer con
- * ella. Lo único que distingue a la presencia es la marca de que **gobierna** sobre las demás
- * (ADR-047: el cese la cierra la primera porque el resto valida su cobertura contra ella).
+ * Dos secciones con el mismo modo se ven iguales. La jerarquía no viene del modo —todas las
+ * secciones temporales lo comparten— sino de dentro (frontend#25, nota al ADR-051): **lo vigente
+ * manda sobre lo cerrado**. Las filas en vigor se ven siempre y pesan; las cerradas retroceden
+ * y, por defecto, se pliegan tras «N periodos cerrados».
  *
- * Las fechas van en formato local (`formatDisplayDate`). Lo que va en cada columna lo decide
- * la sección con `columnHeaders` y `cellContent`; la regla ADR-051 §4 —el código nunca va solo—
- * la cumple la sección con `.temporal-section__code` para el código junto al literal.
+ * Lo único que distingue a la presencia es la marca de que **gobierna** sobre las demás
+ * (ADR-047). No hay marca de «temporal»: si todas la llevaran, no distinguiría ninguna.
+ *
+ * Las fechas van en formato local. Lo que va en cada columna lo decide la sección con
+ * `columnHeaders` y `cellContent`; la regla ADR-051 §4 —el código nunca va solo— la cumple la
+ * sección con `.temporal-section__code` para el código junto al literal.
  */
 @Component({
   selector: 'app-temporal-section',
@@ -51,6 +56,8 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly governs = input(false);
   /** Id del elemento anfitrión, para las anclas del índice (`employee-section-…`). */
   readonly anchorId = input<string | null>(null);
+  /** Las filas cerradas se pliegan por defecto: la historia es la excepción. */
+  readonly foldClosed = input(true);
 
   readonly addClicked = output<void>();
   readonly editClicked = output<number>();
@@ -62,8 +69,25 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
     index: number;
   }> | null = null;
 
+  protected readonly closedShown = signal(false);
+
   protected readonly count = computed(() => this.rows().length);
   protected readonly activeCount = computed(() => this.rows().filter((row) => row.isActive).length);
+  protected readonly closedCount = computed(() => this.count() - this.activeCount());
+  protected readonly closedFolded = computed(
+    () => this.foldClosed() && !this.closedShown() && this.closedCount() > 0,
+  );
+
+  /** Las filas que se ven, con su índice original para que editar y borrar sigan apuntando bien. */
+  protected readonly visibleRows = computed(() =>
+    this.rows()
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => row.isActive || !this.closedFolded()),
+  );
+
+  protected toggleClosed(): void {
+    this.closedShown.update((shown) => !shown);
+  }
 
   protected formatPeriod(row: T): string {
     const start = formatDisplayDate(row.startDate);
