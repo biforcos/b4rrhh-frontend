@@ -336,7 +336,7 @@ const MAX_VISIBLE = 4;
         background: #e0f2fe;
       }
 
-      .toast--info .toast__icon-shell .pi {
+      .toast--info .toast__icon-shell b4-icon {
         color: #0284c7;
       }
 

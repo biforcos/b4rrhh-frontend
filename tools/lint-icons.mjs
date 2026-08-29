@@ -13,7 +13,11 @@ import { join, relative, sep } from 'node:path';
 const ROOT = join(import.meta.dirname, '..', 'src');
 const EXCLUDED_DIRS = new Set(['generated']);
 const EXTENSIONS = new Set(['.ts', '.html', '.scss', '.css']);
-const PRIMEICON = /\bpi pi-[a-z]|(?<![\w-])pi-[a-z][a-z-]*(?![\w-])/;
+// Tambien la clase base `.pi` a secas —que es la que lleva el font-family— y el
+// nombre del paquete: sin esto el candado da verde con un `.toast .pi { color }`
+// huerfano dentro, que es justo como se colo uno al migrar los toasts.
+const PRIMEICON =
+  /\bpi pi-[a-z]|(?<![\w-])pi-[a-z][a-z-]*(?![\w-])|(?<![\w-])\.pi(?![\w-])|primeicons/;
 
 function* walk(dir) {
   for (const entry of readdirSync(dir)) {
