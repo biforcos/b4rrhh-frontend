@@ -34,11 +34,12 @@ describe('RuleSystemScopeStore', () => {
     expect(store.selectable()).toBe(false);
   });
 
-  it('con varios, van por código, el ámbito es el primero y se puede elegir otro, que queda recordado', () => {
+  it('con varios, van por código y el ámbito es el primero; elegir otro lo recuerda aunque el desplegable no se ofrezca todavía', () => {
     const store = setup([PRT, ESP]);
 
     expect(store.items().map((item) => item.code)).toEqual(['ESP', 'PRT']);
-    expect(store.selectable()).toBe(true);
+    // Inerte hasta la fase 5: hay varios, pero no se ofrece elegir (ver el store).
+    expect(store.selectable()).toBe(false);
     expect(store.activeCode()).toBe('ESP');
 
     store.select('PRT');

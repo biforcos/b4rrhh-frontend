@@ -32,7 +32,7 @@ export const appTexts = {
   demoRolesLabel: 'Permisos:',
   // --- Ámbito (el sistema de reglas activo, ADR-049) ---
   scopeLabel: 'Ámbito',
-  scopeSingleHint: 'Único sistema de reglas activo',
+  scopeSingleHint: 'El ámbito todavía no se puede cambiar: ninguna pantalla lo consume',
   scopeUnavailable: 'Sin ámbito',
 
   // --- Navegación: los cuatro grupos (ADR-049) ---

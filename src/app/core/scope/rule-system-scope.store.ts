@@ -38,8 +38,21 @@ export class RuleSystemScopeStore {
   readonly active = computed(
     () => this.itemsState().find((item) => item.code === this.activeCodeState()) ?? null,
   );
-  /** Con un solo sistema no hay nada que elegir: el ámbito se muestra apagado, sin desplegable. */
-  readonly selectable = computed(() => this.itemsState().length > 1);
+  /**
+   * Mientras ninguna pantalla consuma el ámbito, cambiarlo no cambiaría nada: la aplicación
+   * seguiría mostrando los datos del sistema anterior bajo el rótulo del nuevo. Un control que
+   * miente es peor que no tener control, así que hasta la fase 5 (frontend#13) el ámbito se
+   * muestra pero no se elige. Al conectarlo, esta constante pasa a `true` y nada más cambia.
+   */
+  private static readonly SWITCHING_ENABLED = false;
+
+  /**
+   * Con un solo sistema no hay nada que elegir, y hasta la fase 5 tampoco con varios: el ámbito
+   * se muestra apagado, sin desplegable.
+   */
+  readonly selectable = computed(
+    () => RuleSystemScopeStore.SWITCHING_ENABLED && this.itemsState().length > 1,
+  );
 
   load(): void {
     this.loadingState.set(true);
