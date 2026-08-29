@@ -1,6 +1,6 @@
 <div class="working-time-section">
-  <app-period-table
-    sectionTitle="Jornada"
+  <app-temporal-section
+    title="Jornada"
     [rows]="rows()"
     (addClicked)="openCreate()"
     (editClicked)="openEdit($event)"
@@ -15,7 +15,7 @@
         <span class="working-time-section__sub">({{ row.dailyHours }} h/día)</span>
       </td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalTitle()"

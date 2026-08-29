@@ -19,14 +19,14 @@ import { EmployeeContractCatalogItemModel } from '../../models/employee-contract
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
-import { PeriodTableComponent } from '../../shared/ui/period-table/period-table.component';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
-import { PeriodTableRow } from '../../shared/ui/period-table/period-table.model';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type ContractModalMode = 'create' | 'edit' | 'close';
 
-interface ContractPeriodRow extends PeriodTableRow {
+interface ContractPeriodRow extends TemporalSectionRow {
   contractCode: string;
   contractSubtypeCode: string | null;
 }
@@ -34,7 +34,7 @@ interface ContractPeriodRow extends PeriodTableRow {
 @Component({
   selector: 'app-employee-contract-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PeriodTableComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-contract-section.component.html',
   styleUrl: './employee-contract-section.component.scss',
 })

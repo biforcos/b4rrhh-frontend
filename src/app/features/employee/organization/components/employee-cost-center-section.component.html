@@ -1,6 +1,6 @@
 <div class="cost-center-section">
-  <app-period-table
-    sectionTitle="Centro de coste"
+  <app-temporal-section
+    title="Centro de coste"
     addLabel="+ Nueva distribución"
     [rows]="rows()"
     (addClicked)="openNewDistribution()"
@@ -17,7 +17,7 @@
         {{ row.totalPercentage }}%
       </td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalMode() === 'close' ? 'Cerrar distribución de coste' : 'Nueva distribución de coste'"

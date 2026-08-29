@@ -1,6 +1,6 @@
 <div class="labor-classification-section">
-  <app-period-table
-    sectionTitle="Convenio"
+  <app-temporal-section
+    title="Convenio"
     [rows]="rows()"
     (addClicked)="openCreate()"
     (editClicked)="openEdit($event)"
@@ -19,7 +19,7 @@
         {{ row.grupoCotizacionCode || '—' }}
       </td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalTitle()"

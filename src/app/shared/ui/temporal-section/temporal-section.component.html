@@ -1,0 +1,89 @@
+<section class="temporal-section" [attr.aria-label]="title()">
+  <header class="temporal-section__header">
+    <div class="temporal-section__heading">
+      <h3 class="temporal-section__title">{{ title() }}</h3>
+      <!-- La marca del modo: es lo que dice qué se puede hacer con la sección antes de leerla. -->
+      <span class="temporal-section__mode" [class.temporal-section__mode--governs]="governs()">
+        @if (governs()) {
+          gobierna ·
+        }
+        temporal
+      </span>
+      @if (count() > 0) {
+        <span class="temporal-section__count">
+          {{ count() }} {{ count() === 1 ? 'periodo' : 'periodos' }}
+          @if (activeCount() > 0) {
+            · {{ activeCount() }} en vigor
+          }
+        </span>
+      }
+    </div>
+    @if (addLabel(); as label) {
+      <button type="button" class="temporal-section__add-btn" (click)="addClicked.emit()">
+        <b4-icon name="anadir" [size]="16" />
+        {{ label }}
+      </button>
+    }
+  </header>
+
+  @if (rows().length === 0) {
+    <p class="temporal-section__empty">{{ emptyMessage() }}</p>
+  } @else {
+    <table class="temporal-section__table">
+      <thead>
+        <tr>
+          <th class="temporal-section__th">Período</th>
+          @if (columnHeadersTemplate) {
+            <ng-container [ngTemplateOutlet]="columnHeadersTemplate" />
+          }
+          <th class="temporal-section__th">Estado</th>
+          <th class="temporal-section__th temporal-section__th--actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.startDate) {
+          <tr class="temporal-section__row" [class.temporal-section__row--active]="row.isActive">
+            <td class="temporal-section__td temporal-section__td--period">{{ formatPeriod(row) }}</td>
+            @if (cellContentTemplate) {
+              <ng-container
+                [ngTemplateOutlet]="cellContentTemplate"
+                [ngTemplateOutletContext]="{ $implicit: row, index: $index }"
+              />
+            }
+            <td class="temporal-section__td">
+              <span class="temporal-section__badge" [class.temporal-section__badge--active]="row.isActive">
+                {{ row.isActive ? 'Vigente' : 'Cerrado' }}
+              </span>
+            </td>
+            <td class="temporal-section__td temporal-section__td--actions">
+              <div class="temporal-section__actions">
+                @if (showEdit(row)) {
+                  <button
+                    type="button"
+                    class="temporal-section__icon-btn"
+                    [attr.aria-label]="editLabel(row)"
+                    [title]="editLabel(row)"
+                    (click)="editClicked.emit($index)"
+                  >
+                    <b4-icon name="editar" [size]="16" />
+                  </button>
+                }
+                @if (showDelete(row)) {
+                  <button
+                    type="button"
+                    class="temporal-section__icon-btn temporal-section__icon-btn--danger"
+                    [attr.aria-label]="deleteLabel(row)"
+                    [title]="deleteLabel(row)"
+                    (click)="deleteClicked.emit($index)"
+                  >
+                    <b4-icon name="cerrar" [size]="16" />
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

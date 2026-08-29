@@ -11,14 +11,14 @@ import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeWorkCenterModel } from '../../models/employee-work-center.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
-import { PeriodTableComponent } from '../../shared/ui/period-table/period-table.component';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
-import { PeriodTableRow } from '../../shared/ui/period-table/period-table.model';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type WorkCenterModalMode = 'create' | 'edit' | 'close';
 
-interface WorkCenterPeriodRow extends PeriodTableRow {
+interface WorkCenterPeriodRow extends TemporalSectionRow {
   assignmentNumber: number;
   workCenterCode: string;
   workCenterName: string | null;
@@ -27,7 +27,7 @@ interface WorkCenterPeriodRow extends PeriodTableRow {
 @Component({
   selector: 'app-employee-work-center-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PeriodTableComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-work-center-section.component.html',
   styleUrl: './employee-work-center-section.component.scss',
 })

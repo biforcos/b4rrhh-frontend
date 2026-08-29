@@ -1,6 +1,6 @@
 <div class="tax-information-section">
-  <app-period-table
-    sectionTitle="Información Fiscal (Modelo 145)"
+  <app-temporal-section
+    title="Información Fiscal (Modelo 145)"
     [rows]="rows()"
     emptyMessage="Sin información fiscal registrada. Se aplican valores por defecto (soltero/a, sin cargas, territorio común)."
     (addClicked)="openCreate()"
@@ -19,7 +19,7 @@
       <td>{{ row.ascendantsCount }}</td>
       <td>{{ row.disabilityDegree }}</td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalTitle()"

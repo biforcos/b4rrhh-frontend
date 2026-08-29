@@ -9,16 +9,16 @@ import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.mod
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center.model';
-import { PeriodTableComponent } from '../../shared/ui/period-table/period-table.component';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
-import { PeriodTableRow } from '../../shared/ui/period-table/period-table.model';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { EmployeeCostCenterDistributionEditorComponent } from './employee-cost-center-distribution-editor.component';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type CostCenterModalMode = 'replace' | 'close';
 
-interface CostCenterPeriodRow extends PeriodTableRow {
+interface CostCenterPeriodRow extends TemporalSectionRow {
   window: EmployeeCostCenterWindowModel;
   totalPercentage: number;
   itemsSummary: string;
@@ -27,7 +27,7 @@ interface CostCenterPeriodRow extends PeriodTableRow {
 @Component({
   selector: 'app-employee-cost-center-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PeriodTableComponent, PeriodModalComponent, EmployeeCostCenterDistributionEditorComponent, UiDateInputComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, EmployeeCostCenterDistributionEditorComponent, UiDateInputComponent],
   templateUrl: './employee-cost-center-section.component.html',
   styleUrl: './employee-cost-center-section.component.scss',
 })

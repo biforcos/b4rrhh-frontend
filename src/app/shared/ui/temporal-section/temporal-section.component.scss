@@ -1,0 +1,198 @@
+/*
+ * El contenedor de las secciones TEMPORAL_APPEND_CLOSE (ADR-051). Una caja, una cabecera, una
+ * acción: todas las secciones de este modo se ven así. La que gobierna lleva el filo del acento.
+ */
+:host {
+  display: block;
+  scroll-margin-top: 16px;
+}
+
+.temporal-section {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px 12px;
+}
+
+:host(.temporal-section-host--governs) .temporal-section {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 14px;
+}
+
+.temporal-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.temporal-section__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.temporal-section__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* La marca del modo: pequeña, en mayúsculas, la misma en todas. */
+.temporal-section__mode {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+.temporal-section__mode--governs {
+  color: var(--accent-primary);
+  border-color: var(--accent-border);
+  background: var(--surface-accent);
+}
+
+.temporal-section__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.temporal-section__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-muted);
+  color: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.temporal-section__add-btn:hover {
+  background: var(--surface-accent);
+}
+
+.temporal-section__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.temporal-section__th {
+  text-align: left;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  padding: 8px 10px;
+  background: var(--surface-hover);
+  border-bottom: 1px solid var(--border-default);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.temporal-section__th--actions {
+  width: 80px;
+}
+
+.temporal-section__row {
+  border-bottom: 1px solid var(--surface-muted);
+}
+
+.temporal-section__row--active {
+  background: var(--success-bg);
+}
+
+.temporal-section__td {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.temporal-section__td--period {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.temporal-section__td--actions {
+  width: 80px;
+}
+
+/* ADR-051 §4: el código nunca va solo. El literal delante; el código detrás, en gris y monoespaciada. */
+.temporal-section__code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.temporal-section__secondary {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.temporal-section__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.temporal-section__badge--active {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.temporal-section__actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.temporal-section__icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.temporal-section__icon-btn:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.temporal-section__icon-btn--danger:hover {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+/* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */
+.temporal-section__empty {
+  color: var(--text-soft);
+  font-size: 13px;
+  padding: 12px 0 4px;
+}

@@ -15,14 +15,14 @@ import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeWorkingTimeModel } from '../../models/employee-working-time.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiInputNumberComponent } from '../../../../shared/ui/input-number/ui-input-number.component';
-import { PeriodTableComponent } from '../../shared/ui/period-table/period-table.component';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
-import { PeriodTableRow } from '../../shared/ui/period-table/period-table.model';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type WorkingTimeModalMode = 'create' | 'edit' | 'close';
 
-interface WorkingTimePeriodRow extends PeriodTableRow {
+interface WorkingTimePeriodRow extends TemporalSectionRow {
   workingTimeNumber: number;
   workingTimePercentage: number;
   weeklyHours: number;
@@ -33,7 +33,7 @@ interface WorkingTimePeriodRow extends PeriodTableRow {
   selector: 'app-employee-working-time-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    PeriodTableComponent,
+    TemporalSectionComponent,
     PeriodModalComponent,
     UiDateInputComponent,
     UiInputNumberComponent,

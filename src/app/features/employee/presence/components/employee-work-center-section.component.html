@@ -1,6 +1,6 @@
 <div class="work-center-section">
-  <app-period-table
-    sectionTitle="Centro de trabajo"
+  <app-temporal-section
+    title="Centro de trabajo"
     [rows]="rows()"
     (addClicked)="openCreate()"
     (editClicked)="openEdit($event)"
@@ -10,7 +10,7 @@
     <ng-template #cellContent let-row>
       <td>{{ row.workCenterName || row.workCenterCode }}</td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalTitle()"

@@ -69,7 +69,7 @@ describe('EmployeeContractSectionComponent', () => {
   });
 
   it('renders period-table with add button', () => {
-    expect(fix.nativeElement.querySelector('.period-table__add-btn')).toBeTruthy();
+    expect(fix.nativeElement.querySelector('.temporal-section__add-btn')).toBeTruthy();
   });
 
   it('shows a row per contract', () => {
@@ -83,11 +83,11 @@ describe('EmployeeContractSectionComponent', () => {
       },
     ]);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelectorAll('.period-table__row').length).toBe(1);
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(1);
   });
 
   it('opens create modal on add click', () => {
-    fix.nativeElement.querySelector('.period-table__add-btn').click();
+    fix.nativeElement.querySelector('.temporal-section__add-btn').click();
     fix.detectChanges();
     const component = fix.componentInstance as any;
     expect(component.modalVisible()).toBe(true);

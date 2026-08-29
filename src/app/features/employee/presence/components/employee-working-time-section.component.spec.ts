@@ -38,7 +38,7 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
   });
 
   it('renders period-table with add button', () => {
-    expect(fix.nativeElement.querySelector('.period-table__add-btn')).toBeTruthy();
+    expect(fix.nativeElement.querySelector('.temporal-section__add-btn')).toBeTruthy();
   });
 
   it('shows a row per working time', () => {
@@ -55,11 +55,11 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
       },
     ]);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelectorAll('.period-table__row').length).toBe(1);
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(1);
   });
 
   it('opens create modal on add click', () => {
-    fix.nativeElement.querySelector('.period-table__add-btn').click();
+    fix.nativeElement.querySelector('.temporal-section__add-btn').click();
     fix.detectChanges();
     const c = fix.componentInstance as any;
     expect(c.modalVisible()).toBe(true);
@@ -148,12 +148,12 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
       },
     ]);
     fix.detectChanges();
-    const editBtns = fix.nativeElement.querySelectorAll('.period-table__icon-btn');
+    const editBtns = fix.nativeElement.querySelectorAll('.temporal-section__icon-btn');
     expect(editBtns.length).toBe(1);
   });
 
   it('closes modal when store signals success', async () => {
-    fix.nativeElement.querySelector('.period-table__add-btn').click();
+    fix.nativeElement.querySelector('.temporal-section__add-btn').click();
     fix.detectChanges();
     const c = fix.componentInstance as any;
     expect(c.modalVisible()).toBe(true);

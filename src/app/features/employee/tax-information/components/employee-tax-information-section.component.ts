@@ -15,9 +15,9 @@ import {
 } from '../../../../core/api/clients/employee-tax-information.client';
 import { EmployeeTaxInformationStore } from '../../data-access/employee-tax-information.store';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
-import { PeriodTableComponent } from '../../shared/ui/period-table/period-table.component';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
-import { PeriodTableRow } from '../../shared/ui/period-table/period-table.model';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
@@ -25,7 +25,7 @@ import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type TaxInfoModalMode = 'create' | 'edit' | 'delete-confirm';
 
-interface TaxInfoPeriodRow extends PeriodTableRow {
+interface TaxInfoPeriodRow extends TemporalSectionRow {
   familySituation: string;
   descendantsCount: number;
   ascendantsCount: number;
@@ -60,7 +60,7 @@ const BOOLEAN_OPTIONS: ReadonlyArray<SlotKeyOption<string>> = [
 @Component({
   selector: 'app-employee-tax-information-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PeriodTableComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-tax-information-section.component.html',
   styleUrl: './employee-tax-information-section.component.scss',
 })

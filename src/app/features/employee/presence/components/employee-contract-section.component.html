@@ -1,6 +1,6 @@
 <div class="contract-section">
-  <app-period-table
-    sectionTitle="Contrato"
+  <app-temporal-section
+    title="Contrato"
     [rows]="rows()"
     (addClicked)="openCreate()"
     (editClicked)="openEdit($event)"
@@ -15,7 +15,7 @@
         {{ row.contractSubtypeCode || '—' }}
       </td>
     </ng-template>
-  </app-period-table>
+  </app-temporal-section>
 
   <app-period-modal
     [title]="modalTitle()"
