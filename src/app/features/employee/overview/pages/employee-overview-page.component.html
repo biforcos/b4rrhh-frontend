@@ -62,7 +62,7 @@
       } @else {
         <span class="employee-overview__card-value">{{ contractCard().typeName ?? '—' }}</span>
         @if (contractCard().startDate) {
-          <span class="employee-overview__card-sub">Desde {{ contractCard().startDate | date:'dd/MM/yyyy' }}</span>
+          <span class="employee-overview__card-sub">Desde {{ contractCard().startDate | date: displayDateFormat }}</span>
         }
       }
       <span class="employee-overview__card-arrow" aria-hidden="true">›</span>

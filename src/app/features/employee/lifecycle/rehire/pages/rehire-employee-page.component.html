@@ -113,7 +113,7 @@
       </div>
       <div class="rehire-summary-row">
         <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryDateLabel }}</span>
-        <span>{{ formatDisplayDate(result.rehireDate) }}</span>
+        <span>{{ result.rehireDate | date: displayDateFormat }}</span>
       </div>
 
       @if (result.newWorkingTime; as workingTime) {
@@ -124,7 +124,7 @@
             {{ formatHours(workingTime.weeklyHours) }}h/semana · {{ formatHours(workingTime.dailyHours) }}h/día ·
             {{ formatHours(workingTime.monthlyHours) }}h/mes
           </p>
-          <p>{{ texts.rehireEmployeeSummarySincePrefix }} {{ formatDisplayDate(workingTime.startDate) }}</p>
+          <p>{{ texts.rehireEmployeeSummarySincePrefix }} {{ workingTime.startDate | date: displayDateFormat }}</p>
         </div>
       }
     </section>

@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 import { companyTexts } from '../company.texts';
@@ -6,12 +7,13 @@ import { CompanyBusinessKey } from '../models/company-ui-state.model';
 import { MasterListPanelComponent } from '../../../shared/ui/master-list-panel/master-list-panel.component';
 import { ListItemComponent } from '../../../shared/ui/list-item/list-item.component';
 import { UiTagComponent } from '../../../shared/ui/tag/ui-tag.component';
+import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 
 @Component({
   selector: 'app-company-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [MasterListPanelComponent, ListItemComponent, UiTagComponent],
+  imports: [DatePipe, MasterListPanelComponent, ListItemComponent, UiTagComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -25,6 +27,7 @@ export class CompanyListComponent {
   readonly newRequested = output<void>();
 
   protected readonly texts = companyTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly searchValue = signal('');
   protected readonly selectedListKey = computed(() => {
     const key = this.selectedKey();

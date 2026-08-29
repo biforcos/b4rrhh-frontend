@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { formatDisplayDate, formatLongDisplayDate } from '../../../../shared/utils/local-date.util';
+
 export interface EmployeePrintData {
   fullName: string;
   employeeNumber: string;
@@ -41,12 +43,7 @@ export class EmployeePdfService {
   }
 
   private buildHtml(d: EmployeePrintData): string {
-    const now = new Date();
-    const today = now.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
+    const today = formatLongDisplayDate(new Date());
     const initials = this.initials(d.fullName);
     const yearsOfService = this.computeYears(d.hireDate);
     const isActive = d.isActive;
@@ -59,11 +56,7 @@ export class EmployeePdfService {
       ? 'linear-gradient(135deg, #3730a3 0%, #4f46e5 45%, #4f46e5 100%)'
       : 'linear-gradient(135deg, #334155 0%, #475569 45%, #64748b 100%)';
 
-    const fmtDate = (iso: string | null) => {
-      if (!iso) return '—';
-      const [y, m, day] = iso.split('-');
-      return `${day}/${m}/${y}`;
-    };
+    const fmtDate = (iso: string | null) => (iso ? formatDisplayDate(iso) : '—');
 
     const val = (v: string | null | undefined) => this.esc(v?.trim() || '—');
 

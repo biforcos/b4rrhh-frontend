@@ -267,7 +267,7 @@
             </div>
             <div class="hire-summary__row">
               <span class="hire-summary__label">{{ texts.hireEmployeeSummaryHireDateLabel }}</span>
-              <span>{{ formatDisplayDate(result.hireDate) }}</span>
+              <span>{{ result.hireDate | date: displayDateFormat }}</span>
             </div>
           </div>
 
@@ -279,7 +279,7 @@
                 {{ formatHours(workingTime.weeklyHours) }}h/semana · {{ formatHours(workingTime.dailyHours) }}h/día ·
                 {{ formatHours(workingTime.monthlyHours) }}h/mes
               </p>
-              <p>{{ texts.hireEmployeeSummarySincePrefix }} {{ formatDisplayDate(workingTime.startDate) }}</p>
+              <p>{{ texts.hireEmployeeSummarySincePrefix }} {{ workingTime.startDate | date: displayDateFormat }}</p>
             </div>
           }
         </p-card>

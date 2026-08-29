@@ -46,7 +46,7 @@
         }
         <div class="company-list__meta-item company-list__meta-item--full">
           <dt>{{ texts.listMetaStartDateLabel }}</dt>
-          <dd>{{ company.startDate }}</dd>
+          <dd>{{ company.startDate | date: displayDateFormat }}</dd>
         </div>
       </dl>
     </app-list-item>

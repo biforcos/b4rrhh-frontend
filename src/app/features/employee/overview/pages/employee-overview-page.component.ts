@@ -28,6 +28,7 @@ import { EmployeeCostCenterStore } from '../../data-access/employee-cost-center.
 import { EmployeeTaxInformationStore } from '../../data-access/employee-tax-information.store';
 import { EmployeeJourneyStore } from '../../data-access/employee-journey.store';
 import { employeeTexts } from '../../employee.texts';
+import { DISPLAY_DATE_FORMAT } from '../../../../shared/utils/local-date.util';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { EmployeeContractModel } from '../../models/employee-contract.model';
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
@@ -60,6 +61,7 @@ export class EmployeeOverviewPageComponent {
 
   protected readonly actionsMenuRef = viewChild<Menu>('actionsMenu');
   protected readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
 
   protected readonly activeEmployeeKey = toSignal(
     this.route.paramMap.pipe(map((params) => readEmployeeBusinessKeyFromParamMap(params))),

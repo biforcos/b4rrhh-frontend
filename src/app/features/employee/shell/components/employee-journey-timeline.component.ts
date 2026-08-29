@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
 import { EmployeeJourneyErrorCode } from '../../data-access/employee-journey.store';
@@ -8,6 +9,7 @@ import {
   EmployeeJourneyModel,
 } from '../../models/employee-journey.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
+import { DISPLAY_DATE_FORMAT, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 interface JourneyDetailEntryViewModel {
   id: string;
@@ -72,6 +74,7 @@ const compactEventLabelByTrackCode: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-employee-journey-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DatePipe],
   templateUrl: './employee-journey-timeline.component.html',
   styleUrls: ['./employee-journey-timeline.component.scss'],
 })
@@ -84,6 +87,7 @@ export class EmployeeJourneyTimelineComponent {
   protected readonly expandedPresences = signal<Record<string, boolean>>({});
 
   protected readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly groupedTimelineEvents = computed<ReadonlyArray<GroupedJourneyEventViewModel>>(() =>
     this.groupEventsByDate(this.journey()?.events ?? []),
   );
@@ -126,7 +130,7 @@ export class EmployeeJourneyTimelineComponent {
       return `${totalEvents} ${eventsLabel}`;
     }
 
-    return `${totalEvents} ${eventsLabel} · ${this.texts.timelineLastEventLabel}: ${summary.latestEventLabel} (${summary.latestEventDate})`;
+    return `${totalEvents} ${eventsLabel} · ${this.texts.timelineLastEventLabel}: ${summary.latestEventLabel} (${formatDisplayDate(summary.latestEventDate)})`;
   });
   protected readonly toggleAriaLabel = computed(() =>
     this.isExpanded() ? this.texts.timelineCollapseActionLabel : this.texts.timelineExpandActionLabel,

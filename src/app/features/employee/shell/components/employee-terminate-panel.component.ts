@@ -15,7 +15,7 @@ import { TerminateEmployeeResponse } from '../../../../core/api/generated/model/
 import { BASE_PATH } from '../../../../core/api/generated/variables';
 import { PanelComponent } from '../../../../shared/ui/panel/panel.component';
 import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
-import { parseLocalDate } from '../../../../shared/utils/local-date.util';
+import { DISPLAY_DATE_FORMAT } from '../../../../shared/utils/local-date.util';
 import { employeeTexts } from '../../employee.texts';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 
@@ -55,7 +55,7 @@ import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.mod
           <div class="employee-terminate__summary-grid">
             <div class="employee-terminate__summary-row">
               <span class="employee-terminate__summary-label">{{ texts.terminatePanelSummaryDateLabel }}</span>
-              <span>{{ formatDisplayDate(result.terminationDate) }}</span>
+              <span>{{ result.terminationDate | date: displayDateFormat }}</span>
             </div>
             <div class="employee-terminate__summary-row">
               <span class="employee-terminate__summary-label">{{ texts.terminatePanelSummaryReasonLabel }}</span>
@@ -72,7 +72,7 @@ import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.mod
               <h4 class="employee-terminate__working-time-title">{{ texts.terminatePanelSummaryWorkingTimeTitle }}</h4>
               <p class="employee-terminate__working-time-primary">{{ formatHours(closedWorkingTime.workingTimePercentage) }}% jornada</p>
               <p>{{ formatHours(closedWorkingTime.weeklyHours) }}h/semana · {{ formatHours(closedWorkingTime.dailyHours) }}h/día · {{ formatHours(closedWorkingTime.monthlyHours) }}h/mes</p>
-              <p>{{ formatDisplayDate(closedWorkingTime.startDate) }} → {{ formatDisplayDate(closedWorkingTime.endDate) }}</p>
+              <p>{{ closedWorkingTime.startDate | date: displayDateFormat }} → {{ closedWorkingTime.endDate | date: displayDateFormat }}</p>
             </div>
           }
         </p-card>
@@ -96,6 +96,7 @@ export class EmployeeTerminatePanelComponent {
   private static readonly GLOBAL_FEEDBACK_SOURCE_KEY = 'employee-terminate-panel';
 
   protected readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   /** Single required business key input. The panel expects a populated key when opened. */
   readonly employeeKey = input<import('../../models/employee-business-key.model').EmployeeBusinessKey | undefined>(undefined);
   readonly closed = output<void>();
@@ -256,10 +257,6 @@ export class EmployeeTerminatePanelComponent {
         }
       },
     });
-  }
-
-  protected formatDisplayDate(value: string): string {
-    return parseLocalDate(value)?.toLocaleDateString('es-ES') ?? value;
   }
 
   protected formatHours(value: number): string {

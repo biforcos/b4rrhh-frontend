@@ -31,7 +31,7 @@
             >{{ node.icon }}</div>
             <div class="ht__event-stub" [style.backgroundColor]="node.color"></div>
             <div class="ht__event-card">
-              <span class="ht__event-date">{{ node.date }}</span>
+              <span class="ht__event-date">{{ node.date | date: displayDateFormat }}</span>
               @for (ev of node.events; track ev.title) {
                 <div class="ht__event-entry" [style.borderLeftColor]="ev.color">
                   <span class="ht__event-title">{{ ev.title }}</span>
@@ -53,7 +53,7 @@
             >{{ node.icon }}</div>
             <div class="ht__event-stub" [style.backgroundColor]="node.color"></div>
             <div class="ht__event-card">
-              <span class="ht__event-date">{{ node.date }}</span>
+              <span class="ht__event-date">{{ node.date | date: displayDateFormat }}</span>
               @for (ev of node.events; track ev.title) {
                 <div class="ht__event-entry" [style.borderLeftColor]="ev.color">
                   <span class="ht__event-title">{{ ev.title }}</span>

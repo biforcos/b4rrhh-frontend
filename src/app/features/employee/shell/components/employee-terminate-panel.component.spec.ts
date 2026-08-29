@@ -93,7 +93,7 @@ describe('EmployeeTerminatePanelComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
 
     expect(root.textContent).toContain(employeeTexts.terminatePanelSummaryTitle);
-    expect(root.textContent).toContain('31/3/2026');
+    expect(root.textContent).toContain('31/03/2026');
     expect(root.textContent).toContain('Voluntaria');
     expect(root.textContent).toContain(employeeTexts.employeeStatusInactiveLabel);
     expect(root.textContent).not.toContain('TERMINATED');
@@ -129,7 +129,7 @@ describe('EmployeeTerminatePanelComponent', () => {
     expect(text).toContain(employeeTexts.terminatePanelSummaryWorkingTimeTitle);
     expect(text).toContain('75% jornada');
     expect(text).toContain('30h/semana · 6h/día · 130h/mes');
-    expect(text).toContain('1/1/2026 → 31/3/2026');
+    expect(text).toContain('01/01/2026 → 31/03/2026');
   });
 
   it('does not render working time block when closedWorkingTime is null', () => {

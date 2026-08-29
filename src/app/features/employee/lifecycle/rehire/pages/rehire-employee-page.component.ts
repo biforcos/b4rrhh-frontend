@@ -22,7 +22,7 @@ import { RehireEmployeeDraft } from '../../../models/employee-rehire.model';
 import { readEmployeeBusinessKeyFromParamMap } from '../../../routing/employee-route-key.util';
 import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
 import { buildWorkingTimePreview, formatWorkingTimeHours } from '../../../shared/utils/working-time-preview.util';
-import { parseLocalDate } from '../../../../../shared/utils/local-date.util';
+import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 
 @Component({
   selector: 'app-rehire-employee-page',
@@ -55,6 +55,7 @@ export class RehireEmployeePageComponent {
   private readonly globalMessageService = inject(GlobalMessageService);
 
   readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
 
   readonly form = this.fb.group({
     rehireDate: [new Date(), Validators.required],
@@ -262,15 +263,6 @@ export class RehireEmployeePageComponent {
 
   protected formatHours(value: number): string {
     return formatWorkingTimeHours(value);
-  }
-
-  protected formatDisplayDate(value: string): string {
-    const parsed = parseLocalDate(value);
-    if (!parsed) {
-      return value;
-    }
-
-    return new Intl.DateTimeFormat('es-ES').format(parsed);
   }
 
   protected formatStatusLabel(status: string): string {

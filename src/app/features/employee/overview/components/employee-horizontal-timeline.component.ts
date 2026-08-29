@@ -7,7 +7,9 @@ import {
   input,
   viewChild,
 } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
+import { DISPLAY_DATE_FORMAT, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import { EmployeeJourneyErrorCode } from '../../data-access/employee-journey.store';
 import {
   EmployeeJourneyEventModel,
@@ -113,15 +115,10 @@ function todayIsoString(): string {
   return `${y}-${m}-${day}`;
 }
 
-function formatDisplayDate(iso: string): string {
-  if (!iso || iso.length < 10) return iso;
-  const [y, m, d] = iso.slice(0, 10).split('-');
-  return `${d}/${m}/${y}`;
-}
-
 @Component({
   selector: 'app-employee-horizontal-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DatePipe],
   templateUrl: './employee-horizontal-timeline.component.html',
   styleUrl: './employee-horizontal-timeline.component.scss',
 })
@@ -132,6 +129,7 @@ export class EmployeeHorizontalTimelineComponent {
 
   private readonly containerRef = viewChild<ElementRef<HTMLElement>>('container');
 
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly todayStr = todayIsoString();
   protected readonly todayFormatted = formatDisplayDate(this.todayStr);
 

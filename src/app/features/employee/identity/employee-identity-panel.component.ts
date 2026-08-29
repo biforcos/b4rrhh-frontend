@@ -7,11 +7,13 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 
 import { employeeTexts } from '../employee.texts';
+import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeDetailModel } from '../models/employee-detail.model';
 import {
@@ -36,6 +38,7 @@ interface IdentityNavItem {
     '[class.identity-panel--collapsed]': 'isOverview()',
   },
   imports: [
+    DatePipe,
     RouterLink,
     RouterLinkActive,
     TagModule,
@@ -56,6 +59,7 @@ export class EmployeeIdentityPanelComponent {
   readonly editIdentityRequested = output<void>();
 
   protected readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly uploadDialogVisible = signal(false);
 
   private readonly photoService = inject(EmployeePhotoService);

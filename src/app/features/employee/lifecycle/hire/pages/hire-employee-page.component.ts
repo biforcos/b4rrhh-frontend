@@ -35,7 +35,7 @@ import {
   buildWorkingTimePreview,
   formatWorkingTimeHours,
 } from '../../../shared/utils/working-time-preview.util';
-import { parseLocalDate } from '../../../../../shared/utils/local-date.util';
+import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 
 @Component({
   selector: 'app-hire-employee-page',
@@ -69,6 +69,7 @@ export class HireEmployeePageComponent {
   private readonly globalMessageService = inject(GlobalMessageService);
 
   protected readonly texts = employeeTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
 
   readonly form = this.fb.group({
     ruleSystemCode: ['', Validators.required],
@@ -335,15 +336,6 @@ export class HireEmployeePageComponent {
 
   protected formatHours(value: number): string {
     return formatWorkingTimeHours(value);
-  }
-
-  protected formatDisplayDate(value: string): string {
-    const parsed = parseLocalDate(value);
-    if (!parsed) {
-      return value;
-    }
-
-    return new Intl.DateTimeFormat('es-ES').format(parsed);
   }
 
   private buildGlobalMessages() {

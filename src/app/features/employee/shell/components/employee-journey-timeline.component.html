@@ -35,8 +35,8 @@
                   <div>
                     <p class="journey-presence-card__company">{{ presence.company || texts.timelineNoCompanyLabel }}</p>
                     <p class="journey-presence-card__period">
-                      {{ presence.start }}
-                      @if (presence.end) { → {{ presence.end }} } @else { · {{ texts.timelineCurrentPeriodLabel }} }
+                      {{ presence.start | date: displayDateFormat }}
+                      @if (presence.end) { → {{ presence.end | date: displayDateFormat }} } @else { · {{ texts.timelineCurrentPeriodLabel }} }
                     </p>
                   </div>
                   <span class="journey-presence-card__badge"
@@ -61,7 +61,7 @@
                         [style.background]="resolveGroupIconBackground(group)"
                         aria-hidden="true"></div>
                       <div class="journey-event-row__body">
-                        <p class="journey-event-row__date">{{ group.eventDate }}</p>
+                        <p class="journey-event-row__date">{{ group.eventDate | date: displayDateFormat }}</p>
                         <p class="journey-event-row__label">{{ group.primaryEventLabel }}</p>
                         @if (group.secondaryEvents.length > 0) {
                           <ul class="journey-event-row__secondary" role="list">

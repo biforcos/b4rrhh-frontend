@@ -70,7 +70,7 @@
   </div>
 
   @if (hireDate()) {
-    <div class="identity-panel__hire-date">Alta: {{ hireDate() }}</div>
+    <div class="identity-panel__hire-date">Alta: {{ hireDate() | date: displayDateFormat }}</div>
   }
 
   <div class="identity-panel__divider"></div>
