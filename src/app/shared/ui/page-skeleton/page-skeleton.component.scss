@@ -76,16 +76,26 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid var(--border-default);
+  /* Va sobre la costura entre el raíl y el papel: borde fuerte y fondo opaco, o parece perdido. */
+  border: 1px solid var(--border-strong);
   background: var(--surface-panel);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   cursor: pointer;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-panel);
 }
 
 .page-skeleton__rail-toggle:hover {
   color: var(--text-primary);
-  border-color: var(--border-strong);
+  border-color: var(--accent-primary);
+}
+
+.page-skeleton__rail-toggle-icon {
+  color: inherit;
+}
+
+/* Desplegado, la flecha apunta hacia el raíl (a la izquierda): es hacia donde se va a mover. */
+.page-skeleton__rail-toggle-icon--collapse {
+  transform: rotate(180deg);
 }
 
 .page-skeleton__rail--collapsed .page-skeleton__rail-toggle {

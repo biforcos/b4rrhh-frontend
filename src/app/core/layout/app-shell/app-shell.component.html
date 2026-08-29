@@ -28,7 +28,12 @@
           <b4-icon class="app-shell__scope-chevron" name="chevron-abajo" [size]="16" />
         </div>
       } @else if (scope.active(); as active) {
-        <span class="app-shell__scope-value" [title]="texts.scopeSingleHint">{{ active.code }} · {{ active.name }}</span>
+        <!-- Solo el código: es lo que el dominio usa en todas partes (va en cada URL y en cada
+             llamada), es inequívoco bajo el rótulo «Ámbito» y no se trunca mida lo que mida el
+             nombre. El nombre completo va en el title. Cuando la fase 5 active el desplegable, el
+             nombre volverá a verse en las opciones, y entonces habrá que decidir si los nombres
+             sembrados se traducen: eso es una pregunta de backend. -->
+        <span class="app-shell__scope-value" [title]="active.name">{{ active.code }}</span>
       } @else {
         <span class="app-shell__scope-value">{{ scope.error() ? texts.scopeUnavailable : '…' }}</span>
       }

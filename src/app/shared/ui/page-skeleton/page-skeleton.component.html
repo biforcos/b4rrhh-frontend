@@ -15,7 +15,14 @@
           [attr.aria-expanded]="!railCollapsed()"
           (click)="toggleRail()"
         >
-          <b4-icon [name]="railCollapsed() ? 'flecha-derecha' : 'cerrar'" [size]="16" />
+          <!-- Una flecha en los dos sentidos: apunta hacia donde va a moverse el raíl. Girada por
+               CSS para plegar, sin añadir un icono al set (que se genera y pasa por su guardia). -->
+          <b4-icon
+            class="page-skeleton__rail-toggle-icon"
+            [class.page-skeleton__rail-toggle-icon--collapse]="!railCollapsed()"
+            name="flecha-derecha"
+            [size]="16"
+          />
         </button>
         <div class="page-skeleton__rail-content">
           <ng-content select="[slot=rail]" />
