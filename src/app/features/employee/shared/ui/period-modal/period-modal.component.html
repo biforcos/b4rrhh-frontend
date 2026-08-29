@@ -14,6 +14,9 @@
   }
   <div class="period-modal__body">
     <ng-content />
+    @if (note(); as note) {
+      <p class="period-modal__note">{{ note }}</p>
+    }
   </div>
 
   <ng-template pTemplate="footer">

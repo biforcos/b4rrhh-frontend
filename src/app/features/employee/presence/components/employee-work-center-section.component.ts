@@ -29,7 +29,6 @@ interface WorkCenterPeriodRow extends TemporalSectionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-work-center-section.component.html',
-  styleUrl: './employee-work-center-section.component.scss',
 })
 export class EmployeeWorkCenterSectionComponent {
   readonly employeeKey = input<EmployeeBusinessKey | null>(null);

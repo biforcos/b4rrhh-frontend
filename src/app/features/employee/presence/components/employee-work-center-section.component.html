@@ -1,4 +1,3 @@
-<div class="work-center-section">
   <app-temporal-section
     anchorId="employee-section-work-center"
     title="Centro de trabajo"
@@ -7,9 +6,14 @@
     (editClicked)="openEdit($event)"
     (deleteClicked)="confirmDelete($event)"
   >
-    <ng-template #columnHeaders><th>Centro</th></ng-template>
+    <ng-template #columnHeaders><th class="temporal-section__th">Centro</th></ng-template>
     <ng-template #cellContent let-row>
-      <td>{{ row.workCenterName || row.workCenterCode }}</td>
+      <td class="temporal-section__td">
+        {{ row.workCenterName ?? row.workCenterCode }}
+        @if (row.workCenterName) {
+          <span class="temporal-section__code">{{ row.workCenterCode }}</span>
+        }
+      </td>
     </ng-template>
   </app-temporal-section>
 
@@ -33,4 +37,3 @@
       <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
     }
   </app-period-modal>
-</div>

@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -33,13 +34,13 @@ interface WorkingTimePeriodRow extends TemporalSectionRow {
   selector: 'app-employee-working-time-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DecimalPipe,
     TemporalSectionComponent,
     PeriodModalComponent,
     UiDateInputComponent,
     UiInputNumberComponent,
   ],
   templateUrl: './employee-working-time-section.component.html',
-  styleUrl: './employee-working-time-section.component.scss',
 })
 export class EmployeeWorkingTimeSectionComponent {
   readonly employeeBusinessKey = input<EmployeeBusinessKey | null>(null);

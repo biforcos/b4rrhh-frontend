@@ -1,4 +1,3 @@
-<div class="cost-center-section">
   <app-temporal-section
     anchorId="employee-section-cost-center"
     title="Centro de coste"
@@ -8,14 +7,17 @@
     (editClicked)="openEdit($event)"
   >
     <ng-template #columnHeaders>
-      <th>Centros</th>
-      <th>Total</th>
+      <th class="temporal-section__th">Centros</th>
+      <th class="temporal-section__th">Total</th>
     </ng-template>
     <ng-template #cellContent let-row>
-      <td class="cost-center-section__summary">{{ row.itemsSummary }}</td>
-      <td [class.cost-center-section__total--ok]="row.totalPercentage === 100"
-          [class.cost-center-section__total--err]="row.totalPercentage !== 100">
-        {{ row.totalPercentage }}%
+      <td class="temporal-section__td">{{ row.itemsSummary }}</td>
+      <td
+        class="temporal-section__td"
+        [class.temporal-section__total--ok]="row.totalPercentage === 100"
+        [class.temporal-section__total--err]="row.totalPercentage !== 100"
+      >
+        {{ row.totalPercentage }} %
       </td>
     </ng-template>
   </app-temporal-section>
@@ -44,4 +46,3 @@
       />
     }
   </app-period-modal>
-</div>

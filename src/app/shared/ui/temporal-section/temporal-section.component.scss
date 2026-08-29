@@ -2,7 +2,8 @@
  * El contenedor de las secciones TEMPORAL_APPEND_CLOSE (ADR-051). Una caja, una cabecera, una
  * acción: todas las secciones de este modo se ven así. La que gobierna lleva el filo del acento.
  */
-:host {
+/* Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor. */
+app-temporal-section {
   display: block;
   scroll-margin-top: 16px;
 }
@@ -14,7 +15,7 @@
   padding: 14px 16px 12px;
 }
 
-:host(.temporal-section-host--governs) .temporal-section {
+app-temporal-section.temporal-section-host--governs .temporal-section {
   border-left: 3px solid var(--accent-primary);
   padding-left: 14px;
 }
@@ -188,6 +189,17 @@
   background: var(--error-bg);
   border-color: var(--error-border);
   color: var(--error-text);
+}
+
+/* Un total que cuadra o no (la distribución de coste): semántico, no decorativo. */
+.temporal-section__total--ok {
+  color: var(--success-text);
+  font-weight: 600;
+}
+
+.temporal-section__total--err {
+  color: var(--error-text);
+  font-weight: 600;
 }
 
 /* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */

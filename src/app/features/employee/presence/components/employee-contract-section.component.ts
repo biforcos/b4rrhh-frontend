@@ -28,7 +28,9 @@ type ContractModalMode = 'create' | 'edit' | 'close';
 
 interface ContractPeriodRow extends TemporalSectionRow {
   contractCode: string;
+  contractTypeLabel: string | null;
   contractSubtypeCode: string | null;
+  contractSubtypeLabel: string | null;
 }
 
 @Component({
@@ -36,7 +38,6 @@ interface ContractPeriodRow extends TemporalSectionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-contract-section.component.html',
-  styleUrl: './employee-contract-section.component.scss',
 })
 export class EmployeeContractSectionComponent {
   readonly employeeBusinessKey = input<EmployeeBusinessKey | null>(null);
@@ -71,7 +72,10 @@ export class EmployeeContractSectionComponent {
       canEdit: true,
       canDelete: false,
       contractCode: c.contractCode,
+      contractTypeLabel:
+        c.contractTypeName ?? this.contractTypeOptionsState().find((o) => o.value === c.contractCode)?.label ?? null,
       contractSubtypeCode: c.contractSubtypeCode,
+      contractSubtypeLabel: c.contractSubtypeName ?? null,
     })),
   );
 

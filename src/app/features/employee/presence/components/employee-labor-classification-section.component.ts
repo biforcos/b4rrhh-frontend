@@ -29,7 +29,9 @@ type LaborClassificationModalMode = 'create' | 'edit' | 'close';
 
 interface LaborClassificationPeriodRow extends TemporalSectionRow {
   agreementCode: string;
+  agreementLabel: string | null;
   agreementCategoryCode: string | null;
+  categoryLabel: string | null;
   grupoCotizacionCode: string | null;
 }
 
@@ -38,7 +40,6 @@ interface LaborClassificationPeriodRow extends TemporalSectionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
   templateUrl: './employee-labor-classification-section.component.html',
-  styleUrl: './employee-labor-classification-section.component.scss',
 })
 export class EmployeeLaborClassificationSectionComponent {
   readonly employeeBusinessKey = input<EmployeeBusinessKey | null>(null);
@@ -73,7 +74,10 @@ export class EmployeeLaborClassificationSectionComponent {
       canEdit: true,
       canDelete: false,
       agreementCode: lc.agreementCode,
+      agreementLabel:
+        lc.agreementName ?? this.agreementOptionsState().find((o) => o.value === lc.agreementCode)?.label ?? null,
       agreementCategoryCode: lc.agreementCategoryCode,
+      categoryLabel: lc.agreementCategoryName ?? null,
       grupoCotizacionCode: lc.grupoCotizacionCode ?? null,
     })),
   );

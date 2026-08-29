@@ -17,6 +17,8 @@ export class PeriodModalComponent {
   readonly submitLabel = input('Guardar cambios');
   readonly showCloseAction = input(false);
   readonly closeActionLabel = input('Cerrar período');
+  /** Un aviso bajo el formulario (p. ej. que la fecha de inicio anterior se ajustará en cascada). */
+  readonly note = input<string | null>(null);
 
   readonly visibleChange = output<boolean>();
   readonly submitted = output<void>();

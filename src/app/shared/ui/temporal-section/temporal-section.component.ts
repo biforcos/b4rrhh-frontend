@@ -4,6 +4,7 @@ import {
   Component,
   ContentChild,
   TemplateRef,
+  ViewEncapsulation,
   computed,
   input,
   output,
@@ -31,6 +32,10 @@ import { TemporalSectionRow } from './temporal-section-row.model';
   imports: [NgTemplateOutlet, B4IconComponent],
   templateUrl: './temporal-section.component.html',
   styleUrl: './temporal-section.component.scss',
+  // Sin encapsulación a propósito: las secciones proyectan sus propias celdas y cabeceras con
+  // las clases `temporal-section__*`, que son el contrato del contenedor. Con encapsulación
+  // emulada esas clases no recibirían los estilos, y cada sección volvería a inventarse los suyos.
+  encapsulation: ViewEncapsulation.None,
   host: {
     '[attr.id]': 'anchorId()',
     '[class.temporal-section-host--governs]': 'governs()',

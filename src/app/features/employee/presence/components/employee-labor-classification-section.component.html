@@ -1,4 +1,3 @@
-<div class="labor-classification-section">
   <app-temporal-section
     anchorId="employee-section-classification"
     title="Convenio"
@@ -7,17 +6,34 @@
     (editClicked)="openEdit($event)"
   >
     <ng-template #columnHeaders>
-      <th>Convenio</th>
-      <th>Categoría</th>
-      <th>Grupo SS</th>
+      <th class="temporal-section__th">Convenio</th>
+      <th class="temporal-section__th">Categoría</th>
+      <th class="temporal-section__th">Grupo SS</th>
     </ng-template>
     <ng-template #cellContent let-row>
-      <td class="labor-classification-section__cell">{{ row.agreementCode }}</td>
-      <td class="labor-classification-section__cell labor-classification-section__cell--secondary">
-        {{ row.agreementCategoryCode || '—' }}
+      <!-- ADR-051 §4: el código nunca va solo. -->
+      <td class="temporal-section__td">
+        {{ row.agreementLabel ?? row.agreementCode }}
+        @if (row.agreementLabel) {
+          <span class="temporal-section__code">{{ row.agreementCode }}</span>
+        }
       </td>
-      <td class="labor-classification-section__cell labor-classification-section__cell--secondary">
-        {{ row.grupoCotizacionCode || '—' }}
+      <td class="temporal-section__td">
+        @if (row.agreementCategoryCode) {
+          {{ row.categoryLabel ?? row.agreementCategoryCode }}
+          @if (row.categoryLabel) {
+            <span class="temporal-section__code">{{ row.agreementCategoryCode }}</span>
+          }
+        } @else {
+          <span class="temporal-section__secondary">—</span>
+        }
+      </td>
+      <td class="temporal-section__td">
+        @if (row.grupoCotizacionCode) {
+          Grupo {{ row.grupoCotizacionCode }}
+        } @else {
+          <span class="temporal-section__secondary">—</span>
+        }
       </td>
     </ng-template>
   </app-temporal-section>
@@ -29,6 +45,7 @@
     [saving]="saving()"
     [submitEnabled]="isSubmitEnabled()"
     [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+    [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
     (visibleChange)="modalVisible.set($event)"
     (submitted)="submit()"
     (cancelled)="closeModal()"
@@ -53,11 +70,6 @@
       <app-ui-date-input
         [value]="newStartDateDraft()"
         (valueChanged)="newStartDateDraft.set($event)" />
-      @if (showCascadeWarning()) {
-        <p class="labor-classification-section__cascade-warning">
-          La fecha de inicio del período anterior se ajustará automáticamente.
-        </p>
-      }
       <app-ui-select
         [options]="agreementOptions()"
         [value]="agreementCodeDraft()"
@@ -75,4 +87,3 @@
         (valueChanged)="endDateDraft.set($event)" />
     }
   </app-period-modal>
-</div>

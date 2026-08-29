@@ -29,7 +29,6 @@ interface CostCenterPeriodRow extends TemporalSectionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TemporalSectionComponent, PeriodModalComponent, EmployeeCostCenterDistributionEditorComponent, UiDateInputComponent],
   templateUrl: './employee-cost-center-section.component.html',
-  styleUrl: './employee-cost-center-section.component.scss',
 })
 export class EmployeeCostCenterSectionComponent {
   readonly employeeKey = input<EmployeeBusinessKey | null>(null);

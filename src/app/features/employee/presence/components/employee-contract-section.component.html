@@ -1,4 +1,3 @@
-<div class="contract-section">
   <app-temporal-section
     anchorId="employee-section-contract"
     title="Contrato"
@@ -7,13 +6,26 @@
     (editClicked)="openEdit($event)"
   >
     <ng-template #columnHeaders>
-      <th>Tipo</th>
-      <th>Subtipo</th>
+      <th class="temporal-section__th">Tipo</th>
+      <th class="temporal-section__th">Subtipo</th>
     </ng-template>
     <ng-template #cellContent let-row>
-      <td class="contract-section__cell">{{ row.contractCode }}</td>
-      <td class="contract-section__cell contract-section__cell--secondary">
-        {{ row.contractSubtypeCode || '—' }}
+      <!-- ADR-051 §4: el código nunca va solo. -->
+      <td class="temporal-section__td">
+        {{ row.contractTypeLabel ?? row.contractCode }}
+        @if (row.contractTypeLabel) {
+          <span class="temporal-section__code">{{ row.contractCode }}</span>
+        }
+      </td>
+      <td class="temporal-section__td">
+        @if (row.contractSubtypeCode) {
+          {{ row.contractSubtypeLabel ?? row.contractSubtypeCode }}
+          @if (row.contractSubtypeLabel) {
+            <span class="temporal-section__code">{{ row.contractSubtypeCode }}</span>
+          }
+        } @else {
+          <span class="temporal-section__secondary">—</span>
+        }
       </td>
     </ng-template>
   </app-temporal-section>
@@ -25,6 +37,7 @@
     [saving]="saving()"
     [submitEnabled]="isSubmitEnabled()"
     [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+    [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
     (visibleChange)="modalVisible.set($event)"
     (submitted)="submit()"
     (cancelled)="closeModal()"
@@ -49,11 +62,6 @@
       <app-ui-date-input
         [value]="newStartDateDraft()"
         (valueChanged)="newStartDateDraft.set($event)" />
-      @if (showCascadeWarning()) {
-        <p class="contract-section__cascade-warning">
-          La fecha de inicio del período anterior se ajustará automáticamente.
-        </p>
-      }
       <app-ui-select
         [options]="contractTypeOptions()"
         [value]="contractCodeDraft()"
@@ -71,4 +79,3 @@
         (valueChanged)="endDateDraft.set($event)" />
     }
   </app-period-modal>
-</div>
