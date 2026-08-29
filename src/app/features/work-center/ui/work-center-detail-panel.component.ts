@@ -369,7 +369,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       workCenterCode: raw['workCenterCode'] ?? '',
       name: raw['name'] ?? '',
       description: raw['description'] ?? '',
-      startDate: raw['startDate'] instanceof Date ? this.formatDate(raw['startDate']) : (raw['startDate'] ?? ''),
+      startDate: raw['startDate'] instanceof Date ? this.toIsoDate(raw['startDate']) : (raw['startDate'] ?? ''),
       companyCode: raw['companyCode'] ?? '',
       street: raw['street'] ?? '',
       city: raw['city'] ?? '',
@@ -456,7 +456,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
     return new Date(year, month - 1, day);
   }
 
-  private formatDate(date: Date): string {
+  private toIsoDate(date: Date): string {
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');

@@ -21,6 +21,7 @@ import { CompanyFormValue } from '../models/company-form-value.model';
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
 import { EntityHeaderComponent, EntityHeaderMetadataItem, EntityHeaderStatus } from '../../../shared/ui/entity-header/entity-header.component';
 import { SectionCardComponent } from '../../../shared/ui/section-card/section-card.component';
+import { formatDisplayDate } from '../../../shared/utils/local-date.util';
 
 export type CompanyFormMode = 'create' | 'edit';
 export type CompanyDetailMode = 'create' | 'view' | 'edit';
@@ -161,13 +162,9 @@ export class CompanyDetailPanelComponent implements OnChanges {
   }
 
   protected get entityStartDate(): string {
-    const raw = this.form.getRawValue()['startDate'];
+    const raw = this.form.getRawValue()['startDate'] as Date | string | null;
 
-    if (raw instanceof Date) {
-      return this.formatDate(raw);
-    }
-
-    return (raw as string | null) ?? '—';
+    return formatDisplayDate(raw) || '—';
   }
 
   protected get hasAddress(): boolean {
@@ -249,7 +246,7 @@ export class CompanyDetailPanelComponent implements OnChanges {
       companyCode: raw['companyCode'] ?? '',
       name: raw['name'] ?? '',
       description: raw['description'] ?? '',
-      startDate: raw['startDate'] instanceof Date ? this.formatDate(raw['startDate']) : (raw['startDate'] ?? ''),
+      startDate: raw['startDate'] instanceof Date ? this.toIsoDate(raw['startDate']) : (raw['startDate'] ?? ''),
       legalName: raw['legalName'] ?? '',
       taxIdentifier: raw['taxIdentifier'] ?? '',
       street: raw['street'] ?? '',
@@ -270,7 +267,7 @@ export class CompanyDetailPanelComponent implements OnChanges {
     return new Date(Number(year), Number(month) - 1, Number(day));
   }
 
-  private formatDate(date: Date): string {
+  private toIsoDate(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
