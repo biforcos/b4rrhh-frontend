@@ -23,6 +23,7 @@ import { readEmployeeBusinessKeyFromParamMap } from '../../../routing/employee-r
 import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
 import { buildWorkingTimePreview, formatWorkingTimeHours } from '../../../shared/utils/working-time-preview.util';
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
+import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 
 @Component({
   selector: 'app-rehire-employee-page',
@@ -35,6 +36,7 @@ import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util
     DatePickerModule,
     InputNumberModule,
     ButtonModule,
+    B4IconComponent,
     CardModule,
     MessageModule,
     EmployeeCostCenterDistributionEditorComponent,

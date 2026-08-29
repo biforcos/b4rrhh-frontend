@@ -7,7 +7,7 @@
       type="button"
       (click)="navigateTo('payroll')"
     >
-      <i class="pi pi-calculator"></i>
+      <b4-icon name="nomina" [size]="16" />
       Calcular nómina
     </button>
 
@@ -15,13 +15,20 @@
       #actionsMenu
       [popup]="true"
       [model]="actionMenuItems()"
-    />
+    >
+      <ng-template #item let-item>
+        <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
+          <b4-icon [name]="menuIcon(item)" [size]="16" />
+          <span class="p-menu-item-label">{{ item.label }}</span>
+        </a>
+      </ng-template>
+    </p-menu>
     <button
       class="employee-overview__btn-secondary"
       type="button"
       (click)="showActionsMenu($event)"
     >
-      Acciones <i class="pi pi-chevron-down"></i>
+      Acciones <b4-icon name="chevron-abajo" [size]="16" />
     </button>
   </div>
 

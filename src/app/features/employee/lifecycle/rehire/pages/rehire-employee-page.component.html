@@ -135,18 +135,20 @@
     <div class="rehire-footer-actions">
       <p-button
         [label]="texts.rehireEmployeeCancelAction"
-        icon="pi pi-times"
         severity="secondary"
         (click)="onCancel()"
         [disabled]="rehiring()"
-      ></p-button>
+      >
+        <ng-template #icon><b4-icon name="cerrar" [size]="16" /></ng-template>
+      </p-button>
       <p-button
         [label]="texts.rehireEmployeeAction"
-        icon="pi pi-check"
         (click)="onSubmit()"
         [loading]="rehiring()"
         [disabled]="submitDisabled()"
-      ></p-button>
+      >
+        <ng-template #icon><b4-icon name="comprobar" [size]="16" /></ng-template>
+      </p-button>
     </div>
   </footer>
   </form>

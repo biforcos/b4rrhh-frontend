@@ -36,6 +36,7 @@ import {
   formatWorkingTimeHours,
 } from '../../../shared/utils/working-time-preview.util';
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
+import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 
 @Component({
   selector: 'app-hire-employee-page',
@@ -49,6 +50,7 @@ import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util
     DatePickerModule,
     InputNumberModule,
     ButtonModule,
+    B4IconComponent,
     CardModule,
     MessageModule,
     GlobalMessageRailComponent,

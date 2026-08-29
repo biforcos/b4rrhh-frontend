@@ -18,18 +18,20 @@
     <div class="flex gap-2">
       <p-button
         [label]="texts.hireEmployeeCancelAction"
-        icon="pi pi-times"
         severity="secondary"
         (click)="onCancel()"
         [disabled]="hiring()"
-      ></p-button>
+      >
+        <ng-template #icon><b4-icon name="cerrar" [size]="16" /></ng-template>
+      </p-button>
       <p-button
         [label]="texts.hireEmployeeAction"
-        icon="pi pi-check"
         (click)="onSubmit()"
         [loading]="hiring()"
         [disabled]="submitDisabled()"
-      ></p-button>
+      >
+        <ng-template #icon><b4-icon name="comprobar" [size]="16" /></ng-template>
+      </p-button>
     </div>
   </div>
 

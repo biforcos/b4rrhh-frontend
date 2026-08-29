@@ -48,12 +48,12 @@
               <dd>
                 @if (item.copyable && copiedLabel() === item.label) {
                   <span class="entity-header__copied-feedback">
-                    <i class="pi pi-check"></i> Copiado
+                    <b4-icon name="comprobar" [size]="16" /> Copiado
                   </span>
                 } @else {
                   {{ item.value }}
                   @if (item.copyable) {
-                    <i class="pi pi-copy entity-header__copy-icon" aria-hidden="true"></i>
+                    <b4-icon class="entity-header__copy-icon" name="copiar" [size]="16" />
                   }
                 }
               </dd>

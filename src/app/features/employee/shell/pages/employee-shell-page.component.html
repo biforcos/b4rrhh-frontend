@@ -5,7 +5,7 @@
     <h1 class="employee-directory__title">{{ texts.masterTitle }}</h1>
     <app-ui-button
       [label]="texts.hireEmployeeTitle"
-      icon="pi pi-plus"
+      icon="anadir"
       (pressed)="onHireClick()"
     />
   </header>
@@ -13,7 +13,7 @@
   <!-- Search -->
   <div class="employee-directory__search-row">
     <p-iconfield class="employee-directory__search-field">
-      <p-inputicon styleClass="pi pi-search" />
+      <p-inputicon><b4-icon name="buscar" [size]="16" /></p-inputicon>
       <input
         pInputText
         class="employee-directory__search-input"

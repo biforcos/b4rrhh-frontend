@@ -15,6 +15,9 @@ import { MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
 import type { MenuItem } from 'primeng/api';
 
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
+import { B4IconName } from '../../../../shared/ui/icon/icon-names';
+
 import { EmployeeHorizontalTimelineComponent } from '../components/employee-horizontal-timeline.component';
 import { EmployeeDetailStore } from '../../data-access/employee-detail.store';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
@@ -40,7 +43,7 @@ import {
 @Component({
   selector: 'app-employee-overview-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, MenuModule, ButtonModule, EmployeeHorizontalTimelineComponent],
+  imports: [DatePipe, MenuModule, ButtonModule, B4IconComponent, EmployeeHorizontalTimelineComponent],
   templateUrl: './employee-overview-page.component.html',
   styleUrl: './employee-overview-page.component.scss',
 })
@@ -197,6 +200,11 @@ export class EmployeeOverviewPageComponent {
 
   /* ── Action menu ── */
 
+  /** `MenuItem.icon` es un string libre; aquí lleva un nombre del set propio y la plantilla `item` lo pinta con `<b4-icon>`. */
+  protected menuIcon(item: MenuItem): B4IconName {
+    return item.icon as B4IconName;
+  }
+
   protected readonly actionMenuItems = computed<MenuItem[]>(() => {
     const isActive = this.status() === 'active';
     return [
@@ -206,14 +214,14 @@ export class EmployeeOverviewPageComponent {
           ? [
               {
                 label: 'Iniciar cese',
-                icon: 'pi pi-stop-circle',
+                icon: 'detener',
                 command: () => this.navigateTo('presence'),
               },
             ]
           : [
               {
                 label: 'Recontratación',
-                icon: 'pi pi-replay',
+                icon: 'readmision',
                 command: () => this.navigateToRehire(),
               },
             ],
@@ -223,15 +231,15 @@ export class EmployeeOverviewPageComponent {
         items: [
           {
             label: 'Cambiar centro de trabajo',
-            icon: 'pi pi-building',
+            icon: 'centro-trabajo',
             command: () => this.navigateTo('presence'),
           },
           {
             label: 'Nuevo contrato',
-            icon: 'pi pi-file-plus',
+            icon: 'documento-nuevo',
             command: () => this.navigateTo('presence'),
           },
-          { label: 'Registrar revisión salarial', icon: 'pi pi-chart-line', disabled: true },
+          { label: 'Registrar revisión salarial', icon: 'grafico', disabled: true },
         ],
       },
     ];

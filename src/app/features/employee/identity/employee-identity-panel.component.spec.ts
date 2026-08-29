@@ -96,7 +96,7 @@ describe('EmployeeIdentityPanelComponent', () => {
       expect(items.length).toBe(5);
       items.forEach((item) => {
         expect(item.icon).toBeTruthy();
-        expect(item.icon).toMatch(/^pi-/);
+        expect(item.icon).toMatch(/^[a-z][a-z0-9-]*$/);
       });
     });
   });

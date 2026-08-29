@@ -14,6 +14,8 @@ import { ButtonModule } from 'primeng/button';
 
 import { employeeTexts } from '../employee.texts';
 import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
+import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
+import { B4IconName } from '../../../shared/ui/icon/icon-names';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeDetailModel } from '../models/employee-detail.model';
 import {
@@ -27,7 +29,7 @@ import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 interface IdentityNavItem {
   section: EmployeeRouteSection;
   label: string;
-  icon: string;
+  icon: B4IconName;
   routeCommands: ReadonlyArray<string>;
 }
 
@@ -43,6 +45,7 @@ interface IdentityNavItem {
     RouterLinkActive,
     TagModule,
     ButtonModule,
+    B4IconComponent,
     EmployeePhotoUploadDialogComponent,
   ],
   templateUrl: './employee-identity-panel.component.html',
@@ -85,31 +88,31 @@ export class EmployeeIdentityPanelComponent {
       {
         section: 'overview',
         label: this.texts.overviewNavLabel,
-        icon: 'pi-home',
+        icon: 'empleado',
         routeCommands: buildEmployeeDetailRouteCommands(key, 'overview'),
       },
       {
         section: 'contact',
         label: this.texts.personalAreaLabel,
-        icon: 'pi-user',
+        icon: 'usuario',
         routeCommands: buildEmployeeDetailRouteCommands(key, 'contact'),
       },
       {
         section: 'presence',
         label: this.texts.laborAreaLabel,
-        icon: 'pi-briefcase',
+        icon: 'jornada',
         routeCommands: buildEmployeeDetailRouteCommands(key, 'presence'),
       },
       {
         section: 'organization',
         label: this.texts.organizationalAreaLabel,
-        icon: 'pi-building',
+        icon: 'centro-trabajo',
         routeCommands: buildEmployeeDetailRouteCommands(key, 'organization'),
       },
       {
         section: 'payroll',
         label: this.texts.payrollAreaLabel,
-        icon: 'pi-euro',
+        icon: 'nomina',
         routeCommands: buildEmployeeDetailRouteCommands(key, 'payroll'),
       },
     ] as const;

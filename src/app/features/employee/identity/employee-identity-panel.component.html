@@ -12,12 +12,12 @@
       @if (photoUrl()) {
         <img class="identity-panel__avatar-photo" [src]="photoUrl()" alt="Foto del empleado" />
         @if (isAdmin()) {
-          <div class="identity-panel__avatar-overlay"><i class="pi pi-pencil"></i></div>
+          <div class="identity-panel__avatar-overlay"><b4-icon name="editar" [size]="24" /></div>
         }
       } @else {
         {{ initials() }}
         @if (isAdmin()) {
-          <div class="identity-panel__avatar-overlay"><i class="pi pi-camera"></i></div>
+          <div class="identity-panel__avatar-overlay"><b4-icon name="foto" [size]="24" /></div>
         }
       }
       <div
@@ -35,7 +35,7 @@
           title="Editar nombre"
           aria-label="Editar nombre"
           (click)="requestEditIdentity()"
-        ><i class="pi pi-pencil"></i></button>
+        ><b4-icon name="editar" [size]="16" /></button>
       </div>
       <p-tag
         class="identity-panel__status-tag"
@@ -85,7 +85,7 @@
         [routerLinkActiveOptions]="{ exact: true }"
         [title]="item.label"
       >
-        <i [class]="'pi identity-panel__nav-icon ' + item.icon"></i>
+        <b4-icon class="identity-panel__nav-icon" [name]="item.icon" [size]="20" />
         <span class="identity-panel__nav-label">{{ item.label }}</span>
       </a>
     }

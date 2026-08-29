@@ -16,6 +16,7 @@ import { EmployeeListItemModel } from '../../models/employee-list-item.model';
 import { hasRehireRefreshMarker } from '../../routing/employee-refresh-marker.util';
 import { buildEmployeeDetailRouteCommands } from '../../routing/employee-route-builder.util';
 import { toEmployeeBusinessKey } from '../../routing/employee-route-key.util';
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 
 @Component({
   selector: 'app-employee-shell-page',
@@ -28,6 +29,7 @@ import { toEmployeeBusinessKey } from '../../routing/employee-route-key.util';
     InputIconModule,
     UiTagComponent,
     UiButtonComponent,
+    B4IconComponent,
   ],
   templateUrl: './employee-shell-page.component.html',
   styleUrl: './employee-shell-page.component.scss',

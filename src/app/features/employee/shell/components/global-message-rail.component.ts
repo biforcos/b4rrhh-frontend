@@ -2,6 +2,9 @@ import { animate, style, transition, trigger, query, stagger } from '@angular/an
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
+import { B4IconName } from '../../../../shared/ui/icon/icon-names';
+
 import { employeeTexts } from '../../employee.texts';
 import {
   GlobalMessageSummary,
@@ -15,7 +18,7 @@ const MAX_VISIBLE = 4;
   selector: 'app-global-message-rail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, B4IconComponent],
   animations: [
     trigger('toastEnter', [
       transition(':enter', [
@@ -48,7 +51,7 @@ const MAX_VISIBLE = 4;
           }
 
           <div class="toast__icon-shell">
-            <i class="pi" [class]="iconClass(msg.level)"></i>
+            <b4-icon [name]="iconName(msg.level)" [size]="16" />
           </div>
 
           <div class="toast__body">
@@ -60,7 +63,7 @@ const MAX_VISIBLE = 4;
             @if (msg.sectionId) {
               <button class="toast__link" type="button" (click)="sectionRequested.emit(msg)">
                 Ir a la sección
-                <i class="pi pi-arrow-right toast__link-icon"></i>
+                <b4-icon class="toast__link-icon" name="flecha-derecha" [size]="16" />
               </button>
             }
           </div>
@@ -71,19 +74,19 @@ const MAX_VISIBLE = 4;
             [attr.aria-label]="texts.globalMessageRailCloseDetailAction"
             (click)="closeRequested.emit()"
           >
-            <i class="pi pi-times"></i>
+            <b4-icon name="cerrar" [size]="16" />
           </button>
         </div>
       }
 
       @if (hiddenCount() > 0) {
         <div class="toast toast--overflow">
-          <i class="pi pi-ellipsis-h toast__overflow-icon"></i>
+          <b4-icon class="toast__overflow-icon" name="mas-opciones" [size]="16" />
           <span class="toast__overflow-text"
             >+{{ hiddenCount() }} mensaje{{ hiddenCount() === 1 ? '' : 's' }} más</span
           >
           <button class="toast__close" type="button" (click)="closeRequested.emit()">
-            <i class="pi pi-times"></i>
+            <b4-icon name="cerrar" [size]="16" />
           </button>
         </div>
       }
@@ -158,10 +161,6 @@ const MAX_VISIBLE = 4;
         margin-top: 0.04rem;
       }
 
-      .toast__icon-shell .pi {
-        font-size: 0.9rem;
-      }
-
       /* ─── BODY ─── */
       .toast__body {
         flex: 1;
@@ -206,10 +205,6 @@ const MAX_VISIBLE = 4;
         text-underline-offset: 2px;
       }
 
-      .toast__link-icon {
-        font-size: 0.62rem;
-      }
-
       /* ─── CLOSE ─── */
       .toast__close {
         flex-shrink: 0;
@@ -225,10 +220,6 @@ const MAX_VISIBLE = 4;
         transition: background 120ms ease;
       }
 
-      .toast__close .pi {
-        font-size: 0.7rem;
-      }
-
       /* ─── SUCCESS ─── */
       .toast--success {
         background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
@@ -239,7 +230,7 @@ const MAX_VISIBLE = 4;
         background: #dcfce7;
       }
 
-      .toast--success .toast__icon-shell .pi {
+      .toast--success .toast__icon-shell b4-icon {
         color: #16a34a;
       }
 
@@ -279,7 +270,7 @@ const MAX_VISIBLE = 4;
         background: #ffe4e6;
       }
 
-      .toast--error .toast__icon-shell .pi {
+      .toast--error .toast__icon-shell b4-icon {
         color: #dc2626;
       }
 
@@ -312,7 +303,7 @@ const MAX_VISIBLE = 4;
         background: #fef3c7;
       }
 
-      .toast--warning .toast__icon-shell .pi {
+      .toast--warning .toast__icon-shell b4-icon {
         color: #d97706;
       }
 
@@ -443,12 +434,12 @@ export class GlobalMessageRailComponent {
     return !!msg.dismissAfterMs && !msg.sticky;
   }
 
-  protected iconClass(level: GlobalUiMessageLevel): string {
-    const map: Record<GlobalUiMessageLevel, string> = {
-      success: 'pi-check-circle',
-      error: 'pi-times-circle',
-      warning: 'pi-exclamation-triangle',
-      info: 'pi-info-circle',
+  protected iconName(level: GlobalUiMessageLevel): B4IconName {
+    const map: Record<GlobalUiMessageLevel, B4IconName> = {
+      success: 'comprobar',
+      error: 'error',
+      warning: 'aviso',
+      info: 'informacion',
     };
     return map[level];
   }

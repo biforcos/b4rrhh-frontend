@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
 import { UiTagComponent } from '../tag/ui-tag.component';
+import { B4IconComponent } from '../icon/b4-icon.component';
 
 export interface EntityHeaderMetadataItem {
   label: string;
@@ -16,7 +17,7 @@ export interface EntityHeaderStatus {
 @Component({
   selector: 'app-entity-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiTagComponent],
+  imports: [UiTagComponent, B4IconComponent],
   templateUrl: './entity-header.component.html',
   styleUrl: './entity-header.component.scss',
 })

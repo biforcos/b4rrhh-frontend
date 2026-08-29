@@ -6,13 +6,14 @@
   [outlined]="outlined()"
   [text]="text()"
   [rounded]="rounded()"
-  [icon]="icon() ?? ''"
-  [iconPos]="iconPos()"
   [disabled]="disabled()"
   [fluid]="fluid()"
   [ariaLabel]="ariaLabel()"
   [attr.title]="title() ?? null"
   (click)="emitPressed($event)"
 >
-  {{ label() }}
+  @if (icon(); as name) {
+    <b4-icon [name]="name" [size]="16" />
+  }
+  <span class="p-button-label">{{ label() }}</span>
 </button>
