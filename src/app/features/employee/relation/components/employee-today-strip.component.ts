@@ -65,7 +65,8 @@ export class EmployeeTodayStripComponent {
     const classification = open(this.laborClassifications());
     const workCenter = open(this.workCenters());
     const cost = this.costCenter();
-    const since = (item: { startDate: string } | null) => (item ? formatDisplayDate(item.startDate) : null);
+    const since = (item: { startDate: string } | null) =>
+      item ? formatDisplayDate(item.startDate) : null;
     return [
       {
         anchor: 'presence',
@@ -82,7 +83,9 @@ export class EmployeeTodayStripComponent {
         icon: 'documento-nuevo',
         label: t.lifelineLaneContract,
         value: contract ? (contract.contractTypeName ?? contract.contractCode) : null,
-        code: contract ? `${contract.contractCode}${contract.contractSubtypeCode ? ` / ${contract.contractSubtypeCode}` : ''}` : null,
+        code: contract
+          ? `${contract.contractCode}${contract.contractSubtypeCode ? ` / ${contract.contractSubtypeCode}` : ''}`
+          : null,
         since: since(contract),
         emptyLabel: t.todayNoneLabel,
         anomaly: false,
@@ -91,8 +94,12 @@ export class EmployeeTodayStripComponent {
         anchor: 'working-time',
         icon: 'jornada',
         label: t.lifelineLaneWorkingTime,
-        value: workingTime ? `${workingTime.workingTimePercentage} % · ${HOURS.format(workingTime.weeklyHours)} ${t.lifelineHoursPerWeekLabel}` : null,
-        code: workingTime ? `${HOURS.format(workingTime.dailyHours)} ${t.todayHoursPerDayLabel}` : null,
+        value: workingTime
+          ? `${workingTime.workingTimePercentage} % · ${HOURS.format(workingTime.weeklyHours)} ${t.lifelineHoursPerWeekLabel}`
+          : null,
+        code: workingTime
+          ? `${HOURS.format(workingTime.dailyHours)} ${t.todayHoursPerDayLabel}`
+          : null,
         since: since(workingTime),
         emptyLabel: t.todayNoneLabel,
         anomaly: false,
@@ -101,7 +108,9 @@ export class EmployeeTodayStripComponent {
         anchor: 'classification',
         icon: 'convenio',
         label: t.lifelineLaneClassification,
-        value: classification ? (classification.agreementCategoryName ?? classification.agreementCategoryCode) : null,
+        value: classification
+          ? (classification.agreementCategoryName ?? classification.agreementCategoryCode)
+          : null,
         code: classification
           ? `${classification.agreementCode}${classification.grupoCotizacionCode ? ` · ${t.lifelineContributionGroupLabel} ${classification.grupoCotizacionCode}` : ''}`
           : null,
@@ -123,7 +132,11 @@ export class EmployeeTodayStripComponent {
         anchor: 'cost-center',
         icon: 'centro-coste',
         label: t.costCenterSectionTitle,
-        value: cost ? cost.items.map((i) => `${i.costCenterName || i.costCenterCode} ${i.allocationPercentage} %`).join(' · ') : null,
+        value: cost
+          ? cost.items
+              .map((i) => `${i.costCenterName || i.costCenterCode} ${i.allocationPercentage} %`)
+              .join(' · ')
+          : null,
         code: cost ? `${cost.totalAllocationPercentage} % ${t.todayAllocatedLabel}` : null,
         since: since(cost),
         emptyLabel: t.todayUnassignedLabel,
