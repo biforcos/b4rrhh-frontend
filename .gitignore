@@ -49,3 +49,7 @@ Thumbs.db
 
 # Git worktrees
 .worktrees/
+
+# Python (el generador de la identidad, tools/identidad/)
+__pycache__/
+*.pyc

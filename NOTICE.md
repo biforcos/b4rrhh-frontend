@@ -36,6 +36,22 @@ This repository represents a personal approach to:
 
 ---
 
+## Third-Party Fonts
+
+`tools/identidad/fonts/` vendors two font files, used only to trace the logotype
+into vector outlines when the visual identity is regenerated. They are not served
+by the application.
+
+- **Newsreader** — Copyright 2020 The Newsreader Project Authors.
+  SIL Open Font License 1.1 — see `tools/identidad/fonts/OFL-Newsreader.txt`.
+- **IBM Plex Sans** — Copyright 2019 IBM Corp.
+  SIL Open Font License 1.1 — see `tools/identidad/fonts/OFL-IBM-Plex-Sans.txt`.
+
+The OFL is independent of, and unaffected by, the BSL that covers this project's
+own source code.
+
+---
+
 ## Disclaimer
 
 This project is experimental and provided without any guarantees.
