@@ -180,6 +180,7 @@ export const employeeTexts = {
   lifelineEmptyMessage: 'Todavía no hay vigencias que dibujar.',
   lifelineStageSingularLabel: 'etapa',
   lifelineStagePluralLabel: 'etapas',
+  lifelineCompressedScaleLabel: 'escala comprimida',
   lifelineLanePresence: 'Presencia',
   lifelineLaneContract: 'Contrato',
   lifelineLaneWorkingTime: 'Jornada',

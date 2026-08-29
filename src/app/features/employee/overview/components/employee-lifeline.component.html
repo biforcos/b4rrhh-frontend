@@ -5,6 +5,9 @@
       <p class="lifeline__range">
         {{ rangeLabel() }} · {{ stageCount() }}
         {{ stageCount() === 1 ? texts.lifelineStageSingularLabel : texts.lifelineStagePluralLabel }}
+        @if (compressedScale()) {
+          · <span class="lifeline__compressed">{{ texts.lifelineCompressedScaleLabel }}</span>
+        }
       </p>
     }
   </header>

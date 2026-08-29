@@ -119,6 +119,23 @@ describe('EmployeeLifelineComponent', () => {
     expect(overlapping[1].style.getPropertyValue('--row')).toBe('1');
   });
 
+  it('con la semilla no avisa de escala comprimida; con un puñado de tramos aplastados, sí', () => {
+    expect(one('.lifeline__compressed')).toBeNull();
+
+    // Veinte años de relación con cinco centros de tres días: a ~0,14 px/día quedan en el mínimo.
+    fixture.componentInstance.presences.set([
+      { ...PRESENCES[0], startDate: '2006-09-01', endDate: null, exitReasonCode: null, isActive: true },
+    ]);
+    fixture.componentInstance.workCenters.set(
+      [2008, 2011, 2014, 2017, 2020].map((year, i) => ({
+        ...WORK_CENTERS[1], workCenterAssignmentNumber: i + 10, startDate: `${year}-05-01`, endDate: `${year}-05-03`,
+      })),
+    );
+    fixture.detectChanges();
+
+    expect(one('.lifeline__compressed')?.textContent?.trim()).toBe('escala comprimida');
+  });
+
   it('pinchar un tramo pide su sección', () => {
     all('.lifeline__lane')[4].querySelector<HTMLElement>('.lifeline__segment')!.click();
     expect(fixture.componentInstance.requested()).toBe('organization');

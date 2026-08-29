@@ -81,8 +81,19 @@ const DAY_MS = 86_400_000;
 /** Ancho mínimo, en píxeles, para que un tramo lleve texto dentro; por debajo, solo el título. */
 const MIN_LABEL_WIDTH_PX = 96;
 const HOURS = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
-/** Ancho mínimo de un tramo: un cambio de dos semanas en veinte años tiene que seguir viéndose. */
+/**
+ * Ancho mínimo de un tramo: un cambio de dos semanas en veinte años tiene que seguir viéndose.
+ *
+ * El precio: pasado cierto punto, un tramo de cuatro días y uno de un mes se dibujan igual. Con un
+ * eje de ~1.370 px, todo tramo más corto que `días_totales / 228` queda aplastado en el mínimo.
+ * Con los 1.332 días de la semilla son 6 días y no se nota; a diez años son 16 y a veinte son 32,
+ * y un cambio de contrato de un mes es lo más normal del mundo en nómina. No hay zoom a propósito;
+ * lo que hay es que la degradación no sea silenciosa: si más de un puñado de tramos queda en el
+ * mínimo, la cabecera dice «escala comprimida» (`COMPRESSED_SCALE_THRESHOLD`).
+ */
 const MIN_SEGMENT_WIDTH_PX = 6;
+/** A partir de cuántos tramos aplastados en el mínimo la cabecera avisa. */
+const COMPRESSED_SCALE_THRESHOLD = 3;
 const EVENT_LABEL_WIDTH_PX = 84;
 /** Por debajo de dos años se marcan los meses; por encima, solo los años. */
 const MONTHLY_TICKS_MAX_DAYS = 730;
@@ -300,6 +311,14 @@ export class EmployeeLifelineComponent {
     return ticks;
   });
 
+  /** Tramos que a esta escala quedan aplastados en el mínimo; pasado el umbral, se avisa. */
+  protected readonly compressedScale = computed(() => {
+    const squashed = this.lanes()
+      .flatMap((lane) => lane.segments)
+      .filter((segment) => this.naturalWidth(segment) < MIN_SEGMENT_WIDTH_PX).length;
+    return squashed > COMPRESSED_SCALE_THRESHOLD;
+  });
+
   protected readonly todayX = computed(() => this.x(this.today()));
   protected readonly todayInRange = computed(() => this.today() >= this.domain().start && this.today() <= this.domain().end);
 
@@ -341,8 +360,13 @@ export class EmployeeLifelineComponent {
   }
 
   protected segmentWidth(segment: LifelineSegment): number {
+    return Math.max(MIN_SEGMENT_WIDTH_PX, this.naturalWidth(segment));
+  }
+
+  /** El ancho que le tocaría al tramo por su duración, antes de aplicar el mínimo. */
+  private naturalWidth(segment: LifelineSegment): number {
     const right = segment.end ? this.x(segment.end) + 1 : this.axisWidth();
-    return Math.max(MIN_SEGMENT_WIDTH_PX, right - this.x(segment.start));
+    return right - this.x(segment.start);
   }
 
   protected showsLabel(segment: LifelineSegment): boolean {
@@ -375,6 +399,11 @@ export class EmployeeLifelineComponent {
   ): LifelineLane {
     const t = this.texts;
     const sorted = [...raw].sort((a, b) => a.start.localeCompare(b.start));
+    // El apilado por filas y la marca de solape existen aunque el dominio rechace los solapes
+    // dentro de una misma vigencia (PresenceOverlapException, las comprobaciones de
+    // CreateContractService...): con datos sanos este camino no se alcanza. Es un detector de
+    // datos corruptos. Si una migración mete un solape, un eje que pinta barras encima lo
+    // esconde y uno que las apila lo enseña. No simplificar por inútil ni leerlo como normal.
     const rowEnds: string[] = [];
     const segments: LifelineSegment[] = sorted.map((item, index) => {
       const overlaps = sorted.some((other, j) => j !== index && intersects(item, other));

@@ -38,6 +38,12 @@
   white-space: nowrap;
 }
 
+/* Aviso: hay tramos aplastados en el mínimo; la escala ya no distingue lo corto. */
+.lifeline__compressed {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
 .lifeline__message {
   font-size: 13px;
   color: var(--text-tertiary);
