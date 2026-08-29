@@ -106,6 +106,16 @@ for n,(d,extra,nota) in ICONS.items():
 W('public/icons/b4-icons.svg',
   '<svg xmlns="http://www.w3.org/2000/svg" style="display:none">'+HDR+''.join(syms)+'</svg>')
 
+# Los nombres del sprite, como tipo union, para que <b4-icon name="..."> no compile
+# con un icono que no existe. Misma fuente que el sprite: no pueden desincronizarse.
+W('src/app/shared/ui/icon/icon-names.ts',
+  '// B4RRHH — identidad visual. Generado por tools/identidad/build_all.py; no editar a mano.\n'
+  '// Un nombre por <symbol id="b4-..."> de public/icons/b4-icons.svg.\n'
+  'export const B4_ICON_NAMES = [\n'
+  + ''.join(f"  '{n}',\n" for n in ICONS) +
+  '] as const;\n\n'
+  'export type B4IconName = (typeof B4_ICON_NAMES)[number];\n')
+
 # ── rasterizado ───────────────────────────────────────────────────────────
 def png(src, dst, w):
     cairosvg.svg2png(url=src, write_to=dst, output_width=w, output_height=w)
