@@ -268,7 +268,7 @@ describe('RehireEmployeePageComponent', () => {
     fixture.detectChanges();
 
     expect(routerMock.navigate).toHaveBeenCalledWith(
-      ['/personas/empleados', 'ESP', 'EMP', 'E001', 'overview'],
+      ['/personas/empleados', 'ESP', 'EMP', 'E001', 'relacion'],
       {
         queryParams: { refresh: 'rehire' },
       },

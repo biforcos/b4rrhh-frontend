@@ -147,8 +147,8 @@ export class HireEmployeePageComponent {
         untracked(() => {
           this.globalMessageService.success(this.texts.hireEmployeeSuccessMessage, {
             id: 'hire-employee-success',
-            sectionId: 'overview',
-            sectionLabel: this.texts.overviewPanelTitle,
+            sectionId: 'relacion',
+            sectionLabel: this.texts.relationAreaLabel,
           });
         });
       }

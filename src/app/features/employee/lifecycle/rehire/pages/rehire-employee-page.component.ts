@@ -165,10 +165,10 @@ export class RehireEmployeePageComponent {
         untracked(() => {
           this.globalMessageService.success(this.texts.rehireEmployeeSuccessMessage, {
             id: 'rehire-employee-success',
-            sectionId: 'overview',
+            sectionId: 'relacion',
             sectionLabel: this.texts.detailPanelTitle,
           });
-          void this.router.navigate(buildEmployeeDetailRouteCommands(res.employeeKey, 'overview'), {
+          void this.router.navigate(buildEmployeeDetailRouteCommands(res.employeeKey, 'relacion'), {
             queryParams: { refresh: 'rehire' },
           });
         });
@@ -220,7 +220,7 @@ export class RehireEmployeePageComponent {
       void this.router.navigate(['/personas/empleados']);
       return;
     }
-    void this.router.navigate(buildEmployeeDetailRouteCommands(key, 'overview'));
+    void this.router.navigate(buildEmployeeDetailRouteCommands(key, 'relacion'));
   }
 
   mapErrorMessage(code: RehireEmployeeErrorCode | null): string {

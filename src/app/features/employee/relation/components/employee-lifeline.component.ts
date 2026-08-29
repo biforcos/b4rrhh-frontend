@@ -20,7 +20,7 @@ import { EmployeeLaborClassificationModel } from '../../models/employee-labor-cl
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { EmployeeWorkCenterModel } from '../../models/employee-work-center.model';
 import { EmployeeWorkingTimeModel } from '../../models/employee-working-time.model';
-import { EmployeeRouteSection } from '../../routing/employee-route-builder.util';
+import { EmployeeRelationAnchor } from '../../routing/employee-route-builder.util';
 
 export interface LifelineSegment {
   id: string;
@@ -42,7 +42,8 @@ export interface LifelineSegment {
 export interface LifelineLane {
   key: string;
   label: string;
-  section: EmployeeRouteSection;
+  /** El ancla del carril desplegado bajo el eje. */
+  anchor: EmployeeRelationAnchor;
   /** La presencia gobierna sobre las demás verticales (ADR-047): se marca. */
   governs: boolean;
   segments: ReadonlyArray<LifelineSegment>;
@@ -97,7 +98,20 @@ const COMPRESSED_SCALE_THRESHOLD = 3;
 const EVENT_LABEL_WIDTH_PX = 84;
 /** Por debajo de dos años se marcan los meses; por encima, solo los años. */
 const MONTHLY_TICKS_MAX_DAYS = 730;
-const MONTH_LABELS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MONTH_LABELS = [
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
+];
 
 function toIso(date: Date): string {
   const y = date.getFullYear();
@@ -124,7 +138,10 @@ function monthYear(iso: string): string {
   return date ? `${MONTH_LABELS[date.getMonth()]} ${date.getFullYear()}` : iso;
 }
 
-function intersects(a: { start: string; end: string | null }, b: { start: string; end: string | null }): boolean {
+function intersects(
+  a: { start: string; end: string | null },
+  b: { start: string; end: string | null },
+): boolean {
   const aEnd = a.end ?? '9999-12-31';
   const bEnd = b.end ?? '9999-12-31';
   return a.start <= bEnd && b.start <= aEnd;
@@ -152,7 +169,7 @@ interface RawPeriod {
  *   más lejos): un contrato que vence en dos meses se ve antes de que venza.
  * - La escala es lineal y se ajusta al ancho. Lo corto no desaparece: ningún tramo baja de 6 px,
  *   y su texto va al título. Ver la nota sobre la escala en el issue.
- * - Pinchar un tramo lleva a la sección de su carril.
+ * - Pinchar un tramo lleva al carril desplegado bajo el eje.
  */
 @Component({
   selector: 'app-employee-lifeline',
@@ -173,7 +190,7 @@ export class EmployeeLifelineComponent {
   /** Ancho fijo del eje en píxeles; sin él se mide el contenedor. Para tests sin layout (jsdom). */
   readonly fixedWidth = input<number | null>(null);
 
-  readonly sectionRequested = output<EmployeeRouteSection>();
+  readonly laneRequested = output<EmployeeRelationAnchor>();
 
   private readonly axisRef = viewChild<ElementRef<HTMLElement>>('axis');
 
@@ -185,36 +202,69 @@ export class EmployeeLifelineComponent {
   protected readonly lanes = computed<ReadonlyArray<LifelineLane>>(() => {
     const t = this.texts;
     return [
-      this.buildLane('presence', t.lifelineLanePresence, 'presence', true, this.presences().map((p) => ({
-        start: p.startDate,
-        end: p.endDate,
-        label: `${p.companyCode} · ${t.lifelinePresenceLabelPrefix} #${p.presenceNumber}`,
-        title: `${p.companyName ?? p.companyCode} · ${p.entryReasonName ?? p.entryReasonCode}`,
-      }))),
-      this.buildLane('contract', t.lifelineLaneContract, 'presence', false, this.contracts().map((c) => ({
-        start: c.startDate,
-        end: c.endDate,
-        label: `${c.contractCode} · ${c.contractTypeName ?? c.contractSubtypeName ?? ''}`.replace(/ · $/, ''),
-        title: `${c.contractTypeName ?? c.contractCode}${c.contractSubtypeCode ? ` / ${c.contractSubtypeCode}` : ''}`,
-      }))),
-      this.buildLane('working-time', t.lifelineLaneWorkingTime, 'presence', false, this.workingTimes().map((w) => ({
-        start: w.startDate,
-        end: w.endDate,
-        label: `${w.workingTimePercentage} % · ${HOURS.format(w.weeklyHours)} h`,
-        title: `${w.workingTimePercentage} % · ${HOURS.format(w.weeklyHours)} ${t.lifelineHoursPerWeekLabel}`,
-      }))),
-      this.buildLane('classification', t.lifelineLaneClassification, 'presence', false, this.laborClassifications().map((l) => ({
-        start: l.startDate,
-        end: l.endDate,
-        label: `${l.agreementCategoryName ?? l.agreementCategoryCode}${l.grupoCotizacionCode ? ` · ${t.lifelineContributionGroupLabel} ${l.grupoCotizacionCode}` : ''}`,
-        title: `${l.agreementName ?? l.agreementCode} · ${l.agreementCategoryName ?? l.agreementCategoryCode}`,
-      }))),
-      this.buildLane('work-center', t.lifelineLaneWorkCenter, 'organization', false, this.workCenters().map((w) => ({
-        start: w.startDate,
-        end: w.endDate,
-        label: w.workCenterName ?? w.workCenterCode,
-        title: `${w.workCenterName ?? w.workCenterCode} (${w.workCenterCode})`,
-      }))),
+      this.buildLane(
+        'presence',
+        t.lifelineLanePresence,
+        'presence',
+        true,
+        this.presences().map((p) => ({
+          start: p.startDate,
+          end: p.endDate,
+          label: `${p.companyCode} · ${t.lifelinePresenceLabelPrefix} #${p.presenceNumber}`,
+          title: `${p.companyName ?? p.companyCode} · ${p.entryReasonName ?? p.entryReasonCode}`,
+        })),
+      ),
+      this.buildLane(
+        'contract',
+        t.lifelineLaneContract,
+        'contract',
+        false,
+        this.contracts().map((c) => ({
+          start: c.startDate,
+          end: c.endDate,
+          label: `${c.contractCode} · ${c.contractTypeName ?? c.contractSubtypeName ?? ''}`.replace(
+            / · $/,
+            '',
+          ),
+          title: `${c.contractTypeName ?? c.contractCode}${c.contractSubtypeCode ? ` / ${c.contractSubtypeCode}` : ''}`,
+        })),
+      ),
+      this.buildLane(
+        'working-time',
+        t.lifelineLaneWorkingTime,
+        'working-time',
+        false,
+        this.workingTimes().map((w) => ({
+          start: w.startDate,
+          end: w.endDate,
+          label: `${w.workingTimePercentage} % · ${HOURS.format(w.weeklyHours)} h`,
+          title: `${w.workingTimePercentage} % · ${HOURS.format(w.weeklyHours)} ${t.lifelineHoursPerWeekLabel}`,
+        })),
+      ),
+      this.buildLane(
+        'classification',
+        t.lifelineLaneClassification,
+        'classification',
+        false,
+        this.laborClassifications().map((l) => ({
+          start: l.startDate,
+          end: l.endDate,
+          label: `${l.agreementCategoryName ?? l.agreementCategoryCode}${l.grupoCotizacionCode ? ` · ${t.lifelineContributionGroupLabel} ${l.grupoCotizacionCode}` : ''}`,
+          title: `${l.agreementName ?? l.agreementCode} · ${l.agreementCategoryName ?? l.agreementCategoryCode}`,
+        })),
+      ),
+      this.buildLane(
+        'work-center',
+        t.lifelineLaneWorkCenter,
+        'work-center',
+        false,
+        this.workCenters().map((w) => ({
+          start: w.startDate,
+          end: w.endDate,
+          label: w.workCenterName ?? w.workCenterCode,
+          title: `${w.workCenterName ?? w.workCenterCode} (${w.workCenterCode})`,
+        })),
+      ),
     ];
   });
 
@@ -267,7 +317,9 @@ export class EmployeeLifelineComponent {
   });
 
   protected readonly stageCount = computed(() => this.presences().length);
-  protected readonly hasData = computed(() => this.lanes().some((lane) => lane.segments.length > 0));
+  protected readonly hasData = computed(() =>
+    this.lanes().some((lane) => lane.segments.length > 0),
+  );
 
   /** El dominio del eje: del mes del primer tramo a cuatro meses después de hoy o del último. */
   protected readonly domain = computed(() => {
@@ -302,7 +354,8 @@ export class EmployeeLifelineComponent {
         ticks.push({
           id: iso,
           date: iso,
-          label: !monthly || isJanuary ? String(cursor.getFullYear()) : MONTH_LABELS[cursor.getMonth()],
+          label:
+            !monthly || isJanuary ? String(cursor.getFullYear()) : MONTH_LABELS[cursor.getMonth()],
           major: !monthly || isJanuary,
         });
       }
@@ -320,7 +373,9 @@ export class EmployeeLifelineComponent {
   });
 
   protected readonly todayX = computed(() => this.x(this.today()));
-  protected readonly todayInRange = computed(() => this.today() >= this.domain().start && this.today() <= this.domain().end);
+  protected readonly todayInRange = computed(
+    () => this.today() >= this.domain().start && this.today() <= this.domain().end,
+  );
 
   /**
    * Los eventos con la etiqueta colocada contra las vecinas: en la primera fila si cabe, en la
@@ -383,7 +438,7 @@ export class EmployeeLifelineComponent {
   }
 
   protected select(lane: LifelineLane): void {
-    this.sectionRequested.emit(lane.section);
+    this.laneRequested.emit(lane.anchor);
   }
 
   private sortedPresences(): ReadonlyArray<EmployeePresenceModel> {
@@ -393,7 +448,7 @@ export class EmployeeLifelineComponent {
   private buildLane(
     key: string,
     label: string,
-    section: EmployeeRouteSection,
+    anchor: EmployeeRelationAnchor,
     governs: boolean,
     raw: ReadonlyArray<RawPeriod>,
   ): LifelineLane {
@@ -428,6 +483,6 @@ export class EmployeeLifelineComponent {
         ordinal: index,
       };
     });
-    return { key, label, section, governs, segments, rows: Math.max(1, rowEnds.length) };
+    return { key, label, anchor, governs, segments, rows: Math.max(1, rowEnds.length) };
   }
 }

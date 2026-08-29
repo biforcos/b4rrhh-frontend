@@ -75,19 +75,27 @@
 
   <div class="identity-panel__divider"></div>
 
-  <!-- Section navigation -->
+  <!-- El índice de la página (ADR-050): anclas de la relación con su recuento —en gris las
+       vacías—, y las dos secciones de ruta. No se pliega a iconos. -->
   <nav class="identity-panel__nav" [attr.aria-label]="texts.detailNavAriaLabel">
-    @for (item of navItems(); track item.section) {
-      <a
-        class="identity-panel__nav-item"
-        [routerLink]="item.routeCommands"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [title]="item.label"
-      >
-        <b4-icon class="identity-panel__nav-icon" [name]="item.icon" [size]="20" />
-        <span class="identity-panel__nav-label">{{ item.label }}</span>
-      </a>
+    @for (group of navGroups(); track group.label) {
+      <span class="identity-panel__nav-group">{{ group.label }}</span>
+      @for (item of group.items; track item.id) {
+        <a
+          class="identity-panel__nav-item"
+          [class.active]="isActive(item)"
+          [class.identity-panel__nav-item--empty]="item.count === 0"
+          [routerLink]="item.routeCommands"
+          [fragment]="item.anchor ?? undefined"
+          [attr.aria-current]="isActive(item) ? 'true' : null"
+        >
+          <b4-icon class="identity-panel__nav-icon" [name]="item.icon" [size]="16" />
+          <span class="identity-panel__nav-label">{{ item.label }}</span>
+          @if (item.count !== null) {
+            <span class="identity-panel__nav-count">{{ item.count }}</span>
+          }
+        </a>
+      }
     }
   </nav>
 </div>

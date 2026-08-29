@@ -1,6 +1,6 @@
-<!-- La ficha sobre el esqueleto (ADR-050): identidad = la miga con el nombre; raíl = el panel de
-     identidad con su índice; principal = el área activa; contextual = el Historial. El contenido de
-     cada hueco es el de antes: solo cambia de sitio.
+<!-- La ficha sobre el esqueleto (ADR-050): identidad = la miga con el nombre y las acciones de
+     página; raíl = el panel de identidad con el índice; principal = la sección activa;
+     contextual = el Historial.
 
      Cada hueco va en su propio @if con un único nodo raíz: Angular solo proyecta un bloque de
      control de flujo al slot que dice su `slot="…"` cuando el bloque tiene un solo nodo raíz;
@@ -14,12 +14,33 @@
   [railToggleLabel]="texts.railToggleLabel"
 >
 
-  <!-- Breadcrumb (identidad) -->
-  <nav slot="identidad" class="employee-detail__breadcrumb" aria-label="Breadcrumb">
-    <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{ texts.masterTitle }}</a>
-    <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
-    <span class="employee-detail__breadcrumb-current">{{ selectedEmployee()?.displayName ?? '...' }}</span>
-  </nav>
+  <!-- Identidad: la miga con el nombre y, a la derecha, las acciones de página (ADR-050 §1). -->
+  <div slot="identidad" class="employee-detail__identity">
+    <nav class="employee-detail__breadcrumb" aria-label="Breadcrumb">
+      <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{ texts.masterTitle }}</a>
+      <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="employee-detail__breadcrumb-current">{{ selectedEmployee()?.displayName ?? '...' }}</span>
+    </nav>
+    @if (activeEmployeeKey() && !isRehireWorkflow()) {
+      <div class="employee-detail__actions" [attr.aria-label]="texts.pageActionsAriaLabel">
+        <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()">
+          <ng-template #item let-item>
+            <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
+              <b4-icon [name]="menuIcon(item)" [size]="16" />
+              <span class="p-menu-item-label">{{ item.label }}</span>
+            </a>
+          </ng-template>
+        </p-menu>
+        <button class="employee-detail__btn-secondary" type="button" (click)="showActionsMenu($event)">
+          {{ texts.pageActionsMenuLabel }} <b4-icon name="chevron-abajo" [size]="16" />
+        </button>
+        <button class="employee-detail__btn-primary" type="button" (click)="navigateToSection('payroll')">
+          <b4-icon name="nomina" [size]="16" />
+          {{ texts.pageActionCalculatePayroll }}
+        </button>
+      </div>
+    }
+  </div>
 
   <!-- Identity panel (raíl) -->
   @if (activeEmployeeKey(); as key) {
@@ -31,6 +52,7 @@
       [status]="headerStatus()"
       [isAdmin]="isAdmin()"
       [activeSection]="activeDetailSection()"
+      [activeAnchor]="activeAnchor()"
       (editIdentityRequested)="openIdentityEditorFromHeader()"
     />
   }

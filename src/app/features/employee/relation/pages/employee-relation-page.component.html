@@ -1,0 +1,22 @@
+<section class="employee-relation" [attr.aria-label]="texts.relationAreaLabel">
+  <!-- El resumen es la línea de vida. -->
+  <div id="employee-section-lifeline" class="employee-relation__lane">
+    <app-employee-lifeline
+      [presences]="presences()"
+      [contracts]="contracts()"
+      [workingTimes]="workingTimes()"
+      [laborClassifications]="laborClassifications()"
+      [workCenters]="workCenters()"
+      [loading]="lifelineLoading()"
+      (laneRequested)="goToLane($event)"
+    />
+  </div>
+
+  <!-- Los carriles, en el mismo orden que en el eje. La presencia primero: gobierna. -->
+  <app-employee-presence-section class="employee-relation__lane" [employeeKey]="activeEmployeeKey()" />
+  <app-employee-contract-section class="employee-relation__lane" [employeeBusinessKey]="activeEmployeeKey()" />
+  <app-employee-working-time-section class="employee-relation__lane" [employeeBusinessKey]="activeEmployeeKey()" />
+  <app-employee-labor-classification-section class="employee-relation__lane" [employeeBusinessKey]="activeEmployeeKey()" />
+  <app-employee-work-center-section class="employee-relation__lane" [employeeKey]="activeEmployeeKey()" />
+  <app-employee-cost-center-section class="employee-relation__lane" [employeeKey]="activeEmployeeKey()" />
+</section>

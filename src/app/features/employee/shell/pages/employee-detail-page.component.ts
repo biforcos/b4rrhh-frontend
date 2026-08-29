@@ -7,7 +7,10 @@ import {
   inject,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
+import { Menu, MenuModule } from 'primeng/menu';
+import type { MenuItem } from 'primeng/api';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { hasRehireRefreshMarker } from '../../routing/employee-refresh-marker.util';
@@ -33,8 +36,12 @@ import { EmployeeDetailModel } from '../../models/employee-detail.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import {
   buildEmployeeDetailRouteCommands,
+  EmployeeRelationAnchor,
   EmployeeRouteSection,
+  employeeLegacySections,
   employeeRouteSections,
+  isEmployeeRelationAnchor,
+  resolveEmployeeSectionRoute,
 } from '../../routing/employee-route-builder.util';
 import {
   areEmployeeBusinessKeysEqual,
@@ -43,6 +50,8 @@ import {
 import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { EmployeeDetailHeaderComponent } from '../components/employee-detail-header.component';
 import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-skeleton.component';
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
+import { B4IconName } from '../../../../shared/ui/icon/icon-names';
 
 @Component({
   selector: 'app-employee-detail-page',
@@ -57,6 +66,8 @@ import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-
     GlobalMessageRailComponent,
     EmployeeDetailHeaderComponent,
     PageSkeletonComponent,
+    MenuModule,
+    B4IconComponent,
   ],
   templateUrl: './employee-detail-page.component.html',
   styleUrl: './employee-detail-page.component.scss',
@@ -81,7 +92,10 @@ export class EmployeeDetailPageComponent {
 
   protected readonly texts = employeeTexts;
   protected readonly activeEmployeeKey = signal<EmployeeBusinessKey | null>(null);
-  protected readonly activeDetailSection = signal<EmployeeRouteSection>('contact');
+  protected readonly activeDetailSection = signal<EmployeeRouteSection>('relacion');
+  /** El ancla activa dentro de la relación (el fragmento de la URL). */
+  protected readonly activeAnchor = signal<EmployeeRelationAnchor | null>(null);
+  protected readonly actionsMenuRef = viewChild<Menu>('actionsMenu');
   protected readonly selectedEmployeeDetail = this.detailStore.selectedEmployeeDetail;
   protected readonly loadingDetail = this.detailStore.loadingDetail;
   protected readonly detailError = this.detailStore.detailError;
@@ -152,6 +166,7 @@ export class EmployeeDetailPageComponent {
         }
         this.activeEmployeeKey.set(activeKey);
         this.activeDetailSection.set(this.resolveActiveDetailSection());
+        this.activeAnchor.set(this.resolveActiveAnchor());
         this.isRehireWorkflow.set(this.resolveIsRehireWorkflow());
 
         if (shouldForceRefresh) {
@@ -195,7 +210,7 @@ export class EmployeeDetailPageComponent {
         if (identitySuccess && identitySuccess !== this.previousIdentitySuccess) {
           this.globalMessageService.success(this.texts.detailHeaderUpdateSuccessMessage, {
             id: 'employee-detail-identity-updated',
-            sectionId: 'overview',
+            sectionId: 'relacion',
             sectionLabel: this.texts.detailPanelTitle,
           });
         }
@@ -241,16 +256,17 @@ export class EmployeeDetailPageComponent {
     if (!sectionId) return;
     const activeKey = this.activeEmployeeKey();
     if (!activeKey) return;
-    if (employeeRouteSections.includes(sectionId as EmployeeRouteSection)) {
-      const routeSection = sectionId as EmployeeRouteSection;
-      if (this.activeDetailSection() !== routeSection) {
-        void this.router
-          .navigate(buildEmployeeDetailRouteCommands(activeKey, routeSection))
-          .then((navigated) => {
-            if (navigated) window.setTimeout(() => this.focusSection(sectionId), 120);
-          });
-        return;
-      }
+    // Una sección de ruta tal cual; un ancla de la relación lleva primero a la relación.
+    const routeSection = resolveEmployeeSectionRoute(sectionId);
+    if (routeSection && this.activeDetailSection() !== routeSection) {
+      void this.router
+        .navigate(buildEmployeeDetailRouteCommands(activeKey, routeSection), {
+          fragment: isEmployeeRelationAnchor(sectionId) ? sectionId : undefined,
+        })
+        .then((navigated) => {
+          if (navigated) window.setTimeout(() => this.focusSection(sectionId), 120);
+        });
+      return;
     }
     this.focusSection(sectionId);
   }
@@ -324,7 +340,60 @@ export class EmployeeDetailPageComponent {
     if (employeeRouteSections.includes(routeSection as EmployeeRouteSection)) {
       return routeSection as EmployeeRouteSection;
     }
-    return 'contact';
+    return employeeLegacySections[routeSection] ?? 'relacion';
+  }
+
+  private resolveActiveAnchor(): EmployeeRelationAnchor | null {
+    const fragment = this.router.parseUrl(this.router.url).fragment ?? '';
+    return isEmployeeRelationAnchor(fragment) ? fragment : null;
+  }
+
+  /* ── Acciones de página (ADR-050 §1: en la identidad, nunca dentro de una card) ── */
+
+  /** `MenuItem.icon` es un string libre; aquí lleva un nombre del set propio y la plantilla `item` lo pinta con `<b4-icon>`. */
+  protected menuIcon(item: MenuItem): B4IconName {
+    return item.icon as B4IconName;
+  }
+
+  protected readonly actionMenuItems = computed<MenuItem[]>(() => {
+    const t = this.texts;
+    const isActive = this.headerStatus() === 'ACTIVE';
+    return [
+      {
+        label: t.pageActionsLifecycleGroup,
+        items: isActive
+          ? [{ label: t.pageActionTerminate, icon: 'detener', command: () => this.openTerminatePanel() }]
+          : [{ label: t.pageActionRehire, icon: 'readmision', command: () => this.onRehireRequested() }],
+      },
+      {
+        label: t.relationAreaLabel,
+        items: [
+          { label: t.pageActionChangeWorkCenter, icon: 'centro-trabajo', command: () => this.navigateToAnchor('work-center') },
+          { label: t.pageActionNewContract, icon: 'documento-nuevo', command: () => this.navigateToAnchor('contract') },
+          { label: t.pageActionSalaryReview, icon: 'grafico', disabled: true },
+        ],
+      },
+    ];
+  });
+
+  protected showActionsMenu(event: MouseEvent): void {
+    this.actionsMenuRef()?.toggle(event);
+  }
+
+  protected navigateToSection(section: EmployeeRouteSection): void {
+    const key = this.activeEmployeeKey();
+    if (!key) return;
+    void this.router.navigate(buildEmployeeDetailRouteCommands(key, section));
+  }
+
+  protected navigateToAnchor(anchor: EmployeeRelationAnchor): void {
+    const key = this.activeEmployeeKey();
+    if (!key) return;
+    void this.router
+      .navigate(buildEmployeeDetailRouteCommands(key, 'relacion'), { fragment: anchor })
+      .then((navigated) => {
+        if (navigated) window.setTimeout(() => this.focusSection(anchor), 120);
+      });
   }
 
   private resolveActivePresence(
@@ -383,7 +452,7 @@ export class EmployeeDetailPageComponent {
         id: 'employee-detail-not-found',
         level: 'warning',
         text: this.texts.detailNotFoundMessage,
-        sectionId: 'overview',
+        sectionId: 'relacion',
         sectionLabel: this.texts.detailPanelTitle,
         sticky: true,
       });
@@ -393,7 +462,7 @@ export class EmployeeDetailPageComponent {
         id: 'employee-detail-load-error',
         level: 'error',
         text: this.texts.detailLoadFailedMessage,
-        sectionId: 'overview',
+        sectionId: 'relacion',
         sectionLabel: this.texts.detailPanelTitle,
         sticky: true,
       });
@@ -403,7 +472,7 @@ export class EmployeeDetailPageComponent {
         id: 'employee-identity-update-error',
         level: 'error',
         text: this.texts.detailHeaderUpdateErrorMessage,
-        sectionId: 'overview',
+        sectionId: 'relacion',
         sectionLabel: this.texts.detailPanelTitle,
         sticky: true,
       });

@@ -9,13 +9,63 @@
   min-height: 100dvh;
 }
 
-/* Breadcrumb (identidad) */
+/* Identidad: la miga a la izquierda, las acciones de página a la derecha. */
+.employee-detail__identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  min-height: 52px;
+}
+
 .employee-detail__breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 12px 24px;
   font-size: 13px;
+  min-width: 0;
+}
+
+.employee-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.employee-detail__btn-primary,
+.employee-detail__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.employee-detail__btn-primary {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--accent-primary);
+  font-weight: 600;
+}
+
+.employee-detail__btn-primary:hover {
+  background: var(--accent-primary-hover);
+}
+
+.employee-detail__btn-secondary {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  font-weight: 500;
+}
+
+.employee-detail__btn-secondary:hover {
+  background: var(--surface-hover);
 }
 
 .employee-detail__breadcrumb-link {

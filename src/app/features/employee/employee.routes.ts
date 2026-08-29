@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import {
   buildEmployeeKeyRoutePath,
   buildEmployeeUnknownSectionRoutePath,
+  employeeLegacySections,
 } from './routing/employee-route-builder.util';
 
 export const employeeRoutes: Routes = [
@@ -29,10 +30,11 @@ export const employeeRoutes: Routes = [
       ),
     children: [
       {
-        path: 'overview',
+        // La relación laboral: la línea de vida y sus carriles, en una sola página (ADR-051).
+        path: 'relacion',
         loadComponent: () =>
-          import('./overview/pages/employee-overview-page.component').then(
-            (m) => m.EmployeeOverviewPageComponent,
+          import('./relation/pages/employee-relation-page.component').then(
+            (m) => m.EmployeeRelationPageComponent,
           ),
       },
       {
@@ -40,20 +42,6 @@ export const employeeRoutes: Routes = [
         loadComponent: () =>
           import('./contact/pages/employee-contact-page.component').then(
             (m) => m.EmployeeContactPageComponent,
-          ),
-      },
-      {
-        path: 'presence',
-        loadComponent: () =>
-          import('./presence/pages/employee-presence-page.component').then(
-            (m) => m.EmployeePresencePageComponent,
-          ),
-      },
-      {
-        path: 'organization',
-        loadComponent: () =>
-          import('./organization/pages/employee-organization-page.component').then(
-            (m) => m.EmployeeOrganizationPageComponent,
           ),
       },
       {
@@ -70,15 +58,21 @@ export const employeeRoutes: Routes = [
             (m) => m.RehireEmployeePageComponent,
           ),
       },
+      // Las rutas de antes de #18 siguen vivas: la demo y los enlaces guardados apuntan a ellas.
+      ...Object.entries(employeeLegacySections).map(([legacy, section]) => ({
+        path: legacy,
+        pathMatch: 'full' as const,
+        redirectTo: section,
+      })),
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'overview',
+        redirectTo: 'relacion',
       },
       {
         path: ':section',
         pathMatch: 'full',
-        redirectTo: 'overview',
+        redirectTo: 'relacion',
       },
     ],
   },

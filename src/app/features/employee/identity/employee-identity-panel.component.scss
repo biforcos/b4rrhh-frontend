@@ -3,12 +3,8 @@
   width: 260px;
   flex-shrink: 0;
   height: 100%;
-  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:host.identity-panel--collapsed {
-  width: 96px;
-}
 
 .identity-panel {
   display: flex;
@@ -41,13 +37,6 @@
               box-shadow 0.2s;
 }
 
-:host.identity-panel--collapsed .identity-panel__avatar {
-  width: 72px;
-  height: 72px;
-  font-size: 22px;
-  margin-bottom: 16px;
-  box-shadow: 0 0 0 3px var(--surface-accent);
-}
 
 .identity-panel__avatar--clickable {
   cursor: pointer;
@@ -66,10 +55,6 @@
               height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:host.identity-panel--collapsed .identity-panel__avatar-photo {
-  width: 72px;
-  height: 72px;
-}
 
 .identity-panel__avatar-overlay {
   position: absolute;
@@ -103,9 +88,6 @@
   background: var(--success-text);
 }
 
-:host.identity-panel--collapsed .identity-panel__status-dot {
-  opacity: 1;
-}
 
 /* Hero wrapper */
 .identity-panel__hero {
@@ -123,10 +105,6 @@
   max-height: 200px;
 }
 
-:host.identity-panel--collapsed .identity-panel__meta {
-  opacity: 0;
-  max-height: 0;
-}
 
 .identity-panel__name-row {
   display: flex;
@@ -190,10 +168,6 @@
   background: var(--text-soft);
 }
 
-:host.identity-panel--collapsed .identity-panel__mat-block {
-  opacity: 0;
-  max-height: 0;
-}
 
 .identity-panel__mat-label {
   display: block;
@@ -249,10 +223,6 @@
   max-height: 30px;
 }
 
-:host.identity-panel--collapsed .identity-panel__hire-date {
-  opacity: 0;
-  max-height: 0;
-}
 
 /* Divider */
 .identity-panel__divider {
@@ -261,26 +231,51 @@
   margin: 0 0 10px;
 }
 
-/* Section nav */
+/* El índice de la página: grupos, entradas con recuento; en gris las vacías. */
 .identity-panel__nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+.identity-panel__nav-group {
+  display: block;
+  padding: 10px 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.identity-panel__nav-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.identity-panel__nav-item--empty {
+  color: var(--text-tertiary);
+}
+
+.identity-panel__nav-item.active .identity-panel__nav-count {
+  color: var(--text-inverse);
+}
+
 .identity-panel__nav-item {
   display: flex;
   align-items: center;
   gap: 9px;
-  height: 34px;
-  border-radius: 8px;
+  height: 30px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
   padding: 0 10px;
   overflow: hidden;
-  transition: background 0.12s, color 0.12s, padding 0.45s, justify-content 0.45s, height 0.45s;
+  transition: background 0.12s, color 0.12s;
 
   &:hover {
     background: var(--surface-hover);
@@ -294,11 +289,6 @@
   }
 }
 
-:host.identity-panel--collapsed .identity-panel__nav-item {
-  padding: 0;
-  justify-content: center;
-  height: 38px;
-}
 
 .identity-panel__nav-icon {
   width: 20px;
@@ -306,15 +296,11 @@
 }
 
 .identity-panel__nav-label {
-  transition: opacity 0.25s, width 0.4s;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-:host.identity-panel--collapsed .identity-panel__nav-label {
-  opacity: 0;
-  width: 0;
-}
 
 /* Delete photo button */
 .identity-panel__delete-photo {

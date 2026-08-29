@@ -1,0 +1,10 @@
+/* Una sola columna de carriles bajo la línea de vida: el ancho lo pone el esqueleto (ADR-050). */
+.employee-relation {
+  display: grid;
+  gap: 16px;
+}
+
+.employee-relation__lane {
+  display: block;
+  scroll-margin-top: 16px;
+}
