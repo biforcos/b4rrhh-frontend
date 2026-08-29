@@ -1,0 +1,39 @@
+<app-temporal-section
+  [title]="texts.presenceBlockTitle"
+  [rows]="rows()"
+  [governs]="true"
+  [addLabel]="null"
+  [emptyMessage]="texts.presenceBlockEmptyMessage"
+  anchorId="employee-section-presence"
+>
+  <ng-template #columnHeaders>
+    <th class="temporal-section__th">{{ texts.presenceBlockCompanyLabel }}</th>
+    <th class="temporal-section__th">{{ texts.presenceBlockEntryReasonLabel }}</th>
+    <th class="temporal-section__th">{{ texts.presenceBlockExitReasonLabel }}</th>
+  </ng-template>
+  <ng-template #cellContent let-row>
+    <!-- ADR-051 §4: el código nunca va solo. -->
+    <td class="temporal-section__td">
+      {{ row.companyName ?? row.companyCode }}
+      @if (row.companyName) {
+        <span class="temporal-section__code">{{ row.companyCode }}</span>
+      }
+    </td>
+    <td class="temporal-section__td">
+      {{ row.entryReasonName ?? row.entryReasonCode }}
+      @if (row.entryReasonName) {
+        <span class="temporal-section__code">{{ row.entryReasonCode }}</span>
+      }
+    </td>
+    <td class="temporal-section__td">
+      @if (row.exitReasonCode) {
+        {{ row.exitReasonName ?? row.exitReasonCode }}
+        @if (row.exitReasonName) {
+          <span class="temporal-section__code">{{ row.exitReasonCode }}</span>
+        }
+      } @else {
+        <span class="temporal-section__secondary">—</span>
+      }
+    </td>
+  </ng-template>
+</app-temporal-section>

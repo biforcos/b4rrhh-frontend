@@ -8,12 +8,7 @@
 
   <div class="employee-area__modules">
     <section class="employee-area__module">
-      <app-employee-presence-block
-        [presence]="presenceBlockModel()"
-        [companyLabelsByCode]="companyCatalogLabelsByCode()"
-        [entryReasonLabelsByCode]="entryReasonCatalogLabelsByCode()"
-        [exitReasonLabelsByCode]="exitReasonCatalogLabelsByCode()"
-      />
+      <app-employee-presence-section [employeeKey]="activeEmployeeKey()" />
     </section>
 
     <section class="employee-area__module">
