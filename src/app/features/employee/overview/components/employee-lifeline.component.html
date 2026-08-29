@@ -1,0 +1,91 @@
+<section class="lifeline" aria-labelledby="lifeline-title">
+  <header class="lifeline__header">
+    <h2 id="lifeline-title" class="lifeline__title">{{ texts.lifelineTitle }}</h2>
+    @if (hasData()) {
+      <p class="lifeline__range">
+        {{ rangeLabel() }} · {{ stageCount() }}
+        {{ stageCount() === 1 ? texts.lifelineStageSingularLabel : texts.lifelineStagePluralLabel }}
+      </p>
+    }
+  </header>
+
+  @if (loading() && !hasData()) {
+    <p class="lifeline__message">{{ texts.lifelineLoadingMessage }}</p>
+  } @else if (!hasData()) {
+    <p class="lifeline__message">{{ texts.lifelineEmptyMessage }}</p>
+  } @else {
+    <div class="lifeline__grid">
+      <!-- Carriles: etiqueta a la izquierda, tramos a la derecha sobre el mismo eje. -->
+      @for (lane of lanes(); track lane.key) {
+        <div class="lifeline__lane-label" [class.lifeline__lane-label--governs]="lane.governs">
+          {{ lane.label }}
+        </div>
+        <div class="lifeline__lane" [style.--rows]="lane.rows" [attr.aria-label]="lane.label">
+          @for (segment of lane.segments; track segment.id) {
+            <button
+              type="button"
+              class="lifeline__segment"
+              [class.lifeline__segment--open]="segment.isOpen"
+              [class.lifeline__segment--closed]="!segment.isOpen"
+              [class.lifeline__segment--alt]="segment.ordinal % 2 === 1"
+              [class.lifeline__segment--overlaps]="segment.overlaps"
+              [style.left.px]="x(segment.start)"
+              [style.width.px]="segmentWidth(segment)"
+              [style.--row]="segment.row"
+              [title]="segment.title"
+              [attr.aria-label]="segment.title"
+              (click)="select(lane)"
+            >
+              @if (showsLabel(segment)) {
+                <span class="lifeline__segment-label">{{ segment.label }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <!-- El eje: meses o años, y encima los hitos de la relación. -->
+      <div class="lifeline__axis-label"></div>
+      <div class="lifeline__axis" #axis>
+        @for (tick of ticks(); track tick.id) {
+          <span
+            class="lifeline__tick"
+            [class.lifeline__tick--major]="tick.major"
+            [style.left.px]="x(tick.date)"
+          >{{ tick.label }}</span>
+        }
+        @for (event of placedEvents(); track event.id) {
+          <span
+            class="lifeline__event lifeline__event--{{ event.kind }}"
+            [class.lifeline__event--tier1]="event.tier === 1"
+            [style.left.px]="x(event.date)"
+            [title]="eventTitle(event)"
+          >
+            <b4-icon [name]="event.icon" [size]="16" [label]="event.showLabel ? null : eventTitle(event)" />
+            @if (event.showLabel) {
+              <span class="lifeline__event-label">{{ event.label }}</span>
+            }
+          </span>
+        }
+        @if (todayInRange()) {
+          <span class="lifeline__today-label" [style.left.px]="todayX()">{{ texts.lifelineTodayLabel }}</span>
+        }
+      </div>
+
+      <!-- Capas que cruzan todos los carriles: las interrupciones y hoy. -->
+      <div class="lifeline__overlay" aria-hidden="true">
+        @for (item of breaks(); track item.id) {
+          <div
+            class="lifeline__break"
+            [style.left.px]="x(item.start)"
+            [style.width.px]="x(item.end) - x(item.start)"
+            [title]="breakTitle(item)"
+          ></div>
+        }
+        @if (todayInRange()) {
+          <div class="lifeline__today" [style.left.px]="todayX()"></div>
+        }
+      </div>
+    </div>
+  }
+</section>

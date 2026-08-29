@@ -1,0 +1,245 @@
+/*
+ * La línea de vida: carriles de vigencias sobre un eje común. Todo son tokens; el único
+ * dibujo es el rayado de la interrupción, hecho con el borde suave.
+ */
+:host {
+  display: block;
+  --lifeline-label-width: 112px;
+  --lifeline-row-height: 20px;
+  --lifeline-row-gap: 4px;
+}
+
+.lifeline {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px 12px;
+}
+
+.lifeline__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.lifeline__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.lifeline__range {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.lifeline__message {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* ─── la retícula: etiqueta | carril, y al final etiqueta vacía | eje ─── */
+.lifeline__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--lifeline-label-width) minmax(0, 1fr);
+  row-gap: 6px;
+  align-items: center;
+}
+
+.lifeline__lane-label {
+  padding-right: 14px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.lifeline__lane-label--governs {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.lifeline__lane {
+  position: relative;
+  height: calc(var(--rows, 1) * var(--lifeline-row-height) + (var(--rows, 1) - 1) * var(--lifeline-row-gap));
+  background: var(--surface-hover);
+  border-radius: 2px;
+}
+
+/* ─── los tramos ─── */
+.lifeline__segment {
+  position: absolute;
+  top: calc(var(--row, 0) * (var(--lifeline-row-height) + var(--lifeline-row-gap)));
+  height: var(--lifeline-row-height);
+  padding: 0 6px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: var(--lifeline-row-height);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.lifeline__segment:hover,
+.lifeline__segment:focus-visible {
+  background: var(--accent-primary-hover);
+  outline: 2px solid var(--accent-border);
+  outline-offset: 1px;
+}
+
+.lifeline__segment-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tramos consecutivos alternan tono para que el cambio se vea aunque no haya hueco entre ellos. */
+.lifeline__segment--alt {
+  background: var(--accent-soft);
+}
+
+.lifeline__segment--alt:hover,
+.lifeline__segment--alt:focus-visible {
+  background: var(--accent-primary);
+}
+
+/* Cerrado: termina en punta. Abierto: llega al borde con el cabo abierto, como las barras del isotipo. */
+.lifeline__segment--closed {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+
+.lifeline__segment--open {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+}
+
+/* Solape: dos vigencias del mismo carril a la vez. Se ve como aviso, no como dato. */
+.lifeline__segment--overlaps {
+  box-shadow: inset 0 0 0 2px var(--warning-strong);
+}
+
+/* ─── el eje ─── */
+.lifeline__axis {
+  position: relative;
+  height: 56px; /* meses + dos filas de hitos */
+  border-top: 1px solid var(--border-strong);
+}
+
+.lifeline__tick {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.lifeline__tick--major {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.lifeline__tick::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: var(--border-strong);
+}
+
+/* Los hitos: alta, cese, readmisión. Bajo el eje, con su icono y su nombre. */
+.lifeline__event {
+  position: absolute;
+  top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transform: translateX(-50%);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.lifeline__event--tier1 {
+  top: 34px;
+}
+
+.lifeline__event--termination {
+  color: var(--error-text);
+}
+
+.lifeline__event--rehire,
+.lifeline__event--hire {
+  color: var(--success-text);
+}
+
+/* ─── capas que cruzan los carriles ─── */
+.lifeline__overlay {
+  position: absolute;
+  top: 0;
+  bottom: 56px; /* hasta el eje */
+  left: var(--lifeline-label-width);
+  right: 0;
+  pointer-events: none;
+}
+
+/* La interrupción: columna rayada del cese a la readmisión, a través de todos los carriles. */
+.lifeline__break {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: auto;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 5px,
+    var(--border-strong) 5px,
+    var(--border-strong) 6px
+  );
+}
+
+.lifeline__today {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text-primary);
+}
+
+.lifeline__today-label {
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  background: var(--surface-panel);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  :host {
+    --lifeline-label-width: 84px;
+  }
+}
