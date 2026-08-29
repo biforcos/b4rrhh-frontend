@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(**/.stylelintrc.json)",
+      "Edit(**/.prettierrc)",
+      "Edit(**/.editorconfig)"
+    ]
+  }
+}
