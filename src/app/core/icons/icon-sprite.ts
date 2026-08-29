@@ -33,7 +33,9 @@ export async function loadIconSprite(document: Document): Promise<void> {
     return;
   }
   try {
-    const response = await fetch(ICON_SPRITE_URL, { signal: AbortSignal.timeout(SPRITE_TIMEOUT_MS) });
+    const response = await fetch(ICON_SPRITE_URL, {
+      signal: AbortSignal.timeout(SPRITE_TIMEOUT_MS),
+    });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }

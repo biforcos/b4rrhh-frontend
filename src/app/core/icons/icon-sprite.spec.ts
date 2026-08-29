@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ICON_SPRITE_ELEMENT_ID, ICON_SPRITE_URL, loadIconSprite } from './icon-sprite';
 
-const SPRITE = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="b4-empleado" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></symbol></svg>';
+const SPRITE =
+  '<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="b4-empleado" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></symbol></svg>';
 
 describe('loadIconSprite', () => {
   beforeEach(() => {
@@ -24,7 +25,10 @@ describe('loadIconSprite', () => {
     expect(document.body.firstElementChild).toBe(container);
     expect(container?.getAttribute('aria-hidden')).toBe('true');
     expect(document.getElementById('b4-empleado')?.tagName.toLowerCase()).toBe('symbol');
-    expect(fetch).toHaveBeenCalledWith(ICON_SPRITE_URL, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(fetch).toHaveBeenCalledWith(
+      ICON_SPRITE_URL,
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
   });
 
   it('no lo carga dos veces', async () => {
@@ -48,7 +52,9 @@ describe('loadIconSprite', () => {
   });
 
   it('si el fetch rechaza (la forma que toma el tiempo límite) tampoco rompe el arranque', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new DOMException('signal timed out', 'TimeoutError'));
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+      new DOMException('signal timed out', 'TimeoutError'),
+    );
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     await expect(loadIconSprite(document)).resolves.toBeUndefined();
