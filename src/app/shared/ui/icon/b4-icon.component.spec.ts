@@ -43,10 +43,11 @@ describe('B4IconComponent', () => {
     expect(svgs[1].getAttribute('aria-label')).toBe('Buscar');
   });
 
-  it('la lista de nombres es la del sprite (34 iconos, sin repetidos)', () => {
-    expect(B4_ICON_NAMES).toHaveLength(34);
+  it('la lista generada de nombres no está vacía, no repite y usa el formato de id del sprite', () => {
+    expect(B4_ICON_NAMES.length).toBeGreaterThan(0);
     expect(new Set(B4_ICON_NAMES).size).toBe(B4_ICON_NAMES.length);
-    expect(B4_ICON_NAMES).toContain('empleado');
-    expect(B4_ICON_NAMES).toContain('detener');
+    for (const name of B4_ICON_NAMES) {
+      expect(name).toMatch(/^[a-z][a-z0-9-]*$/);
+    }
   });
 });

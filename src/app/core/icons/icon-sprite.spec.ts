@@ -24,7 +24,7 @@ describe('loadIconSprite', () => {
     expect(document.body.firstElementChild).toBe(container);
     expect(container?.getAttribute('aria-hidden')).toBe('true');
     expect(document.getElementById('b4-empleado')?.tagName.toLowerCase()).toBe('symbol');
-    expect(fetch).toHaveBeenCalledWith(ICON_SPRITE_URL);
+    expect(fetch).toHaveBeenCalledWith(ICON_SPRITE_URL, expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
   it('no lo carga dos veces', async () => {
@@ -39,6 +39,16 @@ describe('loadIconSprite', () => {
 
   it('si la carga falla no rompe el arranque', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 404 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    await expect(loadIconSprite(document)).resolves.toBeUndefined();
+
+    expect(document.getElementById(ICON_SPRITE_ELEMENT_ID)).toBeNull();
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('si el fetch rechaza (la forma que toma el tiempo límite) tampoco rompe el arranque', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new DOMException('signal timed out', 'TimeoutError'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     await expect(loadIconSprite(document)).resolves.toBeUndefined();
