@@ -1,0 +1,58 @@
+<div class="page-skeleton">
+  <!-- identidad: quién o qué se está mirando, y las acciones de página. Ancho completo. -->
+  <header class="page-skeleton__identity">
+    <ng-content select="[slot=identidad]" />
+  </header>
+
+  <div class="page-skeleton__body">
+    @if (rail()) {
+      <!-- raíl: índice de la página y, si la hay, la cola de trabajo. Se pliega entero. -->
+      <aside class="page-skeleton__rail" [class.page-skeleton__rail--collapsed]="railCollapsed()">
+        <button
+          class="page-skeleton__rail-toggle"
+          type="button"
+          [attr.aria-label]="railToggleLabel()"
+          [attr.aria-expanded]="!railCollapsed()"
+          (click)="toggleRail()"
+        >
+          <b4-icon [name]="railCollapsed() ? 'flecha-derecha' : 'cerrar'" [size]="16" />
+        </button>
+        <div class="page-skeleton__rail-content">
+          <ng-content select="[slot=rail]" />
+        </div>
+      </aside>
+    }
+
+    <!-- principal: el contenido. La medida de lectura manda sobre el ancho disponible. -->
+    <main class="page-skeleton__main">
+      <div class="page-skeleton__measure">
+        <ng-content />
+      </div>
+    </main>
+
+    @if (contextualTitle(); as title) {
+      <!-- contextual: historial, ayuda, auditoría. Plegado por defecto, a petición se abre. -->
+      <aside
+        class="page-skeleton__contextual"
+        [class.page-skeleton__contextual--open]="contextualOpen()"
+        [attr.aria-label]="title"
+      >
+        <button
+          class="page-skeleton__contextual-toggle"
+          type="button"
+          [attr.aria-expanded]="contextualOpen()"
+          [attr.title]="title"
+          (click)="toggleContextual()"
+        >
+          <b4-icon [name]="contextualOpen() ? 'cerrar' : 'periodo'" [size]="16" />
+          <span class="page-skeleton__contextual-title">{{ title }}</span>
+        </button>
+        @if (contextualOpen()) {
+          <div class="page-skeleton__contextual-content">
+            <ng-content select="[slot=contextual]" />
+          </div>
+        }
+      </aside>
+    }
+  </div>
+</div>

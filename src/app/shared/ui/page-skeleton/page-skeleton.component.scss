@@ -1,0 +1,211 @@
+/*
+ * El esqueleto de página (ADR-050). Los huecos se dimensionan aquí y solo aquí.
+ *
+ *   --page-measure     ancho máximo de `principal`: la medida de lectura manda sobre el ancho
+ *                      disponible. Una tabla de 2.500 px es ilegible porque el ojo pierde la fila.
+ *   --page-contextual  ancho del hueco contextual abierto.
+ *   --page-rail        ancho del raíl; el contenido proyectado puede ser más estrecho.
+ */
+:host {
+  display: block;
+  min-height: 100%;
+  --page-measure: 1400px;
+  --page-contextual: 24rem;
+  --page-rail: 260px;
+  --page-gutter: 24px;
+}
+
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ─── identidad ─── */
+.page-skeleton__identity {
+  flex-shrink: 0;
+  background: var(--surface-panel);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.page-skeleton__identity:empty {
+  display: none;
+}
+
+/* ─── cuerpo: raíl | principal | contextual ─── */
+.page-skeleton__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+/* raíl */
+.page-skeleton__rail {
+  position: relative;
+  flex: 0 0 auto;
+  max-width: var(--page-rail);
+  background: var(--surface-panel);
+  border-right: 1px solid var(--border-default);
+  /* Sin transición a propósito: con `transition: max-width`, Chrome deja el raíl a medio plegar. */
+}
+
+.page-skeleton__rail--collapsed {
+  max-width: 0;
+  overflow: hidden;
+  border-right: 0;
+}
+
+.page-skeleton__rail-content {
+  height: 100%;
+}
+
+.page-skeleton__rail--collapsed .page-skeleton__rail-content {
+  visibility: hidden;
+}
+
+/* El botón de plegar vive en el borde del raíl y sigue visible cuando el raíl no está. */
+.page-skeleton__rail-toggle {
+  position: absolute;
+  top: 8px;
+  right: -14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--surface-panel);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+}
+
+.page-skeleton__rail-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.page-skeleton__rail--collapsed .page-skeleton__rail-toggle {
+  right: auto;
+  left: 4px;
+}
+
+/* principal */
+.page-skeleton__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--page-gutter);
+}
+
+.page-skeleton__measure {
+  max-width: var(--page-measure);
+  min-width: 0;
+}
+
+/* contextual: plegado es una tira con el título; abierto, un panel de ancho fijo. */
+.page-skeleton__contextual {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-default);
+  background: var(--surface-panel);
+}
+
+.page-skeleton__contextual--open {
+  width: var(--page-contextual);
+}
+
+.page-skeleton__contextual-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.page-skeleton__contextual-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Plegado: el título se escribe en vertical para que la tira cueste 40 px, no una columna. */
+.page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-toggle {
+  flex-direction: column;
+  padding: 12px 10px;
+}
+
+.page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-title {
+  writing-mode: vertical-rl;
+}
+
+.page-skeleton__contextual-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+  position: sticky;
+  top: 0;
+  max-height: 100dvh;
+}
+
+/* ─── ancho ─── */
+
+/* En pantallas anchas sobra sitio: el contextual gana ancho en vez de estirar principal. */
+@media (min-width: 1920px) {
+  :host {
+    --page-contextual: 28rem;
+  }
+}
+
+/* En pantallas estrechas los huecos laterales dejan de competir con el contenido. */
+@media (max-width: 960px) {
+  .page-skeleton__body {
+    flex-direction: column;
+  }
+
+  .page-skeleton__rail,
+  .page-skeleton__rail--collapsed {
+    max-width: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .page-skeleton__rail-toggle {
+    display: none;
+  }
+
+  .page-skeleton__contextual,
+  .page-skeleton__contextual--open {
+    width: auto;
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
+  }
+
+  .page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-toggle {
+    flex-direction: row;
+  }
+
+  .page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-title {
+    writing-mode: horizontal-tb;
+  }
+
+  .page-skeleton__contextual-content {
+    position: static;
+    max-height: none;
+  }
+
+  .page-skeleton__main {
+    padding: 16px;
+  }
+}

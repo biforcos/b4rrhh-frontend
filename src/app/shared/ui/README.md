@@ -89,6 +89,19 @@ Final slot naming:
 - sectionCardActions
 - sectionCardFooter
 
+## app-page-skeleton
+
+The page plan (ADR-050). Every page lives inside it; nothing else decides widths.
+
+Does:
+- four named slots: `[slot=identidad]` (top strip, full width: who/what you are looking at and the page actions), `[slot=rail]` (left, folds as a unit, remembered), default content (`principal`, capped by the reading measure), `[slot=contextual]` (right, folded by default, remembered)
+- `contextualTitle` names the contextual slot and switches it on; `contextualForcedOpen` opens it while a flow lives there
+- `storageKey` identifies the page kind for the remembered states
+
+Does not:
+- style what goes inside a slot
+- let a page override the measures (`--page-measure`, `--page-contextual`, `--page-rail` are the skeleton's)
+
 ## b4-icon
 
 Use it for any icon of the B4RRHH set (`public/icons/`), never `<img>` or an inline `<svg>` copy.
