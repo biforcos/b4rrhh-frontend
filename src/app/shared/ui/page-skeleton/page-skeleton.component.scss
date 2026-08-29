@@ -50,9 +50,13 @@
   /* Sin transición a propósito: con `transition: max-width`, Chrome deja el raíl a medio plegar. */
 }
 
+/*
+ * Plegado, el raíl mide 0, pero el botón tiene que seguir viéndose: es la única forma de volver.
+ * Por eso el recorte va en el contenido y no en el raíl. Con `overflow: hidden` en el raíl, el
+ * botón —que va `absolute` sobre la costura— quedaba recortado y el raíl se plegaba para siempre.
+ */
 .page-skeleton__rail--collapsed {
   max-width: 0;
-  overflow: hidden;
   border-right: 0;
 }
 
@@ -61,6 +65,8 @@
 }
 
 .page-skeleton__rail--collapsed .page-skeleton__rail-content {
+  width: 0;
+  overflow: hidden;
   visibility: hidden;
 }
 

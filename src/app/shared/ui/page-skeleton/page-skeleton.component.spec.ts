@@ -85,6 +85,24 @@ describe('PageSkeletonComponent', () => {
     expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe('true');
   });
 
+  // El botón de plegar es también el de desplegar: plegado, sigue ahí y sigue siendo el camino de
+  // vuelta. Ojo, esto asegura la máquina de estados, no que el botón se vea: el fallo real fue de
+  // recorte visual (`overflow: hidden` en el raíl) y jsdom no calcula eso.
+  it('el mismo botón devuelve el raíl', () => {
+    const toggle = () => el('.page-skeleton__rail-toggle')!;
+
+    toggle().click();
+    fixture.detectChanges();
+    expect(el('.page-skeleton__rail--collapsed')).not.toBeNull();
+
+    toggle().click();
+    fixture.detectChanges();
+
+    expect(el('.page-skeleton__rail--collapsed')).toBeNull();
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe('false');
+  });
+
   it('forzar el contextual lo abre sin tocar lo recordado', () => {
     fixture.componentInstance.forced.set(true);
     fixture.detectChanges();
