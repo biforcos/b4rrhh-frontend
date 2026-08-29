@@ -161,16 +161,9 @@
   100% { background-position: -200% 0; }
 }
 
-/* ── Timeline ── */
-.employee-overview__timeline {
-  flex: 1;
-  background: var(--surface-panel);
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 160px;
-  display: flex;
-  flex-direction: column;
+/* ── La línea de vida: la caja la pone el propio componente ── */
+.employee-overview__lifeline {
+  display: block;
 }
 
 /* ── Responsive ── */

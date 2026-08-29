@@ -18,7 +18,7 @@ import type { MenuItem } from 'primeng/api';
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
 
-import { EmployeeHorizontalTimelineComponent } from '../components/employee-horizontal-timeline.component';
+import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
 import { EmployeeDetailStore } from '../../data-access/employee-detail.store';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
 import { EmployeeContractStore } from '../../data-access/employee-contract.store';
@@ -43,7 +43,7 @@ import {
 @Component({
   selector: 'app-employee-overview-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, MenuModule, ButtonModule, B4IconComponent, EmployeeHorizontalTimelineComponent],
+  imports: [DatePipe, MenuModule, ButtonModule, B4IconComponent, EmployeeLifelineComponent],
   templateUrl: './employee-overview-page.component.html',
   styleUrl: './employee-overview-page.component.scss',
 })
@@ -55,9 +55,9 @@ export class EmployeeOverviewPageComponent {
   private readonly contractStore = inject(EmployeeContractStore);
   private readonly contactStore = inject(EmployeeContactStore);
   private readonly addressStore = inject(EmployeeAddressStore);
-  private readonly workCenterStore = inject(EmployeeWorkCenterStore);
-  private readonly laborClassStore = inject(EmployeeLaborClassificationStore);
-  private readonly workingTimeStore = inject(EmployeeWorkingTimeStore);
+  protected readonly workCenterStore = inject(EmployeeWorkCenterStore);
+  protected readonly laborClassStore = inject(EmployeeLaborClassificationStore);
+  protected readonly workingTimeStore = inject(EmployeeWorkingTimeStore);
   private readonly costCenterStore = inject(EmployeeCostCenterStore);
   private readonly taxInfoStore = inject(EmployeeTaxInformationStore);
   private readonly journeyStore = inject(EmployeeJourneyStore);

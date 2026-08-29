@@ -186,13 +186,16 @@
 
   </div>
 
-  <!-- Journey timeline horizontal -->
-  <div class="employee-overview__timeline">
-    <app-employee-horizontal-timeline
-      [journey]="journey()"
-      [loading]="loadingJourney()"
-      [error]="journeyError()"
-    />
-  </div>
+  <!-- La línea de vida: el resumen es el eje temporal de la relación (ADR-051). -->
+  <app-employee-lifeline
+    class="employee-overview__lifeline"
+    [presences]="presences()"
+    [contracts]="contracts()"
+    [workingTimes]="workingTimeStore.workingTimes()"
+    [laborClassifications]="laborClassStore.laborClassifications()"
+    [workCenters]="workCenterStore.workCenters()"
+    [loading]="loadingPresences() || loadingContracts()"
+    (sectionRequested)="navigateTo($event)"
+  />
 
 </section>
