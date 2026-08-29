@@ -174,6 +174,7 @@ export const employeeTexts = {
   payrollInputsDeleteSuccessMessage: 'Entrada eliminada correctamente.',
   payrollAreaLoadingMessage: 'Cargando entradas de nómina...',
   timelineTitle: 'Historial',
+  railToggleLabel: 'Plegar o desplegar el panel del empleado',
   timelineEventsSingularLabel: 'evento',
   timelineEventsPluralLabel: 'eventos',
   timelineLastEventLabel: 'Último',

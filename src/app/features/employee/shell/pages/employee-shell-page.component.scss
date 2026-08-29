@@ -1,22 +1,24 @@
 :host {
   display: block;
-  padding: 24px;
   min-height: 100dvh;
 }
 
+/* El ancho lo decide el esqueleto (ADR-050); aquí solo el ritmo vertical del contenido. */
 .employee-directory {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 1200px;
+  display: block;
 }
 
-/* Header */
+.employee-directory__search-row {
+  margin-bottom: 16px;
+}
+
+/* Header (identidad) */
 .employee-directory__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 12px 24px;
 }
 
 .employee-directory__title {

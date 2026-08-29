@@ -1,7 +1,8 @@
-<div class="employee-directory">
+<!-- El directorio sobre el esqueleto (ADR-050): identidad = título y acción de página; principal = búsqueda y tabla. -->
+<app-page-skeleton class="employee-directory" storageKey="employee-directory">
 
-  <!-- Page header -->
-  <header class="employee-directory__header">
+  <!-- Page header (identidad) -->
+  <header slot="identidad" class="employee-directory__header">
     <h1 class="employee-directory__title">{{ texts.masterTitle }}</h1>
     <app-ui-button
       [label]="texts.hireEmployeeTitle"
@@ -73,4 +74,4 @@
     </p-table>
   </div>
 
-</div>
+</app-page-skeleton>

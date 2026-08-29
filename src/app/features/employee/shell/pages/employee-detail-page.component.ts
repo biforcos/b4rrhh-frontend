@@ -42,6 +42,7 @@ import {
 } from '../../routing/employee-route-key.util';
 import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { EmployeeDetailHeaderComponent } from '../components/employee-detail-header.component';
+import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-skeleton.component';
 
 @Component({
   selector: 'app-employee-detail-page',
@@ -55,6 +56,7 @@ import { EmployeeDetailHeaderComponent } from '../components/employee-detail-hea
     EmployeeTerminatePanelComponent,
     GlobalMessageRailComponent,
     EmployeeDetailHeaderComponent,
+    PageSkeletonComponent,
   ],
   templateUrl: './employee-detail-page.component.html',
   styleUrl: './employee-detail-page.component.scss',

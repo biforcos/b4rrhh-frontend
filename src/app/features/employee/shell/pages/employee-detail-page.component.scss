@@ -3,22 +3,19 @@
   height: 100%;
 }
 
+/* La ficha ya no dimensiona nada: los huecos los mide el esqueleto (ADR-050). */
 .employee-detail {
-  display: flex;
-  flex-direction: column;
+  display: block;
   min-height: 100dvh;
 }
 
-/* Breadcrumb */
+/* Breadcrumb (identidad) */
 .employee-detail__breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 12px 24px;
-  background: var(--surface-panel);
-  border-bottom: 1px solid var(--border-default);
   font-size: 13px;
-  flex-shrink: 0;
 }
 
 .employee-detail__breadcrumb-link {
@@ -43,19 +40,9 @@
   text-overflow: ellipsis;
 }
 
-/* Two-column body */
-.employee-detail__body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Content (right column) */
+/* Content (principal) */
 .employee-detail__content {
-  flex: 1;
   min-width: 0;
-  background: var(--surface-app);
-  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -69,14 +56,6 @@
   display: contents;
 }
 
-/* Sections + timeline side-by-side */
-.employee-detail__sections-timeline {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(22rem, 24rem);
-  gap: 16px;
-  align-items: start;
-}
-
 .employee-detail__section-area {
   min-width: 0;
   display: flex;
@@ -84,17 +63,10 @@
   gap: 16px;
 }
 
+/* Historial (contextual): el panel lo enmarca el esqueleto; aquí solo el respiro interior. */
 .employee-detail__timeline-area {
-  background: var(--surface-panel);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  box-shadow: var(--shadow-card);
-  padding: 16px;
-  align-self: start;
-  position: sticky;
-  top: 16px;
-  max-height: calc(100dvh - 32px);
-  overflow-y: auto;
+  display: block;
+  padding-top: 8px;
 }
 
 .employee-detail__loading {
@@ -106,31 +78,4 @@
   0%   { box-shadow: 0 0 0 0 transparent; }
   25%  { box-shadow: 0 0 0 4px var(--accent-border); }
   100% { box-shadow: 0 0 0 0 transparent; }
-}
-
-@media (max-width: 1280px) {
-  .employee-detail__sections-timeline {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 22rem);
-  }
-}
-
-@media (max-width: 960px) {
-  .employee-detail__sections-timeline {
-    grid-template-columns: 1fr;
-  }
-
-  .employee-detail__timeline-area {
-    position: static;
-    max-height: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .employee-detail__body {
-    flex-direction: column;
-  }
-
-  .employee-detail__content {
-    padding: 16px;
-  }
 }
