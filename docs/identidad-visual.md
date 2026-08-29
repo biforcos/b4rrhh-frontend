@@ -110,6 +110,17 @@ la única excepción a la regla de «solo trazo», y existe porque el tramo **es
 - Tamaños: 16 px en línea de texto, 20 px en navegación y botones, 24 px en cabeceras.
   El trazo no se reescala: a 16 px se usa el mismo SVG, no un trazo más fino.
 
+### En la aplicación
+
+`<b4-icon name="empleado" [size]="20" />` (`src/app/shared/ui/icon/`). El `name` es un
+tipo unión generado con el sprite (`icon-names.ts`): un icono que no existe no compila.
+Decorativo por defecto; si va solo, `label="…"` y pasa a ser una imagen con nombre.
+
+El sprite se inyecta en el `<body>` al arrancar (`provideIconSprite`) y se referencia con
+`<use href="#b4-…">`, no como fichero externo: el `<use>` externo no hereda `currentColor`
+en varios navegadores, y heredar el color del contexto es lo que hace útil al set. Nada de
+`<img>` por la misma razón.
+
 ---
 
 ## Marca de aplicación

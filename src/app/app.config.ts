@@ -9,11 +9,13 @@ import { BASE_PATH } from './core/api/generated/variables';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { provideSpanishLocale } from './core/i18n/spanish-locale';
+import { provideIconSprite } from './core/icons/icon-sprite';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideSpanishLocale(),
+    provideIconSprite(),
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),

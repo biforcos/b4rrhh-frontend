@@ -89,6 +89,20 @@ Final slot naming:
 - sectionCardActions
 - sectionCardFooter
 
+## b4-icon
+
+Use it for any icon of the B4RRHH set (`public/icons/`), never `<img>` or an inline `<svg>` copy.
+
+Does:
+- references a `<symbol>` of the sprite injected at bootstrap (`provideIconSprite`)
+- inherits `currentColor`, so hover/active states colour it with no extra CSS
+- `name` is the generated union of sprite names: an unknown icon does not compile
+- `size` 16 | 20 | 24 (guide sizes), `aria-hidden` by default, `label` when it stands alone
+
+Does not:
+- carry a colour of its own
+- replace the text label next to it (see `docs/identidad-visual.md`)
+
 ## Rule of Use
 
 If behavior depends on catalog resolution, filtering rules, business keys, mutations, API contracts, or mode transitions, keep that behavior in the feature component, store, or gateway. Shared UI only carries structure and presentation.
