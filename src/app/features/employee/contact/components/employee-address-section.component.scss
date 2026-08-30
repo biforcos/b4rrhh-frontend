@@ -1,190 +1,39 @@
-.employee-address-section__header-actions :where(app-ui-button),
-.employee-address-section__actions :where(app-ui-button) {
-  min-width: 5.6rem;
-}
-
-.employee-address-section__body {
+/* Solo el formulario del modal: la caja y la tabla las pone el contenedor temporal (ADR-051 §2). */
+.address-form {
   display: grid;
-  gap: 0.8rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
 }
 
-.employee-address-section__slot,
-.employee-address-section__current-card {
-  border: 1px solid var(--border-default);
-  border-radius: 0.65rem;
-  background: var(--surface-hover);
-  padding: 0.64rem;
+.address-form__field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
-.employee-address-section__current-card {
-  border-color: var(--accent-border);
-  background: var(--surface-hover);
-}
-
-.employee-address-section__current-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.6rem;
-}
-
-.employee-address-section__current-title-block {
-  display: flex;
-  align-items: center;
-  gap: 0.42rem;
-  flex-wrap: wrap;
-}
-
-.employee-address-section__current-type,
-.employee-address-section__history-type {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.employee-address-section__current-type-code,
-.employee-address-section__history-type-code {
-  margin-left: 0.18rem;
-  font-size: 0.68rem;
-  color: var(--text-secondary);
+.address-form__field span {
+  font-size: 11px;
   font-weight: 600;
-}
-
-.employee-address-section__current-badge {
-  display: inline-flex;
-}
-
-.employee-address-section__current-street,
-.employee-address-section__current-locality,
-.employee-address-section__history-street,
-.employee-address-section__history-locality {
-  font-size: 0.79rem;
-  color: var(--text-secondary);
-  line-height: 1.35;
-}
-
-.employee-address-section__current-period,
-.employee-address-section__history-period {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-}
-
-.employee-address-section__current-period span,
-.employee-address-section__history-period span {
-  font-weight: 700;
-}
-
-.employee-address-section__confirm-text {
-  margin: 0.5rem 0 0;
-  font-size: 0.72rem;
-  color: var(--error-text);
-}
-
-.employee-address-section__history {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.employee-address-section__history h4 {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text-secondary);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.employee-address-section__history-list {
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.48rem;
-}
-
-.employee-address-section__history-row {
-  border: 1px solid var(--border-default);
-  border-radius: 0.6rem;
-  background: var(--surface-panel);
-  padding: 0.52rem;
-  display: grid;
-  gap: 0.14rem;
-  opacity: 0.9;
-}
-
-.employee-address-section__actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.32rem;
-}
-
-.employee-address-section__form-grid {
-  display: grid;
-  gap: 0.4rem;
-  width: 100%;
-}
-
-.employee-address-section__form-grid label,
-.employee-address-section__readonly-grid p {
-  display: grid;
-  gap: 0.08rem;
-}
-
-.employee-address-section__form-grid span,
-.employee-address-section__readonly-grid span {
-  font-size: 0.68rem;
-  line-height: 1.2;
   color: var(--text-tertiary);
 }
 
-.employee-address-section__form-grid input,
-.employee-address-section__form-grid select {
-  width: 100%;
-  border: 1px solid var(--border-default);
-  border-radius: 0.42rem;
-  background: var(--surface-panel);
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  line-height: 1.2;
-  padding: 0.34rem 0.42rem;
-  min-height: 2rem;
-}
-
-.employee-address-section__form-grid input:focus-visible,
-.employee-address-section__form-grid select:focus-visible {
-  outline: none;
-  border-color: var(--accent-border);
-  box-shadow: var(--focus-ring);
-}
-
-.employee-address-section__edit-hint {
-  font-size: 0.68rem;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-
-.employee-address-section__readonly-grid {
-  display: grid;
-  gap: 0.14rem;
+.address-form__field input.p-inputtext {
   width: 100%;
 }
 
-.employee-address-section__empty {
-  border: 1px dashed var(--border-default);
-  border-radius: 0.62rem;
-  background: var(--surface-hover);
-  color: var(--text-secondary);
-  font-size: 0.79rem;
-  padding: 0.55rem 0.62rem;
+.address-form__field--wide,
+.address-form__hint {
+  grid-column: 1 / -1;
 }
 
-@media (max-width: 899px) {
-  .employee-address-section__current-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.address-form__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
 
-  .employee-address-section__actions {
-    justify-content: flex-start;
-  }
+.address-row__locality {
+  display: block;
 }

@@ -2,40 +2,34 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { InputTextModule } from 'primeng/inputtext';
 import { take } from 'rxjs';
 
-import {
-  AddressCreateDraft,
-  AddressEditCurrentDraft,
-  mapEmployeeAddressModelToTemporalRow,
-} from '../../data-access/employee-address-edit.mapper';
+import { AddressCreateDraft, AddressEditCurrentDraft } from '../../data-access/employee-address-edit.mapper';
+import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
-import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import { employeeTexts } from '../../employee.texts';
+import { EmployeeAddressModel } from '../../models/employee-address.model';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
-import { EmployeeSectionShellComponent } from '../../shared/ui/section/employee-section-shell.component';
-import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
+import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
-import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
+import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
+import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
-import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
-import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 
-type AddressInteractionMode = 'view' | 'creating' | 'editingCurrent' | 'confirmingClose';
+type AddressModalMode = 'create' | 'edit' | 'close';
 
-interface AddressRowViewModel {
-  key: number;
-  title: string;
-  titleSecondary: string | null;
-  subtitle: string | null;
-  detailText: string | null;
-  periodText: string | null;
-  statusLabel: string | null;
-  isCurrent: boolean;
-  closeable: boolean;
+interface AddressPeriodRow extends TemporalSectionRow {
+  addressNumber: number;
+  addressTypeCode: string;
+  addressTypeName: string | null;
+  street: string;
+  /** Código postal, ciudad y región, en una línea. */
+  locality: string;
+  countryCode: string;
 }
 
-function createEmptyAddressCreateDraft(): AddressCreateDraft {
+function createEmptyAddressDraft(): AddressCreateDraft {
   return {
     addressTypeCode: '',
     street: '',
@@ -43,24 +37,20 @@ function createEmptyAddressCreateDraft(): AddressCreateDraft {
     countryCode: '',
     postalCode: '',
     regionCode: '',
-    startDate: '',
+    startDate: currentLocalDate(),
   };
 }
 
-function createEmptyAddressEditCurrentDraft(): AddressEditCurrentDraft {
-  return {
-    street: '',
-    city: '',
-    countryCode: '',
-    postalCode: '',
-    regionCode: '',
-  };
-}
-
+/**
+ * Las direcciones son vigencias —una persona se muda— y el modelo lo dice: fecha de inicio,
+ * fecha de fin y solape prohibido por tipo (frontend#19). Se comportan como un carril
+ * `TEMPORAL_APPEND_CLOSE` (ADR-051): se añaden por el final y se cierran; lo que se corrige en
+ * una dirección vigente son sus datos, no sus fechas.
+ */
 @Component({
   selector: 'app-employee-address-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeeSectionShellComponent, UiButtonComponent, UiTagComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
   templateUrl: './employee-address-section.component.html',
   styleUrl: './employee-address-section.component.scss',
 })
@@ -72,393 +62,205 @@ export class EmployeeAddressSectionComponent {
   private readonly addressStore = inject(EmployeeAddressStore);
   private readonly fieldCatalogService = inject(EmployeeFieldCatalogService);
   private readonly globalMessageService = inject(GlobalMessageService);
-  private readonly modeState = signal<AddressInteractionMode>('view');
-  private readonly localErrorMessageState = signal<string | null>(null);
-  private readonly confirmingCloseKeyState = signal<number | null>(null);
-  private readonly editingCurrentKeyState = signal<number | null>(null);
-  private readonly createDraftState = signal<AddressCreateDraft>(createEmptyAddressCreateDraft());
-  private readonly editCurrentDraftState = signal<AddressEditCurrentDraft>(createEmptyAddressEditCurrentDraft());
-  private readonly availableAddressTypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
-  private readonly catalogLoadingState = signal(false);
-
-  private catalogRequestId = 0;
 
   protected readonly texts = employeeTexts;
-  protected readonly sectionTitle = this.texts.addressesSectionTitle;
-  protected readonly sectionSubtitle = this.texts.addressesSectionSubtitle;
-  protected readonly rows = computed<ReadonlyArray<AddressRowViewModel>>(() =>
+  protected readonly modalVisible = signal(false);
+  protected readonly modalMode = signal<AddressModalMode>('create');
+  protected readonly editingNumber = signal<number | null>(null);
+  protected readonly editingIsActive = signal(false);
+  protected readonly draft = signal<AddressCreateDraft>(createEmptyAddressDraft());
+  protected readonly endDateDraft = signal('');
+  protected readonly addressTypeOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
+  protected readonly catalogLoading = signal(false);
+  private catalogRequestId = 0;
+
+  protected readonly rows = computed<ReadonlyArray<AddressPeriodRow>>(() =>
     [...this.addressStore.addresses()]
       .sort((left, right) => this.compareAddressOrder(left, right))
-      .map((address) =>
-        mapEmployeeAddressModelToTemporalRow(address, {
-          currentStatus: this.texts.addressesSectionCurrentStatus,
-          closedStatus: this.texts.addressesSectionClosedStatus,
-          currentPeriodLabel: this.texts.addressesSectionCurrentPeriodLabel,
-        }),
-      )
-      .map((row) => ({
-        key: row.key,
-        title: row.title,
-        titleSecondary: row.titleSecondary ?? null,
-        subtitle: row.subtitle ?? null,
-        detailText: row.detailText ?? null,
-        periodText: row.periodText ?? null,
-        statusLabel: row.statusLabel ?? null,
-        isCurrent: row.isCurrent === true,
-        closeable: row.closeable === true,
+      .map((address) => ({
+        startDate: address.startDate,
+        endDate: address.endDate,
+        isActive: address.isActive,
+        // Solo la vigente se corrige; la historia no se toca (ADR-016).
+        canEdit: address.isActive,
+        canDelete: false,
+        addressNumber: address.addressNumber,
+        addressTypeCode: address.addressTypeCode,
+        addressTypeName: address.addressTypeName ?? null,
+        street: address.street,
+        locality: [address.postalCode, address.city, address.regionCode]
+          .map((part) => part?.trim() ?? '')
+          .filter((part) => part.length > 0)
+          .join(' · '),
+        countryCode: address.countryCode,
       })),
   );
-  protected readonly currentAddresses = computed(() => this.rows().filter((row) => row.isCurrent === true));
-  protected readonly historicalAddresses = computed(() => this.rows().filter((row) => row.isCurrent === false));
-  protected readonly hasCurrentAddresses = computed(() => this.currentAddresses().length > 0);
-  protected readonly hasHistoricalAddresses = computed(() => this.historicalAddresses().length > 0);
-  protected readonly creating = computed(() => this.modeState() === 'creating');
-  protected readonly editingCurrent = computed(() => this.modeState() === 'editingCurrent');
-  protected readonly confirmingClose = computed(() => this.modeState() === 'confirmingClose');
-  protected readonly confirmingCloseKey = this.confirmingCloseKeyState.asReadonly();
-  protected readonly editingCurrentKey = this.editingCurrentKeyState.asReadonly();
-  protected readonly createDraft = this.createDraftState.asReadonly();
-  protected readonly editCurrentDraft = this.editCurrentDraftState.asReadonly();
-  protected readonly availableAddressTypeOptions = this.availableAddressTypeOptionsState.asReadonly();
-  protected readonly catalogOptionsLoading = this.catalogLoadingState.asReadonly();
-  protected readonly canSaveCreate = computed(() => {
-    const draft = this.createDraftState();
 
-    return (
-      this.normalizeRequiredValue(draft.addressTypeCode).length > 0 &&
-      this.normalizeRequiredValue(draft.street).length > 0 &&
-      this.normalizeRequiredValue(draft.city).length > 0 &&
-      this.normalizeRequiredValue(draft.countryCode).length > 0 &&
-      this.normalizeRequiredValue(draft.startDate).length > 0
-    );
+  protected readonly saving = computed(() => this.addressStore.mutating());
+
+  protected readonly isSubmitEnabled = computed(() => {
+    if (this.modalMode() === 'close') return this.endDateDraft().trim().length > 0;
+    const draft = this.draft();
+    const required = [draft.street, draft.city, draft.countryCode];
+    if (this.modalMode() === 'create') required.push(draft.addressTypeCode, draft.startDate);
+    return required.every((value) => value.trim().length > 0);
   });
-  protected readonly canSaveEditCurrent = computed(() => {
-    const draft = this.editCurrentDraftState();
 
-    return (
-      this.normalizeRequiredValue(draft.street).length > 0 &&
-      this.normalizeRequiredValue(draft.city).length > 0 &&
-      this.normalizeRequiredValue(draft.countryCode).length > 0
-    );
+  protected readonly modalTitle = computed(() => {
+    if (this.modalMode() === 'create') return this.texts.addressesSectionAddAction;
+    if (this.modalMode() === 'close') return this.texts.addressesSectionCloseTitle;
+    return this.texts.addressesSectionEditCurrentAction;
   });
-  protected readonly sectionState = computed<SectionUiState>(() => {
-    const isBusy = this.addressStore.loading() || this.addressStore.mutating();
 
-    return {
-      mode: isBusy ? 'submitting' : this.toSectionMode(this.modeState()),
-      dirty: this.modeState() === 'creating' || this.modeState() === 'editingCurrent',
-      busy: isBusy,
-      errorMessage: this.resolveErrorMessage(),
-      successMessage: this.resolveSuccessMessage(),
-    };
+  protected readonly submitLabel = computed(() => {
+    if (this.modalMode() === 'create') return this.texts.addressesSectionSaveCreateAction;
+    if (this.modalMode() === 'close') return this.texts.addressesSectionConfirmCloseAction;
+    return this.texts.addressesSectionSaveEditCurrentAction;
   });
 
   constructor() {
     effect(() => {
-      const activeEmployeeKey = this.employeeKey();
-
+      const key = this.employeeKey();
       untracked(() => {
-        this.addressStore.loadAddresses(activeEmployeeKey);
-        this.loadCatalogOptions(activeEmployeeKey?.ruleSystemCode ?? null);
-        this.resetInteractionState();
+        this.addressStore.loadAddresses(key);
+        this.loadCatalogOptions(key?.ruleSystemCode ?? null);
+        this.closeModal();
       });
     });
 
     effect((onCleanup) => {
       onCleanup(() => {
-        untracked(() => this.globalMessageService.clearSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY));
+        untracked(() =>
+          this.globalMessageService.clearSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY),
+        );
       });
     });
 
     effect(() => {
-      if (!this.addressStore.success()) {
-        return;
+      const success = this.addressStore.success();
+      if (success) {
+        untracked(() => {
+          if (this.modalVisible()) this.closeModal();
+        });
       }
-
-      untracked(() => {
-        this.resetInteractionState();
-      });
     });
   }
 
-  protected startCreate(): void {
-    if (!this.canStartInteraction()) {
-      return;
-    }
-
-    this.clearInteractionFeedback();
-    this.modeState.set('creating');
-    this.editingCurrentKeyState.set(null);
-    this.confirmingCloseKeyState.set(null);
-    this.createDraftState.set(createEmptyAddressCreateDraft());
-    this.editCurrentDraftState.set(createEmptyAddressEditCurrentDraft());
-  }
-
-  protected startEditCurrent(addressNumber: number): void {
-    if (!this.canStartInteraction()) {
-      return;
-    }
-
-    const activeAddress = this.addressStore.addresses().find(
-      (address) => address.addressNumber === addressNumber && address.isActive,
-    );
-    if (!activeAddress) {
-      return;
-    }
-
-    this.clearInteractionFeedback();
-    this.modeState.set('editingCurrent');
-    this.editingCurrentKeyState.set(activeAddress.addressNumber);
-    this.confirmingCloseKeyState.set(null);
-    this.createDraftState.set(createEmptyAddressCreateDraft());
-    this.editCurrentDraftState.set({
-      street: activeAddress.street,
-      city: activeAddress.city,
-      countryCode: activeAddress.countryCode,
-      postalCode: activeAddress.postalCode ?? '',
-      regionCode: activeAddress.regionCode ?? '',
-    });
-  }
-
-  protected requestCloseCurrent(addressNumber: number): void {
-    if (!this.canStartInteraction()) {
-      return;
-    }
-
-    const selectedRow = this.rows().find((row) => row.key === addressNumber);
-    if (!selectedRow || selectedRow.closeable !== true) {
-      return;
-    }
-
-    this.clearInteractionFeedback();
-    this.modeState.set('confirmingClose');
-    this.editingCurrentKeyState.set(null);
-    this.confirmingCloseKeyState.set(addressNumber);
-  }
-
-  protected confirmCloseCurrent(addressNumber: number): void {
-    const activeEmployeeKey = this.employeeKey();
-    if (!activeEmployeeKey || this.addressStore.mutating()) {
-      return;
-    }
-
-    this.clearLocalError();
-    this.addressStore.closeAddress(activeEmployeeKey, addressNumber, this.currentBusinessDate());
-  }
-
-  protected cancelCreate(): void {
-    this.clearInteractionFeedback();
-    this.resetInteractionState();
-  }
-
-  protected cancelEditCurrent(): void {
-    this.clearInteractionFeedback();
-    this.resetInteractionState();
-  }
-
-  protected cancelCloseCurrent(): void {
-    this.clearInteractionFeedback();
-    this.resetInteractionState();
-  }
-
-  protected submitCreate(): void {
-    const activeEmployeeKey = this.employeeKey();
-    if (!activeEmployeeKey || this.addressStore.mutating() || !this.canSaveCreate()) {
-      return;
-    }
-
-    const draft = this.createDraftState();
-    this.clearLocalError();
-    this.addressStore.createAddress(activeEmployeeKey, draft);
-  }
-
-  protected submitEditCurrent(addressNumber: number): void {
-    const activeEmployeeKey = this.employeeKey();
-    if (!activeEmployeeKey || this.addressStore.mutating() || !this.canSaveEditCurrent()) {
-      return;
-    }
-
-    const draft = this.editCurrentDraftState();
-    this.clearLocalError();
-    this.addressStore.updateAddress(activeEmployeeKey, addressNumber, draft);
-  }
-
-  protected updateCreateField(field: keyof AddressCreateDraft, value: string): void {
-    this.createDraftState.set({
-      ...this.createDraftState(),
-      [field]: value,
-    });
-    this.clearInteractionFeedback();
-  }
-
-  protected updateEditCurrentField(field: keyof AddressEditCurrentDraft, value: string): void {
-    this.editCurrentDraftState.set({
-      ...this.editCurrentDraftState(),
-      [field]: value,
-    });
-    this.clearInteractionFeedback();
-  }
-
-  private canStartInteraction(): boolean {
-    const activeEmployeeKey = this.employeeKey();
-    if (!activeEmployeeKey) {
-      return false;
-    }
-
-    return !this.addressStore.mutating();
-  }
-
-  private resetInteractionState(): void {
-    this.modeState.set('view');
-    this.editingCurrentKeyState.set(null);
-    this.confirmingCloseKeyState.set(null);
-    this.createDraftState.set(createEmptyAddressCreateDraft());
-    this.editCurrentDraftState.set(createEmptyAddressEditCurrentDraft());
-  }
-
-  private clearInteractionFeedback(): void {
+  protected openCreate(): void {
+    if (!this.employeeKey() || this.addressStore.mutating()) return;
     this.addressStore.clearFeedback();
-    this.clearLocalError();
-    this.clearGlobalFeedback();
+    this.modalMode.set('create');
+    this.editingNumber.set(null);
+    this.editingIsActive.set(false);
+    this.draft.set(createEmptyAddressDraft());
+    this.endDateDraft.set('');
+    this.modalVisible.set(true);
   }
 
-  private clearLocalError(): void {
-    this.localErrorMessageState.set(null);
+  protected openEdit(index: number): void {
+    const row = this.rows()[index];
+    if (!row || !row.canEdit || this.addressStore.mutating()) return;
+    const address = this.addressStore.addresses().find((item) => item.addressNumber === row.addressNumber);
+    if (!address) return;
+    this.addressStore.clearFeedback();
+    this.modalMode.set('edit');
+    this.editingNumber.set(address.addressNumber);
+    this.editingIsActive.set(address.isActive);
+    this.draft.set({
+      addressTypeCode: address.addressTypeCode,
+      street: address.street,
+      city: address.city,
+      countryCode: address.countryCode,
+      postalCode: address.postalCode ?? '',
+      regionCode: address.regionCode ?? '',
+      startDate: address.startDate,
+    });
+    this.endDateDraft.set('');
+    this.modalVisible.set(true);
   }
 
-  private toSectionMode(displayMode: AddressInteractionMode): SectionMode {
-    if (displayMode === 'creating') {
-      return 'creating';
-    }
-
-    if (displayMode === 'editingCurrent') {
-      return 'editing';
-    }
-
-    if (displayMode === 'confirmingClose') {
-      return 'confirming';
-    }
-
-    return 'view';
+  protected switchToClose(): void {
+    this.modalMode.set('close');
+    this.endDateDraft.set(currentLocalDate());
   }
 
-  private resolveErrorMessage(): string | null {
-    return this.localErrorMessageState();
+  protected submit(): void {
+    const key = this.employeeKey();
+    if (!key || this.addressStore.mutating() || !this.isSubmitEnabled()) return;
+
+    const mode = this.modalMode();
+    if (mode === 'create') {
+      this.addressStore.createAddress(key, this.draft());
+      return;
+    }
+
+    const addressNumber = this.editingNumber();
+    if (addressNumber === null) return;
+    if (mode === 'close') {
+      this.addressStore.closeAddress(key, addressNumber, this.endDateDraft());
+      return;
+    }
+
+    const draft = this.draft();
+    const correction: AddressEditCurrentDraft = {
+      street: draft.street,
+      city: draft.city,
+      countryCode: draft.countryCode,
+      postalCode: draft.postalCode,
+      regionCode: draft.regionCode,
+    };
+    this.addressStore.updateAddress(key, addressNumber, correction);
   }
 
-  private resolveSuccessMessage(): string | null {
-    const successCode = this.addressStore.success();
-
-    if (successCode === 'created') {
-      return this.texts.addressesSectionCreateSuccessMessage;
-    }
-
-    if (successCode === 'updated') {
-      return this.texts.addressesSectionEditCurrentSuccessMessage;
-    }
-
-    if (successCode === 'closed') {
-      return this.texts.addressesSectionCloseSuccessMessage;
-    }
-
-    return null;
+  protected closeModal(): void {
+    this.modalVisible.set(false);
+    this.addressStore.clearFeedback();
   }
 
-  private compareAddressOrder(
-    left: { isActive: boolean; startDate: string; addressNumber: number },
-    right: { isActive: boolean; startDate: string; addressNumber: number },
-  ): number {
-    if (left.isActive !== right.isActive) {
-      return left.isActive ? -1 : 1;
-    }
-
-    const startDateOrder = right.startDate.localeCompare(left.startDate);
-    if (startDateOrder !== 0) {
-      return startDateOrder;
-    }
-
-    return left.addressNumber - right.addressNumber;
+  protected updateDraft(field: keyof AddressCreateDraft, value: string | null): void {
+    this.draft.update((draft) => ({ ...draft, [field]: value ?? '' }));
   }
 
-  private currentBusinessDate(): string {
-    return currentLocalDate();
-  }
-
-  private normalizeRequiredValue(value: string): string {
-    return value.trim();
+  private compareAddressOrder(left: EmployeeAddressModel, right: EmployeeAddressModel): number {
+    if (left.isActive !== right.isActive) return left.isActive ? -1 : 1;
+    const byStart = right.startDate.localeCompare(left.startDate);
+    return byStart !== 0 ? byStart : left.addressNumber - right.addressNumber;
   }
 
   private loadCatalogOptions(ruleSystemCode: string | null): void {
-    const normalizedRuleSystemCode = ruleSystemCode?.trim() ?? '';
-
-    if (!normalizedRuleSystemCode) {
+    const normalized = ruleSystemCode?.trim() ?? '';
+    if (!normalized) {
       this.catalogRequestId += 1;
-      this.catalogLoadingState.set(false);
-      this.availableAddressTypeOptionsState.set([]);
-      this.createDraftState.update((draft) => ({
-        ...draft,
-        addressTypeCode: '',
-      }));
+      this.catalogLoading.set(false);
+      this.addressTypeOptions.set([]);
       return;
     }
 
     const requestId = ++this.catalogRequestId;
-    this.catalogLoadingState.set(true);
+    this.catalogLoading.set(true);
     this.fieldCatalogService
-      .loadAddressTypeOptions(normalizedRuleSystemCode)
+      .loadAddressTypeOptions(normalized)
       .pipe(take(1))
       .subscribe({
         next: (options) => {
-          if (requestId !== this.catalogRequestId) {
-            return;
-          }
-
-          this.catalogLoadingState.set(false);
-          this.availableAddressTypeOptionsState.set(options);
-          this.syncCreateDraftTypeWithAvailableOptions(options);
+          if (requestId !== this.catalogRequestId) return;
+          this.catalogLoading.set(false);
+          this.addressTypeOptions.set(options);
         },
         error: () => {
-          if (requestId !== this.catalogRequestId) {
-            return;
-          }
-
-          this.catalogLoadingState.set(false);
-          this.publishGlobalFeedback(this.texts.catalogLoadFailedMessage);
+          if (requestId !== this.catalogRequestId) return;
+          this.catalogLoading.set(false);
+          this.globalMessageService.setSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY, [
+            {
+              id: 'employee-address-section-local-error',
+              level: 'error',
+              text: this.texts.catalogLoadFailedMessage,
+              sectionId: 'contact',
+              sectionLabel: this.texts.personalAreaLabel,
+              sticky: true,
+            },
+          ]);
         },
       });
-  }
-
-  private publishGlobalFeedback(message: string): void {
-    this.globalMessageService.setSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY, [
-      {
-        id: 'employee-address-section-local-error',
-        level: 'error',
-        text: message,
-        sectionId: 'contact',
-        sectionLabel: this.texts.personalAreaLabel,
-        sticky: true,
-      },
-    ]);
-  }
-
-  private clearGlobalFeedback(): void {
-    this.globalMessageService.clearSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY);
-  }
-
-  private syncCreateDraftTypeWithAvailableOptions(options: ReadonlyArray<SlotKeyOption<string>>): void {
-    const currentTypeCode = this.createDraftState().addressTypeCode;
-    if (!currentTypeCode) {
-      return;
-    }
-
-    const hasMatchingTypeCode = options.some((option) => option.value === currentTypeCode);
-    if (hasMatchingTypeCode) {
-      return;
-    }
-
-    this.createDraftState.update((draft) => ({
-      ...draft,
-      addressTypeCode: '',
-    }));
   }
 }
