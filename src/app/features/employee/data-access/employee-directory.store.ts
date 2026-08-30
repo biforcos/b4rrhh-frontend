@@ -114,18 +114,16 @@ export class EmployeeDirectoryStore {
     this.loadingState.set(true);
     this.errorState.set(null);
 
-    this.inFlight = this.employeeDirectoryReadGateway
-      .readDirectory(this.queryState())
-      .subscribe({
-        next: (page) => {
-          this.employeesState.set(page.items);
-          this.totalState.set(page.total);
-          this.loadingState.set(false);
-        },
-        error: () => {
-          this.loadingState.set(false);
-          this.errorState.set('request-failed');
-        },
-      });
+    this.inFlight = this.employeeDirectoryReadGateway.readDirectory(this.queryState()).subscribe({
+      next: (page) => {
+        this.employeesState.set(page.items);
+        this.totalState.set(page.total);
+        this.loadingState.set(false);
+      },
+      error: () => {
+        this.loadingState.set(false);
+        this.errorState.set('request-failed');
+      },
+    });
   }
 }
