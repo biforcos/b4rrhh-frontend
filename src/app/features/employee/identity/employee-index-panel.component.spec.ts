@@ -54,4 +54,26 @@ describe('EmployeeIndexPanelComponent', () => {
       });
     });
   });
+
+  // ADR-050 §5: el vacío normal en gris; el que es un dato que falta, en ocre. Lo declara la
+  // sección, no lo adivina el panel del recuento.
+  describe('el vacío anómalo', () => {
+    it('solo lleva el aviso la sección que lo declaró: centros de coste, y no presencia', () => {
+      const fixture = createFixture();
+      fixture.detectChanges();
+      const items: HTMLElement[] = Array.from(
+        fixture.nativeElement.querySelectorAll('.index-panel__nav-item'),
+      );
+      const byLabel = (label: string) =>
+        items.find((item) => item.textContent?.includes(label))!;
+
+      const presence = byLabel('Presencia');
+      expect(presence.classList.contains('index-panel__nav-item--empty')).toBe(true);
+      expect(presence.classList.contains('index-panel__nav-item--empty-warn')).toBe(false);
+
+      const costCenter = byLabel('Centros de coste');
+      expect(costCenter.classList.contains('index-panel__nav-item--empty')).toBe(true);
+      expect(costCenter.classList.contains('index-panel__nav-item--empty-warn')).toBe(true);
+    });
+  });
 });

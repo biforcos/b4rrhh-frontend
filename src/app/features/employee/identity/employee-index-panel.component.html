@@ -1,6 +1,7 @@
 <div class="index-panel">
   <!-- El índice de la página (ADR-050): anclas de la relación con su recuento —en gris las
-       vacías—, y las dos secciones de ruta. No se pliega a iconos. -->
+       vacías, en ocre las vacías que son un dato que falta—, y las dos secciones de ruta. No se
+       pliega a iconos. -->
   <nav class="index-panel__nav" [attr.aria-label]="texts.detailNavAriaLabel">
     @for (group of navGroups(); track group.label) {
       <span class="index-panel__nav-group">{{ group.label }}</span>
@@ -9,6 +10,7 @@
           class="index-panel__nav-item"
           [class.active]="isActive(item)"
           [class.index-panel__nav-item--empty]="item.count === 0"
+          [class.index-panel__nav-item--empty-warn]="isEmptyAnomaly(item)"
           [routerLink]="item.routeCommands"
           [fragment]="item.anchor ?? undefined"
           [attr.aria-current]="isActive(item) ? 'true' : null"

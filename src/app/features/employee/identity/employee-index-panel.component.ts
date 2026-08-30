@@ -18,6 +18,13 @@ import { EmployeeWorkCenterStore } from '../data-access/employee-work-center.sto
 import { EmployeeCostCenterStore } from '../data-access/employee-cost-center.store';
 
 /**
+ * Qué significa que una sección esté vacía (ADR-050 §5). Lo decide el dominio y lo declara la
+ * sección; el panel no lo adivina del recuento. `'normal'`: no hay nada que ver. `'anomalia'`:
+ * falta un dato que debería estar, y se marca en ocre para que se vea de reojo.
+ */
+export type IdentityNavEmptyMeaning = 'normal' | 'anomalia';
+
+/**
  * Una entrada del índice. Las de la relación son anclas dentro de una misma página y llevan el
  * recuento de su carril (ADR-050 §5: el índice informa, no solo navega); las de la persona y la
  * nómina son secciones de ruta.
@@ -31,6 +38,8 @@ export interface IdentityNavItem {
   routeCommands: ReadonlyArray<string>;
   /** `null` cuando la entrada no cuenta nada (la línea de vida, la persona, la nómina). */
   count: number | null;
+  /** Qué significa su vacío; `'normal'` si no se dice. */
+  emptyMeans?: IdentityNavEmptyMeaning;
 }
 
 export interface IdentityNavGroup {
@@ -75,6 +84,7 @@ export class EmployeeIndexPanelComponent {
       label: string,
       icon: B4IconName,
       count: number | null,
+      emptyMeans: IdentityNavEmptyMeaning = 'normal',
     ): IdentityNavItem => ({
       id: anchor,
       label,
@@ -83,6 +93,7 @@ export class EmployeeIndexPanelComponent {
       anchor,
       routeCommands: relation,
       count,
+      emptyMeans,
     });
     const costWindows =
       (this.costCenterStore.history()?.length ?? 0) + (this.costCenterStore.currentDistribution() ? 1 : 0);
@@ -96,7 +107,9 @@ export class EmployeeIndexPanelComponent {
           lane('working-time', t.lifelineLaneWorkingTime, 'jornada', this.workingTimeStore.workingTimes().length),
           lane('classification', t.lifelineLaneClassification, 'convenio', this.laborClassificationStore.laborClassifications().length),
           lane('work-center', t.lifelineLaneWorkCenter, 'centro-trabajo', this.workCenterStore.workCenters().length),
-          lane('cost-center', t.costCenterSectionTitle, 'centro-coste', costWindows),
+          // Un empleado sin centro de coste es un dato que falta, no una sección sin nada que ver:
+          // la misma anomalía que el bloque «Hoy» ya marca en ocre.
+          lane('cost-center', t.costCenterSectionTitle, 'centro-coste', costWindows, 'anomalia'),
         ],
       },
       {
@@ -133,6 +146,11 @@ export class EmployeeIndexPanelComponent {
   /** Plano, para quien solo quiera recorrer las entradas (los tests, por ejemplo). */
   protected readonly navItems = computed(() => this.navGroups().flatMap((group) => group.items));
 
+
+  /** Vacío que es una anomalía: recuento a cero en una sección que declaró que eso es que falta algo. */
+  protected isEmptyAnomaly(item: IdentityNavItem): boolean {
+    return item.count === 0 && item.emptyMeans === 'anomalia';
+  }
 
   protected isActive(item: IdentityNavItem): boolean {
     if (item.section !== this.activeSection()) return false;
