@@ -102,4 +102,8 @@ describe('EmployeeWorkQueuePanelComponent', () => {
       '«lidia» · activos',
     );
   });
+
+  it('un estado que no sabe nombrar sale como codigo crudo, no como «todos»', () => {
+    expect(describeCriteria({ q: '', status: 'SUSPENDED' }, employeeTexts)).toBe('SUSPENDED');
+  });
 });

@@ -69,6 +69,9 @@ export function describeCriteria(
     parts.push(texts.workQueueCriteriaActive);
   } else if (criteria.status === 'TERMINATED') {
     parts.push(texts.workQueueCriteriaTerminated);
+  } else if (criteria.status !== null && criteria.status.trim().length > 0) {
+    // Un estado que aun no sabemos nombrar: mejor el codigo crudo que afirmar «todos».
+    parts.push(criteria.status);
   }
   return parts.length > 0 ? parts.join(' · ') : texts.workQueueCriteriaAll;
 }
