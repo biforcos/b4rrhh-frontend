@@ -774,7 +774,6 @@ export const employeeTexts = {
   employeeNameColumnLabel: 'Nombre',
   employeeClaveColumnLabel: 'Clave',
   employeeWorkCenterColumnLabel: 'Centro',
-  employeeStatusColumnLabel: 'Estado',
   directoryNoWorkCenterLabel: 'Sin centro',
   directoryStatusFilterLabel: 'Estado',
   directoryStatusAllLabel: 'Todos',

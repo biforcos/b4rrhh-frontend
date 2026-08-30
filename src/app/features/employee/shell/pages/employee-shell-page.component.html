@@ -87,7 +87,6 @@
           <th class="employee-directory__th">{{ texts.employeeNameColumnLabel }}</th>
           <th class="employee-directory__th">{{ texts.employeeClaveColumnLabel }}</th>
           <th class="employee-directory__th">{{ texts.employeeWorkCenterColumnLabel }}</th>
-          <th class="employee-directory__th">{{ texts.employeeStatusColumnLabel }}</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-employee>
@@ -100,6 +99,15 @@
         >
           <td class="employee-directory__td employee-directory__td--name">
             {{ employee.displayName }}
+            <!-- ADR-050 §5: lo normal calla; la excepcion, en linea y despues del nombre para no
+                 romper la columna de lectura (frontend#29). Buscar bajas a proposito es del filtro. -->
+            @if (!isNormalStatus(employee.statusLabel)) {
+              <app-ui-tag
+                class="employee-directory__status-tag"
+                [value]="resolveStatusLabel(employee.statusLabel)"
+                severity="secondary"
+              />
+            }
           </td>
           <td class="employee-directory__td employee-directory__td--mono">
             {{ employee.employeeNumber }}
@@ -111,17 +119,11 @@
               <span class="employee-directory__quiet">{{ texts.directoryNoWorkCenterLabel }}</span>
             }
           </td>
-          <td class="employee-directory__td">
-            <!-- ADR-050 §5: el estado normal se calla; solo se marca lo que no lo es. -->
-            @if (!isNormalStatus(employee.statusLabel)) {
-              <app-ui-tag [value]="resolveStatusLabel(employee.statusLabel)" severity="secondary" />
-            }
-          </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="employee-directory__empty">
+          <td colspan="3" class="employee-directory__empty">
             {{ hasFilter() ? texts.noResultEmployeesTitle : texts.emptyDirectoryTitle }}
           </td>
         </tr>
