@@ -26,7 +26,10 @@ function createFixture() {
       { provide: EmployeeWorkingTimeStore, useValue: { workingTimes: signal([]) } },
       { provide: EmployeeLaborClassificationStore, useValue: { laborClassifications: signal([]) } },
       { provide: EmployeeWorkCenterStore, useValue: { workCenters: signal([]) } },
-      { provide: EmployeeCostCenterStore, useValue: { history: signal([]), currentDistribution: signal(null) } },
+      {
+        provide: EmployeeCostCenterStore,
+        useValue: { history: signal([]), currentDistribution: signal(null) },
+      },
     ],
   });
   const fixture = TestBed.createComponent(EmployeeIndexPanelComponent);
@@ -39,7 +42,12 @@ describe('EmployeeIndexPanelComponent', () => {
     it('each nav item has an icon property', () => {
       const fixture = createFixture();
       const component = fixture.componentInstance as unknown as {
-        navItems: () => ReadonlyArray<{ section: string; icon: string; anchor: string | null; count: number | null }>;
+        navItems: () => ReadonlyArray<{
+          section: string;
+          icon: string;
+          anchor: string | null;
+          count: number | null;
+        }>;
       };
       const items = component.navItems();
       // Siete anclas de la relación (línea de vida + seis carriles), la persona y la nómina.
@@ -64,8 +72,7 @@ describe('EmployeeIndexPanelComponent', () => {
       const items: HTMLElement[] = Array.from(
         fixture.nativeElement.querySelectorAll('.index-panel__nav-item'),
       );
-      const byLabel = (label: string) =>
-        items.find((item) => item.textContent?.includes(label))!;
+      const byLabel = (label: string) => items.find((item) => item.textContent?.includes(label))!;
 
       const presence = byLabel('Presencia');
       expect(presence.classList.contains('index-panel__nav-item--empty')).toBe(true);

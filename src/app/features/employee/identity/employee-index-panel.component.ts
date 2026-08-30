@@ -96,17 +96,43 @@ export class EmployeeIndexPanelComponent {
       emptyMeans,
     });
     const costWindows =
-      (this.costCenterStore.history()?.length ?? 0) + (this.costCenterStore.currentDistribution() ? 1 : 0);
+      (this.costCenterStore.history()?.length ?? 0) +
+      (this.costCenterStore.currentDistribution() ? 1 : 0);
     return [
       {
         label: t.relationAreaLabel,
         items: [
           lane('lifeline', t.lifelineTitle, 'periodo', null),
-          lane('presence', t.lifelineLanePresence, 'empleado', this.presenceStore.presences().length),
-          lane('contract', t.lifelineLaneContract, 'documento-nuevo', this.contractStore.contracts().length),
-          lane('working-time', t.lifelineLaneWorkingTime, 'jornada', this.workingTimeStore.workingTimes().length),
-          lane('classification', t.lifelineLaneClassification, 'convenio', this.laborClassificationStore.laborClassifications().length),
-          lane('work-center', t.lifelineLaneWorkCenter, 'centro-trabajo', this.workCenterStore.workCenters().length),
+          lane(
+            'presence',
+            t.lifelineLanePresence,
+            'empleado',
+            this.presenceStore.presences().length,
+          ),
+          lane(
+            'contract',
+            t.lifelineLaneContract,
+            'documento-nuevo',
+            this.contractStore.contracts().length,
+          ),
+          lane(
+            'working-time',
+            t.lifelineLaneWorkingTime,
+            'jornada',
+            this.workingTimeStore.workingTimes().length,
+          ),
+          lane(
+            'classification',
+            t.lifelineLaneClassification,
+            'convenio',
+            this.laborClassificationStore.laborClassifications().length,
+          ),
+          lane(
+            'work-center',
+            t.lifelineLaneWorkCenter,
+            'centro-trabajo',
+            this.workCenterStore.workCenters().length,
+          ),
           // Un empleado sin centro de coste es un dato que falta, no una sección sin nada que ver:
           // la misma anomalía que el bloque «Hoy» ya marca en ocre.
           lane('cost-center', t.costCenterSectionTitle, 'centro-coste', costWindows, 'anomalia'),
@@ -145,7 +171,6 @@ export class EmployeeIndexPanelComponent {
 
   /** Plano, para quien solo quiera recorrer las entradas (los tests, por ejemplo). */
   protected readonly navItems = computed(() => this.navGroups().flatMap((group) => group.items));
-
 
   /** Vacío que es una anomalía: recuento a cero en una sección que declaró que eso es que falta algo. */
   protected isEmptyAnomaly(item: IdentityNavItem): boolean {
