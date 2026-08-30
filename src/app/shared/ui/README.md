@@ -94,7 +94,7 @@ Final slot naming:
 The page plan (ADR-050). Every page lives inside it; nothing else decides widths.
 
 Does:
-- four named slots: `[slot=identidad]` (top strip, full width: who/what you are looking at and the page actions), `[slot=rail]` (left, folds as a unit, remembered), default content (`principal`, capped by the reading measure), `[slot=contextual]` (right, folded by default, remembered)
+- four named slots: `[slot=identidad]` (top strip, full width: who/what you are looking at and the page actions), `[slot=rail]` (left, folds as a unit, remembered), default content (`principal`, capped by the reading measure), `[slot=contextual]` (right, opens or folds by the available width on first render, remembered once the user chooses)
 - `contextualTitle` names the contextual slot and switches it on; `contextualForcedOpen` opens it while a flow lives there
 - `storageKey` identifies the page kind for the remembered states
 

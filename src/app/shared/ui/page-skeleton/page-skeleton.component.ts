@@ -1,11 +1,15 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
+  ElementRef,
+  inject,
   input,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 
 import { B4IconComponent } from '../icon/b4-icon.component';
@@ -22,14 +26,19 @@ export const PAGE_SKELETON_STORAGE_PREFIX = 'b4rrhh.page-skeleton';
  * | identidad    | `[slot=identidad]`   | Franja superior, ancho completo                 |
  * | raíl         | `[slot=rail]`        | Izquierda; se pliega entero, estado recordado   |
  * | principal    | contenido por defecto| El contenido, con medida de lectura             |
- * | contextual   | `[slot=contextual]`  | Derecha; plegado por defecto, estado recordado  |
+ * | contextual   | `[slot=contextual]`  | Derecha; abre o pliega según el ancho, recordado   |
  *
- * Las reglas del ADR que aquí se cumplen: las acciones de página van en `identidad`; el
- * contextual está plegado por defecto y su estado se recuerda; el raíl se pliega entero, no por
- * partes; los huecos se dimensionan una vez, aquí — ninguna pantalla ajusta anchos por su cuenta.
+ * Las reglas del ADR que aquí se cumplen: las acciones de página van en `identidad`; el estado
+ * inicial del contextual lo decide el ancho y lo que elija el usuario se recuerda y manda; el raíl
+ * se pliega entero, no por partes; los huecos se dimensionan una vez, aquí — ninguna pantalla
+ * ajusta anchos por su cuenta.
  *
  * Sobre el ancho: la medida de lectura manda. `principal` no pasa de `--page-measure` aunque
  * sobre pantalla; el espacio que sobra se usa para poner el contextual al lado, no para estirar.
+ * De ahí el estado inicial del contextual (ADR-050 §2): si desplegarlo deja a `principal` por
+ * encima de la medida, se abre —el sitio que sobra vale más con algo al lado que vacío—; si la
+ * deja por debajo, se pliega. Se mide una vez, tras el primer render, y no al cambiar el tamaño
+ * de la ventana: mover el panel bajo los pies de quien está leyendo es peor que dejarlo donde está.
  */
 @Component({
   selector: 'app-page-skeleton',
@@ -62,8 +71,13 @@ export class PageSkeletonComponent {
    */
   readonly contextualForcedOpen = input(false);
 
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
+
   private readonly railCollapsedState = signal(false);
   private readonly contextualOpenState = signal(false);
+  /** Lo que el ancho decidió en el primer render; `null` hasta que se mide. */
+  private readonly contextualFitsState = signal<boolean | null>(null);
 
   readonly railCollapsed = this.railCollapsedState.asReadonly();
   readonly hasContextual = computed(() => this.contextualTitle() !== null);
@@ -72,14 +86,48 @@ export class PageSkeletonComponent {
   );
 
   constructor() {
-    // Al cambiar de página (de clave), se recupera lo recordado para esa página.
+    // Al cambiar de página (de clave), se recupera lo recordado para esa página. Si no hay nada
+    // recordado, decide el ancho —lo medido en el primer render—, y no «plegado siempre».
     effect(() => {
       const key = this.storageKey();
+      const fits = this.contextualFitsState();
       untracked(() => {
         this.railCollapsedState.set(this.read(key, 'rail-collapsed') === 'true');
-        this.contextualOpenState.set(this.read(key, 'contextual-open') === 'true');
+        const remembered = this.read(key, 'contextual-open');
+        this.contextualOpenState.set(remembered === null ? (fits ?? false) : remembered === 'true');
       });
     });
+
+    // Hace falta el DOM para medir: tras el primer render, y solo esa vez. No se escucha
+    // `resize` a propósito (ADR-050 §2).
+    afterNextRender(() => this.contextualFitsState.set(this.contextualFits()));
+  }
+
+  /**
+   * ¿Cabe el contextual abierto sin dejar a `principal` por debajo de la medida de lectura?
+   * Se mide lo que `principal` tiene ahora y se le resta el ancho del contextual desplegado.
+   */
+  private contextualFits(): boolean {
+    const main = this.main().nativeElement;
+    const mainStyle = getComputedStyle(main);
+    const available =
+      main.clientWidth - this.toPx(mainStyle.paddingLeft) - this.toPx(mainStyle.paddingRight);
+    const hostStyle = getComputedStyle(this.host.nativeElement);
+    const contextual = this.toPx(hostStyle.getPropertyValue('--page-contextual'));
+    const measure = this.toPx(hostStyle.getPropertyValue('--page-measure'));
+    // Sin medida (los estilos no han cargado, o no hay layout) no hay decisión: plegado.
+    if (measure <= 0 || contextual <= 0) return false;
+    return available - contextual >= measure;
+  }
+
+  /** Las medidas del esqueleto están en `px` o en `rem`; jsdom devuelve cadenas vacías. */
+  private toPx(value: string): number {
+    const trimmed = value.trim();
+    const amount = parseFloat(trimmed);
+    if (Number.isNaN(amount)) return 0;
+    return trimmed.endsWith('rem')
+      ? amount * parseFloat(getComputedStyle(document.documentElement).fontSize)
+      : amount;
   }
 
   toggleRail(): void {

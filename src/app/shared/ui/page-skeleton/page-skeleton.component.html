@@ -31,14 +31,14 @@
     }
 
     <!-- principal: el contenido. La medida de lectura manda sobre el ancho disponible. -->
-    <main class="page-skeleton__main">
+    <main #main class="page-skeleton__main">
       <div class="page-skeleton__measure">
         <ng-content />
       </div>
     </main>
 
     @if (contextualTitle(); as title) {
-      <!-- contextual: historial, ayuda, auditoría. Plegado por defecto, a petición se abre. -->
+      <!-- contextual: historial, ayuda, auditoría. Abre o pliega según el ancho; lo que se elija, se recuerda. -->
       <aside
         class="page-skeleton__contextual"
         [class.page-skeleton__contextual--open]="contextualOpen()"
