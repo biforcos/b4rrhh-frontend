@@ -20,6 +20,8 @@ import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-
 interface ContactRowViewModel {
   key: string;
   typeLabel: string;
+  /** El código, cuando el literal lo tapa (ADR-051 §4); `null` si son el mismo. */
+  typeCode: string | null;
   value: string;
 }
 
@@ -63,6 +65,7 @@ export class EmployeeContactSectionComponent {
       .map((row) => ({
         key: row.key,
         typeLabel: row.keyLabel,
+        typeCode: row.secondaryText ?? null,
         value: row.value,
       }))
       .sort((left, right) => left.key.localeCompare(right.key)),

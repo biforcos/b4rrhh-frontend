@@ -75,7 +75,13 @@
               </div>
             </div>
           } @else {
-            <p class="slot-section__key">{{ row.typeLabel }}</p>
+            <!-- ADR-051 §4: el código nunca va solo. -->
+            <p class="slot-section__key">
+              {{ row.typeLabel }}
+              @if (row.typeCode) {
+                <span class="slot-section__code">{{ row.typeCode }}</span>
+              }
+            </p>
             <p class="slot-section__value">{{ row.value }}</p>
             @if (deletingKey() === row.key) {
               <div class="slot-section__actions">
