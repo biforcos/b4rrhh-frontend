@@ -1,21 +1,15 @@
-<section id="employee-section-contact" class="employee-area" [attr.aria-label]="texts.personalAreaLabel">
-  <div class="employee-area__state-stack">
-    @if (loadingPersonals()) {
-      <p class="employee-area__state">{{ texts.personalLoadingMessage }}</p>
-    }
+<!-- La persona (ADR-051, frontend#19): la mitad tranquila de la ficha. Dos listas cortas de
+     huecos al lado —contactos e identificadores— y, debajo, a ancho completo, las direcciones,
+     que sí son vigencias y se leen como un carril. Un contenedor por lista, ninguno dentro de otro. -->
+<section id="employee-section-contact" class="employee-person" [attr.aria-label]="texts.personalAreaLabel">
+  @if (loadingPersonals()) {
+    <p class="employee-person__state">{{ texts.personalLoadingMessage }}</p>
+  }
+
+  <div class="employee-person__pair">
+    <app-employee-contact-section [employeeKey]="activeEmployeeKey()" />
+    <app-employee-identifier-section [employeeKey]="activeEmployeeKey()" />
   </div>
 
-  <div class="employee-area__modules">
-    <section class="employee-area__module">
-      <app-employee-contact-section [employeeKey]="activeEmployeeKey()" />
-    </section>
-
-    <section class="employee-area__module">
-      <app-employee-address-section [employeeKey]="activeEmployeeKey()" />
-    </section>
-
-    <section class="employee-area__module">
-      <app-employee-identifier-section [employeeKey]="activeEmployeeKey()" />
-    </section>
-  </div>
+  <app-employee-address-section class="employee-person__lane" [employeeKey]="activeEmployeeKey()" />
 </section>

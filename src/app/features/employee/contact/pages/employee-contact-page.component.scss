@@ -1,32 +1,25 @@
-.employee-area {
+/* La persona: sin cajas propias, el ancho lo pone el esqueleto (ADR-050). Donde sobra espacio
+   se ponen cosas al lado, no se estiran: las dos listas cortas comparten fila y las direcciones
+   —una tabla de vigencias— van debajo a ancho completo. */
+.employee-person {
   display: grid;
-  gap: 0.9rem;
+  gap: 16px;
 }
 
-.employee-area__state-stack {
-  display: grid;
-  gap: 0.18rem;
-}
-
-.employee-area__state {
+.employee-person__state {
   margin: 0;
   font-size: 0.78rem;
   line-height: 1.3;
   color: var(--text-secondary);
 }
 
-.employee-area__state--error {
-  color: var(--error-text);
-}
-
-/* Cambio 4: 2 columnas en pantallas anchas */
-.employee-area__modules {
+.employee-person__pair {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+  gap: 0 40px;
   align-items: start;
 }
 
-.employee-area__module {
-  align-self: start;
+.employee-person__lane {
+  display: block;
 }

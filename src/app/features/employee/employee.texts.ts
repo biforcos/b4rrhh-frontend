@@ -307,8 +307,6 @@ export const employeeTexts = {
   summaryPendingBlockTitle: 'Proximos pasos',
   summaryPendingBlockDescription:
     'Preparado para alertas operativas: datos incompletos, revisiones y validaciones pendientes.',
-  personalAreaTitle: 'Personales',
-  personalAreaSubtitle: 'Bloques de información personal y de contacto.',
   personalContactsBlockTitle: 'Contactos',
   personalContactsBlockDescription:
     'Espacio para teléfono, email y medios principales de contacto del empleado.',
