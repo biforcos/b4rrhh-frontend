@@ -1,9 +1,7 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeDirectoryQuery, EmployeeListItemModel } from '../models/employee-list-item.model';
-import { areEmployeeBusinessKeysEqual } from '../routing/employee-route-key.util';
 import { EmployeeDirectoryReadGateway } from './employee-directory-read.gateway';
 
 export type EmployeeDirectoryErrorCode = 'request-failed';
@@ -87,17 +85,6 @@ export class EmployeeDirectoryStore {
     this.loadDirectory();
   }
 
-  /** Busca solo entre lo cargado: sirve para lo que está en pantalla, no para saber si existe. */
-  findEmployeeByBusinessKey(key: EmployeeBusinessKey | null): EmployeeListItemModel | null {
-    if (!key) {
-      return null;
-    }
-
-    return (
-      this.employeesState().find((employee) => areEmployeeBusinessKeysEqual(employee, key)) ?? null
-    );
-  }
-
   private scheduleLoad(): void {
     if (this.searchTimer !== null) {
       clearTimeout(this.searchTimer);
@@ -109,6 +96,12 @@ export class EmployeeDirectoryStore {
   }
 
   private loadDirectory(): void {
+    // Por aquí pasan todos los caminos: una carga inmediata (estado, página) cancela también el
+    // temporizador que dejó pendiente la búsqueda, o la misma pregunta se pediría dos veces.
+    if (this.searchTimer !== null) {
+      clearTimeout(this.searchTimer);
+      this.searchTimer = null;
+    }
     // Una respuesta a una pregunta anterior no pisa la actual.
     this.inFlight?.unsubscribe();
     this.loadingState.set(true);
@@ -118,6 +111,11 @@ export class EmployeeDirectoryStore {
       next: (page) => {
         this.employeesState.set(page.items);
         this.totalState.set(page.total);
+        // El servidor contesta el size que aplicó (backend#18 recorta en MAX_SIZE): la
+        // aritmética de páginas se hace con ese, no con el que se pidió.
+        if (page.size !== this.queryState().size) {
+          this.queryState.update((query) => ({ ...query, size: page.size }));
+        }
         this.loadingState.set(false);
       },
       error: () => {

@@ -83,21 +83,33 @@ describe('EmployeeDirectoryStore', () => {
     expect(readGatewayMock.readDirectory).toHaveBeenCalledTimes(2);
   });
 
-  it('busca por clave solo entre lo cargado', () => {
-    const employee = store.findEmployeeByBusinessKey({
-      ruleSystemCode: 'PA-ES',
-      employeeTypeCode: 'CONTRACTOR',
-      employeeNumber: '00012345',
-    });
+  it('una carga inmediata cancela la busqueda que quedo pendiente: no se pregunta dos veces', () => {
+    readGatewayMock.readDirectory.mockClear();
 
-    expect(employee?.employeeNumber).toBe('00012345');
-    expect(
-      store.findEmployeeByBusinessKey({
-        ruleSystemCode: 'PA-ES',
-        employeeTypeCode: 'STAFF',
-        employeeNumber: '99999999',
-      }),
-    ).toBeNull();
+    store.setQuery('ana');
+    store.setPage(2);
+    vi.advanceTimersByTime(EMPLOYEE_DIRECTORY_SEARCH_DEBOUNCE_MS);
+
+    // setPage pregunta ya con q='ana'; al vencer el temporizador no hay nada que repetir.
+    expect(readGatewayMock.readDirectory).toHaveBeenCalledTimes(1);
+    expect(readGatewayMock.readDirectory).toHaveBeenCalledWith(
+      expect.objectContaining({ q: 'ana', page: 2 }),
+    );
+  });
+
+  it('pagina con el size que el servidor aplico, no con el que se pidio', () => {
+    // backend#18: MAX_SIZE puede recortar la peticion, y la respuesta trae el size aplicado.
+    readGatewayMock.readDirectory.mockImplementation((query: EmployeeDirectoryQuery) =>
+      of({ items: employeeDirectorySeed, page: query.page, size: 25, total: 310 }),
+    );
+
+    store.refreshDirectory();
+    expect(store.size()).toBe(25);
+
+    store.setPage(1);
+    expect(readGatewayMock.readDirectory).toHaveBeenLastCalledWith(
+      expect.objectContaining({ page: 1, size: 25 }),
+    );
   });
 
   it('refresca a petición con la misma pregunta', () => {
