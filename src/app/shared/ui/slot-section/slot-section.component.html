@@ -1,0 +1,24 @@
+<section class="slot-section" [attr.aria-label]="title()">
+  <header class="slot-section__header">
+    <div class="slot-section__heading">
+      <h3 class="slot-section__title">{{ title() }}</h3>
+      @if (count() > 0) {
+        <span class="slot-section__count">{{ count() }}</span>
+      }
+    </div>
+    @if (addLabel(); as label) {
+      <!-- Añadir es frecuente pero no es a lo que se viene: un enlace discreto, no un botón. -->
+      <button type="button" class="slot-section__add-btn" [disabled]="addDisabled()" (click)="addClicked.emit()">
+        <b4-icon name="anadir" [size]="16" />
+        {{ label }}
+      </button>
+    }
+  </header>
+
+  <!-- El vacío es contenido: dice qué falta y cómo añadirlo, sin otra caja (ADR-051 §3). -->
+  @if (showEmpty()) {
+    <p class="slot-section__empty">{{ emptyMessage() }}</p>
+  }
+
+  <ng-content />
+</section>

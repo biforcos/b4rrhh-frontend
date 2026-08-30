@@ -1,0 +1,300 @@
+/*
+ * El contenedor de las secciones SLOT (ADR-051). Sin caja, como el temporal: una regla arriba y
+ * la cabecera bastan para separar. Las filas van a hilo, no en cajas; la que se está editando o
+ * confirmando se marca con el filo, no con otro contenedor.
+ *
+ * Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor.
+ */
+app-slot-section {
+  display: block;
+  scroll-margin-top: 16px;
+}
+
+.slot-section {
+  padding: 14px 0 6px;
+  border-top: 1px solid var(--border-strong);
+}
+
+.slot-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.slot-section__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.slot-section__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.slot-section__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.slot-section__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+}
+
+.slot-section__add-btn:hover,
+.slot-section__add-btn:focus-visible {
+  color: var(--accent-primary);
+  background: var(--surface-hover);
+}
+
+.slot-section__add-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */
+.slot-section__empty {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  padding: 8px 0 4px;
+}
+
+/* ── Las filas: clave, valor y acciones, a hilo ── */
+.slot-section__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.slot-section__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--surface-muted);
+}
+
+.slot-section__row:last-child {
+  border-bottom: 0;
+}
+
+/* Lo que se está tocando lleva el filo del acento; lo que se va a borrar, el del error. */
+.slot-section__row--draft,
+.slot-section__row--editing {
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+.slot-section__row--confirming {
+  box-shadow: inset 3px 0 0 var(--error-border);
+}
+
+.slot-section__key {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  line-height: 1.3;
+}
+
+.slot-section__value {
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.slot-section__meta {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.slot-section__badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface-accent);
+  color: var(--accent-primary);
+  vertical-align: middle;
+}
+
+.slot-section__confirm {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--error-text);
+}
+
+/* Las acciones de una fila en reposo se ven al pasar por encima o al llegar con el teclado. */
+.slot-section__actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.slot-section__row:not(:hover):not(:focus-within) > .slot-section__actions--quiet {
+  opacity: 0;
+}
+
+.slot-section__actions--quiet {
+  transition: opacity 120ms ease;
+}
+
+.slot-section__icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-panel);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.slot-section__icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.slot-section__icon-btn--danger:hover {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+/* ── El formulario en el sitio: el borrador y la corrección ── */
+.slot-section__form {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 8px 14px;
+  padding: 4px 0;
+}
+
+.slot-section__field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.slot-section__field > span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.slot-section__field > strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 2;
+}
+
+.slot-section__field input.p-inputtext {
+  width: 100%;
+}
+
+.slot-section__field--check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-self: end;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.slot-section__field-error {
+  font-size: 11px;
+  color: var(--error-text);
+}
+
+.slot-section__form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.slot-section__btn {
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.slot-section__btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.slot-section__btn--primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+  font-weight: 500;
+}
+
+.slot-section__btn--primary:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+}
+
+.slot-section__btn--danger {
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+.slot-section__btn--danger:hover:not(:disabled) {
+  background: var(--error-bg);
+}
+
+.slot-section__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .slot-section__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .slot-section__key {
+    grid-column: 1 / -1;
+  }
+}

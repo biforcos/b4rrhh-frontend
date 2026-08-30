@@ -8,9 +8,9 @@ import { GlobalMessageService } from '../../data-access/employee-global-message.
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
-import { EmployeeSectionShellComponent } from '../../shared/ui/section/employee-section-shell.component';
-import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
+import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-section.component';
 import {
   SlotDraft,
   SlotKeyOption,
@@ -33,9 +33,8 @@ function createEmptyContactDraft(): SlotDraft<string> {
 @Component({
   selector: 'app-employee-contact-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeeSectionShellComponent, UiButtonComponent, UiSelectComponent, InputTextModule],
+  imports: [SlotSectionComponent, B4IconComponent, UiSelectComponent, InputTextModule],
   templateUrl: './employee-contact-section.component.html',
-  styleUrl: './employee-contact-section.component.scss',
 })
 export class EmployeeContactSectionComponent {
   private static readonly GLOBAL_FEEDBACK_SOURCE_KEY = 'employee-contact-section-local';
@@ -57,8 +56,6 @@ export class EmployeeContactSectionComponent {
   private catalogRequestId = 0;
 
   protected readonly texts = employeeTexts;
-  protected readonly sectionTitle = this.texts.contactsSectionTitle;
-  protected readonly sectionSubtitle = this.texts.contactsSectionSubtitle;
   protected readonly rows = computed<ReadonlyArray<ContactRowViewModel>>(() =>
     this.contactStore
       .contacts()

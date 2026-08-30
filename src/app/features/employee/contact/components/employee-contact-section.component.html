@@ -1,161 +1,124 @@
-<app-employee-section-shell [title]="sectionTitle" [subtitle]="sectionSubtitle" [state]="sectionState()">
-  <div sectionCardActions class="employee-contact-section__header-actions">
-    <app-ui-button
-      type="button"
-      [outlined]="true"
-      size="small"
-      [label]="texts.contactsSectionAddAction"
-      [disabled]="sectionState().busy || creating()"
-      (pressed)="startCreate()"
-    />
-  </div>
-
-  <div class="employee-contact-section__body">
-    @if (creating()) {
-      <article class="employee-contact-section__slot employee-contact-section__slot--create">
-        <div class="employee-contact-section__form-grid">
-          <div class="employee-contact-section__form-field">
-            <label class="employee-contact-section__form-label" for="contactTypeInput">{{ texts.contactsSectionKeyFieldLabel }}</label>
-            <app-ui-select
-              class="employee-contact-section__form-input"
-              inputId="contactTypeInput"
-              [disabled]="catalogOptionsLoading() || sectionState().busy"
-              [value]="createDraft().key ?? ''"
-              [options]="availableContactTypeOptions()"
-              [placeholder]="texts.contactsSectionKeyFieldLabel"
-              (valueChanged)="updateCreateDraftKey($event || null)"
-            />
-          </div>
-
-          <div class="employee-contact-section__form-field">
-            <label class="employee-contact-section__form-label" for="contactValueInput">{{ texts.contactsSectionValueFieldLabel }}</label>
-            <input
-              pInputText
-              id="contactValueInput"
-              class="employee-contact-section__form-input"
-              type="text"
-              [value]="createDraft().value"
-              (input)="updateCreateDraftValue($any($event.target).value)"
-            />
-          </div>
-        </div>
-
-        <div class="employee-contact-section__row-actions">
-          <app-ui-button
-            type="button"
-            size="small"
-            [label]="texts.contactsSectionSaveCreateAction"
-            [disabled]="!canSaveCreate() || sectionState().busy"
-            (pressed)="submitCreate()"
-          />
-          <app-ui-button
-            type="button"
-            class="employee-contact-section__secondary-action"
-            severity="secondary"
-            [outlined]="true"
-            size="small"
-            [label]="texts.contactsSectionCancelAction"
-            [disabled]="sectionState().busy"
-            (pressed)="cancelCreate()"
-          />
-        </div>
-      </article>
-    }
-
-    @if (hasRows()) {
-      <ul class="employee-contact-section__list" role="list" [attr.aria-label]="texts.contactsSectionListAriaLabel">
-        @for (row of rows(); track row.key) {
-          <li class="employee-contact-section__row">
-            <div class="employee-contact-section__row-main">
-              <p class="employee-contact-section__row-type">{{ row.typeLabel }}</p>
-
-              @if (editingKey() === row.key) {
-                <input
-                  pInputText
-                  class="employee-contact-section__inline-input"
-                  type="text"
-                  aria-label="{{ texts.contactsSectionValueFieldLabel }}"
-                  title="{{ texts.contactsSectionValueFieldLabel }}"
-                  placeholder="{{ texts.contactsSectionValueFieldLabel }}"
-                  [value]="editDraftValue()"
-                  (input)="updateEditDraftValue($any($event.target).value)"
-                />
-              } @else {
-                <p class="employee-contact-section__row-value">{{ row.value }}</p>
-              }
-
-              @if (deletingKey() === row.key) {
-                <p class="employee-contact-section__confirm-text">{{ texts.contactsSectionConfirmDeleteMessage }}</p>
-              }
+<app-slot-section
+  anchorId="employee-section-contacts"
+  [title]="texts.contactsSectionTitle"
+  [count]="rows().length"
+  [drafting]="creating()"
+  [addLabel]="texts.contactsSectionAddAction"
+  [addDisabled]="sectionState().busy || creating()"
+  [emptyMessage]="texts.contactsSectionEmptyMessage"
+  (addClicked)="startCreate()"
+>
+  @if (creating() || hasRows()) {
+    <ul class="slot-section__rows" role="list" [attr.aria-label]="texts.contactsSectionListAriaLabel">
+      @if (creating()) {
+        <li class="slot-section__row slot-section__row--draft">
+          <div class="slot-section__form">
+            <label class="slot-section__field">
+              <span>{{ texts.contactsSectionKeyFieldLabel }}</span>
+              <app-ui-select
+                [disabled]="catalogOptionsLoading() || sectionState().busy"
+                [value]="createDraft().key ?? ''"
+                [options]="availableContactTypeOptions()"
+                [placeholder]="texts.contactsSectionKeyFieldLabel"
+                (valueChanged)="updateCreateDraftKey($event || null)"
+              />
+            </label>
+            <label class="slot-section__field">
+              <span>{{ texts.contactsSectionValueFieldLabel }}</span>
+              <input pInputText type="text" [value]="createDraft().value" (input)="updateCreateDraftValue($any($event.target).value)" />
+            </label>
+            <div class="slot-section__form-actions">
+              <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelCreate()">
+                {{ texts.contactsSectionCancelAction }}
+              </button>
+              <button
+                type="button"
+                class="slot-section__btn slot-section__btn--primary"
+                [disabled]="!canSaveCreate() || sectionState().busy"
+                (click)="submitCreate()"
+              >
+                {{ texts.contactsSectionSaveCreateAction }}
+              </button>
             </div>
+          </div>
+        </li>
+      }
 
-            <div class="employee-contact-section__row-actions">
-              @if (editingKey() === row.key) {
-                <app-ui-button
+      @for (row of rows(); track row.key) {
+        <li
+          class="slot-section__row"
+          [class.slot-section__row--editing]="editingKey() === row.key"
+          [class.slot-section__row--confirming]="deletingKey() === row.key"
+        >
+          @if (editingKey() === row.key) {
+            <div class="slot-section__form">
+              <div class="slot-section__field">
+                <span>{{ texts.contactsSectionKeyFieldLabel }}</span>
+                <strong>{{ row.typeLabel }}</strong>
+              </div>
+              <label class="slot-section__field">
+                <span>{{ texts.contactsSectionValueFieldLabel }}</span>
+                <input pInputText type="text" [value]="editDraftValue()" (input)="updateEditDraftValue($any($event.target).value)" />
+              </label>
+              <div class="slot-section__form-actions">
+                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelEdit()">
+                  {{ texts.contactsSectionCancelAction }}
+                </button>
+                <button
                   type="button"
-                  size="small"
-                  [label]="texts.contactsSectionSaveEditAction"
+                  class="slot-section__btn slot-section__btn--primary"
                   [disabled]="!canSaveEdit() || sectionState().busy"
-                  (pressed)="submitEdit(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  class="employee-contact-section__secondary-action"
-                  severity="secondary"
-                  [outlined]="true"
-                  size="small"
-                  [label]="texts.contactsSectionCancelAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="cancelEdit()"
-                />
-              } @else if (deletingKey() === row.key) {
-                <app-ui-button
-                  type="button"
-                  class="employee-contact-section__danger-action"
-                  severity="danger"
-                  [outlined]="true"
-                  size="small"
-                  [label]="texts.contactsSectionDeleteAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="confirmDelete(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  class="employee-contact-section__secondary-action"
-                  severity="secondary"
-                  [outlined]="true"
-                  size="small"
-                  [label]="texts.contactsSectionCancelAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="cancelDelete()"
-                />
-              } @else {
-                <app-ui-button
-                  type="button"
-                  severity="secondary"
-                  [outlined]="true"
-                  size="small"
-                  [label]="texts.contactsSectionEditAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="startEdit(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  class="employee-contact-section__danger-action"
-                  severity="danger"
-                  [outlined]="true"
-                  size="small"
-                  [label]="texts.contactsSectionDeleteAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="requestDelete(row.key)"
-                />
-              }
+                  (click)="submitEdit(row.key)"
+                >
+                  {{ texts.contactsSectionSaveEditAction }}
+                </button>
+              </div>
             </div>
-          </li>
-        }
-      </ul>
-    } @else if (!creating()) {
-      <p class="employee-contact-section__empty">{{ texts.contactsSectionEmptyMessage }}</p>
-    }
-  </div>
-</app-employee-section-shell>
+          } @else {
+            <p class="slot-section__key">{{ row.typeLabel }}</p>
+            <p class="slot-section__value">{{ row.value }}</p>
+            @if (deletingKey() === row.key) {
+              <div class="slot-section__actions">
+                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelDelete()">
+                  {{ texts.contactsSectionCancelAction }}
+                </button>
+                <button
+                  type="button"
+                  class="slot-section__btn slot-section__btn--danger"
+                  [disabled]="sectionState().busy"
+                  (click)="confirmDelete(row.key)"
+                >
+                  {{ texts.contactsSectionConfirmDeleteAction }}
+                </button>
+              </div>
+              <p class="slot-section__confirm">{{ texts.contactsSectionConfirmDeleteMessage }}</p>
+            } @else {
+              <div class="slot-section__actions slot-section__actions--quiet">
+                <button
+                  type="button"
+                  class="slot-section__icon-btn"
+                  [attr.aria-label]="texts.contactsSectionEditAction + ' ' + row.typeLabel"
+                  [title]="texts.contactsSectionEditAction"
+                  [disabled]="sectionState().busy"
+                  (click)="startEdit(row.key)"
+                >
+                  <b4-icon name="editar" [size]="16" />
+                </button>
+                <button
+                  type="button"
+                  class="slot-section__icon-btn slot-section__icon-btn--danger"
+                  [attr.aria-label]="texts.contactsSectionDeleteAction + ' ' + row.typeLabel"
+                  [title]="texts.contactsSectionDeleteAction"
+                  [disabled]="sectionState().busy"
+                  (click)="requestDelete(row.key)"
+                >
+                  <b4-icon name="cerrar" [size]="16" />
+                </button>
+              </div>
+            }
+          }
+        </li>
+      }
+    </ul>
+  }
+</app-slot-section>

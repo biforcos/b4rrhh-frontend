@@ -1,227 +1,184 @@
-<app-employee-section-shell [title]="sectionTitle" [subtitle]="sectionSubtitle" [state]="sectionState()">
-  <div sectionCardActions class="employee-identifier-section__header-actions">
-    <app-ui-button
-      type="button"
-      [outlined]="true"
-      size="small"
-      [label]="texts.identifiersSectionAddAction"
-      [disabled]="sectionState().busy || creating()"
-      (pressed)="startCreate()"
-    />
-  </div>
+<app-slot-section
+  anchorId="employee-section-identifiers"
+  [title]="texts.identifiersSectionTitle"
+  [count]="rows().length"
+  [drafting]="creating()"
+  [addLabel]="texts.identifiersSectionAddAction"
+  [addDisabled]="sectionState().busy || creating()"
+  [emptyMessage]="texts.identifiersSectionEmptyMessage"
+  (addClicked)="startCreate()"
+>
+  @if (creating() || hasRows()) {
+    <ul class="slot-section__rows" role="list" [attr.aria-label]="texts.identifiersSectionListAriaLabel">
+      @if (creating()) {
+        <li class="slot-section__row slot-section__row--draft">
+          <div class="slot-section__form">
+            <label class="slot-section__field">
+              <span>{{ texts.identifiersSectionKeyFieldLabel }}</span>
+              <app-ui-select
+                [disabled]="catalogOptionsLoading() || sectionState().busy"
+                [value]="createDraft().key ?? ''"
+                [options]="availableKeys()"
+                [placeholder]="texts.identifiersSectionKeyFieldLabel"
+                (valueChanged)="updateCreateDraftKey($event || null)"
+              />
+            </label>
+            <label class="slot-section__field">
+              <span>{{ texts.identifiersSectionValueFieldLabel }}</span>
+              <input
+                pInputText
+                type="text"
+                [attr.aria-invalid]="isCreateDniInvalid() ? 'true' : null"
+                [value]="createDraft().value"
+                (input)="updateCreateDraftValue($any($event.target).value)"
+              />
+              @if (isCreateDniInvalid()) {
+                <small class="slot-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
+              }
+            </label>
+            <label class="slot-section__field">
+              <span>{{ texts.identifiersSectionIssuingCountryLabel }}</span>
+              <input
+                pInputText
+                type="text"
+                [value]="createDraft().issuingCountryCode"
+                (input)="updateCreateDraftIssuingCountryCode($any($event.target).value)"
+              />
+            </label>
+            <label class="slot-section__field">
+              <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
+              <app-ui-date-input [value]="createDraft().expirationDate" (valueChanged)="updateCreateDraftExpirationDate($event)" />
+            </label>
+            <label class="slot-section__field slot-section__field--check">
+              <input type="checkbox" [checked]="createDraft().isPrimary" (change)="updateCreateDraftIsPrimary($any($event.target).checked)" />
+              <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
+            </label>
+            <div class="slot-section__form-actions">
+              <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelCreate()">
+                {{ texts.identifiersSectionCancelAction }}
+              </button>
+              <button
+                type="button"
+                class="slot-section__btn slot-section__btn--primary"
+                [disabled]="!canSaveCreate() || sectionState().busy"
+                (click)="submitCreate()"
+              >
+                {{ texts.identifiersSectionSaveCreateAction }}
+              </button>
+            </div>
+          </div>
+        </li>
+      }
 
-  <div class="employee-identifier-section__body">
-    @if (creating()) {
-      <article class="employee-identifier-section__slot employee-identifier-section__slot--create">
-        <div class="employee-identifier-section__form-grid">
-          <label class="employee-identifier-section__field employee-identifier-section__field--key">
-            <span>{{ texts.identifiersSectionKeyFieldLabel }}</span>
-            <app-ui-select
-              [disabled]="catalogOptionsLoading() || sectionState().busy"
-              [value]="createDraft().key ?? ''"
-              [options]="availableKeys()"
-              [placeholder]="texts.identifiersSectionKeyFieldLabel"
-              (valueChanged)="updateCreateDraftKey($event || null)"
-            />
-          </label>
-
-          <label class="employee-identifier-section__field employee-identifier-section__field--value">
-            <span>{{ texts.identifiersSectionValueFieldLabel }}</span>
-            <input
-              pInputText
-              type="text"
-              [class.employee-identifier-section__input--invalid]="isCreateDniInvalid()"
-              [value]="createDraft().value"
-              (input)="updateCreateDraftValue($any($event.target).value)"
-            />
-            @if (isCreateDniInvalid()) {
-              <small class="employee-identifier-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
-            }
-          </label>
-
-          <label class="employee-identifier-section__field employee-identifier-section__field--country">
-            <span>{{ texts.identifiersSectionIssuingCountryLabel }}</span>
-            <input
-              pInputText
-              type="text"
-              [value]="createDraft().issuingCountryCode"
-              (input)="updateCreateDraftIssuingCountryCode($any($event.target).value)"
-            />
-          </label>
-
-          <label class="employee-identifier-section__field employee-identifier-section__field--date">
-            <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
-            <app-ui-date-input
-              [value]="createDraft().expirationDate"
-              (valueChanged)="updateCreateDraftExpirationDate($event)"
-            />
-          </label>
-
-          <label class="employee-identifier-section__checkbox-field">
-            <input
-              type="checkbox"
-              [checked]="createDraft().isPrimary"
-              (change)="updateCreateDraftIsPrimary($any($event.target).checked)"
-            />
-            <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
-          </label>
-        </div>
-
-        <div class="employee-identifier-section__row-actions">
-          <app-ui-button
-            type="button"
-            size="small"
-            [label]="texts.identifiersSectionSaveCreateAction"
-            [disabled]="!canSaveCreate() || sectionState().busy"
-            (pressed)="submitCreate()"
-          />
-          <app-ui-button
-            type="button"
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            [label]="texts.identifiersSectionCancelAction"
-            [disabled]="sectionState().busy"
-            (pressed)="cancelCreate()"
-          />
-        </div>
-      </article>
-    }
-
-    @if (hasRows()) {
-      <ul class="employee-identifier-section__list" role="list" [attr.aria-label]="texts.identifiersSectionListAriaLabel">
-        @for (row of rows(); track row.key) {
-          <li class="employee-identifier-section__row">
-            <div class="employee-identifier-section__row-main">
-              <div class="employee-identifier-section__row-heading">
-                <p class="employee-identifier-section__row-type">{{ row.typeLabel }}</p>
-                @for (badge of row.badges; track badge) {
-                  <app-ui-tag class="employee-identifier-section__badge" [value]="badge" severity="info" [rounded]="true" />
-                }
+      @for (row of rows(); track row.key) {
+        <li
+          class="slot-section__row"
+          [class.slot-section__row--editing]="editingKey() === row.key"
+          [class.slot-section__row--confirming]="deletingKey() === row.key"
+        >
+          @if (editingKey() === row.key) {
+            <div class="slot-section__form">
+              <div class="slot-section__field">
+                <span>{{ texts.identifiersSectionKeyFieldLabel }}</span>
+                <strong>{{ row.typeLabel }}</strong>
               </div>
-
-              @if (editingKey() === row.key) {
-                <div class="employee-identifier-section__form-grid employee-identifier-section__form-grid--edit">
-                  <div class="employee-identifier-section__readonly-field employee-identifier-section__field employee-identifier-section__field--key">
-                    <span>{{ texts.identifiersSectionKeyFieldLabel }}</span>
-                    <strong>{{ row.typeLabel }}</strong>
-                  </div>
-
-                  <label class="employee-identifier-section__field employee-identifier-section__field--value">
-                    <span>{{ texts.identifiersSectionValueFieldLabel }}</span>
-                    <input
-                      pInputText
-                      type="text"
-                      [class.employee-identifier-section__input--invalid]="isEditDniInvalid()"
-                      [value]="editDraft().value"
-                      (input)="updateEditDraftValue($any($event.target).value)"
-                    />
-                    @if (isEditDniInvalid()) {
-                      <small class="employee-identifier-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
-                    }
-                  </label>
-
-                  <label class="employee-identifier-section__field employee-identifier-section__field--country">
-                    <span>{{ texts.identifiersSectionIssuingCountryLabel }}</span>
-                    <input
-                      pInputText
-                      type="text"
-                      [value]="editDraft().issuingCountryCode"
-                      (input)="updateEditDraftIssuingCountryCode($any($event.target).value)"
-                    />
-                  </label>
-
-                  <label class="employee-identifier-section__field employee-identifier-section__field--date">
-                    <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
-                    <app-ui-date-input
-                      [value]="editDraft().expirationDate"
-                      (valueChanged)="updateEditDraftExpirationDate($event)"
-                    />
-                  </label>
-
-                  <label class="employee-identifier-section__checkbox-field">
-                    <input
-                      type="checkbox"
-                      [checked]="editDraft().isPrimary"
-                      (change)="updateEditDraftIsPrimary($any($event.target).checked)"
-                    />
-                    <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
-                  </label>
-                </div>
-              } @else {
-                <p class="employee-identifier-section__row-value">{{ row.value }}</p>
-                @if (row.secondaryText) {
-                  <p class="employee-identifier-section__row-meta">{{ row.secondaryText }}</p>
+              <label class="slot-section__field">
+                <span>{{ texts.identifiersSectionValueFieldLabel }}</span>
+                <input
+                  pInputText
+                  type="text"
+                  [attr.aria-invalid]="isEditDniInvalid() ? 'true' : null"
+                  [value]="editDraft().value"
+                  (input)="updateEditDraftValue($any($event.target).value)"
+                />
+                @if (isEditDniInvalid()) {
+                  <small class="slot-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
                 }
-              }
-
-              @if (deletingKey() === row.key) {
-                <p class="employee-identifier-section__confirm-text">{{ texts.identifiersSectionConfirmDeleteMessage }}</p>
-              }
-            </div>
-
-            <div class="employee-identifier-section__row-actions">
-              @if (editingKey() === row.key) {
-                <app-ui-button
+              </label>
+              <label class="slot-section__field">
+                <span>{{ texts.identifiersSectionIssuingCountryLabel }}</span>
+                <input
+                  pInputText
+                  type="text"
+                  [value]="editDraft().issuingCountryCode"
+                  (input)="updateEditDraftIssuingCountryCode($any($event.target).value)"
+                />
+              </label>
+              <label class="slot-section__field">
+                <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
+                <app-ui-date-input [value]="editDraft().expirationDate" (valueChanged)="updateEditDraftExpirationDate($event)" />
+              </label>
+              <label class="slot-section__field slot-section__field--check">
+                <input type="checkbox" [checked]="editDraft().isPrimary" (change)="updateEditDraftIsPrimary($any($event.target).checked)" />
+                <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
+              </label>
+              <div class="slot-section__form-actions">
+                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelEdit()">
+                  {{ texts.identifiersSectionCancelAction }}
+                </button>
+                <button
                   type="button"
-                  size="small"
-                  [label]="texts.identifiersSectionSaveEditAction"
+                  class="slot-section__btn slot-section__btn--primary"
                   [disabled]="!canSaveEdit() || sectionState().busy"
-                  (pressed)="submitEdit(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  size="small"
-                  severity="secondary"
-                  [outlined]="true"
-                  [label]="texts.identifiersSectionCancelAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="cancelEdit()"
-                />
-              } @else if (deletingKey() === row.key) {
-                <app-ui-button
-                  type="button"
-                  size="small"
-                  severity="danger"
-                  [label]="texts.identifiersSectionDeleteAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="confirmDelete(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  size="small"
-                  severity="secondary"
-                  [outlined]="true"
-                  [label]="texts.identifiersSectionCancelAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="cancelDelete()"
-                />
-              } @else {
-                <app-ui-button
-                  type="button"
-                  size="small"
-                  severity="secondary"
-                  [outlined]="true"
-                  [label]="texts.identifiersSectionEditAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="startEdit(row.key)"
-                />
-                <app-ui-button
-                  type="button"
-                  size="small"
-                  severity="danger"
-                  [outlined]="true"
-                  [label]="texts.identifiersSectionDeleteAction"
-                  [disabled]="sectionState().busy"
-                  (pressed)="requestDelete(row.key)"
-                />
-              }
+                  (click)="submitEdit(row.key)"
+                >
+                  {{ texts.identifiersSectionSaveEditAction }}
+                </button>
+              </div>
             </div>
-          </li>
-        }
-      </ul>
-    } @else if (!creating()) {
-      <p class="employee-identifier-section__empty">{{ texts.identifiersSectionEmptyMessage }}</p>
-    }
-  </div>
-</app-employee-section-shell>
+          } @else {
+            <p class="slot-section__key">{{ row.typeLabel }}</p>
+            <p class="slot-section__value">
+              {{ row.value }}
+              @for (badge of row.badges; track badge) {
+                <span class="slot-section__badge">{{ badge }}</span>
+              }
+              @if (row.secondaryText) {
+                <span class="slot-section__meta">{{ row.secondaryText }}</span>
+              }
+            </p>
+            @if (deletingKey() === row.key) {
+              <div class="slot-section__actions">
+                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelDelete()">
+                  {{ texts.identifiersSectionCancelAction }}
+                </button>
+                <button
+                  type="button"
+                  class="slot-section__btn slot-section__btn--danger"
+                  [disabled]="sectionState().busy"
+                  (click)="confirmDelete(row.key)"
+                >
+                  {{ texts.identifiersSectionConfirmDeleteAction }}
+                </button>
+              </div>
+              <p class="slot-section__confirm">{{ texts.identifiersSectionConfirmDeleteMessage }}</p>
+            } @else {
+              <div class="slot-section__actions slot-section__actions--quiet">
+                <button
+                  type="button"
+                  class="slot-section__icon-btn"
+                  [attr.aria-label]="texts.identifiersSectionEditAction + ' ' + row.typeLabel"
+                  [title]="texts.identifiersSectionEditAction"
+                  [disabled]="sectionState().busy"
+                  (click)="startEdit(row.key)"
+                >
+                  <b4-icon name="editar" [size]="16" />
+                </button>
+                <button
+                  type="button"
+                  class="slot-section__icon-btn slot-section__icon-btn--danger"
+                  [attr.aria-label]="texts.identifiersSectionDeleteAction + ' ' + row.typeLabel"
+                  [title]="texts.identifiersSectionDeleteAction"
+                  [disabled]="sectionState().busy"
+                  (click)="requestDelete(row.key)"
+                >
+                  <b4-icon name="cerrar" [size]="16" />
+                </button>
+              </div>
+            }
+          }
+        </li>
+      }
+    </ul>
+  }
+</app-slot-section>

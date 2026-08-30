@@ -13,14 +13,13 @@ import { EmployeeIdentifierStore } from '../../data-access/employee-identifier.s
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeIdentifierModel } from '../../models/employee-identifier.model';
-import { EmployeeSectionShellComponent } from '../../shared/ui/section/employee-section-shell.component';
 import { isValidSpanishDni } from '../../shared/utils/spanish-dni.util';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
-import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
+import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
-import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
+import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-section.component';
 
 interface IdentifierRowViewModel {
   key: string;
@@ -33,9 +32,8 @@ interface IdentifierRowViewModel {
 @Component({
   selector: 'app-employee-identifier-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeeSectionShellComponent, UiButtonComponent, UiTagComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
+  imports: [SlotSectionComponent, B4IconComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
   templateUrl: './employee-identifier-section.component.html',
-  styleUrl: './employee-identifier-section.component.scss',
 })
 export class EmployeeIdentifierSectionComponent {
   private static readonly GLOBAL_FEEDBACK_SOURCE_KEY = 'employee-identifier-section-local';
@@ -57,8 +55,6 @@ export class EmployeeIdentifierSectionComponent {
   private catalogRequestId = 0;
 
   protected readonly texts = employeeTexts;
-  protected readonly sectionTitle = this.texts.identifiersSectionTitle;
-  protected readonly sectionSubtitle = this.texts.identifiersSectionSubtitle;
   protected readonly rows = computed<ReadonlyArray<IdentifierRowViewModel>>(() =>
     this.identifierStore
       .identifiers()
