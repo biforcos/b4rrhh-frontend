@@ -95,7 +95,9 @@ export class PageSkeletonComponent {
   }
 
   private read(key: string | null, name: string): string | null {
-    return key ? (this.getStorage()?.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.${key}.${name}`) ?? null) : null;
+    return key
+      ? (this.getStorage()?.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.${key}.${name}`) ?? null)
+      : null;
   }
 
   private write(key: string | null, name: string, value: string): void {

@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { take } from 'rxjs';
 
-import { AddressCreateDraft, AddressEditCurrentDraft } from '../../data-access/employee-address-edit.mapper';
+import {
+  AddressCreateDraft,
+  AddressEditCurrentDraft,
+} from '../../data-access/employee-address-edit.mapper';
 import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
@@ -50,7 +62,13 @@ function createEmptyAddressDraft(): AddressCreateDraft {
 @Component({
   selector: 'app-employee-address-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    InputTextModule,
+  ],
   templateUrl: './employee-address-section.component.html',
   styleUrl: './employee-address-section.component.scss',
 })
@@ -131,7 +149,9 @@ export class EmployeeAddressSectionComponent {
     effect((onCleanup) => {
       onCleanup(() => {
         untracked(() =>
-          this.globalMessageService.clearSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY),
+          this.globalMessageService.clearSourceMessages(
+            EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+          ),
         );
       });
     });
@@ -160,7 +180,9 @@ export class EmployeeAddressSectionComponent {
   protected openEdit(index: number): void {
     const row = this.rows()[index];
     if (!row || !row.canEdit || this.addressStore.mutating()) return;
-    const address = this.addressStore.addresses().find((item) => item.addressNumber === row.addressNumber);
+    const address = this.addressStore
+      .addresses()
+      .find((item) => item.addressNumber === row.addressNumber);
     if (!address) return;
     this.addressStore.clearFeedback();
     this.modalMode.set('edit');
@@ -250,16 +272,19 @@ export class EmployeeAddressSectionComponent {
         error: () => {
           if (requestId !== this.catalogRequestId) return;
           this.catalogLoading.set(false);
-          this.globalMessageService.setSourceMessages(EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY, [
-            {
-              id: 'employee-address-section-local-error',
-              level: 'error',
-              text: this.texts.catalogLoadFailedMessage,
-              sectionId: 'contact',
-              sectionLabel: this.texts.personalAreaLabel,
-              sticky: true,
-            },
-          ]);
+          this.globalMessageService.setSourceMessages(
+            EmployeeAddressSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+            [
+              {
+                id: 'employee-address-section-local-error',
+                level: 'error',
+                text: this.texts.catalogLoadFailedMessage,
+                sectionId: 'contact',
+                sectionLabel: this.texts.personalAreaLabel,
+                sticky: true,
+              },
+            ],
+          );
         },
       });
   }

@@ -38,7 +38,8 @@ function clearStorage(): void {
 
 describe('PageSkeletonComponent', () => {
   let fixture: ComponentFixture<HostComponent>;
-  const el = (selector: string): HTMLElement | null => fixture.nativeElement.querySelector(selector);
+  const el = (selector: string): HTMLElement | null =>
+    fixture.nativeElement.querySelector(selector);
 
   beforeEach(() => {
     clearStorage();
@@ -51,7 +52,9 @@ describe('PageSkeletonComponent', () => {
   it('proyecta cada hueco en su sitio', () => {
     expect(el('.page-skeleton__identity .t-identidad')?.textContent).toBe('Ana');
     expect(el('.page-skeleton__rail .t-rail')?.textContent).toBe('índice');
-    expect(el('.page-skeleton__main .page-skeleton__measure .t-principal')?.textContent).toBe('contenido');
+    expect(el('.page-skeleton__main .page-skeleton__measure .t-principal')?.textContent).toBe(
+      'contenido',
+    );
   });
 
   it('el contextual está plegado por defecto y se abre a petición, recordándolo', () => {
@@ -62,7 +65,9 @@ describe('PageSkeletonComponent', () => {
     fixture.detectChanges();
 
     expect(el('.t-contextual')?.textContent).toBe('historial');
-    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.contextual-open`)).toBe('true');
+    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.contextual-open`)).toBe(
+      'true',
+    );
   });
 
   it('recupera el estado recordado de la página', () => {
@@ -82,7 +87,9 @@ describe('PageSkeletonComponent', () => {
 
     expect(el('.page-skeleton__rail--collapsed')).not.toBeNull();
     expect(el('.page-skeleton__rail-toggle')?.getAttribute('aria-expanded')).toBe('false');
-    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe('true');
+    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe(
+      'true',
+    );
   });
 
   // El botón de plegar es también el de desplegar: plegado, sigue ahí y sigue siendo el camino de
@@ -100,14 +107,18 @@ describe('PageSkeletonComponent', () => {
 
     expect(el('.page-skeleton__rail--collapsed')).toBeNull();
     expect(toggle().getAttribute('aria-expanded')).toBe('true');
-    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe('false');
+    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`)).toBe(
+      'false',
+    );
   });
 
   it('forzar el contextual lo abre sin tocar lo recordado', () => {
     fixture.componentInstance.forced.set(true);
     fixture.detectChanges();
     expect(el('.t-contextual')).not.toBeNull();
-    expect(localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.contextual-open`)).toBeNull();
+    expect(
+      localStorage.getItem(`${PAGE_SKELETON_STORAGE_PREFIX}.test-page.contextual-open`),
+    ).toBeNull();
 
     fixture.componentInstance.forced.set(false);
     fixture.detectChanges();

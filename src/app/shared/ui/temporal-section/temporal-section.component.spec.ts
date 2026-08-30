@@ -29,7 +29,9 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
       (deleteClicked)="delIdx = $event"
     >
       <ng-template #columnHeaders><th>Label</th></ng-template>
-      <ng-template #cellContent let-r><td>{{ r.label }}</td></ng-template>
+      <ng-template #cellContent let-r
+        ><td>{{ r.label }}</td></ng-template
+      >
     </app-temporal-section>
   `,
   imports: [TemporalSectionComponent],
@@ -62,11 +64,17 @@ describe('TemporalSectionComponent', () => {
   });
 
   it('no lleva marca de modo (todas serían iguales), sí el recuento y el ancla en el anfitrión', () => {
-    const { fix } = createHost([row(), row({ startDate: '2022-01-01', endDate: '2023-12-31', isActive: false })]);
+    const { fix } = createHost([
+      row(),
+      row({ startDate: '2022-01-01', endDate: '2023-12-31', isActive: false }),
+    ]);
     expect(fix.nativeElement.querySelector('.temporal-section__mode')).toBeNull();
-    expect(fix.nativeElement.querySelector('.temporal-section__count')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      '2 periodos · 1 en vigor',
-    );
+    expect(
+      fix.nativeElement
+        .querySelector('.temporal-section__count')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim(),
+    ).toBe('2 periodos · 1 en vigor');
     expect(fix.nativeElement.querySelector('#employee-section-test')).toBeTruthy();
   });
 
@@ -74,7 +82,9 @@ describe('TemporalSectionComponent', () => {
     const { fix, host } = createHost([row()]);
     host.governs.set(true);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.trim()).toBe('gobierna');
+    expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.trim()).toBe(
+      'gobierna',
+    );
     expect(fix.nativeElement.querySelector('.temporal-section-host--governs')).toBeTruthy();
   });
 
@@ -105,16 +115,19 @@ describe('TemporalSectionComponent', () => {
       row({ startDate: '2024-01-01', endDate: null, isActive: true }),
       row({ startDate: '2022-01-01', endDate: '2023-12-31', isActive: false }),
     ]);
-    const periods = Array.from(fix.nativeElement.querySelectorAll('.temporal-section__td--period')).map((td) =>
-      (td as HTMLElement).textContent?.trim(),
-    );
+    const periods = Array.from(
+      fix.nativeElement.querySelectorAll('.temporal-section__td--period'),
+    ).map((td) => (td as HTMLElement).textContent?.trim());
     expect(periods).toEqual(['01/01/2024 — en vigor', '01/01/2022 — 31/12/2023']);
     expect(fix.nativeElement.querySelector('.temporal-section__badge--active')).toBeTruthy();
     expect(fix.nativeElement.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 
   it('borrar solo se ofrece en filas cerradas que lo permiten', () => {
-    const { fix } = createHost([row({ isActive: true }), row({ isActive: false, canDelete: true })]);
+    const { fix } = createHost([
+      row({ isActive: true }),
+      row({ isActive: false, canDelete: true }),
+    ]);
     expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(1);
     const { fix: fix2 } = createHost([row({ isActive: false, canDelete: false })]);
     expect(fix2.nativeElement.querySelector('[aria-label^="Eliminar"]')).toBeNull();
@@ -126,7 +139,10 @@ describe('TemporalSectionComponent', () => {
   });
 
   it('emite añadir, editar y borrar con su índice', () => {
-    const { fix, host } = createHost([row(), row({ startDate: '2020-01-01', isActive: false, canDelete: true })]);
+    const { fix, host } = createHost([
+      row(),
+      row({ startDate: '2020-01-01', isActive: false, canDelete: true }),
+    ]);
     fix.nativeElement.querySelector('.temporal-section__add-btn').click();
     fix.nativeElement.querySelector('[aria-label^="Editar"]').click();
     fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();

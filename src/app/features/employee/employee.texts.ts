@@ -329,7 +329,8 @@ export const employeeTexts = {
   contactsSectionSaveEditAction: 'Guardar',
   contactsSectionConfirmDeleteMessage: 'Confirma la eliminación de este contacto.',
   contactsSectionConfirmDeleteAction: 'Confirmar eliminación',
-  contactsSectionEmptyMessage: 'Sin contactos: ni teléfono ni correo. Añade el primero con «Añadir contacto».',
+  contactsSectionEmptyMessage:
+    'Sin contactos: ni teléfono ni correo. Añade el primero con «Añadir contacto».',
   contactsSectionListAriaLabel: 'Listado de contactos del empleado',
   contactsSectionKeyFieldLabel: 'Tipo de contacto',
   contactsSectionValueFieldLabel: 'Valor de contacto',
@@ -347,7 +348,8 @@ export const employeeTexts = {
   identifiersSectionSaveEditAction: 'Guardar',
   identifiersSectionConfirmDeleteMessage: 'Confirma la eliminación de este identificador.',
   identifiersSectionConfirmDeleteAction: 'Confirmar eliminación',
-  identifiersSectionEmptyMessage: 'Sin identificadores: ni DNI ni NIE. Añade el primero con «Añadir identificador».',
+  identifiersSectionEmptyMessage:
+    'Sin identificadores: ni DNI ni NIE. Añade el primero con «Añadir identificador».',
   identifiersSectionListAriaLabel: 'Listado de identificadores del empleado',
   identifiersSectionKeyFieldLabel: 'Tipo de identificador',
   identifiersSectionValueFieldLabel: 'Valor del identificador',
@@ -609,7 +611,8 @@ export const employeeTexts = {
   workingTimeSectionCreateSuccessMessage: 'Jornada creada correctamente.',
   workingTimeSectionCloseSuccessMessage: 'Jornada cerrada correctamente.',
   workingTimeSectionUpdateSuccessMessage: 'Jornada actualizada correctamente.',
-  periodCascadeWarningMessage: 'La fecha de inicio del período anterior se ajustará automáticamente.',
+  periodCascadeWarningMessage:
+    'La fecha de inicio del período anterior se ajustará automáticamente.',
   laborClassificationBlockTitle: 'Clasificación laboral',
   laborClassificationBlockCurrentLabel: 'Clasificación actual',
   laborClassificationBlockCurrentActiveSectionLabel: 'Clasificación activa',
