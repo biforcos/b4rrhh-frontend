@@ -41,17 +41,6 @@
   color: var(--text-tertiary);
 }
 
-.index-panel__nav-item--empty {
-  color: var(--text-tertiary);
-}
-
-/* El vacío que es un dato que falta, en ocre (ADR-050 §5): gris dice «nada que ver», ocre «falta
-   algo». Seleccionada, el ocre cede: las reglas de `.active` de abajo son más específicas. */
-.index-panel__nav-item--empty-warn,
-.index-panel__nav-item--empty-warn .index-panel__nav-count {
-  color: var(--warning-text);
-}
-
 .index-panel__nav-item.active .index-panel__nav-count {
   color: var(--text-inverse);
 }
@@ -80,6 +69,18 @@
     color: var(--text-inverse);
     font-weight: 600;
   }
+}
+
+/* Van después del bloque base a propósito: misma especificidad, y el color base los pisaba. */
+.index-panel__nav-item--empty {
+  color: var(--text-tertiary);
+}
+
+/* El vacío que es un dato que falta, en ocre (ADR-050 §5): gris dice «nada que ver», ocre «falta
+   algo». Seleccionada, el ocre cede: las reglas de `.active` de arriba son más específicas. */
+.index-panel__nav-item--empty-warn,
+.index-panel__nav-item--empty-warn .index-panel__nav-count {
+  color: var(--warning-text);
 }
 
 
