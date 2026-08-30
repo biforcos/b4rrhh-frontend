@@ -9,11 +9,12 @@
   class="employee-detail"
   storageKey="employee-detail"
   [rail]="activeEmployeeKey() !== null"
-  [contextualTitle]="activeEmployeeKey() !== null && !isRehireWorkflow() ? texts.timelineTitle : null"
+  [contextualTitle]="
+    activeEmployeeKey() !== null && !isRehireWorkflow() ? texts.timelineTitle : null
+  "
   [contextualForcedOpen]="terminatePanelOpen()"
   [railToggleLabel]="texts.railToggleLabel"
 >
-
   <!-- Identidad (ADR-050 §1 y §6): la barra a ancho completo, la misma en todas las secciones,
        con la miga encima y las acciones de página a la derecha. Nunca desaparece el nombre. -->
   @if (activeEmployeeKey(); as key) {
@@ -27,12 +28,20 @@
       (editIdentityRequested)="openIdentityEditorFromHeader()"
     >
       <nav identityBreadcrumb class="employee-detail__breadcrumb" aria-label="Breadcrumb">
-        <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{ texts.masterTitle }}</a>
+        <a class="employee-detail__breadcrumb-link" routerLink="/personas/empleados">{{
+          texts.masterTitle
+        }}</a>
         <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
-        <span class="employee-detail__breadcrumb-current">{{ selectedEmployee()?.displayName ?? '...' }}</span>
+        <span class="employee-detail__breadcrumb-current">{{
+          selectedEmployee()?.displayName ?? '...'
+        }}</span>
       </nav>
       @if (!isRehireWorkflow()) {
-        <div identityActions class="employee-detail__actions" [attr.aria-label]="texts.pageActionsAriaLabel">
+        <div
+          identityActions
+          class="employee-detail__actions"
+          [attr.aria-label]="texts.pageActionsAriaLabel"
+        >
           <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()">
             <ng-template #item let-item>
               <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
@@ -41,10 +50,18 @@
               </a>
             </ng-template>
           </p-menu>
-          <button class="employee-detail__btn-secondary" type="button" (click)="showActionsMenu($event)">
+          <button
+            class="employee-detail__btn-secondary"
+            type="button"
+            (click)="showActionsMenu($event)"
+          >
             {{ texts.pageActionsMenuLabel }} <b4-icon name="chevron-abajo" [size]="16" />
           </button>
-          <button class="employee-detail__btn-primary" type="button" (click)="navigateToSection('payroll')">
+          <button
+            class="employee-detail__btn-primary"
+            type="button"
+            (click)="navigateToSection('payroll')"
+          >
             <b4-icon name="nomina" [size]="16" />
             {{ texts.pageActionCalculatePayroll }}
           </button>
@@ -53,20 +70,31 @@
     </app-employee-identity-bar>
   }
 
-  <!-- El índice (raíl) -->
+  <!-- El raíl: la cola de trabajo si se llegó desde una (frontend#20) y el índice. Un solo nodo
+       raíz para que el @if se proyecte al hueco; los dos se pliegan juntos (ADR-050 §3). -->
   @if (activeEmployeeKey(); as key) {
-    <app-employee-index-panel
-      slot="rail"
-      [employeeKey]="key"
-      [activeSection]="activeDetailSection()"
-      [activeAnchor]="activeAnchor()"
-    />
+    <div slot="rail" class="employee-detail__rail">
+      @if (workQueueActive()) {
+        <app-employee-work-queue-panel
+          [busy]="workQueueBusy()"
+          (previousRequested)="queuePrevious()"
+          (nextRequested)="queueNext()"
+          (backToListRequested)="queueBackToList()"
+          (leaveRequested)="queueLeave()"
+        />
+      }
+      <app-employee-index-panel
+        class="employee-detail__index"
+        [employeeKey]="key"
+        [activeSection]="activeDetailSection()"
+        [activeAnchor]="activeAnchor()"
+      />
+    </div>
   }
 
   <!-- Content area (principal) -->
   @if (activeEmployeeKey()) {
     <div class="employee-detail__content">
-
       <!-- Hidden identity editor drawer -->
       @if (selectedEmployee(); as employee) {
         <app-employee-detail-header
@@ -117,12 +145,8 @@
           [presences]="presences()"
         />
       } @else {
-        <app-employee-terminate-panel
-          [employeeKey]="key"
-          (closed)="closeTerminatePanel()"
-        />
+        <app-employee-terminate-panel [employeeKey]="key" (closed)="closeTerminatePanel()" />
       }
     </div>
   }
-
 </app-page-skeleton>

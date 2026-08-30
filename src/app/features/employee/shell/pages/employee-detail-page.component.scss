@@ -9,6 +9,19 @@
   min-height: 100dvh;
 }
 
+/* El raíl apila la cola (si la hay) sobre el índice; el índice se queda con el resto del alto. */
+.employee-detail__rail {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 260px;
+}
+
+.employee-detail__index {
+  flex: 1;
+  min-height: 0;
+}
+
 /* La miga va dentro de la barra de identidad; las acciones, a su derecha. */
 .employee-detail__breadcrumb {
   display: flex;
@@ -116,7 +129,13 @@
 }
 
 @keyframes detail-section-highlight {
-  0%   { box-shadow: 0 0 0 0 transparent; }
-  25%  { box-shadow: 0 0 0 4px var(--accent-border); }
-  100% { box-shadow: 0 0 0 0 transparent; }
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  25% {
+    box-shadow: 0 0 0 4px var(--accent-border);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
 }

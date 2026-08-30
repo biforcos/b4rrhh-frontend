@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  HostListener,
   computed,
   effect,
   inject,
@@ -18,6 +19,7 @@ import { filter, startWith } from 'rxjs';
 
 import { EmployeeIdentityBarComponent } from '../../identity/employee-identity-bar.component';
 import { EmployeeIndexPanelComponent } from '../../identity/employee-index-panel.component';
+import { EmployeeWorkQueuePanelComponent } from '../../identity/employee-work-queue-panel.component';
 import { EmployeeJourneyTimelineComponent } from '../components/employee-journey-timeline.component';
 import { EmployeeTerminatePanelComponent } from '../components/employee-terminate-panel.component';
 import { GlobalMessageRailComponent } from '../components/global-message-rail.component';
@@ -28,6 +30,7 @@ import { EmployeeContractStore } from '../../data-access/employee-contract.store
 import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.store';
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
+import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
 import { EmployeePdfService } from '../services/employee-pdf.service';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -40,6 +43,7 @@ import {
   EmployeeRelationAnchor,
   EmployeeRouteSection,
   employeeLegacySections,
+  employeeRouteBaseSegment,
   employeeRouteSections,
   isEmployeeRelationAnchor,
   resolveEmployeeSectionRoute,
@@ -63,6 +67,7 @@ import { B4IconName } from '../../../../shared/ui/icon/icon-names';
     RouterOutlet,
     EmployeeIdentityBarComponent,
     EmployeeIndexPanelComponent,
+    EmployeeWorkQueuePanelComponent,
     EmployeeJourneyTimelineComponent,
     EmployeeTerminatePanelComponent,
     GlobalMessageRailComponent,
@@ -89,6 +94,7 @@ export class EmployeeDetailPageComponent {
   private readonly contractStore = inject(EmployeeContractStore);
   private readonly pdfService = inject(EmployeePdfService);
   private readonly globalMessageService = inject(GlobalMessageService);
+  private readonly workQueueStore = inject(EmployeeWorkQueueStore);
   private highlightedSectionResetHandle: number | null = null;
   private previousIdentitySuccess: 'updated' | null = null;
 
@@ -119,6 +125,9 @@ export class EmployeeDetailPageComponent {
   );
   protected readonly openIdentityEditorRequestId = signal(0);
   protected readonly terminatePanelOpen = signal(false);
+  /** Se llegó desde una cola (frontend#20): el raíl la enseña encima del índice. */
+  protected readonly workQueueActive = this.workQueueStore.active;
+  protected readonly workQueueBusy = signal(false);
 
   protected readonly selectedEmployee = computed<EmployeeDetailModel | null>(() => {
     const activeEmployeeKey = this.activeEmployeeKey();
@@ -225,6 +234,62 @@ export class EmployeeDetailPageComponent {
         window.clearTimeout(this.highlightedSectionResetHandle);
       }
     });
+  }
+
+  /* ── La cola de trabajo (frontend#20) ── */
+
+  /**
+   * Con teclado, que es el caso de uso entero: `J` siguiente, `K` anterior —lo que todo el mundo
+   * conoce de Gmail o GitHub—, y nunca mientras se escribe en un campo.
+   */
+  @HostListener('document:keydown', ['$event'])
+  protected onQueueKeydown(event: KeyboardEvent): void {
+    if (!this.workQueueActive() || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (isTypingTarget(event.target)) return;
+    const key = event.key.toLowerCase();
+    if (key === 'j') {
+      event.preventDefault();
+      void this.queueNext();
+    } else if (key === 'k') {
+      event.preventDefault();
+      void this.queuePrevious();
+    }
+  }
+
+  protected async queueNext(): Promise<void> {
+    await this.queueMove(() => this.workQueueStore.next());
+  }
+
+  protected async queuePrevious(): Promise<void> {
+    await this.queueMove(() => this.workQueueStore.previous());
+  }
+
+  /** Volver a la lista no pierde la cola: el directorio la recoge y ofrece continuar. */
+  protected queueBackToList(): void {
+    void this.router.navigate([`/${employeeRouteBaseSegment}`]);
+  }
+
+  protected queueLeave(): void {
+    this.workQueueStore.leave();
+  }
+
+  /** Al pasar de empleado se conserva la sección y el ancla: si repasas contratos, quieres el contrato del siguiente. */
+  private async queueMove(step: () => Promise<EmployeeBusinessKey | null>): Promise<void> {
+    if (this.workQueueBusy()) return;
+    this.workQueueBusy.set(true);
+    try {
+      const target = await step();
+      if (!target || areEmployeeBusinessKeysEqual(target, this.activeEmployeeKey())) return;
+      const anchor = this.activeDetailSection() === 'relacion' ? this.activeAnchor() : null;
+      await this.router.navigate(
+        buildEmployeeDetailRouteCommands(target, this.activeDetailSection()),
+        {
+          fragment: anchor ?? undefined,
+        },
+      );
+    } finally {
+      this.workQueueBusy.set(false);
+    }
   }
 
   protected openIdentityEditorFromHeader(): void {
@@ -364,14 +429,34 @@ export class EmployeeDetailPageComponent {
       {
         label: t.pageActionsLifecycleGroup,
         items: isActive
-          ? [{ label: t.pageActionTerminate, icon: 'detener', command: () => this.openTerminatePanel() }]
-          : [{ label: t.pageActionRehire, icon: 'readmision', command: () => this.onRehireRequested() }],
+          ? [
+              {
+                label: t.pageActionTerminate,
+                icon: 'detener',
+                command: () => this.openTerminatePanel(),
+              },
+            ]
+          : [
+              {
+                label: t.pageActionRehire,
+                icon: 'readmision',
+                command: () => this.onRehireRequested(),
+              },
+            ],
       },
       {
         label: t.relationAreaLabel,
         items: [
-          { label: t.pageActionChangeWorkCenter, icon: 'centro-trabajo', command: () => this.navigateToAnchor('work-center') },
-          { label: t.pageActionNewContract, icon: 'documento-nuevo', command: () => this.navigateToAnchor('contract') },
+          {
+            label: t.pageActionChangeWorkCenter,
+            icon: 'centro-trabajo',
+            command: () => this.navigateToAnchor('work-center'),
+          },
+          {
+            label: t.pageActionNewContract,
+            icon: 'documento-nuevo',
+            command: () => this.navigateToAnchor('contract'),
+          },
           { label: t.pageActionSalaryReview, icon: 'grafico', disabled: true },
         ],
       },
@@ -504,4 +589,11 @@ export class EmployeeDetailPageComponent {
     while (snapshot.firstChild) snapshot = snapshot.firstChild;
     return snapshot.url.some((seg) => seg.path === 'rehire');
   }
+}
+
+/** Escribiendo en un campo, las letras son letras: ningún atajo de una tecla se dispara ahí. */
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
 }

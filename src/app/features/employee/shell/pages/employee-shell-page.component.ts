@@ -12,6 +12,8 @@ import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.compon
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { EmployeeDirectoryStore } from '../../data-access/employee-directory.store';
 import { EmployeeRecentsService } from '../../data-access/employee-recents.service';
+import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
+import { describeCriteria } from '../../identity/employee-work-queue-panel.component';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeListItemModel } from '../../models/employee-list-item.model';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
@@ -47,6 +49,7 @@ export class EmployeeShellPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly directoryStore = inject(EmployeeDirectoryStore);
   private readonly recentsService = inject(EmployeeRecentsService);
+  private readonly workQueueStore = inject(EmployeeWorkQueueStore);
 
   /**
    * Una recontratacion cambia el estado del empleado, y el estado se ve y se
@@ -70,13 +73,37 @@ export class EmployeeShellPageComponent {
   protected readonly texts = employeeTexts;
   /** Lo que hay escrito; al volver de una ficha, lo que había (el store lo recuerda). */
   protected readonly searchValue = signal(this.directoryStore.query());
+  /** La cola viva, si la hay (frontend#20): volver a la lista no la pierde; aquí se puede continuar. */
+  protected readonly workQueue = this.workQueueStore.queue;
+  protected readonly workQueueLabel = computed(() => {
+    const queue = this.workQueue();
+    return queue
+      ? `${queue.index + 1} ${this.texts.workQueuePositionOf} ${queue.total} · ${describeCriteria(queue.criteria, this.texts)}`
+      : null;
+  });
+  protected readonly startingQueue = signal(false);
+
+  constructor() {
+    // Volver a la lista no pierde la selección, ni tras recargar: si hay cola y el directorio
+    // arranca sin pregunta propia, la pregunta vuelve a ser la de la cola.
+    const queue = this.workQueueStore.queue();
+    const fresh =
+      this.directoryStore.query().trim().length === 0 && this.directoryStore.status() === null;
+    if (queue && fresh) {
+      this.directoryStore.setStatus(queue.criteria.status);
+      this.directoryStore.setQuery(queue.criteria.q);
+      this.searchValue.set(queue.criteria.q);
+    }
+  }
   protected readonly statusValue = computed(() => this.directoryStore.status() ?? ALL_STATUSES);
   protected readonly loading = this.directoryStore.loading;
   protected readonly error = this.directoryStore.error;
   protected readonly total = this.directoryStore.total;
   protected readonly pageSize = this.directoryStore.size;
   /** Índice de la primera fila de la página, que es como cuenta el paginador de PrimeNG. */
-  protected readonly first = computed(() => this.directoryStore.page() * this.directoryStore.size());
+  protected readonly first = computed(
+    () => this.directoryStore.page() * this.directoryStore.size(),
+  );
   protected readonly hasFilter = computed(
     () => this.directoryStore.query().trim().length > 0 || this.directoryStore.status() !== null,
   );
@@ -99,12 +126,45 @@ export class EmployeeShellPageComponent {
     if (this.hasFilter()) {
       return total === 1 ? t.directoryCountOneMatch : `${total} ${t.directoryCountMatchesSuffix}`;
     }
-    return total === 1 ? t.directoryCountOneEmployee : `${total} ${t.directoryCountEmployeesSuffix}`;
+    return total === 1
+      ? t.directoryCountOneEmployee
+      : `${total} ${t.directoryCountEmployeesSuffix}`;
   });
 
   protected updateSearch(value: string): void {
     this.searchValue.set(value);
     this.directoryStore.setQuery(value);
+  }
+
+  /**
+   * Recorrer lo que cumple la pregunta de arriba (frontend#20, opción B del #27): la cola es el
+   * filtro. Se entra por el primero, y el raíl se encarga del resto.
+   */
+  protected async traverse(): Promise<void> {
+    if (this.startingQueue()) return;
+    this.startingQueue.set(true);
+    try {
+      const first = await this.workQueueStore.start({
+        q: this.directoryStore.query(),
+        status: this.directoryStore.status(),
+      });
+      if (first) {
+        await this.router.navigate(buildEmployeeDetailRouteCommands(first, 'relacion'));
+      }
+    } finally {
+      this.startingQueue.set(false);
+    }
+  }
+
+  /** Seguir la cola donde se dejó. */
+  protected continueQueue(): void {
+    const queue = this.workQueue();
+    if (!queue) return;
+    void this.router.navigate(buildEmployeeDetailRouteCommands(queue.currentKey, 'relacion'));
+  }
+
+  protected leaveQueue(): void {
+    this.workQueueStore.leave();
   }
 
   protected updateStatus(value: string): void {
@@ -118,7 +178,9 @@ export class EmployeeShellPageComponent {
     this.directoryStore.setPage(rows > 0 ? Math.floor(first / rows) : 0);
   }
 
+  /** Abrir una fila es llegar a uno solo: sin cola (dos contenidos según cómo llegues, #20). */
   protected openEmployee(employee: EmployeeListItemModel): void {
+    this.workQueueStore.leave();
     this.recentsService.add(employee);
     void this.router.navigate(
       buildEmployeeDetailRouteCommands(toEmployeeBusinessKey(employee), 'contact'),

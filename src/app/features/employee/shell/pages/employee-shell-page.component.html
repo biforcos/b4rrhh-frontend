@@ -2,15 +2,10 @@
      Filtra y pagina el servidor (frontend#27): lo que se ve es la respuesta a la pregunta de arriba, y el
      recuento es el total que la cumple, no las filas cargadas. -->
 <app-page-skeleton class="employee-directory" storageKey="employee-directory">
-
   <!-- Page header (identidad) -->
   <header slot="identidad" class="employee-directory__header">
     <h1 class="employee-directory__title">{{ texts.masterTitle }}</h1>
-    <app-ui-button
-      [label]="texts.hireEmployeeTitle"
-      icon="anadir"
-      (pressed)="onHireClick()"
-    />
+    <app-ui-button [label]="texts.hireEmployeeTitle" icon="anadir" (pressed)="onHireClick()" />
   </header>
 
   <!-- La pregunta: texto y estado. -->
@@ -37,7 +32,37 @@
     @if (countLabel(); as label) {
       <span class="employee-directory__count">{{ label }}</span>
     }
+    <!-- La cola es el filtro (frontend#20): recorrer lo que cumple la pregunta, uno a uno, desde el raíl. -->
+    @if ((total() ?? 0) > 0) {
+      <button
+        type="button"
+        class="employee-directory__traverse"
+        [disabled]="startingQueue() || loading()"
+        (click)="traverse()"
+      >
+        {{ texts.directoryTraverseAction }} {{ total() }}
+        <b4-icon name="flecha-derecha" [size]="16" />
+      </button>
+    }
   </div>
+
+  <!-- Volver a la lista no pierde la cola: se ofrece seguir donde se dejó, o soltarla. -->
+  @if (workQueueLabel(); as label) {
+    <div class="employee-directory__queue" role="status">
+      <span class="employee-directory__queue-title">{{ texts.workQueueTitle }}</span>
+      <span class="employee-directory__queue-label">{{ label }}</span>
+      <button
+        type="button"
+        class="employee-directory__queue-btn employee-directory__queue-btn--primary"
+        (click)="continueQueue()"
+      >
+        {{ texts.directoryQueueContinueAction }}
+      </button>
+      <button type="button" class="employee-directory__queue-btn" (click)="leaveQueue()">
+        {{ texts.directoryQueueLeaveAction }}
+      </button>
+    </div>
+  }
 
   <!-- DataTable -->
   <div class="employee-directory__table-wrapper">
@@ -66,9 +91,19 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-employee>
-        <tr class="employee-directory__row" (click)="openEmployee(employee)" role="button" tabindex="0" (keydown.enter)="openEmployee(employee)">
-          <td class="employee-directory__td employee-directory__td--name">{{ employee.displayName }}</td>
-          <td class="employee-directory__td employee-directory__td--mono">{{ employee.employeeNumber }}</td>
+        <tr
+          class="employee-directory__row"
+          (click)="openEmployee(employee)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="openEmployee(employee)"
+        >
+          <td class="employee-directory__td employee-directory__td--name">
+            {{ employee.displayName }}
+          </td>
+          <td class="employee-directory__td employee-directory__td--mono">
+            {{ employee.employeeNumber }}
+          </td>
           <td class="employee-directory__td">
             @if (employee.workCenter) {
               <span class="employee-directory__code">{{ employee.workCenter }}</span>
@@ -93,5 +128,4 @@
       </ng-template>
     </p-table>
   </div>
-
 </app-page-skeleton>

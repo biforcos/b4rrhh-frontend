@@ -1,0 +1,60 @@
+<section class="work-queue" [attr.aria-label]="texts.workQueueTitle">
+  <div class="work-queue__head">
+    <span class="work-queue__title">{{ texts.workQueueTitle }}</span>
+    <button
+      type="button"
+      class="work-queue__icon-btn"
+      [attr.aria-label]="texts.workQueueLeaveAction"
+      [title]="texts.workQueueLeaveAction"
+      (click)="leaveRequested.emit()"
+    >
+      <b4-icon name="cerrar" [size]="16" />
+    </button>
+  </div>
+
+  <!-- La cola se identifica por su criterio, no por un número suelto: es lo que se recuerda haber pedido. -->
+  <p class="work-queue__position">
+    <strong class="work-queue__count"
+      >{{ position() }} {{ texts.workQueuePositionOf }} {{ total() }}</strong
+    >
+    <span class="work-queue__criteria">· {{ criteriaLabel() }}</span>
+  </p>
+
+  <div class="work-queue__nav">
+    <button
+      type="button"
+      class="work-queue__btn"
+      [disabled]="disabled() || !hasPrevious()"
+      (click)="previousRequested.emit()"
+    >
+      <b4-icon
+        class="work-queue__arrow work-queue__arrow--back"
+        name="flecha-derecha"
+        [size]="16"
+      />
+      {{ texts.workQueuePreviousAction }}
+    </button>
+    <button
+      type="button"
+      class="work-queue__btn work-queue__btn--primary"
+      [disabled]="disabled() || !hasNext()"
+      (click)="nextRequested.emit()"
+    >
+      {{ texts.workQueueNextAction }}
+      <b4-icon class="work-queue__arrow" name="flecha-derecha" [size]="16" />
+    </button>
+  </div>
+  <p class="work-queue__hint" aria-hidden="true">{{ texts.workQueueKeysHint }}</p>
+
+  @if (noticeMessage(); as message) {
+    <p class="work-queue__notice" role="status">{{ message }}</p>
+  } @else if (atEnd()) {
+    <p class="work-queue__notice work-queue__notice--quiet" role="status">
+      {{ texts.workQueueEndMessage }}
+    </p>
+  }
+
+  <button type="button" class="work-queue__link" (click)="backToListRequested.emit()">
+    {{ texts.workQueueBackToListAction }}
+  </button>
+</section>

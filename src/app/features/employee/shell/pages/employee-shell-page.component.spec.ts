@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 
 import { EmployeeShellPageComponent } from './employee-shell-page.component';
 import { EmployeeDirectoryStore } from '../../data-access/employee-directory.store';
+import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
 import { EmployeeDetailStore } from '../../data-access/employee-detail.store';
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
@@ -72,6 +73,11 @@ describe('EmployeeShellPageComponent', () => {
     setPage: vi.fn(),
     refreshDirectory: vi.fn(),
   };
+  const workQueueStoreMock = {
+    queue: signal(null).asReadonly(),
+    start: vi.fn(),
+    leave: vi.fn(),
+  };
   const detailStoreMock = {
     selectedEmployeeDetail: signal(null).asReadonly(),
     loadingDetail: signal(false).asReadonly(),
@@ -133,6 +139,7 @@ describe('EmployeeShellPageComponent', () => {
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: routeMock },
         { provide: EmployeeDirectoryStore, useValue: directoryStoreMock },
+        { provide: EmployeeWorkQueueStore, useValue: workQueueStoreMock },
         { provide: EmployeeDetailStore, useValue: detailStoreMock },
         { provide: EmployeeContactStore, useValue: contactStoreMock },
         { provide: EmployeePresenceStore, useValue: presenceStoreMock },
@@ -155,9 +162,18 @@ describe('EmployeeShellPageComponent', () => {
   });
 
   it('refreshes the employee directory when returning from a rehire', () => {
-    routeMock.snapshot = buildSnapshot(['personas', 'empleados', 'ESP', 'EMP', 'E001', 'overview'], { refresh: 'rehire' });
+    routeMock.snapshot = buildSnapshot(
+      ['personas', 'empleados', 'ESP', 'EMP', 'E001', 'overview'],
+      { refresh: 'rehire' },
+    );
 
-    routerEvents.next(new NavigationEnd(1, '/personas/empleados/ESP/EMP/E001/overview?refresh=rehire', '/personas/empleados/ESP/EMP/E001/overview?refresh=rehire'));
+    routerEvents.next(
+      new NavigationEnd(
+        1,
+        '/personas/empleados/ESP/EMP/E001/overview?refresh=rehire',
+        '/personas/empleados/ESP/EMP/E001/overview?refresh=rehire',
+      ),
+    );
 
     expect(directoryStoreMock.refreshDirectory).toHaveBeenCalled();
   });
@@ -165,7 +181,13 @@ describe('EmployeeShellPageComponent', () => {
   it('does not refresh the directory when there is no rehire marker', () => {
     routeMock.snapshot = buildSnapshot(['personas', 'empleados', 'ESP', 'EMP', 'E001', 'overview']);
 
-    routerEvents.next(new NavigationEnd(2, '/personas/empleados/ESP/EMP/E001/overview', '/personas/empleados/ESP/EMP/E001/overview'));
+    routerEvents.next(
+      new NavigationEnd(
+        2,
+        '/personas/empleados/ESP/EMP/E001/overview',
+        '/personas/empleados/ESP/EMP/E001/overview',
+      ),
+    );
 
     expect(directoryStoreMock.refreshDirectory).not.toHaveBeenCalled();
   });

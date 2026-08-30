@@ -54,6 +54,75 @@
   white-space: nowrap;
 }
 
+/* Recorrer: la acción que convierte la pregunta en cola (frontend#20). A la derecha del recuento. */
+.employee-directory__traverse {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+/* La cola que se dejó a medias: una línea encima de la tabla, no una caja. */
+.employee-directory__queue {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.employee-directory__queue-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.employee-directory__queue-label {
+  font-family: var(--font-mono);
+}
+
+.employee-directory__queue-btn {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.employee-directory__queue-btn--primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
 /* El centro es un código mientras backend#16 no traiga el nombre: en mono, como los códigos. */
 .employee-directory__code {
   font-family: var(--font-mono);
