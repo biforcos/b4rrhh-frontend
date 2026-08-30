@@ -25,7 +25,7 @@ import { SlotSectionComponent } from './slot-section.component';
 class Host {
   readonly count = signal(0);
   readonly drafting = signal(false);
-  readonly addLabel = signal<string | null>('+ Añadir');
+  readonly addLabel = signal<string | null>('Añadir');
   adds = 0;
 }
 

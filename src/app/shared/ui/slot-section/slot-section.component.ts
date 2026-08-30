@@ -42,7 +42,7 @@ export class SlotSectionComponent {
   /** Hay un borrador abierto: el vacío se calla mientras se rellena el primero. */
   readonly drafting = input(false);
   /** La acción de añadir; `null` cuando la sección no la ofrece. */
-  readonly addLabel = input<string | null>('+ Añadir');
+  readonly addLabel = input<string | null>('Añadir');
   readonly addDisabled = input(false);
   readonly emptyMessage = input('Sin datos');
   /** Id del elemento anfitrión, para las anclas del índice (`employee-section-…`). */

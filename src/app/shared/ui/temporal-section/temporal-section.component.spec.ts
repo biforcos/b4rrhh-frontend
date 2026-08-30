@@ -39,7 +39,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
 class Host {
   readonly rows = signal<TestRow[]>([]);
   readonly governs = signal(false);
-  readonly addLabel = signal<string | null>('+ Nuevo período');
+  readonly addLabel = signal<string | null>('Nuevo período');
   adds = 0;
   editIdx: number | null = null;
   delIdx: number | null = null;

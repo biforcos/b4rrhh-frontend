@@ -50,7 +50,7 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly rows = input<ReadonlyArray<T>>([]);
   readonly title = input.required<string>();
   /** La acción de añadir por el final; `null` cuando la sección no la ofrece (la presencia: la abren los flujos). */
-  readonly addLabel = input<string | null>('+ Nuevo período');
+  readonly addLabel = input<string | null>('Nuevo período');
   readonly emptyMessage = input('Sin períodos registrados');
   /** La sección que gobierna sobre las demás: se marca. */
   readonly governs = input(false);

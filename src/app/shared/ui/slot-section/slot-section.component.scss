@@ -260,7 +260,7 @@ app-slot-section {
 .slot-section__btn {
   background: none;
   border: 1px solid var(--border-default);
-  border-radius: 7px;
+  border-radius: var(--radius-lg);
   padding: 6px 14px;
   font-size: 13px;
   color: var(--text-secondary);
