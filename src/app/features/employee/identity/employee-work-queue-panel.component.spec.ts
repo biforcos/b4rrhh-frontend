@@ -18,11 +18,12 @@ describe('EmployeeWorkQueuePanelComponent', () => {
     currentKey: { ruleSystemCode: 'ESP', employeeTypeCode: 'INTERNAL', employeeNumber: 'E07' },
   });
   const notice = signal<string | null>(null);
+  const total = signal(103);
   const storeMock = {
     queue: queue.asReadonly(),
     active: signal(true).asReadonly(),
     position: signal(7).asReadonly(),
-    total: signal(103).asReadonly(),
+    total: total.asReadonly(),
     hasPrevious: signal(true).asReadonly(),
     hasNext: signal(true).asReadonly(),
     loading: signal(false).asReadonly(),
@@ -31,6 +32,7 @@ describe('EmployeeWorkQueuePanelComponent', () => {
 
   beforeEach(async () => {
     notice.set(null);
+    total.set(103);
     await TestBed.configureTestingModule({
       imports: [EmployeeWorkQueuePanelComponent],
       providers: [{ provide: EmployeeWorkQueueStore, useValue: storeMock }],
@@ -78,6 +80,20 @@ describe('EmployeeWorkQueuePanelComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
       employeeTexts.workQueueMovedMessage,
     );
+  });
+
+  it('sin nadie que cumpla el criterio no pinta «1 de 0»: solo el aviso y la salida (frontend#29)', () => {
+    total.set(0);
+    notice.set('empty');
+    const fixture = TestBed.createComponent(EmployeeWorkQueuePanelComponent);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('.work-queue__position')).toBeNull();
+    expect(el.querySelector('.work-queue__nav')).toBeNull();
+    expect(el.textContent).toContain(employeeTexts.workQueueEmptyMessage);
+    expect(el.querySelector('.work-queue__link')).not.toBeNull();
+    expect(el.querySelector('.work-queue__icon-btn')).not.toBeNull();
   });
 
   it('describe el criterio: texto entre comillas y estado, o «todos»', () => {

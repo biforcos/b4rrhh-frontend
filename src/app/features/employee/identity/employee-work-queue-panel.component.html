@@ -12,39 +12,42 @@
     </button>
   </div>
 
-  <!-- La cola se identifica por su criterio, no por un número suelto: es lo que se recuerda haber pedido. -->
-  <p class="work-queue__position">
-    <strong class="work-queue__count"
-      >{{ position() }} {{ texts.workQueuePositionOf }} {{ total() }}</strong
-    >
-    <span class="work-queue__criteria">· {{ criteriaLabel() }}</span>
-  </p>
+  <!-- La cola se identifica por su criterio, no por un número suelto: es lo que se recuerda haber pedido.
+       Sin nadie que lo cumpla no hay posición que pintar: solo el aviso y la salida (frontend#29). -->
+  @if (total() > 0) {
+    <p class="work-queue__position">
+      <strong class="work-queue__count"
+        >{{ position() }} {{ texts.workQueuePositionOf }} {{ total() }}</strong
+      >
+      <span class="work-queue__criteria">· {{ criteriaLabel() }}</span>
+    </p>
 
-  <div class="work-queue__nav">
-    <button
-      type="button"
-      class="work-queue__btn"
-      [disabled]="disabled() || !hasPrevious()"
-      (click)="previousRequested.emit()"
-    >
-      <b4-icon
-        class="work-queue__arrow work-queue__arrow--back"
-        name="flecha-derecha"
-        [size]="16"
-      />
-      {{ texts.workQueuePreviousAction }}
-    </button>
-    <button
-      type="button"
-      class="work-queue__btn work-queue__btn--primary"
-      [disabled]="disabled() || !hasNext()"
-      (click)="nextRequested.emit()"
-    >
-      {{ texts.workQueueNextAction }}
-      <b4-icon class="work-queue__arrow" name="flecha-derecha" [size]="16" />
-    </button>
-  </div>
-  <p class="work-queue__hint" aria-hidden="true">{{ texts.workQueueKeysHint }}</p>
+    <div class="work-queue__nav">
+      <button
+        type="button"
+        class="work-queue__btn"
+        [disabled]="disabled() || !hasPrevious()"
+        (click)="previousRequested.emit()"
+      >
+        <b4-icon
+          class="work-queue__arrow work-queue__arrow--back"
+          name="flecha-derecha"
+          [size]="16"
+        />
+        {{ texts.workQueuePreviousAction }}
+      </button>
+      <button
+        type="button"
+        class="work-queue__btn work-queue__btn--primary"
+        [disabled]="disabled() || !hasNext()"
+        (click)="nextRequested.emit()"
+      >
+        {{ texts.workQueueNextAction }}
+        <b4-icon class="work-queue__arrow" name="flecha-derecha" [size]="16" />
+      </button>
+    </div>
+    <p class="work-queue__hint" aria-hidden="true">{{ texts.workQueueKeysHint }}</p>
+  }
 
   @if (noticeMessage(); as message) {
     <p class="work-queue__notice" role="status">{{ message }}</p>
