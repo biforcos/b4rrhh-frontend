@@ -5,11 +5,10 @@ export interface EmployeeDirectoryReadModel {
   employeeTypeCode: string;
   employeeNumber: string;
   displayName: string;
-  workCenter: string;
+  /** El código del centro vigente, o `null` cuando no hay ninguno: el literal lo pone la pantalla. */
+  workCenter: string | null;
   statusLabel: string;
 }
-
-const pendingWorkCenterLabel = 'Pending assignment';
 
 export function mapEmployeeDirectoryApiToDirectoryModel(
   source: EmployeeDirectoryApiModel,
@@ -19,12 +18,12 @@ export function mapEmployeeDirectoryApiToDirectoryModel(
     employeeTypeCode: source.employeeTypeCode,
     employeeNumber: source.employeeNumber,
     displayName: source.displayName,
-    workCenter: mapWorkCenterLabel(source.workCenterCode),
+    workCenter: normalizeWorkCenter(source.workCenterCode),
     statusLabel: source.status,
   };
 }
 
-function mapWorkCenterLabel(workCenterCode: string | null): string {
+function normalizeWorkCenter(workCenterCode: string | null): string | null {
   const normalizedCode = workCenterCode?.trim();
-  return normalizedCode && normalizedCode.length > 0 ? normalizedCode : pendingWorkCenterLabel;
+  return normalizedCode && normalizedCode.length > 0 ? normalizedCode : null;
 }

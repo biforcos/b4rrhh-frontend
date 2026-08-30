@@ -5,6 +5,7 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { EmployeeDirectoryService } from '../generated/api/employee-directory.service';
 import {
   EmployeeDirectoryItemResponse,
+  EmployeeDirectoryPageResponse,
   EmployeeResponse,
   UpdateEmployeeRequest,
 } from '../generated/model/models';
@@ -38,18 +39,37 @@ export interface EmployeeDirectoryApiModel {
   workCenterCode: string | null;
 }
 
+/** Lo que se le pide al directorio: el filtro y la página. Filtra y pagina el servidor (frontend#27). */
+export interface EmployeeDirectoryApiQuery {
+  q: string | null;
+  status: string | null;
+  page: number;
+  size: number;
+}
+
+/** Una página del directorio con el total que cumple el mismo filtro (backend#18). */
+export interface EmployeeDirectoryPageApiModel {
+  items: ReadonlyArray<EmployeeDirectoryApiModel>;
+  page: number;
+  size: number;
+  total: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class EmployeeReadClient {
   private readonly api = inject(EmployeeDirectoryService);
 
-  readDirectory(): Observable<ReadonlyArray<EmployeeDirectoryApiModel>> {
+  readDirectory(query: EmployeeDirectoryApiQuery): Observable<EmployeeDirectoryPageApiModel> {
     return this.api
-      .listEmployees()
-      .pipe(
-        map((employees) => employees.map((employee) => this.toEmployeeDirectoryApiModel(employee))),
-      );
+      .listEmployees({
+        q: this.normalizeOptionalValue(query.q) ?? undefined,
+        status: this.normalizeOptionalValue(query.status) ?? undefined,
+        page: query.page,
+        size: query.size,
+      })
+      .pipe(map((response) => this.toEmployeeDirectoryPageApiModel(response)));
   }
 
   readEmployeeByBusinessKey(
@@ -99,6 +119,17 @@ export class EmployeeReadClient {
   private normalizeOptionalValue(value: string | null | undefined): string | null {
     const normalizedValue = value?.trim() ?? '';
     return normalizedValue.length > 0 ? normalizedValue : null;
+  }
+
+  private toEmployeeDirectoryPageApiModel(
+    source: EmployeeDirectoryPageResponse,
+  ): EmployeeDirectoryPageApiModel {
+    return {
+      items: source.items.map((item) => this.toEmployeeDirectoryApiModel(item)),
+      page: source.page,
+      size: source.size,
+      total: source.total,
+    };
   }
 
   private toEmployeeDirectoryApiModel(

@@ -44,10 +44,27 @@
   width: 100%;
 }
 
+.employee-directory__status-filter {
+  width: 160px;
+}
+
 .employee-directory__count {
   font-size: 12px;
   color: var(--text-tertiary);
   white-space: nowrap;
+}
+
+/* El centro es un código mientras backend#16 no traiga el nombre: en mono, como los códigos. */
+.employee-directory__code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Lo que falta se dice bajito: no es un aviso, es una ausencia. */
+.employee-directory__quiet {
+  color: var(--text-tertiary);
+  font-size: 12px;
 }
 
 /* Table wrapper */

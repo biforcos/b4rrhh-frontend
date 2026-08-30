@@ -59,10 +59,17 @@ describe('EmployeeShellPageComponent', () => {
     navigate: vi.fn(() => Promise.resolve(true)),
   };
   const directoryStoreMock = {
-    filteredEmployees: signal([]).asReadonly(),
+    employees: signal([]).asReadonly(),
+    total: signal<number | null>(null).asReadonly(),
+    query: signal('').asReadonly(),
+    status: signal<string | null>(null).asReadonly(),
+    page: signal(0).asReadonly(),
+    size: signal(50).asReadonly(),
     loading: signal(false).asReadonly(),
     error: signal(null).asReadonly(),
     setQuery: vi.fn(),
+    setStatus: vi.fn(),
+    setPage: vi.fn(),
     refreshDirectory: vi.fn(),
   };
   const detailStoreMock = {

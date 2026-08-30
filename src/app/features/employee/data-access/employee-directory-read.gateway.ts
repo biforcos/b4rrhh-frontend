@@ -6,7 +6,11 @@ import {
   mapEmployeeDirectoryApiToDirectoryModel,
   EmployeeDirectoryReadModel,
 } from '../../../core/api/mappers/employee-directory.mapper';
-import { EmployeeListItemModel } from '../models/employee-list-item.model';
+import {
+  EmployeeDirectoryPageModel,
+  EmployeeDirectoryQuery,
+  EmployeeListItemModel,
+} from '../models/employee-list-item.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,14 +18,24 @@ import { EmployeeListItemModel } from '../models/employee-list-item.model';
 export class EmployeeDirectoryReadGateway {
   private readonly employeeReadClient = inject(EmployeeReadClient);
 
-  readDirectory(): Observable<ReadonlyArray<EmployeeListItemModel>> {
-    return this.employeeReadClient.readDirectory().pipe(
-      map((employees) =>
-        employees.map((employee) =>
-          this.toEmployeeListItemModel(mapEmployeeDirectoryApiToDirectoryModel(employee)),
-        ),
-      ),
-    );
+  readDirectory(query: EmployeeDirectoryQuery): Observable<EmployeeDirectoryPageModel> {
+    return this.employeeReadClient
+      .readDirectory({
+        q: query.q,
+        status: query.status,
+        page: query.page,
+        size: query.size,
+      })
+      .pipe(
+        map((page) => ({
+          items: page.items.map((employee) =>
+            this.toEmployeeListItemModel(mapEmployeeDirectoryApiToDirectoryModel(employee)),
+          ),
+          page: page.page,
+          size: page.size,
+          total: page.total,
+        })),
+      );
   }
 
   private toEmployeeListItemModel(source: EmployeeDirectoryReadModel): EmployeeListItemModel {
