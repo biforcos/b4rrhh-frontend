@@ -54,6 +54,8 @@ tags:
     description: Payroll lifecycle operations — search, invalidate, validate, recalculate.
   - name: Payroll Calculation Run
     description: Launch and track bulk payroll calculation runs.
+  - name: Employee Absences
+    description: Employee absence occurrence management.
 
 paths:
   /employees:
@@ -108,13 +110,11 @@ paths:
           description: Zero-based page index. Defaults to 0.
       responses:
         "200":
-          description: Employee directory list
+          description: One page of the employee directory, with the total that matches the filters
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EmployeeDirectoryItemResponse"
+                $ref: "#/components/schemas/EmployeeDirectoryPageResponse"
         "400":
           description: Invalid query parameters
     post:
@@ -5291,6 +5291,376 @@ paths:
         '404':
           description: Not found
 
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/absences:
+    get:
+      summary: List all absences for an employee
+      operationId: listEmployeeAbsences
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      responses:
+        '200':
+          description: List of absences ordered by startDate DESC, startTime DESC
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AbsenceResponse'
+        '404':
+          description: Employee not found
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/absences/{absenceTypeCode}/{startDate}:
+    put:
+      summary: Upsert absence (day mode — startTime defaults to 00:00)
+      operationId: upsertAbsenceDayMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertAbsenceRequest'
+      responses:
+        '200':
+          description: Absence upserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceResponse'
+        '409':
+          description: Absence overlaps with an existing absence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+    get:
+      summary: Get absence by business key (day mode)
+      operationId: getAbsenceDayMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Absence found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceResponse'
+        '404':
+          description: Absence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+    delete:
+      summary: Delete absence (day mode)
+      operationId: deleteAbsenceDayMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '204':
+          description: Absence deleted
+        '404':
+          description: Absence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/absences/{absenceTypeCode}/{startDate}/{startTime}:
+    put:
+      summary: Upsert absence (hour mode — startTime as HHmm e.g. 0900)
+      operationId: upsertAbsenceHourMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: startTime
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            description: Time as HHmm (e.g. 0900 for 09:00)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertAbsenceRequest'
+      responses:
+        '200':
+          description: Absence upserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceResponse'
+        '409':
+          description: Overlap conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+    get:
+      summary: Get absence by business key (hour mode)
+      operationId: getAbsenceHourMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: startTime
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+      responses:
+        '200':
+          description: Absence found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceResponse'
+        '404':
+          description: Absence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+    delete:
+      summary: Delete absence (hour mode)
+      operationId: deleteAbsenceHourMode
+      tags:
+        - Employee Absences
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - name: absenceTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: startTime
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+      responses:
+        '204':
+          description: Absence deleted
+        '404':
+          description: Absence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbsenceErrorResponse'
+
   /payroll-engine/{ruleSystemCode}/tables:
     post:
       operationId: createPayrollTable
@@ -6455,6 +6825,38 @@ components:
         displayName:
           type: string
           description: Computed display name based on the rule system's configured format.
+
+    EmployeeDirectoryPageResponse:
+      type: object
+      description: >-
+        One page of the directory. `total` counts every employee that matches the same filters,
+        not the rows on the page: it is what tells "nobody by that name" apart from "nobody else
+        on this page".
+      required:
+        - items
+        - page
+        - size
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployeeDirectoryItemResponse"
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Zero-based index of this page.
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Page size that was applied (the default when none was requested).
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Employees matching the filters, across all pages.
 
     EmployeeDirectoryItemResponse:
       type: object
@@ -9083,3 +9485,60 @@ components:
           type: integer
           format: int64
           minimum: 1
+
+    UpsertAbsenceRequest:
+      type: object
+      properties:
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2026-05-18"
+        endTime:
+          type: string
+          nullable: true
+          pattern: '^\d{2}:\d{2}$'
+          example: "17:30"
+
+    AbsenceResponse:
+      type: object
+      required:
+        - absenceTypeCode
+        - startDate
+        - startTime
+        - createdAt
+        - updatedAt
+      properties:
+        absenceTypeCode:
+          type: string
+          example: "VACATION"
+        startDate:
+          type: string
+          format: date
+          example: "2026-05-14"
+        startTime:
+          type: string
+          example: "00:00"
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2026-05-18"
+        endTime:
+          type: string
+          nullable: true
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AbsenceErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
