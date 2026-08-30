@@ -183,7 +183,8 @@ export class EmployeeShellPageComponent {
     this.workQueueStore.leave();
     this.recentsService.add(employee);
     void this.router.navigate(
-      buildEmployeeDetailRouteCommands(toEmployeeBusinessKey(employee), 'contact'),
+      // Misma pantalla y misma intención que entrar por la cola: la relación, el núcleo de la ficha.
+      buildEmployeeDetailRouteCommands(toEmployeeBusinessKey(employee), 'relacion'),
     );
   }
 
