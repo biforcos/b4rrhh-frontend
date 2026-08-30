@@ -1,28 +1,31 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { SlotKeyOption } from '../../../features/employee/shared/ui/section/editable-slot-section.model';
+import { B4IconComponent } from '../icon/b4-icon.component';
 
 @Component({
   selector: 'app-ui-select',
   standalone: true,
+  imports: [B4IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select
-      [id]="inputId() ?? undefined"
-      [disabled]="disabled()"
-      [attr.aria-label]="ariaLabel() ?? undefined"
-      [value]="value() ?? ''"
-      (change)="onSelectionChange($event)"
-    >
-      <option value="" [disabled]="true" [hidden]="true">{{ placeholder() ?? '' }}</option>
-      @for (opt of selectOptions(); track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
-      }
-    </select>
+    <div class="ui-select">
+      <select
+        class="ui-select__control"
+        [id]="inputId() ?? undefined"
+        [disabled]="disabled()"
+        [attr.aria-label]="ariaLabel() ?? undefined"
+        [value]="value() ?? ''"
+        (change)="onSelectionChange($event)"
+      >
+        <option value="" [disabled]="true" [hidden]="true">{{ placeholder() ?? '' }}</option>
+        @for (opt of selectOptions(); track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+      <b4-icon class="ui-select__icon" name="chevron-abajo" [size]="16" aria-hidden="true" />
+    </div>
   `,
-  styles: [`
-    :host { display: block; width: 100%; }
-    select { width: 100%; }
-  `],
+  styleUrl: './ui-select.component.scss',
 })
 export class UiSelectComponent {
   readonly value = input<string | null>('');

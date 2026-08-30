@@ -13,7 +13,7 @@
   width: 100%;
   min-height: 2rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   background: var(--surface-panel);
   color: var(--text-primary);
   font: inherit;
@@ -38,7 +38,7 @@
   right: 0.62rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.68rem;
+  display: inline-flex;
   color: var(--text-tertiary);
   pointer-events: none;
 }
