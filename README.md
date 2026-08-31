@@ -109,25 +109,27 @@ Stores track request IDs internally and discard stale responses, preventing race
 
 ## API Client Generation
 
-The OpenAPI contract is the single source of truth and lives in the backend repository. The frontend never owns or edits it — it only consumes a snapshot.
+The source of truth for the OpenAPI contract lives in the backend repository. This repository versions a snapshot of it in `openapi/`; the generated client is derived from that snapshot and never committed.
 
 ```
 b4rrhh_backend/openapi/personnel-administration-api.yaml  ← source of truth
         │
-        ▼  npm run api:pull
-openapi/personnel-administration-api.yaml               ← local snapshot
+        ▼  npm run api:pull        (only to update the contract — commit the result)
+openapi/personnel-administration-api.yaml               ← versioned snapshot
         │
-        ▼  npm run api:generate
-src/app/core/api/generated/                             ← generated client (do not edit)
+        ▼  npm run api:generate    (runs automatically before build and start)
+src/app/core/api/generated/                             ← generated client (not committed, do not edit)
 ```
 
-| Script | Description |
-|---|---|
-| `npm run api:pull` | Copies the contract from the backend repo into this repo |
-| `npm run api:generate` | Runs OpenAPI Generator and outputs a typed Angular client |
-| `npm run api:refresh` | `api:pull` + `api:generate` in one step |
+The two verbs are different things:
 
-Generated code is committed so the project builds without requiring a local backend clone.
+| Script | When you need it |
+|---|---|
+| `npm run api:generate` | Always. Rebuilds the client from the versioned snapshot in `openapi/`; needs nothing external. It runs automatically as `prebuild`/`prestart`, so a clean clone builds with `npm ci && npm run build`. |
+| `npm run api:pull` | Only to bring a **new** contract from a sibling `b4rrhh_backend` checkout. Its result — a modified `openapi/*.yaml` — is a change to review and commit. |
+| `npm run api:refresh` | `api:pull` + `api:generate` in one step, for the same case as `api:pull`. |
+
+The generated client is not committed: it is derived code, ignored by git and regenerated on every build.
 
 Custom adapters in `core/api/clients/` and transformation logic in `core/api/mappers/` wrap the generated client — insulating the app from breaking changes in the generated layer.
 

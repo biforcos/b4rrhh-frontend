@@ -10,7 +10,8 @@ const outputDirectory = path.resolve(workspaceRoot, 'src/app/core/api/generated'
 
 if (!existsSync(inputSpec)) {
   console.error(`OpenAPI contract not found at ${inputSpec}.`);
-  console.error('Run "npm run api:pull" first to sync it from backend.');
+  console.error('The contract is versioned in this repository, so a clean checkout always has it.');
+  console.error('If it is missing, the checkout is incomplete or the file was deleted locally.');
   process.exit(1);
 }
 
@@ -54,7 +55,7 @@ const generatedReadme = `# Generated API client
 This folder is generated from the OpenAPI contract.
 
 - Do not edit files here manually.
-- Regenerate with: npm run api:refresh
+- Regenerate with: npm run api:generate (runs automatically before build and start).
 - Put custom API adapters and mappers outside generated in src/app/core/api/clients and src/app/core/api/mappers.
 `;
 
