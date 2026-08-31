@@ -47,35 +47,19 @@
         <span>{{ texts.sectionDirectory }}</span>
       </a>
 
-      <span class="app-shell__nav-group-label">{{ texts.groupOrganization }}</span>
-      <a class="app-shell__nav-item" routerLink="/organizacion/empresas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="empresa" [size]="20" />
-        <span>{{ texts.sectionCompanies }}</span>
-      </a>
-      <a class="app-shell__nav-item" routerLink="/organizacion/centros-trabajo" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="centro-trabajo" [size]="20" />
-        <span>{{ texts.sectionWorkCenters }}</span>
-      </a>
-      <a class="app-shell__nav-item" routerLink="/organizacion/centros-coste" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="centro-coste" [size]="20" />
-        <span>{{ texts.sectionCostCenters }}</span>
-      </a>
-      <!-- Destino provisional de la pantalla genérica de catálogos hasta que la fase 5 la
-           reparta entre Organización y Sociedad (ADR-049 §3). -->
-      <a class="app-shell__nav-item" routerLink="/organizacion/catalogos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="catalogo" [size]="20" />
-        <span>{{ texts.sectionMasters }}</span>
-      </a>
-
-      <span class="app-shell__nav-group-label">{{ texts.groupSociety }}</span>
-      <a class="app-shell__nav-item" routerLink="/organizacion/convenios-categorias" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="convenio" [size]="20" />
-        <span>{{ texts.sectionAgreements }}</span>
-      </a>
-      <a class="app-shell__nav-item" routerLink="/configuracion/rule-systems" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <b4-icon class="app-shell__nav-icon" name="rule-system" [size]="20" />
-        <span>{{ texts.sectionRuleSystems }}</span>
-      </a>
+      <!-- Organización y Sociedad se derivan del metamodelo (frontend#33): la pertenencia
+           de las extensiones (ADR-053 §7) y el grupo, nombre y orden del tipo (ADR-054 §8).
+           Lo único fijo son las colas de cada grupo — Catálogos y Sistemas de reglas—, que
+           no son tipos de entidad. La derivación vive en core/layout/navigation. -->
+      @for (group of menu.groups(); track group.code) {
+        <span class="app-shell__nav-group-label">{{ group.name }}</span>
+        @for (entry of group.entries; track entry.link) {
+          <a class="app-shell__nav-item" [routerLink]="entry.link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+            <b4-icon class="app-shell__nav-icon" [name]="entry.icon" [size]="20" />
+            <span>{{ entry.label }}</span>
+          </a>
+        }
+      }
 
       <span class="app-shell__nav-group-label">{{ texts.groupPayroll }}</span>
       <a class="app-shell__nav-item" routerLink="/nomina/recibos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">

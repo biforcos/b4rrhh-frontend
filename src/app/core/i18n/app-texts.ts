@@ -46,9 +46,13 @@ export const appTexts = {
   sectionDirectory: 'Directorio',
   sectionCompanies: 'Empresas',
   sectionWorkCenters: 'Centros de trabajo',
-  sectionCostCenters: 'Centros de coste',
-  /** Destino provisional de la pantalla genérica de catálogos hasta la fase 5 del rediseño. */
-  sectionMasters: 'Maestros',
+  /**
+   * «Catálogos», la palabra del ADR-053: lo que ahí vive es código y literal. El menú
+   * decía «Maestros» y la pantalla «Catálogos» (frontend#22); se queda la del modelo y
+   * el menú y el título dicen lo mismo (frontend#33). «Centros de coste» ya no tiene
+   * entrada propia: sin extensiones declaradas, su sitio es Catálogos.
+   */
+  sectionCatalogs: 'Catálogos',
   sectionAgreements: 'Convenios',
   sectionRuleSystems: 'Sistemas de reglas',
   sectionRecibos: 'Recibos',

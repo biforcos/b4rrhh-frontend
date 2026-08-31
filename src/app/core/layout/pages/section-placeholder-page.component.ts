@@ -53,6 +53,13 @@ export class SectionPlaceholderPageComponent {
       return `${rawTitle.trim()} · ${appTexts.placeholderTitleSuffix}`;
     }
 
+    // La ruta genérica de entidades (frontend#33) no puede traer el título en data:
+    // hasta que el tipo tenga pantalla, su código es el único nombre disponible.
+    const typeCode = this.route.snapshot.paramMap.get('typeCode');
+    if (typeCode) {
+      return `${typeCode} · ${appTexts.placeholderTitleSuffix}`;
+    }
+
     return `Seccion · ${appTexts.placeholderTitleSuffix}`;
   }
 

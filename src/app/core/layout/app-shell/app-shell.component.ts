@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { AuthStore } from '../../auth/auth.store';
 import { appTexts } from '../../i18n/app-texts';
+import { NavigationMenuStore } from '../navigation/navigation-menu.store';
 import { RuleSystemScopeStore } from '../../scope/rule-system-scope.store';
 import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
 
@@ -17,6 +18,7 @@ export class AppShellComponent implements OnInit {
   protected readonly texts = appTexts;
   protected readonly auth = inject(AuthStore);
   protected readonly scope = inject(RuleSystemScopeStore);
+  protected readonly menu = inject(NavigationMenuStore);
 
   private readonly router = inject(Router);
 
@@ -27,6 +29,7 @@ export class AppShellComponent implements OnInit {
 
   ngOnInit(): void {
     this.scope.load();
+    this.menu.load();
   }
 
   protected onScopeChange(event: Event): void {

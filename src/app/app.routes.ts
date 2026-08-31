@@ -40,16 +40,15 @@ export const routes: Routes = [
           import('./features/work-center/work-center.routes').then((m) => m.workCenterRoutes),
       },
       {
-        path: 'organizacion/centros-coste',
+        // La pantalla propia que el metamodelo promete y el frontend aún no conoce
+        // (frontend#33): entrada derivada del menú hacia un placeholder con el código
+        // del tipo. La pantalla de verdad es la fase 5. Centros de coste ya no tiene
+        // ruta propia: el modelo no le declara extensiones y vive en Catálogos.
+        path: 'entidades/:typeCode',
         loadComponent: () =>
           import('./core/layout/pages/section-placeholder-page.component').then(
             (m) => m.SectionPlaceholderPageComponent,
           ),
-        data: {
-          title: 'Centros de coste',
-          description:
-            'Seccion base preparada para mantenimiento de centros de coste y su disponibilidad.',
-        },
       },
       {
         path: 'organizacion/catalogos',
