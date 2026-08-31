@@ -525,6 +525,7 @@ paths:
       tags:
         - Employee Presence
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -568,6 +569,7 @@ paths:
       tags:
         - Employee Presence
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -605,6 +607,7 @@ paths:
       tags:
         - Employee Presence
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -646,6 +649,7 @@ paths:
       tags:
         - Employee Presence
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -697,6 +701,7 @@ paths:
       tags:
         - Employee Address
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -740,6 +745,7 @@ paths:
       tags:
         - Employee Address
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -777,6 +783,7 @@ paths:
       tags:
         - Employee Address
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -821,6 +828,7 @@ paths:
         This operation does not create a new occurrence and does not mutate
         occurrence identity fields.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -872,6 +880,7 @@ paths:
       tags:
         - Employee Address
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -923,6 +932,7 @@ paths:
       tags:
         - Employee Work Center
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -969,6 +979,7 @@ paths:
       tags:
         - Employee Work Center
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1011,6 +1022,7 @@ paths:
         starts at effectiveDate. If no assignment covers effectiveDate, a new assignment is created
         directly when the temporal context is valid.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1060,6 +1072,7 @@ paths:
       tags:
         - Employee Work Center
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1103,6 +1116,7 @@ paths:
         This operation corrects assignment content and dates for the same occurrence
         identified by business keys and does not represent a workflow transition.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1203,6 +1217,7 @@ paths:
       tags:
         - Employee Work Center
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1715,6 +1730,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1760,6 +1776,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1797,6 +1814,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1844,6 +1862,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1883,6 +1902,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1936,6 +1956,7 @@ paths:
       tags:
         - Employee Contract
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -1989,6 +2010,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2034,6 +2056,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2071,6 +2094,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2118,6 +2142,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2157,6 +2182,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2210,6 +2236,7 @@ paths:
       tags:
         - Employee Labor Classification
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2263,6 +2290,7 @@ paths:
       tags:
         - Employee Identifier
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2306,6 +2334,7 @@ paths:
       tags:
         - Employee Identifier
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2343,6 +2372,7 @@ paths:
       tags:
         - Employee Identifier
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2382,6 +2412,7 @@ paths:
       tags:
         - Employee Identifier
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2468,6 +2499,7 @@ paths:
       tags:
         - Employee Contact
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2511,6 +2543,7 @@ paths:
       tags:
         - Employee Contact
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2548,6 +2581,7 @@ paths:
       tags:
         - Employee Contact
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2587,6 +2621,7 @@ paths:
       tags:
         - Employee Contact
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -2754,6 +2789,41 @@ paths:
                 $ref: "#/components/schemas/RuleEntityTypeResponse"
         "404":
           description: Rule entity type not found
+
+  /rule-entity-translations/coverage:
+    get:
+      operationId: getRuleEntityTranslationCoverage
+      summary: Translation coverage of rule entity labels for one language
+      description: >-
+        Administration report (ADR-052). For every rule entity type, how many codes have a
+        translation in the given language, how many do not, and which ones are missing.
+        Responses never mark which labels are translated; this report is where the gaps show.
+      tags:
+        - Rule Entity Translations
+      parameters:
+        - in: query
+          name: languageCode
+          required: true
+          description: Short BCP 47 tag (es-ES, fr-FR, en).
+          schema:
+            type: string
+            maxLength: 5
+            example: es-ES
+      responses:
+        "200":
+          description: Coverage report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityTranslationCoverageResponse"
+        "400":
+          description: languageCode is not a short BCP 47 tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityTranslationErrorResponse"
+        "403":
+          description: Requires the ADMIN role
 
   /rule-entities:
     post:
@@ -5809,7 +5879,85 @@ paths:
           description: Row not found
 
 components:
+  parameters:
+    AcceptLanguage:
+      in: header
+      name: Accept-Language
+      required: false
+      description: >-
+        Language of the catalog labels in the response (ADR-052). Short BCP 47 tag such as
+        `es-ES`, `fr-FR` or `en`; the heaviest language of the header is used. Codes never
+        change. A label without a translation for that language, a missing header or an
+        unrecognised one all fall back to the base literal, silently.
+      schema:
+        type: string
+        example: es-ES
   schemas:
+    RuleEntityTranslationCoverageResponse:
+      type: object
+      required:
+        - languageCode
+        - types
+      properties:
+        languageCode:
+          type: string
+          example: es-ES
+        types:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleEntityTypeTranslationCoverage"
+
+    RuleEntityTypeTranslationCoverage:
+      type: object
+      required:
+        - ruleEntityTypeCode
+        - total
+        - translated
+        - missing
+        - missingCodes
+      properties:
+        ruleEntityTypeCode:
+          type: string
+        total:
+          type: integer
+          format: int64
+        translated:
+          type: integer
+          format: int64
+        missing:
+          type: integer
+          format: int64
+        missingCodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleEntityMissingTranslation"
+
+    RuleEntityMissingTranslation:
+      type: object
+      required:
+        - ruleSystemCode
+        - code
+        - name
+      properties:
+        ruleSystemCode:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+          description: The base literal that is being served meanwhile.
+
+    RuleEntityTranslationErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
     PayrollLaunchTargetSelectionType:
       type: string
       enum:
@@ -8646,6 +8794,9 @@ components:
       required:
         - code
         - name
+        - literalClass
+        - maintenanceMode
+        - groupCode
       properties:
         code:
           type: string
@@ -8653,18 +8804,73 @@ components:
         name:
           type: string
           maxLength: 100
+        literalClass:
+          type: string
+          enum: [DOMAIN_VOCABULARY, REGULATORY_CITATION, PROPER_NOUN]
+        maintenanceMode:
+          type: string
+          enum: [MAINTAINED, REFERENCE, CLOSED]
+        groupCode:
+          type: string
+          maxLength: 30
     RuleEntityTypeResponse:
       type: object
       required:
         - code
         - name
         - active
+        - literalClass
+        - maintenanceMode
+        - group
+        - extensions
       properties:
         code:
           type: string
         name:
           type: string
         active:
+          type: boolean
+        literalClass:
+          type: string
+          enum: [DOMAIN_VOCABULARY, REGULATORY_CITATION, PROPER_NOUN]
+        maintenanceMode:
+          type: string
+          enum: [MAINTAINED, REFERENCE, CLOSED]
+        group:
+          $ref: "#/components/schemas/RuleEntityTypeGroupResponse"
+        extensions:
+          type: array
+          description: >-
+            Extensions declared for this type in the metamodel (ADR-053). Empty means
+            root-only; the menu derives from this who gets its own screen (ADR-053 s7).
+          items:
+            $ref: "#/components/schemas/RuleEntityTypeExtensionResponse"
+    RuleEntityTypeGroupResponse:
+      type: object
+      required:
+        - code
+        - name
+        - displayOrder
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        displayOrder:
+          type: integer
+    RuleEntityTypeExtensionResponse:
+      type: object
+      required:
+        - extensionCode
+        - cardinality
+        - required
+      properties:
+        extensionCode:
+          type: string
+        cardinality:
+          type: string
+          enum: ["1:1", "1:N"]
+        required:
           type: boolean
     CreateRuleEntityRequest:
       type: object
