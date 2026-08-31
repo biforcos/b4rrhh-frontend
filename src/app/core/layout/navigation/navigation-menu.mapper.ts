@@ -69,12 +69,18 @@ const STATIC_GROUP_TAILS: ReadonlyArray<{
 }> = [
   {
     group: { code: 'ORGANIZATION', name: appTexts.groupOrganization, displayOrder: 1 },
-    entries: [{ label: appTexts.sectionCatalogs, icon: 'catalogo', link: '/organizacion/catalogos' }],
+    entries: [
+      { label: appTexts.sectionCatalogs, icon: 'catalogo', link: '/organizacion/catalogos' },
+    ],
   },
   {
     group: { code: 'SOCIETY', name: appTexts.groupSociety, displayOrder: 2 },
     entries: [
-      { label: appTexts.sectionRuleSystems, icon: 'rule-system', link: '/configuracion/rule-systems' },
+      {
+        label: appTexts.sectionRuleSystems,
+        icon: 'rule-system',
+        link: '/configuracion/rule-systems',
+      },
     ],
   },
 ];
@@ -143,14 +149,20 @@ export function buildMenuGroups(
     }
   }
 
-  return [...groups.entries()]
-    .map(([code, group]) => ({
-      code,
-      name: group.name,
-      displayOrder: group.displayOrder,
-      entries: group.entries as ReadonlyArray<MenuEntry>,
-    }))
-    .sort((a, b) => a.displayOrder - b.displayOrder);
+  return (
+    [...groups.entries()]
+      .map(([code, group]) => ({
+        code,
+        name: group.name,
+        displayOrder: group.displayOrder,
+        entries: group.entries as ReadonlyArray<MenuEntry>,
+      }))
+      // Un grupo puede quedarse sin entradas — tipos sin extensiones y sin cola fija — y
+      // una cabecera sin nada debajo no es un grupo: es un despiste. Solo el modelo puede
+      // provocarlo (un grupo nuevo con tipos «sólo raíz»), así que se descarta aquí.
+      .filter((group) => group.entries.length > 0)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+  );
 }
 
 /**

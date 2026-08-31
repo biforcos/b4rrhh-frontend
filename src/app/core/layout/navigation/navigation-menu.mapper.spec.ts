@@ -111,4 +111,14 @@ describe('buildMenuGroups', () => {
     const organization = groups.find((group) => group.code === 'ORGANIZATION');
     expect(organization?.entries.map((entry) => entry.label)).toEqual(['Catálogos']);
   });
+
+  it('drops a group that ends up with no entries at all', () => {
+    const groups = buildMenuGroups([
+      type('SOME_CODE_LIST', 'LEGAL', [], {
+        group: { code: 'LEGAL', name: 'Legal', displayOrder: 3 },
+      }),
+    ]);
+
+    expect(groups.map((group) => group.code)).toEqual(['ORGANIZATION', 'SOCIETY']);
+  });
 });
