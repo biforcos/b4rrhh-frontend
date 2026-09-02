@@ -99,7 +99,11 @@ export class EmployeeRehireStore {
       const conflictContext = `${functionalCode} ${message}`;
 
       if (conflictContext.includes('ALREADY_ACTIVE')) return 'already-active';
-      if (conflictContext.includes('INVALID_REHIRE_DATE') || conflictContext.includes('REHIRE_DATE')) return 'invalid-rehire-date';
+      if (
+        conflictContext.includes('INVALID_REHIRE_DATE') ||
+        conflictContext.includes('REHIRE_DATE')
+      )
+        return 'invalid-rehire-date';
 
       return 'rehire-conflict';
     }
@@ -107,10 +111,18 @@ export class EmployeeRehireStore {
     if (status === 422) {
       const functionalCode = this.extractFunctionalCode(error).toUpperCase();
 
-      if (functionalCode.includes('BUSINESS_VALIDATION') || functionalCode.includes('WORKING')) return 'invalid-working-time';
-      if (functionalCode.includes('DISTRIBUT') || functionalCode.includes('COST_CENTER')) return 'invalid-distribution';
-      if (functionalCode.includes('DEPEND') || functionalCode.includes('RELATION')) return 'invalid-dependent-relation';
-      if (functionalCode.includes('CATALOG') || functionalCode.includes('NOT_FOUND') || functionalCode.includes('INVALID')) return 'invalid-catalog-value';
+      if (functionalCode.includes('BUSINESS_VALIDATION') || functionalCode.includes('WORKING'))
+        return 'invalid-working-time';
+      if (functionalCode.includes('DISTRIBUT') || functionalCode.includes('COST_CENTER'))
+        return 'invalid-distribution';
+      if (functionalCode.includes('DEPEND') || functionalCode.includes('RELATION'))
+        return 'invalid-dependent-relation';
+      if (
+        functionalCode.includes('CATALOG') ||
+        functionalCode.includes('NOT_FOUND') ||
+        functionalCode.includes('INVALID')
+      )
+        return 'invalid-catalog-value';
 
       return 'invalid-catalog-value';
     }

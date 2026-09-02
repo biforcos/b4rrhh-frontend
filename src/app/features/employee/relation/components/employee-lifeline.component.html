@@ -55,7 +55,8 @@
             class="lifeline__tick"
             [class.lifeline__tick--major]="tick.major"
             [style.left.px]="x(tick.date)"
-          >{{ tick.label }}</span>
+            >{{ tick.label }}</span
+          >
         }
         @for (event of placedEvents(); track event.id) {
           <span
@@ -64,14 +65,20 @@
             [style.left.px]="x(event.date)"
             [title]="eventTitle(event)"
           >
-            <b4-icon [name]="event.icon" [size]="16" [label]="event.showLabel ? null : eventTitle(event)" />
+            <b4-icon
+              [name]="event.icon"
+              [size]="16"
+              [label]="event.showLabel ? null : eventTitle(event)"
+            />
             @if (event.showLabel) {
               <span class="lifeline__event-label">{{ event.label }}</span>
             }
           </span>
         }
         @if (todayInRange()) {
-          <span class="lifeline__today-label" [style.left.px]="todayX()">{{ texts.lifelineTodayLabel }}</span>
+          <span class="lifeline__today-label" [style.left.px]="todayX()">{{
+            texts.lifelineTodayLabel
+          }}</span>
         }
       </div>
 

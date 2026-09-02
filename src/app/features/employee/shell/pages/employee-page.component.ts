@@ -10,7 +10,11 @@ import { EmployeeTimelinePanelComponent } from '../components/employee-timeline-
 @Component({
   selector: 'app-employee-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeePageHeaderComponent, EmployeeSectionShellComponent, EmployeeTimelinePanelComponent],
+  imports: [
+    EmployeePageHeaderComponent,
+    EmployeeSectionShellComponent,
+    EmployeeTimelinePanelComponent,
+  ],
   templateUrl: './employee-page.component.html',
   styleUrl: './employee-page.component.scss',
 })

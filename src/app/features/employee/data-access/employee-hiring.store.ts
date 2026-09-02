@@ -3,7 +3,11 @@ import { take } from 'rxjs';
 import { HireEmployeeDraft, HireEmployeeResult } from '../models/employee-hiring.model';
 import { EmployeeHiringGateway } from './employee-hiring.gateway';
 
-export type HireEmployeeErrorCode = 'already-exists' | 'invalid-catalog-value' | 'invalid-dependent-relation' | 'request-failed';
+export type HireEmployeeErrorCode =
+  | 'already-exists'
+  | 'invalid-catalog-value'
+  | 'invalid-dependent-relation'
+  | 'request-failed';
 
 @Injectable({
   providedIn: 'root',

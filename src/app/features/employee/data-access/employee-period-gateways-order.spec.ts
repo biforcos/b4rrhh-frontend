@@ -72,17 +72,15 @@ describe('period gateways of the employee record', () => {
 
   it('contract orders active first, then by start date descending', async () => {
     const client = {
-      readEmployeeContractsByBusinessKey: vi
-        .fn()
-        .mockReturnValue(
-          of(
-            periods.map((period) => ({
-              contractCode: 'IND',
-              contractSubtypeCode: 'FT1',
-              ...period,
-            })),
-          ),
+      readEmployeeContractsByBusinessKey: vi.fn().mockReturnValue(
+        of(
+          periods.map((period) => ({
+            contractCode: 'IND',
+            contractSubtypeCode: 'FT1',
+            ...period,
+          })),
         ),
+      ),
     };
     TestBed.configureTestingModule({
       providers: [{ provide: EmployeeContractReadClient, useValue: client }],

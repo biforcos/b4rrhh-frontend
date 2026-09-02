@@ -115,7 +115,9 @@ function mapCostCenterDistributionItemDraftToRequest(
   };
 }
 
-export function mapCostCenterDistributionCloseDateToRequest(endDate: string): CloseCostCenterDistributionRequest {
+export function mapCostCenterDistributionCloseDateToRequest(
+  endDate: string,
+): CloseCostCenterDistributionRequest {
   return {
     endDate: endDate.trim(),
   };

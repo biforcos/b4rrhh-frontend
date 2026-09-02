@@ -9,7 +9,11 @@
   (addClicked)="startCreate()"
 >
   @if (creating() || hasRows()) {
-    <ul class="slot-section__rows" role="list" [attr.aria-label]="texts.contactsSectionListAriaLabel">
+    <ul
+      class="slot-section__rows"
+      role="list"
+      [attr.aria-label]="texts.contactsSectionListAriaLabel"
+    >
       @if (creating()) {
         <li class="slot-section__row slot-section__row--draft">
           <div class="slot-section__form">
@@ -25,10 +29,20 @@
             </label>
             <label class="slot-section__field">
               <span>{{ texts.contactsSectionValueFieldLabel }}</span>
-              <input pInputText type="text" [value]="createDraft().value" (input)="updateCreateDraftValue($any($event.target).value)" />
+              <input
+                pInputText
+                type="text"
+                [value]="createDraft().value"
+                (input)="updateCreateDraftValue($any($event.target).value)"
+              />
             </label>
             <div class="slot-section__form-actions">
-              <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelCreate()">
+              <button
+                type="button"
+                class="slot-section__btn"
+                [disabled]="sectionState().busy"
+                (click)="cancelCreate()"
+              >
                 {{ texts.contactsSectionCancelAction }}
               </button>
               <button
@@ -58,10 +72,20 @@
               </div>
               <label class="slot-section__field">
                 <span>{{ texts.contactsSectionValueFieldLabel }}</span>
-                <input pInputText type="text" [value]="editDraftValue()" (input)="updateEditDraftValue($any($event.target).value)" />
+                <input
+                  pInputText
+                  type="text"
+                  [value]="editDraftValue()"
+                  (input)="updateEditDraftValue($any($event.target).value)"
+                />
               </label>
               <div class="slot-section__form-actions">
-                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelEdit()">
+                <button
+                  type="button"
+                  class="slot-section__btn"
+                  [disabled]="sectionState().busy"
+                  (click)="cancelEdit()"
+                >
                   {{ texts.contactsSectionCancelAction }}
                 </button>
                 <button
@@ -82,7 +106,12 @@
             <p class="slot-section__value">{{ row.value }}</p>
             @if (deletingKey() === row.key) {
               <div class="slot-section__actions">
-                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelDelete()">
+                <button
+                  type="button"
+                  class="slot-section__btn"
+                  [disabled]="sectionState().busy"
+                  (click)="cancelDelete()"
+                >
                   {{ texts.contactsSectionCancelAction }}
                 </button>
                 <button

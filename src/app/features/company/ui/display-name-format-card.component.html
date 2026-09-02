@@ -1,7 +1,9 @@
 <div class="dnf-card">
   <div class="dnf-card__header">
     <h3 class="dnf-card__title">Formato de nombre normativo</h3>
-    <p class="dnf-card__description">Cómo se presenta el nombre de los empleados en toda la aplicación</p>
+    <p class="dnf-card__description">
+      Cómo se presenta el nombre de los empleados en toda la aplicación
+    </p>
   </div>
 
   @if (loading()) {
@@ -27,7 +29,9 @@
         <span class="dnf-card__preview-value">{{ fmt.example }}</span>
       </div>
     } @else {
-      <p class="dnf-card__hint">Sin formato configurado — se usará el nombre completo por defecto.</p>
+      <p class="dnf-card__hint">
+        Sin formato configurado — se usará el nombre completo por defecto.
+      </p>
     }
 
     <div class="dnf-card__actions">

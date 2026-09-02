@@ -8,8 +8,11 @@ const workingTimeFunctionalErrorCodes = [
   'WORKING_TIME_ALREADY_CLOSED',
 ] as const;
 
-export type EmployeeWorkingTimeFunctionalErrorCode = (typeof workingTimeFunctionalErrorCodes)[number];
-export type EmployeeWorkingTimeErrorCode = EmployeeWorkingTimeFunctionalErrorCode | 'request-failed';
+export type EmployeeWorkingTimeFunctionalErrorCode =
+  (typeof workingTimeFunctionalErrorCodes)[number];
+export type EmployeeWorkingTimeErrorCode =
+  | EmployeeWorkingTimeFunctionalErrorCode
+  | 'request-failed';
 
 const workingTimeFunctionalErrorCodeSet = new Set<string>(workingTimeFunctionalErrorCodes);
 

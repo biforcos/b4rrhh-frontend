@@ -29,17 +29,28 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
           <fieldset class="demo-login__profiles">
             <legend>{{ texts.demoProfileLabel }}</legend>
             @for (perfil of profiles(); track perfil.subject) {
-              <label class="demo-login__profile" [class.is-selected]="form.controls.subject.value === perfil.subject">
+              <label
+                class="demo-login__profile"
+                [class.is-selected]="form.controls.subject.value === perfil.subject"
+              >
                 <input type="radio" formControlName="subject" [value]="perfil.subject" />
                 <span class="demo-login__profile-name">{{ perfil.subject }}</span>
-                <span class="demo-login__profile-roles">{{ texts.demoRolesLabel }} {{ perfil.roles.join(', ') }}</span>
+                <span class="demo-login__profile-roles"
+                  >{{ texts.demoRolesLabel }} {{ perfil.roles.join(', ') }}</span
+                >
               </label>
             }
           </fieldset>
 
           <label class="demo-login__field">
             <span>{{ texts.demoPasswordLabel }}</span>
-            <input pInputText type="text" formControlName="password" autocomplete="off" spellcheck="false" />
+            <input
+              pInputText
+              type="text"
+              formControlName="password"
+              autocomplete="off"
+              spellcheck="false"
+            />
           </label>
           <p class="demo-login__hint">{{ texts.demoPasswordHint }}</p>
 
@@ -66,7 +77,9 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
       background: var(--surface-app);
     }
 
-    .demo-login { width: min(100%, 460px); }
+    .demo-login {
+      width: min(100%, 460px);
+    }
 
     .demo-login__card {
       display: grid;
@@ -78,7 +91,10 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
       padding: 40px;
     }
 
-    .demo-login__header { display: grid; gap: 0.6rem; }
+    .demo-login__header {
+      display: grid;
+      gap: 0.6rem;
+    }
 
     .demo-login__header h1 {
       margin: 0;
@@ -107,9 +123,14 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
       color: var(--text-secondary);
     }
 
-    .demo-login__invite strong { color: var(--text-primary); }
+    .demo-login__invite strong {
+      color: var(--text-primary);
+    }
 
-    .demo-login__form { display: grid; gap: 0.85rem; }
+    .demo-login__form {
+      display: grid;
+      gap: 0.85rem;
+    }
 
     .demo-login__profiles {
       display: grid;

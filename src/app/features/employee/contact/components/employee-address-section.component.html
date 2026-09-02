@@ -56,7 +56,10 @@
         </label>
         <label class="address-form__field">
           <span>{{ texts.addressesSectionStartDateLabel }}</span>
-          <app-ui-date-input [value]="draft().startDate" (valueChanged)="updateDraft('startDate', $event)" />
+          <app-ui-date-input
+            [value]="draft().startDate"
+            (valueChanged)="updateDraft('startDate', $event)"
+          />
         </label>
       } @else {
         <!-- Las fechas no se corrigen desde aquí: lo que se toca son los datos de la vigente. -->
@@ -64,23 +67,48 @@
       }
       <label class="address-form__field address-form__field--wide">
         <span>{{ texts.addressesSectionStreetLabel }}</span>
-        <input pInputText type="text" [value]="draft().street" (input)="updateDraft('street', $any($event.target).value)" />
+        <input
+          pInputText
+          type="text"
+          [value]="draft().street"
+          (input)="updateDraft('street', $any($event.target).value)"
+        />
       </label>
       <label class="address-form__field">
         <span>{{ texts.addressesSectionPostalCodeLabel }}</span>
-        <input pInputText type="text" [value]="draft().postalCode" (input)="updateDraft('postalCode', $any($event.target).value)" />
+        <input
+          pInputText
+          type="text"
+          [value]="draft().postalCode"
+          (input)="updateDraft('postalCode', $any($event.target).value)"
+        />
       </label>
       <label class="address-form__field">
         <span>{{ texts.addressesSectionCityLabel }}</span>
-        <input pInputText type="text" [value]="draft().city" (input)="updateDraft('city', $any($event.target).value)" />
+        <input
+          pInputText
+          type="text"
+          [value]="draft().city"
+          (input)="updateDraft('city', $any($event.target).value)"
+        />
       </label>
       <label class="address-form__field">
         <span>{{ texts.addressesSectionRegionLabel }}</span>
-        <input pInputText type="text" [value]="draft().regionCode" (input)="updateDraft('regionCode', $any($event.target).value)" />
+        <input
+          pInputText
+          type="text"
+          [value]="draft().regionCode"
+          (input)="updateDraft('regionCode', $any($event.target).value)"
+        />
       </label>
       <label class="address-form__field">
         <span>{{ texts.addressesSectionCountryLabel }}</span>
-        <input pInputText type="text" [value]="draft().countryCode" (input)="updateDraft('countryCode', $any($event.target).value)" />
+        <input
+          pInputText
+          type="text"
+          [value]="draft().countryCode"
+          (input)="updateDraft('countryCode', $any($event.target).value)"
+        />
       </label>
     </div>
   } @else {

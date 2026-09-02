@@ -15,7 +15,9 @@ export interface WorkCenterCorrectDraft {
   endDate: string;
 }
 
-export function mapWorkCenterCreateDraftToRequest(draft: WorkCenterCreateDraft): EmployeeCreateWorkCenterRequest {
+export function mapWorkCenterCreateDraftToRequest(
+  draft: WorkCenterCreateDraft,
+): EmployeeCreateWorkCenterRequest {
   return {
     workCenterCode: normalizeCode(draft.workCenterCode),
     startDate: normalizeRequiredValue(draft.startDate),
@@ -23,7 +25,9 @@ export function mapWorkCenterCreateDraftToRequest(draft: WorkCenterCreateDraft):
   };
 }
 
-export function mapWorkCenterCorrectDraftToRequest(draft: WorkCenterCorrectDraft): EmployeeUpdateWorkCenterRequest {
+export function mapWorkCenterCorrectDraftToRequest(
+  draft: WorkCenterCorrectDraft,
+): EmployeeUpdateWorkCenterRequest {
   return {
     workCenterCode: normalizeCode(draft.workCenterCode),
     startDate: normalizeRequiredValue(draft.startDate),

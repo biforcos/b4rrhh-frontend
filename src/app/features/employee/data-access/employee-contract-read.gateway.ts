@@ -49,10 +49,7 @@ export class EmployeeContractReadGateway {
     );
   }
 
-  replaceContractFromDate(
-    key: EmployeeBusinessKey,
-    draft: ContractReplaceDraft,
-  ): Observable<void> {
+  replaceContractFromDate(key: EmployeeBusinessKey, draft: ContractReplaceDraft): Observable<void> {
     return this.employeeContractReadClient
       .replaceContractFromDateByBusinessKey(key, mapContractReplaceDraftToRequest(draft))
       .pipe(map(() => undefined));

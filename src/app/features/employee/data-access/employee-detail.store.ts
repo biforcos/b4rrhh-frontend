@@ -4,7 +4,10 @@ import { take } from 'rxjs';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeCoreIdentityDraft } from '../models/employee-core-identity-draft.model';
 import { EmployeeDetailModel } from '../models/employee-detail.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { EmployeeDetailGateway } from './employee-detail.gateway';
 import { EmployeeDetailReadGateway } from './employee-detail-read.gateway';
 
@@ -47,7 +50,10 @@ export class EmployeeDetailStore {
     this.loadEmployeeDetailByBusinessKeyInternal(key, true);
   }
 
-  updateEmployeeCoreIdentity(employeeKey: EmployeeBusinessKey, draft: EmployeeCoreIdentityDraft): void {
+  updateEmployeeCoreIdentity(
+    employeeKey: EmployeeBusinessKey,
+    draft: EmployeeCoreIdentityDraft,
+  ): void {
     if (this.mutatingState()) {
       return;
     }
@@ -74,7 +80,10 @@ export class EmployeeDetailStore {
       });
   }
 
-  private loadEmployeeDetailByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadEmployeeDetailByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetDetailState();
       return;
@@ -86,7 +95,8 @@ export class EmployeeDetailStore {
     if (
       !forceReload &&
       isSameKey &&
-      (this.loadingDetailState() || (this.selectedEmployeeDetailState() !== null && this.detailErrorState() === null))
+      (this.loadingDetailState() ||
+        (this.selectedEmployeeDetailState() !== null && this.detailErrorState() === null))
     ) {
       return;
     }

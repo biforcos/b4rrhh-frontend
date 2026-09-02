@@ -1,75 +1,79 @@
-  <app-temporal-section
-    anchorId="employee-section-contract"
-    title="Contrato"
-    [rows]="rows()"
-    (addClicked)="openCreate()"
-    (editClicked)="openEdit($event)"
-  >
-    <ng-template #columnHeaders>
-      <th class="temporal-section__th">Tipo</th>
-      <th class="temporal-section__th">Subtipo</th>
-    </ng-template>
-    <ng-template #cellContent let-row>
-      <!-- ADR-051 §4: el código nunca va solo. -->
-      <td class="temporal-section__td">
-        <app-ui-catalog-label [name]="row.contractTypeLabel" [code]="row.contractCode" />
-      </td>
-      <td class="temporal-section__td">
-        @if (row.contractSubtypeCode; as subtypeCode) {
-          <app-ui-catalog-label [name]="row.contractSubtypeLabel" [code]="subtypeCode" />
-        } @else {
-          <span class="temporal-section__secondary">—</span>
-        }
-      </td>
-    </ng-template>
-  </app-temporal-section>
+<app-temporal-section
+  anchorId="employee-section-contract"
+  title="Contrato"
+  [rows]="rows()"
+  (addClicked)="openCreate()"
+  (editClicked)="openEdit($event)"
+>
+  <ng-template #columnHeaders>
+    <th class="temporal-section__th">Tipo</th>
+    <th class="temporal-section__th">Subtipo</th>
+  </ng-template>
+  <ng-template #cellContent let-row>
+    <!-- ADR-051 §4: el código nunca va solo. -->
+    <td class="temporal-section__td">
+      <app-ui-catalog-label [name]="row.contractTypeLabel" [code]="row.contractCode" />
+    </td>
+    <td class="temporal-section__td">
+      @if (row.contractSubtypeCode; as subtypeCode) {
+        <app-ui-catalog-label [name]="row.contractSubtypeLabel" [code]="subtypeCode" />
+      } @else {
+        <span class="temporal-section__secondary">—</span>
+      }
+    </td>
+  </ng-template>
+</app-temporal-section>
 
-  <app-period-modal
-    [title]="modalTitle()"
-    [subtitle]="modalSubtitle()"
-    [visible]="modalVisible()"
-    [saving]="saving()"
-    [submitEnabled]="isSubmitEnabled()"
-    [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-    [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
-    (visibleChange)="modalVisible.set($event)"
-    (submitted)="submit()"
-    (cancelled)="closeModal()"
-    (closeActionClicked)="switchToClose()"
-  >
-    @if (modalMode() === 'create') {
-      <app-ui-date-input
-        [value]="effectiveDateDraft()"
-        (valueChanged)="effectiveDateDraft.set($event)" />
-      <app-ui-select
-        [options]="contractTypeOptions()"
-        [value]="contractCodeDraft()"
-        (valueChanged)="updateContractCode($event)" />
-      <app-ui-select
-        [options]="subtypeOptions()"
-        [value]="contractSubtypeCodeDraft()"
-        [disabled]="subtypeDisabled()"
-        (valueChanged)="contractSubtypeCodeDraft.set($event)" />
-    }
+<app-period-modal
+  [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
+  [visible]="modalVisible()"
+  [saving]="saving()"
+  [submitEnabled]="isSubmitEnabled()"
+  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+  [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
+  (visibleChange)="modalVisible.set($event)"
+  (submitted)="submit()"
+  (cancelled)="closeModal()"
+  (closeActionClicked)="switchToClose()"
+>
+  @if (modalMode() === 'create') {
+    <app-ui-date-input
+      [value]="effectiveDateDraft()"
+      (valueChanged)="effectiveDateDraft.set($event)"
+    />
+    <app-ui-select
+      [options]="contractTypeOptions()"
+      [value]="contractCodeDraft()"
+      (valueChanged)="updateContractCode($event)"
+    />
+    <app-ui-select
+      [options]="subtypeOptions()"
+      [value]="contractSubtypeCodeDraft()"
+      [disabled]="subtypeDisabled()"
+      (valueChanged)="contractSubtypeCodeDraft.set($event)"
+    />
+  }
 
-    @if (modalMode() === 'edit') {
-      <app-ui-date-input
-        [value]="newStartDateDraft()"
-        (valueChanged)="newStartDateDraft.set($event)" />
-      <app-ui-select
-        [options]="contractTypeOptions()"
-        [value]="contractCodeDraft()"
-        (valueChanged)="updateContractCode($event)" />
-      <app-ui-select
-        [options]="subtypeOptions()"
-        [value]="contractSubtypeCodeDraft()"
-        [disabled]="subtypeDisabled()"
-        (valueChanged)="contractSubtypeCodeDraft.set($event)" />
-    }
+  @if (modalMode() === 'edit') {
+    <app-ui-date-input
+      [value]="newStartDateDraft()"
+      (valueChanged)="newStartDateDraft.set($event)"
+    />
+    <app-ui-select
+      [options]="contractTypeOptions()"
+      [value]="contractCodeDraft()"
+      (valueChanged)="updateContractCode($event)"
+    />
+    <app-ui-select
+      [options]="subtypeOptions()"
+      [value]="contractSubtypeCodeDraft()"
+      [disabled]="subtypeDisabled()"
+      (valueChanged)="contractSubtypeCodeDraft.set($event)"
+    />
+  }
 
-    @if (modalMode() === 'close') {
-      <app-ui-date-input
-        [value]="endDateDraft()"
-        (valueChanged)="endDateDraft.set($event)" />
-    }
-  </app-period-modal>
+  @if (modalMode() === 'close') {
+    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+  }
+</app-period-modal>

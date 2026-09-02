@@ -58,7 +58,9 @@ describe('EmployeeDetailStore', () => {
     store.loadEmployeeDetailByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeDetailByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeDetailByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeDetailByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.selectedEmployeeDetail()).toEqual(employeeDetailFixture);
     expect(store.loadingDetail()).toBe(false);
     expect(store.detailError()).toBeNull();

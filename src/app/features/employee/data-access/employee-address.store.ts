@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeeAddressModel } from '../models/employee-address.model';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { AddressCreateDraft, AddressEditCurrentDraft } from './employee-address-edit.mapper';
 import { EmployeeAddressGateway } from './employee-address.gateway';
 import { EmployeeAddressReadGateway } from './employee-address-read.gateway';
@@ -98,7 +101,11 @@ export class EmployeeAddressStore {
       });
   }
 
-  updateAddress(employeeKey: EmployeeBusinessKey, addressNumber: number, draft: AddressEditCurrentDraft): void {
+  updateAddress(
+    employeeKey: EmployeeBusinessKey,
+    addressNumber: number,
+    draft: AddressEditCurrentDraft,
+  ): void {
     if (this.mutatingState()) {
       return;
     }
@@ -125,7 +132,10 @@ export class EmployeeAddressStore {
       });
   }
 
-  private loadAddressesByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadAddressesByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

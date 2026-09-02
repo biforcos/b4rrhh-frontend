@@ -6,7 +6,10 @@ import { Router } from '@angular/router';
 import { DefaultService } from '../../../../../core/api/generated/api/default.service';
 import { EmployeeFieldCatalogService } from '../../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../../data-access/employee-global-message.store';
-import { EmployeeHiringStore, HireEmployeeErrorCode } from '../../../data-access/employee-hiring.store';
+import {
+  EmployeeHiringStore,
+  HireEmployeeErrorCode,
+} from '../../../data-access/employee-hiring.store';
 import { HireEmployeeResult } from '../../../models/employee-hiring.model';
 import { employeeTexts } from '../../../employee.texts';
 import { HireEmployeePageComponent } from './hire-employee-page.component';
@@ -118,7 +121,9 @@ describe('HireEmployeePageComponent', () => {
 
     expect(hiringStore.hire).not.toHaveBeenCalled();
     expect(component.form.controls.workingTimePercentage.touched).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain(employeeTexts.hireEmployeeWorkingTimeRequiredMessage);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      employeeTexts.hireEmployeeWorkingTimeRequiredMessage,
+    );
   });
 
   it('submits the working time percentage inside the local hire draft', () => {
@@ -179,7 +184,10 @@ describe('HireEmployeePageComponent', () => {
       companyCode: 'ES01',
     });
 
-    expect(fieldCatalogServiceMock.loadWorkCenterOptionsByCompany).toHaveBeenCalledWith('ESP', 'ES01');
+    expect(fieldCatalogServiceMock.loadWorkCenterOptionsByCompany).toHaveBeenCalledWith(
+      'ESP',
+      'ES01',
+    );
   });
 
   it('renders the working time result summary without exposing technical ids', () => {
@@ -204,7 +212,9 @@ describe('HireEmployeePageComponent', () => {
     });
     fixture.detectChanges();
 
-    const summary = fixture.nativeElement.querySelector('[data-testid="hire-working-time-summary"]') as HTMLElement;
+    const summary = fixture.nativeElement.querySelector(
+      '[data-testid="hire-working-time-summary"]',
+    ) as HTMLElement;
 
     expect(summary).not.toBeNull();
     expect(summary.textContent).toContain('75% jornada');

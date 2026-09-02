@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeeIdentifierModel } from '../models/employee-identifier.model';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { IdentifierDraft } from './employee-identifier-edit.mapper';
 import { EmployeeIdentifierGateway } from './employee-identifier.gateway';
 import { EmployeeIdentifierReadGateway } from './employee-identifier-read.gateway';
@@ -129,7 +132,10 @@ export class EmployeeIdentifierStore {
       });
   }
 
-  private loadIdentifiersByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadIdentifiersByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

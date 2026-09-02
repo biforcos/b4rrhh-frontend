@@ -37,7 +37,13 @@ interface ContractPeriodRow extends TemporalSectionRow {
 @Component({
   selector: 'app-employee-contract-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    UiCatalogLabelComponent,
+  ],
   templateUrl: './employee-contract-section.component.html',
 })
 export class EmployeeContractSectionComponent {
@@ -74,7 +80,9 @@ export class EmployeeContractSectionComponent {
       canDelete: false,
       contractCode: c.contractCode,
       contractTypeLabel:
-        c.contractTypeName ?? this.contractTypeOptionsState().find((o) => o.value === c.contractCode)?.label ?? null,
+        c.contractTypeName ??
+        this.contractTypeOptionsState().find((o) => o.value === c.contractCode)?.label ??
+        null,
       contractSubtypeCode: c.contractSubtypeCode,
       contractSubtypeLabel: c.contractSubtypeName ?? null,
     })),
@@ -115,7 +123,9 @@ export class EmployeeContractSectionComponent {
       );
     if (mode === 'edit')
       return (
-        !!this.newStartDateDraft() && !!this.contractCodeDraft() && !!this.contractSubtypeCodeDraft()
+        !!this.newStartDateDraft() &&
+        !!this.contractCodeDraft() &&
+        !!this.contractSubtypeCodeDraft()
       );
     return !!this.endDateDraft();
   });

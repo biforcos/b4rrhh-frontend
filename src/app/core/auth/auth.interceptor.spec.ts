@@ -62,7 +62,12 @@ describe('authInterceptor', () => {
 
     const request = httpTestingController.expectOne('/dev/auth/token');
     expect(request.request.headers.has('Authorization')).toBe(false);
-    request.flush({ tokenType: 'Bearer', token: 'next-token', subject: 'bifor', expiresAt: '2099-01-01T00:00:00.000Z' });
+    request.flush({
+      tokenType: 'Bearer',
+      token: 'next-token',
+      subject: 'bifor',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    });
   });
 
   it('does NOT add Authorization header for absolute MinIO URLs', () => {

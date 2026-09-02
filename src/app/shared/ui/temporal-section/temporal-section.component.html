@@ -45,7 +45,9 @@
             [class.temporal-section__row--active]="row.isActive"
             [class.temporal-section__row--closed]="!row.isActive"
           >
-            <td class="temporal-section__td temporal-section__td--period">{{ formatPeriod(row) }}</td>
+            <td class="temporal-section__td temporal-section__td--period">
+              {{ formatPeriod(row) }}
+            </td>
             @if (cellContentTemplate) {
               <ng-container
                 [ngTemplateOutlet]="cellContentTemplate"
@@ -53,7 +55,10 @@
               />
             }
             <td class="temporal-section__td">
-              <span class="temporal-section__badge" [class.temporal-section__badge--active]="row.isActive">
+              <span
+                class="temporal-section__badge"
+                [class.temporal-section__badge--active]="row.isActive"
+              >
                 {{ row.isActive ? 'Vigente' : 'Cerrado' }}
               </span>
             </td>

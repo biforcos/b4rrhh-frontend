@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { Observable, take } from 'rxjs';
 
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
@@ -72,7 +80,8 @@ export class EmployeePresenceSectionComponent {
       entryReasonName: p.entryReasonName ?? this.entryReasonLabels()[p.entryReasonCode] ?? null,
       exitReasonCode: p.exitReasonCode,
       exitReasonName:
-        p.exitReasonName ?? (p.exitReasonCode ? (this.exitReasonLabels()[p.exitReasonCode] ?? null) : null),
+        p.exitReasonName ??
+        (p.exitReasonCode ? (this.exitReasonLabels()[p.exitReasonCode] ?? null) : null),
     };
   }
 
@@ -84,9 +93,21 @@ export class EmployeePresenceSectionComponent {
       this.exitReasonLabels.set({});
       return;
     }
-    this.loadInto(requestId, this.companyLabels, this.fieldCatalogService.loadPresenceCompanyOptions(ruleSystemCode));
-    this.loadInto(requestId, this.entryReasonLabels, this.fieldCatalogService.loadPresenceEntryReasonOptions(ruleSystemCode));
-    this.loadInto(requestId, this.exitReasonLabels, this.fieldCatalogService.loadPresenceExitReasonOptions(ruleSystemCode));
+    this.loadInto(
+      requestId,
+      this.companyLabels,
+      this.fieldCatalogService.loadPresenceCompanyOptions(ruleSystemCode),
+    );
+    this.loadInto(
+      requestId,
+      this.entryReasonLabels,
+      this.fieldCatalogService.loadPresenceEntryReasonOptions(ruleSystemCode),
+    );
+    this.loadInto(
+      requestId,
+      this.exitReasonLabels,
+      this.fieldCatalogService.loadPresenceExitReasonOptions(ruleSystemCode),
+    );
   }
 
   private loadInto(

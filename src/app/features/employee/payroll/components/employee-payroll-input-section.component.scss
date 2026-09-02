@@ -30,7 +30,9 @@
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  transition: background 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
 }
 
 .employee-payroll-input-section__period-btn:hover:not(:disabled) {

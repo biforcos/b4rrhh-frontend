@@ -1,5 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnChanges, SimpleChanges, computed, input, output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnChanges,
+  SimpleChanges,
+  computed,
+  input,
+  output,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
@@ -25,15 +40,26 @@ export class CreateRuleEntityFormComponent implements OnChanges {
   protected readonly texts = catalogTexts;
   protected readonly form = new FormGroup(
     {
-      code: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(30)] }),
-      name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(100)] }),
-      description: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
+      code: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.maxLength(30)],
+      }),
+      name: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.maxLength(100)],
+      }),
+      description: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.maxLength(500)],
+      }),
       startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       endDate: new FormControl('', { nonNullable: true }),
     },
     { validators: [validateDateRange] },
   );
-  protected readonly hasRangeError = computed(() => this.form.touched && this.form.hasError('invalidDateRange'));
+  protected readonly hasRangeError = computed(
+    () => this.form.touched && this.form.hasError('invalidDateRange'),
+  );
   protected readonly appliedResetToken = computed(() => this.resetToken());
 
   constructor() {

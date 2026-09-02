@@ -20,7 +20,10 @@ export class WorkCenterContactClient {
     });
   }
 
-  createContact(key: WorkCenterBusinessKey, request: CreateWorkCenterContactRequest): Observable<WorkCenterContactResponse> {
+  createContact(
+    key: WorkCenterBusinessKey,
+    request: CreateWorkCenterContactRequest,
+  ): Observable<WorkCenterContactResponse> {
     return this.api.createWorkCenterContact({
       ruleSystemCode: key.ruleSystemCode,
       workCenterCode: key.workCenterCode,

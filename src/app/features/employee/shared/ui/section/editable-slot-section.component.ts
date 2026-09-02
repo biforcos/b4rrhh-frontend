@@ -1,5 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, TemplateRef, computed, contentChild, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  computed,
+  contentChild,
+  input,
+  output,
+} from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { UiButtonComponent } from '../../../../../shared/ui/button/ui-button.component';
@@ -40,7 +48,14 @@ const emptyDraft: SlotDraft<string> = {
 @Component({
   selector: 'app-editable-slot-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeeSectionShellComponent, UiButtonComponent, UiTagComponent, UiSelectComponent, InputTextModule, NgTemplateOutlet],
+  imports: [
+    EmployeeSectionShellComponent,
+    UiButtonComponent,
+    UiTagComponent,
+    UiSelectComponent,
+    InputTextModule,
+    NgTemplateOutlet,
+  ],
   templateUrl: './editable-slot-section.component.html',
   styleUrl: './editable-slot-section.component.scss',
 })
@@ -73,20 +88,25 @@ export class EditableSlotSectionComponent {
   readonly createSubmitted = output<SlotDraft<string>>();
   readonly editSubmitted = output<SlotEditSubmission<string>>();
 
-  protected readonly customCreateFormTemplate = contentChild<TemplateRef<unknown>>('slotCreateForm');
+  protected readonly customCreateFormTemplate =
+    contentChild<TemplateRef<unknown>>('slotCreateForm');
   protected readonly customEditFormTemplate = contentChild<TemplateRef<unknown>>('slotEditForm');
 
   protected readonly isViewMode = computed(() => this.displayMode() === 'view');
   protected readonly isManageMode = computed(() => this.displayMode() === 'manage');
   protected readonly isCreating = computed(() => this.displayMode() === 'creating');
-  protected readonly isEditing = computed(() => this.displayMode() === 'editing' && this.editingKey() !== null);
+  protected readonly isEditing = computed(
+    () => this.displayMode() === 'editing' && this.editingKey() !== null,
+  );
   protected readonly isConfirmingDelete = computed(
     () => this.displayMode() === 'confirmingDelete' && this.deletingKey() !== null,
   );
   protected readonly hasRows = computed(() => this.rows().length > 0);
   protected readonly showEmpty = computed(() => !this.hasRows() && !this.isCreating());
   protected readonly canUseKeySelect = computed(() => this.availableKeys().length > 0);
-  protected readonly canManage = computed(() => this.canCreate() || this.canEdit() || this.canDelete());
+  protected readonly canManage = computed(
+    () => this.canCreate() || this.canEdit() || this.canDelete(),
+  );
   protected readonly showManageAction = computed(
     () => this.isViewMode() && this.canManage() && !this.state().busy,
   );
@@ -105,9 +125,15 @@ export class EditableSlotSectionComponent {
     const hasValidValue = this.normalizeValue(draft.value).length > 0;
     return hasValidKey && hasValidValue;
   });
-  protected readonly isEditDraftValid = computed(() => this.normalizeValue(this.draft().value).length > 0);
-  protected readonly hasCustomCreateForm = computed(() => this.customCreateFormTemplate() !== undefined);
-  protected readonly hasCustomEditForm = computed(() => this.customEditFormTemplate() !== undefined);
+  protected readonly isEditDraftValid = computed(
+    () => this.normalizeValue(this.draft().value).length > 0,
+  );
+  protected readonly hasCustomCreateForm = computed(
+    () => this.customCreateFormTemplate() !== undefined,
+  );
+  protected readonly hasCustomEditForm = computed(
+    () => this.customEditFormTemplate() !== undefined,
+  );
   protected readonly resolvedCreateSubmitEnabled = computed(
     () => this.createSubmitEnabled() ?? this.isDraftValid(),
   );

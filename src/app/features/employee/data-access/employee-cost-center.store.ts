@@ -3,13 +3,19 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeCostCenterWindowModel } from '../models/employee-cost-center.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { EmployeeCostCenterGateway } from './employee-cost-center.gateway';
 import {
   CostCenterDistributionCreateDraft,
   CostCenterDistributionReplaceDraft,
 } from './employee-cost-center.mapper';
-import { EmployeeCostCenterErrorCode, mapEmployeeCostCenterErrorCode } from './employee-cost-center-error.mapper';
+import {
+  EmployeeCostCenterErrorCode,
+  mapEmployeeCostCenterErrorCode,
+} from './employee-cost-center-error.mapper';
 
 @Injectable({
   providedIn: 'root',
@@ -44,7 +50,10 @@ export class EmployeeCostCenterStore {
     this.loadCostCentersInternal(key, false);
   }
 
-  createDistribution(employeeKey: EmployeeBusinessKey, draft: CostCenterDistributionCreateDraft): void {
+  createDistribution(
+    employeeKey: EmployeeBusinessKey,
+    draft: CostCenterDistributionCreateDraft,
+  ): void {
     if (this.mutatingState()) return;
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
     this.startMutation();
@@ -58,7 +67,10 @@ export class EmployeeCostCenterStore {
       });
   }
 
-  replaceDistribution(employeeKey: EmployeeBusinessKey, draft: CostCenterDistributionReplaceDraft): void {
+  replaceDistribution(
+    employeeKey: EmployeeBusinessKey,
+    draft: CostCenterDistributionReplaceDraft,
+  ): void {
     if (this.mutatingState()) return;
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
     this.startMutation();
@@ -92,7 +104,10 @@ export class EmployeeCostCenterStore {
     this.successState.set(null);
   }
 
-  private handleMutationSuccess(type: 'created' | 'replaced' | 'closed', key: EmployeeBusinessKey): void {
+  private handleMutationSuccess(
+    type: 'created' | 'replaced' | 'closed',
+    key: EmployeeBusinessKey,
+  ): void {
     this.mutatingState.set(false);
     this.successState.set(type);
     this.loadCostCentersInternal(key, true);

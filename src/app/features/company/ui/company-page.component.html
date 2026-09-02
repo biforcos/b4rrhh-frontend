@@ -13,16 +13,25 @@
   <section slot="detail" class="company-page__detail-slot">
     @if (store.hasActiveDetail()) {
       @if (store.detailLoading()) {
-        <app-section-card [title]="texts.detailPanelTitle" [description]="texts.detailLoadingMessage">
-          <p class="company-page__feedback company-page__feedback--loading">{{ texts.detailLoadingMessage }}</p>
+        <app-section-card
+          [title]="texts.detailPanelTitle"
+          [description]="texts.detailLoadingMessage"
+        >
+          <p class="company-page__feedback company-page__feedback--loading">
+            {{ texts.detailLoadingMessage }}
+          </p>
         </app-section-card>
       } @else if (store.detailError() === 'not-found') {
         <app-section-card [title]="texts.detailPanelTitle">
-          <p class="company-page__feedback company-page__feedback--error">{{ texts.detailNotFoundMessage }}</p>
+          <p class="company-page__feedback company-page__feedback--error">
+            {{ texts.detailNotFoundMessage }}
+          </p>
         </app-section-card>
       } @else if (store.detailError()) {
         <app-section-card [title]="texts.detailPanelTitle">
-          <p class="company-page__feedback company-page__feedback--error">{{ texts.detailLoadFailedMessage }}</p>
+          <p class="company-page__feedback company-page__feedback--error">
+            {{ texts.detailLoadFailedMessage }}
+          </p>
         </app-section-card>
       } @else {
         <app-company-detail-panel
@@ -36,7 +45,9 @@
           (cancelled)="onFormCancel()"
         />
         <app-display-name-format-card [ruleSystemCode]="store.selectedKey()!.ruleSystemCode" />
-        <app-employee-numbering-config-card [ruleSystemCode]="store.selectedKey()!.ruleSystemCode" />
+        <app-employee-numbering-config-card
+          [ruleSystemCode]="store.selectedKey()!.ruleSystemCode"
+        />
       }
     } @else {
       <app-section-card [title]="texts.detailPanelTitle">

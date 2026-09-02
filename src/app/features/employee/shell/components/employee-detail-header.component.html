@@ -1,4 +1,7 @@
-<section class="employee-detail-header" [attr.aria-label]="editorOnly() ? texts.detailHeaderEditPopoverTitle : texts.detailPanelTitle">
+<section
+  class="employee-detail-header"
+  [attr.aria-label]="editorOnly() ? texts.detailHeaderEditPopoverTitle : texts.detailPanelTitle"
+>
   @if (!editorOnly()) {
     <div class="employee-detail-header__identity-row">
       <div class="employee-detail-header__identity-main">
@@ -16,16 +19,26 @@
           />
         </div>
 
-        <div class="employee-detail-header__keyline" [attr.aria-label]="texts.currentEmployeeKeyLabel">
-          <span class="employee-detail-header__identity-chip employee-detail-header__identity-chip--primary">
+        <div
+          class="employee-detail-header__keyline"
+          [attr.aria-label]="texts.currentEmployeeKeyLabel"
+        >
+          <span
+            class="employee-detail-header__identity-chip employee-detail-header__identity-chip--primary"
+          >
             {{ employee().employeeNumber }}
           </span>
-          <span class="employee-detail-header__identity-chip">{{ employee().employeeTypeCode }}</span>
+          <span class="employee-detail-header__identity-chip">{{
+            employee().employeeTypeCode
+          }}</span>
           <span class="employee-detail-header__identity-chip">{{ employee().ruleSystemCode }}</span>
         </div>
       </div>
 
-      <div class="employee-detail-header__avatar" [attr.aria-label]="texts.detailAvatarPlaceholderAriaLabel">
+      <div
+        class="employee-detail-header__avatar"
+        [attr.aria-label]="texts.detailAvatarPlaceholderAriaLabel"
+      >
         @if (employee().photoUrl) {
           <img
             class="employee-detail-header__avatar-photo"
@@ -51,7 +64,9 @@
         <header class="employee-detail-header__drawer-header">
           <div class="employee-detail-header__drawer-title-row">
             <span class="employee-detail-header__drawer-eyebrow">Empleado</span>
-            <h3 class="employee-detail-header__drawer-title">{{ texts.detailHeaderEditPopoverTitle }}</h3>
+            <h3 class="employee-detail-header__drawer-title">
+              {{ texts.detailHeaderEditPopoverTitle }}
+            </h3>
           </div>
           <button
             class="employee-detail-header__drawer-close"
@@ -71,24 +86,44 @@
             (ngSubmit)="submitIdentityUpdate()"
           >
             <label class="employee-detail-header__field">
-              <span class="employee-detail-header__field-label">{{ texts.detailHeaderFirstNameLabel }}</span>
+              <span class="employee-detail-header__field-label">{{
+                texts.detailHeaderFirstNameLabel
+              }}</span>
               <input pInputText type="text" formControlName="firstName" autocomplete="given-name" />
             </label>
 
             <label class="employee-detail-header__field">
-              <span class="employee-detail-header__field-label">{{ texts.detailHeaderLastName1Label }}</span>
-              <input pInputText type="text" formControlName="lastName1" autocomplete="family-name" />
+              <span class="employee-detail-header__field-label">{{
+                texts.detailHeaderLastName1Label
+              }}</span>
+              <input
+                pInputText
+                type="text"
+                formControlName="lastName1"
+                autocomplete="family-name"
+              />
             </label>
 
             <label class="employee-detail-header__field">
-              <span class="employee-detail-header__field-label">{{ texts.detailHeaderLastName2Label }}</span>
+              <span class="employee-detail-header__field-label">{{
+                texts.detailHeaderLastName2Label
+              }}</span>
               <input pInputText type="text" formControlName="lastName2" autocomplete="off" />
             </label>
 
             <label class="employee-detail-header__field">
-              <span class="employee-detail-header__field-label">{{ texts.detailHeaderPreferredNameLabel }}</span>
-              <input pInputText type="text" formControlName="preferredName" autocomplete="nickname" />
-              <span class="employee-detail-header__field-hint">Deja vacío para usar el formato configurado en la empresa</span>
+              <span class="employee-detail-header__field-label">{{
+                texts.detailHeaderPreferredNameLabel
+              }}</span>
+              <input
+                pInputText
+                type="text"
+                formControlName="preferredName"
+                autocomplete="nickname"
+              />
+              <span class="employee-detail-header__field-hint"
+                >Deja vacío para usar el formato configurado en la empresa</span
+              >
             </label>
 
             <div class="employee-detail-header__edit-actions">

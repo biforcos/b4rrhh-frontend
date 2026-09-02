@@ -69,7 +69,9 @@ export class RuleSystemFormComponent {
     }
 
     this.form.controls.code.setValidators(
-      mode === 'create' ? [Validators.required, Validators.maxLength(5)] : [Validators.maxLength(5)],
+      mode === 'create'
+        ? [Validators.required, Validators.maxLength(5)]
+        : [Validators.maxLength(5)],
     );
     this.form.controls.name.setValidators([Validators.required, Validators.maxLength(100)]);
     this.form.controls.countryCode.setValidators([

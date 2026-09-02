@@ -20,7 +20,9 @@ export function buildEmptyWorkCenterFormValue(): WorkCenterFormValue {
   };
 }
 
-export function buildWorkCenterFormValueFromDetail(detail: WorkCenterDetailModel): WorkCenterFormValue {
+export function buildWorkCenterFormValueFromDetail(
+  detail: WorkCenterDetailModel,
+): WorkCenterFormValue {
   return {
     ruleSystemCode: detail.ruleSystemCode,
     workCenterCode: detail.workCenterCode,
@@ -36,7 +38,9 @@ export function buildWorkCenterFormValueFromDetail(detail: WorkCenterDetailModel
   };
 }
 
-export function mapWorkCenterFormValueToCreateRequest(formValue: WorkCenterFormValue): CreateWorkCenterRequest {
+export function mapWorkCenterFormValueToCreateRequest(
+  formValue: WorkCenterFormValue,
+): CreateWorkCenterRequest {
   return {
     ruleSystemCode: normalizeRequired(formValue.ruleSystemCode),
     workCenterCode: normalizeRequired(formValue.workCenterCode),
@@ -48,7 +52,9 @@ export function mapWorkCenterFormValueToCreateRequest(formValue: WorkCenterFormV
   };
 }
 
-export function mapWorkCenterFormValueToUpdateRequest(formValue: WorkCenterFormValue): UpdateWorkCenterRequest {
+export function mapWorkCenterFormValueToUpdateRequest(
+  formValue: WorkCenterFormValue,
+): UpdateWorkCenterRequest {
   return {
     name: normalizeText(formValue.name),
     description: normalizeOptional(formValue.description),
@@ -66,7 +72,9 @@ function mapAddress(formValue: WorkCenterFormValue): WorkCenterAddress | undefin
     countryCode: normalizeOptionalCode(formValue.countryCode),
   };
 
-  return Object.values(address).some((value) => value != null && `${value}`.trim().length > 0) ? address : undefined;
+  return Object.values(address).some((value) => value != null && `${value}`.trim().length > 0)
+    ? address
+    : undefined;
 }
 
 function normalizeRequired(value: string): string {

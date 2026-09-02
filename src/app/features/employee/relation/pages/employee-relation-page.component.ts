@@ -104,7 +104,9 @@ export class EmployeeRelationPageComponent {
 
     effect((onCleanup) => {
       const messages = this.buildGlobalMessages();
-      untracked(() => this.globalMessageService.setSourceMessages('employee-relation-page', messages));
+      untracked(() =>
+        this.globalMessageService.setSourceMessages('employee-relation-page', messages),
+      );
       onCleanup(() =>
         untracked(() => this.globalMessageService.clearSourceMessages('employee-relation-page')),
       );
@@ -141,23 +143,45 @@ export class EmployeeRelationPageComponent {
     const messages: Array<Omit<GlobalUiMessage, 'createdAt'>> = [];
     const t = this.texts;
     const sticky = (id: string, text: string, anchor: EmployeeRelationAnchor, label: string) =>
-      messages.push({ id, level: 'error', text, sectionId: anchor, sectionLabel: label, sticky: true });
+      messages.push({
+        id,
+        level: 'error',
+        text,
+        sectionId: anchor,
+        sectionLabel: label,
+        sticky: true,
+      });
 
     if (this.presenceStore.error() === 'request-failed') {
-      sticky('presence-load-error', t.presenceLoadFailedMessage, 'presence', t.lifelineLanePresence);
+      sticky(
+        'presence-load-error',
+        t.presenceLoadFailedMessage,
+        'presence',
+        t.lifelineLanePresence,
+      );
     }
     const contractError = this.mapContractErrorMessage(this.contractStore.error());
     if (contractError) sticky('contract-error', contractError, 'contract', t.lifelineLaneContract);
     const workingTimeError = this.mapWorkingTimeErrorMessage(this.workingTimeStore.error());
-    if (workingTimeError) sticky('working-time-error', workingTimeError, 'working-time', t.lifelineLaneWorkingTime);
-    const laborClassificationError = this.mapLaborClassificationErrorMessage(this.laborClassificationStore.error());
+    if (workingTimeError)
+      sticky('working-time-error', workingTimeError, 'working-time', t.lifelineLaneWorkingTime);
+    const laborClassificationError = this.mapLaborClassificationErrorMessage(
+      this.laborClassificationStore.error(),
+    );
     if (laborClassificationError) {
-      sticky('labor-classification-error', laborClassificationError, 'classification', t.lifelineLaneClassification);
+      sticky(
+        'labor-classification-error',
+        laborClassificationError,
+        'classification',
+        t.lifelineLaneClassification,
+      );
     }
     const workCenterError = this.mapWorkCenterErrorMessage(this.workCenterStore.error());
-    if (workCenterError) sticky('work-center-error', workCenterError, 'work-center', t.lifelineLaneWorkCenter);
+    if (workCenterError)
+      sticky('work-center-error', workCenterError, 'work-center', t.lifelineLaneWorkCenter);
     const costCenterError = this.mapCostCenterErrorMessage(this.costCenterStore.error());
-    if (costCenterError) sticky('cost-center-error', costCenterError, 'cost-center', t.costCenterSectionTitle);
+    if (costCenterError)
+      sticky('cost-center-error', costCenterError, 'cost-center', t.costCenterSectionTitle);
     return messages;
   }
 
@@ -166,26 +190,39 @@ export class EmployeeRelationPageComponent {
 
     const contractSuccess = this.contractStore.success();
     if (contractSuccess && contractSuccess !== this.previousContractSuccess) {
-      this.publishTransientSuccess(`contract-${contractSuccess}`, 'contract', t.lifelineLaneContract, {
-        replaced: t.contractSectionReplaceSuccessMessage,
-        corrected: t.contractSectionCorrectSuccessMessage,
-        closed: t.contractSectionCloseSuccessMessage,
-      }[contractSuccess]);
+      this.publishTransientSuccess(
+        `contract-${contractSuccess}`,
+        'contract',
+        t.lifelineLaneContract,
+        {
+          replaced: t.contractSectionReplaceSuccessMessage,
+          corrected: t.contractSectionCorrectSuccessMessage,
+          closed: t.contractSectionCloseSuccessMessage,
+        }[contractSuccess],
+      );
     }
     this.previousContractSuccess = contractSuccess;
 
     const workingTimeSuccess = this.workingTimeStore.success();
     if (workingTimeSuccess && workingTimeSuccess !== this.previousWorkingTimeSuccess) {
-      this.publishTransientSuccess(`working-time-${workingTimeSuccess}`, 'working-time', t.lifelineLaneWorkingTime, {
-        created: t.workingTimeSectionCreateSuccessMessage,
-        updated: t.workingTimeSectionUpdateSuccessMessage,
-        closed: t.workingTimeSectionCloseSuccessMessage,
-      }[workingTimeSuccess]);
+      this.publishTransientSuccess(
+        `working-time-${workingTimeSuccess}`,
+        'working-time',
+        t.lifelineLaneWorkingTime,
+        {
+          created: t.workingTimeSectionCreateSuccessMessage,
+          updated: t.workingTimeSectionUpdateSuccessMessage,
+          closed: t.workingTimeSectionCloseSuccessMessage,
+        }[workingTimeSuccess],
+      );
     }
     this.previousWorkingTimeSuccess = workingTimeSuccess;
 
     const laborClassificationSuccess = this.laborClassificationStore.success();
-    if (laborClassificationSuccess && laborClassificationSuccess !== this.previousLaborClassificationSuccess) {
+    if (
+      laborClassificationSuccess &&
+      laborClassificationSuccess !== this.previousLaborClassificationSuccess
+    ) {
       this.publishTransientSuccess(
         `labor-classification-${laborClassificationSuccess}`,
         'classification',
@@ -201,22 +238,32 @@ export class EmployeeRelationPageComponent {
 
     const workCenterSuccess = this.workCenterStore.success();
     if (workCenterSuccess && workCenterSuccess !== this.previousWorkCenterSuccess) {
-      this.publishTransientSuccess(`work-center-${workCenterSuccess}`, 'work-center', t.lifelineLaneWorkCenter, {
-        created: t.workCenterSectionCreateSuccessMessage,
-        corrected: t.workCenterSectionCorrectSuccessMessage,
-        closed: t.workCenterSectionCloseSuccessMessage,
-        deleted: t.workCenterSectionDeleteSuccessMessage,
-      }[workCenterSuccess]);
+      this.publishTransientSuccess(
+        `work-center-${workCenterSuccess}`,
+        'work-center',
+        t.lifelineLaneWorkCenter,
+        {
+          created: t.workCenterSectionCreateSuccessMessage,
+          corrected: t.workCenterSectionCorrectSuccessMessage,
+          closed: t.workCenterSectionCloseSuccessMessage,
+          deleted: t.workCenterSectionDeleteSuccessMessage,
+        }[workCenterSuccess],
+      );
     }
     this.previousWorkCenterSuccess = workCenterSuccess;
 
     const costCenterSuccess = this.costCenterStore.success();
     if (costCenterSuccess && costCenterSuccess !== this.previousCostCenterSuccess) {
-      this.publishTransientSuccess(`cost-center-${costCenterSuccess}`, 'cost-center', t.costCenterSectionTitle, {
-        created: t.costCenterSectionCreateSuccessMessage,
-        replaced: t.costCenterSectionReplaceSuccessMessage,
-        closed: t.costCenterSectionCloseSuccessMessage,
-      }[costCenterSuccess]);
+      this.publishTransientSuccess(
+        `cost-center-${costCenterSuccess}`,
+        'cost-center',
+        t.costCenterSectionTitle,
+        {
+          created: t.costCenterSectionCreateSuccessMessage,
+          replaced: t.costCenterSectionReplaceSuccessMessage,
+          closed: t.costCenterSectionCloseSuccessMessage,
+        }[costCenterSuccess],
+      );
     }
     this.previousCostCenterSuccess = costCenterSuccess;
   }
@@ -238,53 +285,84 @@ export class EmployeeRelationPageComponent {
 
   private mapContractErrorMessage(errorCode: string | null): string | null {
     if (!errorCode) return null;
-    return errorCode === 'request-failed' ? this.texts.contractSectionRequestFailedMessage : errorCode;
+    return errorCode === 'request-failed'
+      ? this.texts.contractSectionRequestFailedMessage
+      : errorCode;
   }
 
   private mapWorkingTimeErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
     switch (errorCode) {
-      case 'WORKING_TIME_OVERLAP': return t.workingTimeSectionOverlapMessage;
-      case 'WORKING_TIME_OUTSIDE_PRESENCE': return t.workingTimeSectionOutsidePresenceMessage;
-      case 'WORKING_TIME_INVALID_PERCENTAGE': return t.workingTimeSectionInvalidPercentageMessage;
-      case 'WORKING_TIME_INVALID_PERIOD': return t.workingTimeSectionInvalidPeriodMessage;
-      case 'WORKING_TIME_ALREADY_CLOSED': return t.workingTimeSectionAlreadyClosedMessage;
-      case 'WORKING_TIME_NOT_FOUND': return t.workingTimeSectionNotFoundMessage;
-      case 'WORKING_TIME_NUMBER_CONFLICT': return t.workingTimeSectionNumberConflictMessage;
-      case 'request-failed': return t.workingTimeSectionRequestFailedMessage;
-      default: return null;
+      case 'WORKING_TIME_OVERLAP':
+        return t.workingTimeSectionOverlapMessage;
+      case 'WORKING_TIME_OUTSIDE_PRESENCE':
+        return t.workingTimeSectionOutsidePresenceMessage;
+      case 'WORKING_TIME_INVALID_PERCENTAGE':
+        return t.workingTimeSectionInvalidPercentageMessage;
+      case 'WORKING_TIME_INVALID_PERIOD':
+        return t.workingTimeSectionInvalidPeriodMessage;
+      case 'WORKING_TIME_ALREADY_CLOSED':
+        return t.workingTimeSectionAlreadyClosedMessage;
+      case 'WORKING_TIME_NOT_FOUND':
+        return t.workingTimeSectionNotFoundMessage;
+      case 'WORKING_TIME_NUMBER_CONFLICT':
+        return t.workingTimeSectionNumberConflictMessage;
+      case 'request-failed':
+        return t.workingTimeSectionRequestFailedMessage;
+      default:
+        return null;
     }
   }
 
   private mapLaborClassificationErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
     switch (errorCode) {
-      case 'LABOR_CLASSIFICATION_OVERLAP': return t.laborClassificationSectionOverlapMessage;
-      case 'LABOR_CLASSIFICATION_OUTSIDE_PRESENCE': return t.laborClassificationSectionOutsidePresenceMessage;
-      case 'LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE': return t.laborClassificationSectionIncompleteCoverageMessage;
-      case 'LABOR_CLASSIFICATION_INVALID_PERIOD': return t.laborClassificationSectionInvalidPeriodMessage;
-      case 'LABOR_CLASSIFICATION_ALREADY_CLOSED': return t.laborClassificationSectionAlreadyClosedMessage;
-      case 'LABOR_CLASSIFICATION_NOT_FOUND': return t.laborClassificationSectionNotFoundMessage;
-      case 'AGREEMENT_NOT_FOUND': return t.laborClassificationSectionAgreementNotFoundMessage;
-      case 'AGREEMENT_CATEGORY_NOT_FOUND': return t.laborClassificationSectionAgreementCategoryNotFoundMessage;
-      case 'AGREEMENT_CATEGORY_RELATION_INVALID': return t.laborClassificationSectionAgreementCategoryRelationInvalidMessage;
-      case 'request-failed': return t.laborClassificationSectionRequestFailedMessage;
-      default: return null;
+      case 'LABOR_CLASSIFICATION_OVERLAP':
+        return t.laborClassificationSectionOverlapMessage;
+      case 'LABOR_CLASSIFICATION_OUTSIDE_PRESENCE':
+        return t.laborClassificationSectionOutsidePresenceMessage;
+      case 'LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE':
+        return t.laborClassificationSectionIncompleteCoverageMessage;
+      case 'LABOR_CLASSIFICATION_INVALID_PERIOD':
+        return t.laborClassificationSectionInvalidPeriodMessage;
+      case 'LABOR_CLASSIFICATION_ALREADY_CLOSED':
+        return t.laborClassificationSectionAlreadyClosedMessage;
+      case 'LABOR_CLASSIFICATION_NOT_FOUND':
+        return t.laborClassificationSectionNotFoundMessage;
+      case 'AGREEMENT_NOT_FOUND':
+        return t.laborClassificationSectionAgreementNotFoundMessage;
+      case 'AGREEMENT_CATEGORY_NOT_FOUND':
+        return t.laborClassificationSectionAgreementCategoryNotFoundMessage;
+      case 'AGREEMENT_CATEGORY_RELATION_INVALID':
+        return t.laborClassificationSectionAgreementCategoryRelationInvalidMessage;
+      case 'request-failed':
+        return t.laborClassificationSectionRequestFailedMessage;
+      default:
+        return null;
     }
   }
 
   private mapWorkCenterErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
     switch (errorCode) {
-      case 'WORK_CENTER_OVERLAP': return t.workCenterSectionOverlapMessage;
-      case 'WORK_CENTER_OUTSIDE_PRESENCE': return t.workCenterSectionOutsidePresenceMessage;
-      case 'WORK_CENTER_CATALOG_NOT_FOUND': return t.workCenterSectionCatalogNotFoundMessage;
-      case 'WORK_CENTER_NOT_FOUND': return t.workCenterSectionNotFoundMessage;
-      case 'WORK_CENTER_ALREADY_CLOSED': return t.workCenterSectionAlreadyClosedMessage;
-      case 'WORK_CENTER_INVALID_PERIOD': return t.workCenterSectionFunctionalInvalidPeriodMessage;
-      case 'WORK_CENTER_DELETE_FORBIDDEN_AT_PRESENCE_START': return t.workCenterSectionDeleteForbiddenAtPresenceStartMessage;
-      case 'request-failed': return t.workCenterSectionRequestFailedMessage;
-      default: return null;
+      case 'WORK_CENTER_OVERLAP':
+        return t.workCenterSectionOverlapMessage;
+      case 'WORK_CENTER_OUTSIDE_PRESENCE':
+        return t.workCenterSectionOutsidePresenceMessage;
+      case 'WORK_CENTER_CATALOG_NOT_FOUND':
+        return t.workCenterSectionCatalogNotFoundMessage;
+      case 'WORK_CENTER_NOT_FOUND':
+        return t.workCenterSectionNotFoundMessage;
+      case 'WORK_CENTER_ALREADY_CLOSED':
+        return t.workCenterSectionAlreadyClosedMessage;
+      case 'WORK_CENTER_INVALID_PERIOD':
+        return t.workCenterSectionFunctionalInvalidPeriodMessage;
+      case 'WORK_CENTER_DELETE_FORBIDDEN_AT_PRESENCE_START':
+        return t.workCenterSectionDeleteForbiddenAtPresenceStartMessage;
+      case 'request-failed':
+        return t.workCenterSectionRequestFailedMessage;
+      default:
+        return null;
     }
   }
 

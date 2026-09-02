@@ -19,11 +19,19 @@
   </app-entity-header>
 
   @if (submitSuccess()) {
-    <p-message severity="success" [text]="successMessage!" styleClass="work-center-detail-panel__feedback" />
+    <p-message
+      severity="success"
+      [text]="successMessage!"
+      styleClass="work-center-detail-panel__feedback"
+    />
   }
 
   @if (submitError()) {
-    <p-message severity="error" [text]="submitError()!" styleClass="work-center-detail-panel__feedback" />
+    <p-message
+      severity="error"
+      [text]="submitError()!"
+      styleClass="work-center-detail-panel__feedback"
+    />
   }
 
   <div class="work-center-detail-panel__sections">
@@ -31,24 +39,46 @@
       @if (isViewMode()) {
         <div class="work-center-detail-panel__view-grid">
           <div class="work-center-detail-panel__view-item">
-            <span class="work-center-detail-panel__view-label">{{ texts.fieldWorkCenterCodeLabel }}</span>
-            <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.workCenterCode) }}</span>
+            <span class="work-center-detail-panel__view-label">{{
+              texts.fieldWorkCenterCodeLabel
+            }}</span>
+            <span class="work-center-detail-panel__view-value">{{
+              displayValue(detail()?.workCenterCode)
+            }}</span>
           </div>
           <div class="work-center-detail-panel__view-item">
-            <span class="work-center-detail-panel__view-label">{{ texts.fieldCompanyCodeLabel }}</span>
-            <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.companyCode) }}</span>
+            <span class="work-center-detail-panel__view-label">{{
+              texts.fieldCompanyCodeLabel
+            }}</span>
+            <span class="work-center-detail-panel__view-value">{{
+              displayValue(detail()?.companyCode)
+            }}</span>
           </div>
-          <div class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full">
+          <div
+            class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
+          >
             <span class="work-center-detail-panel__view-label">{{ texts.fieldNameLabel }}</span>
-            <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.name) }}</span>
+            <span class="work-center-detail-panel__view-value">{{
+              displayValue(detail()?.name)
+            }}</span>
           </div>
           <div class="work-center-detail-panel__view-item">
-            <span class="work-center-detail-panel__view-label">{{ texts.fieldStartDateLabel }}</span>
-            <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.startDate) }}</span>
+            <span class="work-center-detail-panel__view-label">{{
+              texts.fieldStartDateLabel
+            }}</span>
+            <span class="work-center-detail-panel__view-value">{{
+              displayValue(detail()?.startDate)
+            }}</span>
           </div>
-          <div class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full">
-            <span class="work-center-detail-panel__view-label">{{ texts.fieldDescriptionLabel }}</span>
-            <span class="work-center-detail-panel__view-value work-center-detail-panel__view-value--soft">
+          <div
+            class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
+          >
+            <span class="work-center-detail-panel__view-label">{{
+              texts.fieldDescriptionLabel
+            }}</span>
+            <span
+              class="work-center-detail-panel__view-value work-center-detail-panel__view-value--soft"
+            >
               {{ detail()?.description?.trim() || texts.detailDescriptionEmpty }}
             </span>
           </div>
@@ -57,14 +87,16 @@
         <div class="work-center-detail-panel__grid">
           <div class="work-center-detail-panel__field">
             <label for="ruleSystemCode" class="work-center-detail-panel__label">
-              {{ texts.fieldRuleSystemCodeLabel }} <span class="work-center-detail-panel__required">*</span>
+              {{ texts.fieldRuleSystemCodeLabel }}
+              <span class="work-center-detail-panel__required">*</span>
             </label>
             <input pInputText id="ruleSystemCode" formControlName="ruleSystemCode" maxlength="5" />
           </div>
 
           <div class="work-center-detail-panel__field">
             <label for="workCenterCode" class="work-center-detail-panel__label">
-              {{ texts.fieldWorkCenterCodeLabel }} <span class="work-center-detail-panel__required">*</span>
+              {{ texts.fieldWorkCenterCodeLabel }}
+              <span class="work-center-detail-panel__required">*</span>
             </label>
             <input pInputText id="workCenterCode" formControlName="workCenterCode" maxlength="30" />
           </div>
@@ -77,19 +109,37 @@
           </div>
 
           <div class="work-center-detail-panel__field work-center-detail-panel__field--full">
-            <label for="description" class="work-center-detail-panel__label">{{ texts.fieldDescriptionLabel }}</label>
-            <textarea pTextarea id="description" formControlName="description" rows="3" maxlength="500"></textarea>
+            <label for="description" class="work-center-detail-panel__label">{{
+              texts.fieldDescriptionLabel
+            }}</label>
+            <textarea
+              pTextarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              maxlength="500"
+            ></textarea>
           </div>
 
           <div class="work-center-detail-panel__field">
             <label for="startDate" class="work-center-detail-panel__label">
-              {{ texts.fieldStartDateLabel }} <span class="work-center-detail-panel__required">*</span>
+              {{ texts.fieldStartDateLabel }}
+              <span class="work-center-detail-panel__required">*</span>
             </label>
-            <p-datepicker inputId="startDate" formControlName="startDate" [showIcon]="true" dateFormat="yy-mm-dd" appendTo="body" [fluid]="true" />
+            <p-datepicker
+              inputId="startDate"
+              formControlName="startDate"
+              [showIcon]="true"
+              dateFormat="yy-mm-dd"
+              appendTo="body"
+              [fluid]="true"
+            />
           </div>
 
           <div class="work-center-detail-panel__field">
-            <label for="companyCode" class="work-center-detail-panel__label">{{ texts.fieldCompanyCodeLabel }}</label>
+            <label for="companyCode" class="work-center-detail-panel__label">{{
+              texts.fieldCompanyCodeLabel
+            }}</label>
             <input pInputText id="companyCode" formControlName="companyCode" maxlength="30" />
           </div>
         </div>
@@ -99,26 +149,46 @@
     <app-section-card [title]="texts.sectionAddressTitle">
       @if (isViewMode()) {
         @if (hasAddress) {
-          <div class="work-center-detail-panel__view-grid work-center-detail-panel__view-grid--address">
-            <div class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full">
+          <div
+            class="work-center-detail-panel__view-grid work-center-detail-panel__view-grid--address"
+          >
+            <div
+              class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
+            >
               <span class="work-center-detail-panel__view-label">{{ texts.fieldStreetLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.address?.street) }}</span>
+              <span class="work-center-detail-panel__view-value">{{
+                displayValue(detail()?.address?.street)
+              }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{ texts.fieldCityLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.address?.city) }}</span>
+              <span class="work-center-detail-panel__view-value">{{
+                displayValue(detail()?.address?.city)
+              }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{ texts.fieldPostalCodeLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.address?.postalCode) }}</span>
+              <span class="work-center-detail-panel__view-label">{{
+                texts.fieldPostalCodeLabel
+              }}</span>
+              <span class="work-center-detail-panel__view-value">{{
+                displayValue(detail()?.address?.postalCode)
+              }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{ texts.fieldRegionCodeLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.address?.regionCode) }}</span>
+              <span class="work-center-detail-panel__view-label">{{
+                texts.fieldRegionCodeLabel
+              }}</span>
+              <span class="work-center-detail-panel__view-value">{{
+                displayValue(detail()?.address?.regionCode)
+              }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{ texts.fieldCountryCodeLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{ displayValue(detail()?.address?.countryCode) }}</span>
+              <span class="work-center-detail-panel__view-label">{{
+                texts.fieldCountryCodeLabel
+              }}</span>
+              <span class="work-center-detail-panel__view-value">{{
+                displayValue(detail()?.address?.countryCode)
+              }}</span>
             </div>
           </div>
         } @else {
@@ -127,23 +197,33 @@
       } @else {
         <div class="work-center-detail-panel__grid work-center-detail-panel__grid--address">
           <div class="work-center-detail-panel__field work-center-detail-panel__field--full">
-            <label for="street" class="work-center-detail-panel__label">{{ texts.fieldStreetLabel }}</label>
+            <label for="street" class="work-center-detail-panel__label">{{
+              texts.fieldStreetLabel
+            }}</label>
             <input pInputText id="street" formControlName="street" maxlength="300" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="city" class="work-center-detail-panel__label">{{ texts.fieldCityLabel }}</label>
+            <label for="city" class="work-center-detail-panel__label">{{
+              texts.fieldCityLabel
+            }}</label>
             <input pInputText id="city" formControlName="city" maxlength="120" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="postalCode" class="work-center-detail-panel__label">{{ texts.fieldPostalCodeLabel }}</label>
+            <label for="postalCode" class="work-center-detail-panel__label">{{
+              texts.fieldPostalCodeLabel
+            }}</label>
             <input pInputText id="postalCode" formControlName="postalCode" maxlength="20" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="regionCode" class="work-center-detail-panel__label">{{ texts.fieldRegionCodeLabel }}</label>
+            <label for="regionCode" class="work-center-detail-panel__label">{{
+              texts.fieldRegionCodeLabel
+            }}</label>
             <input pInputText id="regionCode" formControlName="regionCode" maxlength="30" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="countryCode" class="work-center-detail-panel__label">{{ texts.fieldCountryCodeLabel }}</label>
+            <label for="countryCode" class="work-center-detail-panel__label">{{
+              texts.fieldCountryCodeLabel
+            }}</label>
             <input pInputText id="countryCode" formControlName="countryCode" maxlength="3" />
           </div>
         </div>
@@ -155,10 +235,18 @@
         <p class="work-center-detail-panel__empty-copy">{{ texts.contactsCreateHint }}</p>
       } @else {
         @if (contactSuccessMessage) {
-          <p-message severity="success" [text]="contactSuccessMessage" styleClass="work-center-detail-panel__feedback" />
+          <p-message
+            severity="success"
+            [text]="contactSuccessMessage"
+            styleClass="work-center-detail-panel__feedback"
+          />
         }
         @if (contactSubmitError()) {
-          <p-message severity="error" [text]="contactSubmitError()!" styleClass="work-center-detail-panel__feedback" />
+          <p-message
+            severity="error"
+            [text]="contactSubmitError()!"
+            styleClass="work-center-detail-panel__feedback"
+          />
         }
 
         <div class="work-center-detail-panel__contacts-toolbar">
@@ -174,29 +262,43 @@
         </div>
 
         @if (contactTypeOptionsLoading()) {
-          <p class="work-center-detail-panel__empty-copy">{{ texts.contactsCatalogLoadingMessage }}</p>
+          <p class="work-center-detail-panel__empty-copy">
+            {{ texts.contactsCatalogLoadingMessage }}
+          </p>
         } @else if (contactTypeOptionsError()) {
-          <p class="work-center-detail-panel__empty-copy work-center-detail-panel__empty-copy--error">
+          <p
+            class="work-center-detail-panel__empty-copy work-center-detail-panel__empty-copy--error"
+          >
             {{ contactTypeOptionsError() }}
           </p>
         } @else if (!hasAvailableContactTypeOptions()) {
-          <p class="work-center-detail-panel__empty-copy">{{ texts.contactsCatalogEmptyMessage }}</p>
+          <p class="work-center-detail-panel__empty-copy">
+            {{ texts.contactsCatalogEmptyMessage }}
+          </p>
         }
 
         @if (contactsLoading()) {
           <p class="work-center-detail-panel__empty-copy">{{ texts.contactsLoadingMessage }}</p>
         } @else if (contactsError()) {
-          <p class="work-center-detail-panel__empty-copy work-center-detail-panel__empty-copy--error">
+          <p
+            class="work-center-detail-panel__empty-copy work-center-detail-panel__empty-copy--error"
+          >
             {{ texts.contactsLoadFailedMessage }}
           </p>
         } @else if (contacts().length === 0) {
           <p class="work-center-detail-panel__empty-copy">{{ texts.contactsEmptyMessage }}</p>
         } @else {
-          <div class="work-center-detail-panel__contact-list" role="list" [attr.aria-label]="texts.sectionContactsTitle">
+          <div
+            class="work-center-detail-panel__contact-list"
+            role="list"
+            [attr.aria-label]="texts.sectionContactsTitle"
+          >
             @for (contact of contacts(); track contact.contactNumber) {
               <article
                 class="work-center-detail-panel__contact-card"
-                [class.work-center-detail-panel__contact-card--editing]="isEditingContact(contact.contactNumber)"
+                [class.work-center-detail-panel__contact-card--editing]="
+                  isEditingContact(contact.contactNumber)
+                "
                 role="listitem"
               >
                 <div class="work-center-detail-panel__contact-main">
@@ -208,7 +310,9 @@
                       {{ texts.contactsNumberLabel }} {{ contact.contactNumber }}
                     </span>
                   </div>
-                  <span class="work-center-detail-panel__contact-value">{{ contact.contactValue }}</span>
+                  <span class="work-center-detail-panel__contact-value">{{
+                    contact.contactValue
+                  }}</span>
                 </div>
                 @if (isViewMode()) {
                   <div class="work-center-detail-panel__contact-actions">
@@ -236,13 +340,16 @@
         @if (isViewMode() && isContactEditorVisible()) {
           <div class="work-center-detail-panel__contact-editor" [formGroup]="contactForm">
             <div class="work-center-detail-panel__contact-editor-header">
-              <h3 class="work-center-detail-panel__contact-editor-title">{{ contactEditorTitle() }}</h3>
+              <h3 class="work-center-detail-panel__contact-editor-title">
+                {{ contactEditorTitle() }}
+              </h3>
             </div>
 
             <div class="work-center-detail-panel__grid">
               <div class="work-center-detail-panel__field">
                 <label for="contactTypeCode" class="work-center-detail-panel__label">
-                  {{ texts.contactsTypeLabel }} <span class="work-center-detail-panel__required">*</span>
+                  {{ texts.contactsTypeLabel }}
+                  <span class="work-center-detail-panel__required">*</span>
                 </label>
                 <app-ui-select
                   inputId="contactTypeCode"
@@ -256,9 +363,15 @@
               </div>
               <div class="work-center-detail-panel__field work-center-detail-panel__field--full">
                 <label for="contactValue" class="work-center-detail-panel__label">
-                  {{ texts.contactsValueLabel }} <span class="work-center-detail-panel__required">*</span>
+                  {{ texts.contactsValueLabel }}
+                  <span class="work-center-detail-panel__required">*</span>
                 </label>
-                <input pInputText id="contactValue" formControlName="contactValue" maxlength="300" />
+                <input
+                  pInputText
+                  id="contactValue"
+                  formControlName="contactValue"
+                  maxlength="300"
+                />
               </div>
             </div>
 

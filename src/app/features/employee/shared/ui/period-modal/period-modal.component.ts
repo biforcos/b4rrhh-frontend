@@ -43,5 +43,7 @@ export class PeriodModalComponent {
     }
     this._cancelInFlight = false;
   }
-  onCloseAction(): void { this.closeActionClicked.emit(); }
+  onCloseAction(): void {
+    this.closeActionClicked.emit();
+  }
 }

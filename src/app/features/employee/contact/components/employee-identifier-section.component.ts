@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { take } from 'rxjs';
 
@@ -32,7 +41,13 @@ interface IdentifierRowViewModel {
 @Component({
   selector: 'app-employee-identifier-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SlotSectionComponent, B4IconComponent, UiDateInputComponent, UiSelectComponent, InputTextModule],
+  imports: [
+    SlotSectionComponent,
+    B4IconComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    InputTextModule,
+  ],
   templateUrl: './employee-identifier-section.component.html',
 })
 export class EmployeeIdentifierSectionComponent {
@@ -81,12 +96,18 @@ export class EmployeeIdentifierSectionComponent {
   protected readonly catalogOptionsLoading = this.catalogLoadingState.asReadonly();
   protected readonly editingKey = this.editingKeyState.asReadonly();
   protected readonly deletingKey = this.deletingKeyState.asReadonly();
-  protected readonly isCreateDniInvalid = computed(() => this.isDraftDniInvalid(this.createDraftState()));
-  protected readonly isEditDniInvalid = computed(() => this.isDraftDniInvalid(this.editDraftState()));
+  protected readonly isCreateDniInvalid = computed(() =>
+    this.isDraftDniInvalid(this.createDraftState()),
+  );
+  protected readonly isEditDniInvalid = computed(() =>
+    this.isDraftDniInvalid(this.editDraftState()),
+  );
   protected readonly canSaveCreate = computed(() => {
     const draft = this.createDraftState();
     const normalizedTypeCode = this.normalizeIdentifierTypeCode(draft.key);
-    return normalizedTypeCode.length > 0 && draft.value.trim().length > 0 && !this.isCreateDniInvalid();
+    return (
+      normalizedTypeCode.length > 0 && draft.value.trim().length > 0 && !this.isCreateDniInvalid()
+    );
   });
   protected readonly canSaveEdit = computed(() => {
     const draft = this.editDraftState();
@@ -117,7 +138,11 @@ export class EmployeeIdentifierSectionComponent {
 
     effect((onCleanup) => {
       onCleanup(() => {
-        untracked(() => this.globalMessageService.clearSourceMessages(EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY));
+        untracked(() =>
+          this.globalMessageService.clearSourceMessages(
+            EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+          ),
+        );
       });
     });
 
@@ -354,7 +379,11 @@ export class EmployeeIdentifierSectionComponent {
 
   private findIdentifierByTypeCode(identifierTypeCode: string): EmployeeIdentifierModel | null {
     const normalizedTypeCode = this.normalizeIdentifierTypeCode(identifierTypeCode);
-    return this.identifierStore.identifiers().find((identifier) => identifier.typeCode === normalizedTypeCode) ?? null;
+    return (
+      this.identifierStore
+        .identifiers()
+        .find((identifier) => identifier.typeCode === normalizedTypeCode) ?? null
+    );
   }
 
   private normalizeIdentifierTypeCode(identifierTypeCode: string | null): string {
@@ -491,20 +520,25 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   private publishGlobalFeedback(message: string): void {
-    this.globalMessageService.setSourceMessages(EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY, [
-      {
-        id: 'employee-identifier-section-local-error',
-        level: 'error',
-        text: message,
-        sectionId: 'contact',
-        sectionLabel: this.texts.personalAreaLabel,
-        sticky: true,
-      },
-    ]);
+    this.globalMessageService.setSourceMessages(
+      EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+      [
+        {
+          id: 'employee-identifier-section-local-error',
+          level: 'error',
+          text: message,
+          sectionId: 'contact',
+          sectionLabel: this.texts.personalAreaLabel,
+          sticky: true,
+        },
+      ],
+    );
   }
 
   private clearGlobalFeedback(): void {
-    this.globalMessageService.clearSourceMessages(EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY);
+    this.globalMessageService.clearSourceMessages(
+      EmployeeIdentifierSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+    );
   }
 
   private syncDraftKeyWithAvailableOptions(options: ReadonlyArray<SlotKeyOption<string>>): void {

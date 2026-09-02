@@ -21,11 +21,19 @@ export function mapEmployeeWorkingTimeApiToReadModel(
     return null;
   }
 
-  if (!isFiniteNumber(source.workingTimePercentage) || source.workingTimePercentage <= 0 || source.workingTimePercentage > 100) {
+  if (
+    !isFiniteNumber(source.workingTimePercentage) ||
+    source.workingTimePercentage <= 0 ||
+    source.workingTimePercentage > 100
+  ) {
     return null;
   }
 
-  if (!isFinitePositiveNumber(source.weeklyHours) || !isFinitePositiveNumber(source.dailyHours) || !isFinitePositiveNumber(source.monthlyHours)) {
+  if (
+    !isFinitePositiveNumber(source.weeklyHours) ||
+    !isFinitePositiveNumber(source.dailyHours) ||
+    !isFinitePositiveNumber(source.monthlyHours)
+  ) {
     return null;
   }
 

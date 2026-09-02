@@ -54,7 +54,9 @@ describe('EmployeePresenceStore', () => {
     store.loadPresencesByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeePresencesByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeePresencesByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeePresencesByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.presences()).toEqual(presencesFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();

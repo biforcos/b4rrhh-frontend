@@ -11,7 +11,11 @@ import { WorkCenterFormValue } from '../models/work-center-form-value.model';
 import { WorkCenterListItemModel } from '../models/work-center-list-item.model';
 import { WorkCenterBusinessKey, WorkCenterUiMode } from '../models/work-center-ui-state.model';
 
-export type WorkCenterErrorCode = 'request-failed' | 'not-found' | 'already-exists' | 'not-applicable';
+export type WorkCenterErrorCode =
+  | 'request-failed'
+  | 'not-found'
+  | 'already-exists'
+  | 'not-applicable';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +44,9 @@ export class WorkCenterStore {
 
   private readonly contactSubmittingState = signal(false);
   private readonly contactSubmitErrorState = signal<string | null>(null);
-  private readonly contactSubmitSuccessState = signal<'created' | 'updated' | 'deleted' | null>(null);
+  private readonly contactSubmitSuccessState = signal<'created' | 'updated' | 'deleted' | null>(
+    null,
+  );
 
   readonly workCenters = this.listState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
@@ -63,9 +69,13 @@ export class WorkCenterStore {
 
   readonly isCreating = computed(() => this.draftState()?.mode === 'create');
   readonly isEditing = computed(() => this.draftState()?.mode === 'edit');
-  readonly isViewing = computed(() => this.selectedKeyState() !== null && this.draftState() === null);
+  readonly isViewing = computed(
+    () => this.selectedKeyState() !== null && this.draftState() === null,
+  );
   readonly hasActiveForm = computed(() => this.draftState() !== null);
-  readonly hasActiveDetail = computed(() => this.selectedKeyState() !== null || this.draftState() !== null);
+  readonly hasActiveDetail = computed(
+    () => this.selectedKeyState() !== null || this.draftState() !== null,
+  );
 
   constructor() {
     this.loadList();
@@ -75,16 +85,19 @@ export class WorkCenterStore {
     this.listLoadingState.set(true);
     this.listErrorState.set(null);
 
-    this.gateway.listWorkCenters().pipe(take(1)).subscribe({
-      next: (workCenters) => {
-        this.listState.set(workCenters);
-        this.listLoadingState.set(false);
-      },
-      error: () => {
-        this.listLoadingState.set(false);
-        this.listErrorState.set('request-failed');
-      },
-    });
+    this.gateway
+      .listWorkCenters()
+      .pipe(take(1))
+      .subscribe({
+        next: (workCenters) => {
+          this.listState.set(workCenters);
+          this.listLoadingState.set(false);
+        },
+        error: () => {
+          this.listLoadingState.set(false);
+          this.listErrorState.set('request-failed');
+        },
+      });
   }
 
   startCreate(): void {
@@ -158,25 +171,31 @@ export class WorkCenterStore {
     this.submitErrorState.set(null);
     this.submitSuccessState.set(null);
 
-    this.gateway.createWorkCenter(formValue).pipe(take(1)).subscribe({
-      next: (created) => {
-        const key = { ruleSystemCode: created.ruleSystemCode, workCenterCode: created.workCenterCode };
-        this.submittingState.set(false);
-        this.submitSuccessState.set('created');
-        this.modeState.set('viewing');
-        this.selectedKeyState.set(key);
-        this.selectedDetailState.set(created);
-        this.draftState.set(null);
-        this.loadList();
-        this.loadDetail(key);
-        this.loadContacts(key);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.submittingState.set(false);
-        this.modeState.set('creating');
-        this.submitErrorState.set(this.mapSubmitError(err));
-      },
-    });
+    this.gateway
+      .createWorkCenter(formValue)
+      .pipe(take(1))
+      .subscribe({
+        next: (created) => {
+          const key = {
+            ruleSystemCode: created.ruleSystemCode,
+            workCenterCode: created.workCenterCode,
+          };
+          this.submittingState.set(false);
+          this.submitSuccessState.set('created');
+          this.modeState.set('viewing');
+          this.selectedKeyState.set(key);
+          this.selectedDetailState.set(created);
+          this.draftState.set(null);
+          this.loadList();
+          this.loadDetail(key);
+          this.loadContacts(key);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.submittingState.set(false);
+          this.modeState.set('creating');
+          this.submitErrorState.set(this.mapSubmitError(err));
+        },
+      });
   }
 
   submitUpdate(key: WorkCenterBusinessKey, formValue: WorkCenterFormValue): void {
@@ -189,23 +208,26 @@ export class WorkCenterStore {
     this.submitErrorState.set(null);
     this.submitSuccessState.set(null);
 
-    this.gateway.updateWorkCenter(key, formValue).pipe(take(1)).subscribe({
-      next: (updated) => {
-        this.submittingState.set(false);
-        this.submitSuccessState.set('updated');
-        this.modeState.set('viewing');
-        this.selectedDetailState.set(updated);
-        this.draftState.set(null);
-        this.loadList();
-        this.loadDetail(key);
-        this.loadContacts(key);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.submittingState.set(false);
-        this.modeState.set('editing');
-        this.submitErrorState.set(this.mapSubmitError(err));
-      },
-    });
+    this.gateway
+      .updateWorkCenter(key, formValue)
+      .pipe(take(1))
+      .subscribe({
+        next: (updated) => {
+          this.submittingState.set(false);
+          this.submitSuccessState.set('updated');
+          this.modeState.set('viewing');
+          this.selectedDetailState.set(updated);
+          this.draftState.set(null);
+          this.loadList();
+          this.loadDetail(key);
+          this.loadContacts(key);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.submittingState.set(false);
+          this.modeState.set('editing');
+          this.submitErrorState.set(this.mapSubmitError(err));
+        },
+      });
   }
 
   submitCreateContact(formValue: WorkCenterContactFormValue): void {
@@ -218,17 +240,20 @@ export class WorkCenterStore {
     this.contactSubmitErrorState.set(null);
     this.contactSubmitSuccessState.set(null);
 
-    this.gateway.createContact(key, formValue).pipe(take(1)).subscribe({
-      next: () => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitSuccessState.set('created');
-        this.loadContacts(key);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
-      },
-    });
+    this.gateway
+      .createContact(key, formValue)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitSuccessState.set('created');
+          this.loadContacts(key);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
+        },
+      });
   }
 
   submitUpdateContact(contactNumber: number, formValue: WorkCenterContactFormValue): void {
@@ -241,17 +266,20 @@ export class WorkCenterStore {
     this.contactSubmitErrorState.set(null);
     this.contactSubmitSuccessState.set(null);
 
-    this.gateway.updateContact(key, contactNumber, formValue).pipe(take(1)).subscribe({
-      next: () => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitSuccessState.set('updated');
-        this.loadContacts(key);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
-      },
-    });
+    this.gateway
+      .updateContact(key, contactNumber, formValue)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitSuccessState.set('updated');
+          this.loadContacts(key);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
+        },
+      });
   }
 
   deleteContact(contactNumber: number): void {
@@ -264,17 +292,20 @@ export class WorkCenterStore {
     this.contactSubmitErrorState.set(null);
     this.contactSubmitSuccessState.set(null);
 
-    this.gateway.deleteContact(key, contactNumber).pipe(take(1)).subscribe({
-      next: () => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitSuccessState.set('deleted');
-        this.loadContacts(key);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.contactSubmittingState.set(false);
-        this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
-      },
-    });
+    this.gateway
+      .deleteContact(key, contactNumber)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitSuccessState.set('deleted');
+          this.loadContacts(key);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.contactSubmittingState.set(false);
+          this.contactSubmitErrorState.set(this.mapContactSubmitError(err));
+        },
+      });
   }
 
   clearFeedback(): void {
@@ -289,20 +320,23 @@ export class WorkCenterStore {
     this.detailErrorState.set(null);
     this.selectedDetailState.set(null);
 
-    this.gateway.getWorkCenter(key).pipe(take(1)).subscribe({
-      next: (detail) => {
-        this.selectedDetailState.set(detail);
-        this.detailLoadingState.set(false);
-        if (this.draftState() === null) {
-          this.modeState.set('viewing');
-        }
-      },
-      error: (err: HttpErrorResponse) => {
-        this.detailLoadingState.set(false);
-        this.modeState.set(err.status === 404 ? 'error' : this.modeState());
-        this.detailErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
-      },
-    });
+    this.gateway
+      .getWorkCenter(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (detail) => {
+          this.selectedDetailState.set(detail);
+          this.detailLoadingState.set(false);
+          if (this.draftState() === null) {
+            this.modeState.set('viewing');
+          }
+        },
+        error: (err: HttpErrorResponse) => {
+          this.detailLoadingState.set(false);
+          this.modeState.set(err.status === 404 ? 'error' : this.modeState());
+          this.detailErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
+        },
+      });
   }
 
   private loadContacts(key: WorkCenterBusinessKey): void {
@@ -310,16 +344,19 @@ export class WorkCenterStore {
     this.contactsErrorState.set(null);
     this.contactsState.set([]);
 
-    this.gateway.listContacts(key).pipe(take(1)).subscribe({
-      next: (contacts) => {
-        this.contactsState.set(contacts);
-        this.contactsLoadingState.set(false);
-      },
-      error: () => {
-        this.contactsLoadingState.set(false);
-        this.contactsErrorState.set('request-failed');
-      },
-    });
+    this.gateway
+      .listContacts(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (contacts) => {
+          this.contactsState.set(contacts);
+          this.contactsLoadingState.set(false);
+        },
+        error: () => {
+          this.contactsLoadingState.set(false);
+          this.contactsErrorState.set('request-failed');
+        },
+      });
   }
 
   private mapSubmitError(err: HttpErrorResponse): string {

@@ -52,7 +52,9 @@
         }
       </div>
     } @else if (errorMessage()) {
-      <p class="master-list-panel__feedback master-list-panel__feedback--error">{{ errorMessage() }}</p>
+      <p class="master-list-panel__feedback master-list-panel__feedback--error">
+        {{ errorMessage() }}
+      </p>
     } @else if (items().length === 0) {
       <app-empty-state [title]="emptyState().title" [description]="emptyState().description" />
     } @else {

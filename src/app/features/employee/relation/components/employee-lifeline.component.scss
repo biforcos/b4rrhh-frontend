@@ -74,7 +74,9 @@
 
 .lifeline__lane {
   position: relative;
-  height: calc(var(--rows, 1) * var(--lifeline-row-height) + (var(--rows, 1) - 1) * var(--lifeline-row-gap));
+  height: calc(
+    var(--rows, 1) * var(--lifeline-row-height) + (var(--rows, 1) - 1) * var(--lifeline-row-gap)
+  );
   background: var(--surface-hover);
   border-radius: 2px;
 }

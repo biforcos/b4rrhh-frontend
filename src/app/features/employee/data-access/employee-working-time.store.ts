@@ -3,8 +3,14 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkingTimeModel } from '../models/employee-working-time.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
-import { EmployeeWorkingTimeErrorCode, mapEmployeeWorkingTimeErrorCode } from './employee-working-time-error.mapper';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
+import {
+  EmployeeWorkingTimeErrorCode,
+  mapEmployeeWorkingTimeErrorCode,
+} from './employee-working-time-error.mapper';
 import {
   WorkingTimeCloseDraft,
   WorkingTimeCreateDraft,
@@ -130,7 +136,10 @@ export class EmployeeWorkingTimeStore {
       });
   }
 
-  private loadWorkingTimesByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadWorkingTimesByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

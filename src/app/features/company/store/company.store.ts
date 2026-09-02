@@ -50,9 +50,13 @@ export class CompanyStore {
 
   readonly isCreating = computed(() => this.draftState()?.mode === 'create');
   readonly isEditing = computed(() => this.draftState()?.mode === 'edit');
-  readonly isViewing = computed(() => this.selectedKeyState() !== null && this.draftState() === null);
+  readonly isViewing = computed(
+    () => this.selectedKeyState() !== null && this.draftState() === null,
+  );
   readonly hasActiveForm = computed(() => this.draftState() !== null);
-  readonly hasActiveDetail = computed(() => this.selectedKeyState() !== null || this.draftState() !== null);
+  readonly hasActiveDetail = computed(
+    () => this.selectedKeyState() !== null || this.draftState() !== null,
+  );
 
   constructor() {
     this.loadList();

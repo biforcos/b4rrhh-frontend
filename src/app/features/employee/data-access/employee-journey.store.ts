@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeJourneyModel } from '../models/employee-journey.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { EmployeeJourneyReadGateway } from './employee-journey-read.gateway';
 
 export type EmployeeJourneyErrorCode = 'request-failed';
@@ -32,7 +35,10 @@ export class EmployeeJourneyStore {
     this.loadJourneyByBusinessKeyInternal(key, true);
   }
 
-  private loadJourneyByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadJourneyByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

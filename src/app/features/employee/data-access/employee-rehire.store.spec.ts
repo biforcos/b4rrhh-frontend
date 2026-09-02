@@ -31,24 +31,26 @@ describe('EmployeeRehireStore', () => {
 
   beforeEach(() => {
     gatewayMock = {
-      rehire: vi.fn().mockReturnValue(of({
-        employeeKey: {
-          ruleSystemCode: 'ESP',
-          employeeTypeCode: 'EMP',
-          employeeNumber: 'E001',
-        },
-        rehireDate: '2026-04-15',
-        status: 'ACTIVE',
-        newWorkingTime: {
-          workingTimeNumber: 1,
-          workingTimePercentage: 80,
-          weeklyHours: 32,
-          dailyHours: 6.4,
-          monthlyHours: 133.34,
-          startDate: '2026-04-15',
-          endDate: null,
-        },
-      })),
+      rehire: vi.fn().mockReturnValue(
+        of({
+          employeeKey: {
+            ruleSystemCode: 'ESP',
+            employeeTypeCode: 'EMP',
+            employeeNumber: 'E001',
+          },
+          rehireDate: '2026-04-15',
+          status: 'ACTIVE',
+          newWorkingTime: {
+            workingTimeNumber: 1,
+            workingTimePercentage: 80,
+            weeklyHours: 32,
+            dailyHours: 6.4,
+            monthlyHours: 133.34,
+            startDate: '2026-04-15',
+            endDate: null,
+          },
+        }),
+      ),
     };
 
     TestBed.configureTestingModule({

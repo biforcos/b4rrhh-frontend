@@ -35,22 +35,26 @@ function compareAgreementCodes(
   providedIn: 'root',
 })
 export class EmployeeLaborClassificationReadGateway {
-  private readonly employeeLaborClassificationReadClient = inject(EmployeeLaborClassificationReadClient);
+  private readonly employeeLaborClassificationReadClient = inject(
+    EmployeeLaborClassificationReadClient,
+  );
 
   readEmployeeLaborClassificationsByBusinessKey(
     key: EmployeeBusinessKey,
   ): Observable<ReadonlyArray<EmployeeLaborClassificationModel>> {
-    return this.employeeLaborClassificationReadClient.readEmployeeLaborClassificationsByBusinessKey(key).pipe(
-      map((classifications) =>
-        classifications
-          .map((classification) => mapEmployeeLaborClassificationApiToReadModel(classification))
-          .filter(
-            (classification): classification is EmployeeLaborClassificationReadModel =>
-              classification !== null,
-          )
-          .map((classification) => this.toEmployeeLaborClassificationModel(classification)),
-      ),
-    );
+    return this.employeeLaborClassificationReadClient
+      .readEmployeeLaborClassificationsByBusinessKey(key)
+      .pipe(
+        map((classifications) =>
+          classifications
+            .map((classification) => mapEmployeeLaborClassificationApiToReadModel(classification))
+            .filter(
+              (classification): classification is EmployeeLaborClassificationReadModel =>
+                classification !== null,
+            )
+            .map((classification) => this.toEmployeeLaborClassificationModel(classification)),
+        ),
+      );
   }
 
   replaceLaborClassificationFromDate(
@@ -58,7 +62,10 @@ export class EmployeeLaborClassificationReadGateway {
     draft: LaborClassificationReplaceDraft,
   ): Observable<void> {
     return this.employeeLaborClassificationReadClient
-      .replaceLaborClassificationFromDateByBusinessKey(key, mapLaborClassificationReplaceDraftToRequest(draft))
+      .replaceLaborClassificationFromDateByBusinessKey(
+        key,
+        mapLaborClassificationReplaceDraftToRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 
@@ -68,7 +75,11 @@ export class EmployeeLaborClassificationReadGateway {
     draft: LaborClassificationCorrectDraft,
   ): Observable<void> {
     return this.employeeLaborClassificationReadClient
-      .updateLaborClassificationByBusinessKey(key, startDate, mapLaborClassificationCorrectDraftToRequest(draft))
+      .updateLaborClassificationByBusinessKey(
+        key,
+        startDate,
+        mapLaborClassificationCorrectDraftToRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 
@@ -78,7 +89,11 @@ export class EmployeeLaborClassificationReadGateway {
     draft: LaborClassificationCloseDraft,
   ): Observable<void> {
     return this.employeeLaborClassificationReadClient
-      .closeLaborClassificationByBusinessKey(key, startDate, mapLaborClassificationCloseDraftToRequest(draft))
+      .closeLaborClassificationByBusinessKey(
+        key,
+        startDate,
+        mapLaborClassificationCloseDraftToRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 

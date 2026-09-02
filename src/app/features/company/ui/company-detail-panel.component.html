@@ -19,15 +19,26 @@
   </app-entity-header>
 
   @if (submitSuccess()) {
-    <p-message severity="success" [text]="successMessage!" styleClass="company-detail-panel__feedback" />
+    <p-message
+      severity="success"
+      [text]="successMessage!"
+      styleClass="company-detail-panel__feedback"
+    />
   }
 
   @if (submitError()) {
-    <p-message severity="error" [text]="submitError()!" styleClass="company-detail-panel__feedback" />
+    <p-message
+      severity="error"
+      [text]="submitError()!"
+      styleClass="company-detail-panel__feedback"
+    />
   }
 
   <div class="company-detail-panel__sections">
-    <app-section-card [title]="texts.sectionIdentityTitle" [description]="texts.detailSectionIdentitySubtitle">
+    <app-section-card
+      [title]="texts.sectionIdentityTitle"
+      [description]="texts.detailSectionIdentitySubtitle"
+    >
       @if (isViewMode()) {
         <div class="company-detail-panel__view-grid">
           <div class="company-detail-panel__view-item">
@@ -36,7 +47,9 @@
           </div>
           <div class="company-detail-panel__view-item">
             <span class="company-detail-panel__view-label">{{ texts.fieldStartDateLabel }}</span>
-            <span class="company-detail-panel__view-value">{{ displayValue(detail()?.startDate) }}</span>
+            <span class="company-detail-panel__view-value">{{
+              displayValue(detail()?.startDate)
+            }}</span>
           </div>
           <div class="company-detail-panel__view-item company-detail-panel__view-item--full">
             <span class="company-detail-panel__view-label">{{ texts.fieldDescriptionLabel }}</span>
@@ -49,7 +62,8 @@
         <div class="company-detail-panel__grid">
           <div class="company-detail-panel__field">
             <label for="ruleSystemCode" class="company-detail-panel__label">
-              {{ texts.fieldRuleSystemCodeLabel }} <span class="company-detail-panel__required">*</span>
+              {{ texts.fieldRuleSystemCodeLabel }}
+              <span class="company-detail-panel__required">*</span>
             </label>
             <input
               pInputText
@@ -60,13 +74,16 @@
               maxlength="5"
             />
             @if (hasError('ruleSystemCode')) {
-              <small class="company-detail-panel__error">{{ texts.fieldRuleSystemCodeLabel }} es obligatorio.</small>
+              <small class="company-detail-panel__error"
+                >{{ texts.fieldRuleSystemCodeLabel }} es obligatorio.</small
+              >
             }
           </div>
 
           <div class="company-detail-panel__field">
             <label for="companyCode" class="company-detail-panel__label">
-              {{ texts.fieldCompanyCodeLabel }} <span class="company-detail-panel__required">*</span>
+              {{ texts.fieldCompanyCodeLabel }}
+              <span class="company-detail-panel__required">*</span>
             </label>
             <input
               pInputText
@@ -77,7 +94,9 @@
               maxlength="30"
             />
             @if (hasError('companyCode')) {
-              <small class="company-detail-panel__error">{{ texts.fieldCompanyCodeLabel }} es obligatorio.</small>
+              <small class="company-detail-panel__error"
+                >{{ texts.fieldCompanyCodeLabel }} es obligatorio.</small
+              >
             }
           </div>
 
@@ -85,15 +104,31 @@
             <label for="name" class="company-detail-panel__label">
               {{ texts.fieldNameLabel }} <span class="company-detail-panel__required">*</span>
             </label>
-            <input pInputText id="name" formControlName="name" [class.ng-invalid]="hasError('name')" maxlength="100" />
+            <input
+              pInputText
+              id="name"
+              formControlName="name"
+              [class.ng-invalid]="hasError('name')"
+              maxlength="100"
+            />
             @if (hasError('name')) {
-              <small class="company-detail-panel__error">{{ texts.fieldNameLabel }} es obligatorio.</small>
+              <small class="company-detail-panel__error"
+                >{{ texts.fieldNameLabel }} es obligatorio.</small
+              >
             }
           </div>
 
           <div class="company-detail-panel__field company-detail-panel__field--full">
-            <label for="description" class="company-detail-panel__label">{{ texts.fieldDescriptionLabel }}</label>
-            <textarea pTextarea id="description" formControlName="description" rows="3" maxlength="500"></textarea>
+            <label for="description" class="company-detail-panel__label">{{
+              texts.fieldDescriptionLabel
+            }}</label>
+            <textarea
+              pTextarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              maxlength="500"
+            ></textarea>
           </div>
 
           <div class="company-detail-panel__field">
@@ -110,23 +145,32 @@
               [fluid]="true"
             />
             @if (hasError('startDate')) {
-              <small class="company-detail-panel__error">{{ texts.fieldStartDateLabel }} es obligatoria.</small>
+              <small class="company-detail-panel__error"
+                >{{ texts.fieldStartDateLabel }} es obligatoria.</small
+              >
             }
           </div>
         </div>
       }
     </app-section-card>
 
-    <app-section-card [title]="texts.sectionFiscalTitle" [description]="texts.detailSectionFiscalSubtitle">
+    <app-section-card
+      [title]="texts.sectionFiscalTitle"
+      [description]="texts.detailSectionFiscalSubtitle"
+    >
       @if (isViewMode()) {
         <div class="company-detail-panel__view-grid">
           <div class="company-detail-panel__view-item company-detail-panel__view-item--full">
             <span class="company-detail-panel__view-label">{{ texts.fieldLegalNameLabel }}</span>
-            <span class="company-detail-panel__view-value">{{ displayValue(detail()?.legalName) }}</span>
+            <span class="company-detail-panel__view-value">{{
+              displayValue(detail()?.legalName)
+            }}</span>
           </div>
           <div class="company-detail-panel__view-item">
             <span class="company-detail-panel__view-label">{{ texts.fieldTaxIdLabel }}</span>
-            <span class="company-detail-panel__view-value">{{ displayValue(detail()?.taxIdentifier) }}</span>
+            <span class="company-detail-panel__view-value">{{
+              displayValue(detail()?.taxIdentifier)
+            }}</span>
           </div>
         </div>
       } @else {
@@ -143,41 +187,60 @@
               maxlength="200"
             />
             @if (hasError('legalName')) {
-              <small class="company-detail-panel__error">{{ texts.fieldLegalNameLabel }} es obligatoria.</small>
+              <small class="company-detail-panel__error"
+                >{{ texts.fieldLegalNameLabel }} es obligatoria.</small
+              >
             }
           </div>
 
           <div class="company-detail-panel__field">
-            <label for="taxIdentifier" class="company-detail-panel__label">{{ texts.fieldTaxIdLabel }}</label>
+            <label for="taxIdentifier" class="company-detail-panel__label">{{
+              texts.fieldTaxIdLabel
+            }}</label>
             <input pInputText id="taxIdentifier" formControlName="taxIdentifier" maxlength="50" />
           </div>
         </div>
       }
     </app-section-card>
 
-    <app-section-card [title]="texts.sectionAddressTitle" [description]="texts.detailSectionAddressSubtitle">
+    <app-section-card
+      [title]="texts.sectionAddressTitle"
+      [description]="texts.detailSectionAddressSubtitle"
+    >
       @if (isViewMode()) {
         @if (hasAddress) {
           <div class="company-detail-panel__view-grid company-detail-panel__view-grid--address">
             <div class="company-detail-panel__view-item company-detail-panel__view-item--full">
               <span class="company-detail-panel__view-label">{{ texts.fieldStreetLabel }}</span>
-              <span class="company-detail-panel__view-value">{{ displayValue(detail()?.address?.street) }}</span>
+              <span class="company-detail-panel__view-value">{{
+                displayValue(detail()?.address?.street)
+              }}</span>
             </div>
             <div class="company-detail-panel__view-item">
               <span class="company-detail-panel__view-label">{{ texts.fieldCityLabel }}</span>
-              <span class="company-detail-panel__view-value">{{ displayValue(detail()?.address?.city) }}</span>
+              <span class="company-detail-panel__view-value">{{
+                displayValue(detail()?.address?.city)
+              }}</span>
             </div>
             <div class="company-detail-panel__view-item">
               <span class="company-detail-panel__view-label">{{ texts.fieldPostalCodeLabel }}</span>
-              <span class="company-detail-panel__view-value">{{ displayValue(detail()?.address?.postalCode) }}</span>
+              <span class="company-detail-panel__view-value">{{
+                displayValue(detail()?.address?.postalCode)
+              }}</span>
             </div>
             <div class="company-detail-panel__view-item">
               <span class="company-detail-panel__view-label">{{ texts.fieldRegionCodeLabel }}</span>
-              <span class="company-detail-panel__view-value">{{ displayValue(detail()?.address?.regionCode) }}</span>
+              <span class="company-detail-panel__view-value">{{
+                displayValue(detail()?.address?.regionCode)
+              }}</span>
             </div>
             <div class="company-detail-panel__view-item">
-              <span class="company-detail-panel__view-label">{{ texts.fieldCountryCodeLabel }}</span>
-              <span class="company-detail-panel__view-value">{{ displayValue(detail()?.address?.countryCode) }}</span>
+              <span class="company-detail-panel__view-label">{{
+                texts.fieldCountryCodeLabel
+              }}</span>
+              <span class="company-detail-panel__view-value">{{
+                displayValue(detail()?.address?.countryCode)
+              }}</span>
             </div>
           </div>
         } @else {
@@ -186,7 +249,9 @@
       } @else {
         <div class="company-detail-panel__grid company-detail-panel__grid--address">
           <div class="company-detail-panel__field company-detail-panel__field--full">
-            <label for="street" class="company-detail-panel__label">{{ texts.fieldStreetLabel }}</label>
+            <label for="street" class="company-detail-panel__label">{{
+              texts.fieldStreetLabel
+            }}</label>
             <input pInputText id="street" formControlName="street" maxlength="300" />
           </div>
 
@@ -196,18 +261,30 @@
           </div>
 
           <div class="company-detail-panel__field">
-            <label for="postalCode" class="company-detail-panel__label">{{ texts.fieldPostalCodeLabel }}</label>
+            <label for="postalCode" class="company-detail-panel__label">{{
+              texts.fieldPostalCodeLabel
+            }}</label>
             <input pInputText id="postalCode" formControlName="postalCode" maxlength="20" />
           </div>
 
           <div class="company-detail-panel__field">
-            <label for="regionCode" class="company-detail-panel__label">{{ texts.fieldRegionCodeLabel }}</label>
+            <label for="regionCode" class="company-detail-panel__label">{{
+              texts.fieldRegionCodeLabel
+            }}</label>
             <input pInputText id="regionCode" formControlName="regionCode" maxlength="30" />
           </div>
 
           <div class="company-detail-panel__field">
-            <label for="countryCode" class="company-detail-panel__label">{{ texts.fieldCountryCodeLabel }}</label>
-            <input pInputText id="countryCode" formControlName="countryCode" placeholder="ESP" maxlength="3" />
+            <label for="countryCode" class="company-detail-panel__label">{{
+              texts.fieldCountryCodeLabel
+            }}</label>
+            <input
+              pInputText
+              id="countryCode"
+              formControlName="countryCode"
+              placeholder="ESP"
+              maxlength="3"
+            />
           </div>
         </div>
       }

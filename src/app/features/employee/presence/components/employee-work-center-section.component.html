@@ -1,37 +1,41 @@
-  <app-temporal-section
-    anchorId="employee-section-work-center"
-    title="Centro de trabajo"
-    [rows]="rows()"
-    (addClicked)="openCreate()"
-    (editClicked)="openEdit($event)"
-    (deleteClicked)="confirmDelete($event)"
-  >
-    <ng-template #columnHeaders><th class="temporal-section__th">Centro</th></ng-template>
-    <ng-template #cellContent let-row>
-      <!-- ADR-051 §4: el código nunca va solo. -->
-      <td class="temporal-section__td">
-        <app-ui-catalog-label [name]="row.workCenterName" [code]="row.workCenterCode" />
-      </td>
-    </ng-template>
-  </app-temporal-section>
+<app-temporal-section
+  anchorId="employee-section-work-center"
+  title="Centro de trabajo"
+  [rows]="rows()"
+  (addClicked)="openCreate()"
+  (editClicked)="openEdit($event)"
+  (deleteClicked)="confirmDelete($event)"
+>
+  <ng-template #columnHeaders><th class="temporal-section__th">Centro</th></ng-template>
+  <ng-template #cellContent let-row>
+    <!-- ADR-051 §4: el código nunca va solo. -->
+    <td class="temporal-section__td">
+      <app-ui-catalog-label [name]="row.workCenterName" [code]="row.workCenterCode" />
+    </td>
+  </ng-template>
+</app-temporal-section>
 
-  <app-period-modal
-    [title]="modalTitle()"
-    [visible]="modalVisible()"
-    [saving]="saving()"
-    [submitEnabled]="isSubmitEnabled()"
-    [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-    (visibleChange)="modalVisible.set($event)"
-    (submitted)="submit()"
-    (cancelled)="closeModal()"
-    (closeActionClicked)="switchToClose()"
-  >
-    @if (modalMode() !== 'close') {
-      <app-ui-select [options]="workCenterOptions()" [value]="workCenterCodeDraft()" (valueChanged)="workCenterCodeDraft.set($event)" />
-      <app-ui-date-input [value]="startDateDraft()" (valueChanged)="startDateDraft.set($event)" />
-      <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
-    }
-    @if (modalMode() === 'close') {
-      <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
-    }
-  </app-period-modal>
+<app-period-modal
+  [title]="modalTitle()"
+  [visible]="modalVisible()"
+  [saving]="saving()"
+  [submitEnabled]="isSubmitEnabled()"
+  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+  (visibleChange)="modalVisible.set($event)"
+  (submitted)="submit()"
+  (cancelled)="closeModal()"
+  (closeActionClicked)="switchToClose()"
+>
+  @if (modalMode() !== 'close') {
+    <app-ui-select
+      [options]="workCenterOptions()"
+      [value]="workCenterCodeDraft()"
+      (valueChanged)="workCenterCodeDraft.set($event)"
+    />
+    <app-ui-date-input [value]="startDateDraft()" (valueChanged)="startDateDraft.set($event)" />
+    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+  }
+  @if (modalMode() === 'close') {
+    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+  }
+</app-period-modal>

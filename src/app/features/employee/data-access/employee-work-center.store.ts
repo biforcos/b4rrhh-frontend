@@ -3,8 +3,14 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkCenterModel } from '../models/employee-work-center.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
-import { EmployeeWorkCenterErrorCode, mapEmployeeWorkCenterErrorCode } from './employee-work-center-error.mapper';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
+import {
+  EmployeeWorkCenterErrorCode,
+  mapEmployeeWorkCenterErrorCode,
+} from './employee-work-center-error.mapper';
 import { WorkCenterCorrectDraft, WorkCenterCreateDraft } from './employee-work-center.mapper';
 import { EmployeeWorkCenterGateway } from './employee-work-center.gateway';
 
@@ -18,7 +24,9 @@ export class EmployeeWorkCenterStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeWorkCenterErrorCode | null>(null);
-  private readonly successState = signal<'created' | 'corrected' | 'closed' | 'deleted' | null>(null);
+  private readonly successState = signal<'created' | 'corrected' | 'closed' | 'deleted' | null>(
+    null,
+  );
   private requestId = 0;
 
   readonly selectedEmployeeKey = this.selectedEmployeeKeyState.asReadonly();
@@ -68,7 +76,11 @@ export class EmployeeWorkCenterStore {
       });
   }
 
-  closeWorkCenter(employeeKey: EmployeeBusinessKey, workCenterAssignmentNumber: number, endDate: string): void {
+  closeWorkCenter(
+    employeeKey: EmployeeBusinessKey,
+    workCenterAssignmentNumber: number,
+    endDate: string,
+  ): void {
     if (this.mutatingState()) {
       return;
     }
@@ -153,7 +165,10 @@ export class EmployeeWorkCenterStore {
       });
   }
 
-  private loadWorkCentersByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadWorkCentersByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

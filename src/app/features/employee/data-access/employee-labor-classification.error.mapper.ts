@@ -17,7 +17,9 @@ export type EmployeeLaborClassificationErrorCode =
   | EmployeeLaborClassificationFunctionalErrorCode
   | 'request-failed';
 
-export function mapEmployeeLaborClassificationErrorCode(error: unknown): EmployeeLaborClassificationErrorCode {
+export function mapEmployeeLaborClassificationErrorCode(
+  error: unknown,
+): EmployeeLaborClassificationErrorCode {
   const rawErrorCode =
     typeof error === 'object' && error !== null && 'error' in error
       ? (error as { error?: { code?: unknown } }).error?.code

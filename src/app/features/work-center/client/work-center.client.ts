@@ -29,7 +29,10 @@ export class WorkCenterClient {
     });
   }
 
-  updateWorkCenter(key: WorkCenterBusinessKey, request: UpdateWorkCenterRequest): Observable<WorkCenterResponse> {
+  updateWorkCenter(
+    key: WorkCenterBusinessKey,
+    request: UpdateWorkCenterRequest,
+  ): Observable<WorkCenterResponse> {
     return this.api.updateWorkCenter({
       ruleSystemCode: key.ruleSystemCode,
       workCenterCode: key.workCenterCode,

@@ -20,7 +20,10 @@ export class EmployeeIdentifierGateway {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.identifierClient
-      .createIdentifierByBusinessKey(normalizedKey, mapIdentifierDraftToCreateIdentifierRequest(draft))
+      .createIdentifierByBusinessKey(
+        normalizedKey,
+        mapIdentifierDraftToCreateIdentifierRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 

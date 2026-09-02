@@ -1,10 +1,4 @@
-export type SectionMode =
-  | 'view'
-  | 'editing'
-  | 'creating'
-  | 'confirming'
-  | 'submitting'
-  | 'error';
+export type SectionMode = 'view' | 'editing' | 'creating' | 'confirming' | 'submitting' | 'error';
 
 export interface SectionUiState {
   mode: SectionMode;

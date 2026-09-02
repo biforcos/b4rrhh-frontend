@@ -1,7 +1,11 @@
 <!-- La persona (ADR-051, frontend#19): la mitad tranquila de la ficha. Dos listas cortas de
      huecos al lado —contactos e identificadores— y, debajo, a ancho completo, las direcciones,
      que sí son vigencias y se leen como un carril. Un contenedor por lista, ninguno dentro de otro. -->
-<section id="employee-section-contact" class="employee-person" [attr.aria-label]="texts.personalAreaLabel">
+<section
+  id="employee-section-contact"
+  class="employee-person"
+  [attr.aria-label]="texts.personalAreaLabel"
+>
   @if (loadingPersonals()) {
     <p class="employee-person__state">{{ texts.personalLoadingMessage }}</p>
   }

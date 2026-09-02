@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, TemplateRef, contentChild, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  contentChild,
+  input,
+  output,
+} from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
@@ -41,7 +48,8 @@ export class MasterListPanelComponent<T = unknown> {
   readonly itemSelected = output<T>();
   readonly searchValueChange = output<string>();
 
-  private readonly itemTemplate = contentChild.required<TemplateRef<MasterListPanelItemContext<T>>>(TemplateRef);
+  private readonly itemTemplate =
+    contentChild.required<TemplateRef<MasterListPanelItemContext<T>>>(TemplateRef);
 
   protected onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement | null;

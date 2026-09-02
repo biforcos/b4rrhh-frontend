@@ -59,13 +59,23 @@
                   (valueChanged)="onDraftKeySelect($event)"
                 />
               } @else {
-                <input pInputText type="text" [value]="draft().key ?? ''" (input)="onDraftKeyInput($event)" />
+                <input
+                  pInputText
+                  type="text"
+                  [value]="draft().key ?? ''"
+                  (input)="onDraftKeyInput($event)"
+                />
               }
             </label>
 
             <label>
               <span>{{ texts().valueFieldLabel }}</span>
-              <input pInputText type="text" [value]="draft().value" (input)="onDraftValueInput($event)" />
+              <input
+                pInputText
+                type="text"
+                [value]="draft().value"
+                (input)="onDraftValueInput($event)"
+              />
             </label>
           </div>
         }
@@ -114,7 +124,12 @@
 
                   <label>
                     <span>{{ texts().valueFieldLabel }}</span>
-                    <input pInputText type="text" [value]="draft().value" (input)="onDraftValueInput($event)" />
+                    <input
+                      pInputText
+                      type="text"
+                      [value]="draft().value"
+                      (input)="onDraftValueInput($event)"
+                    />
                   </label>
                 </div>
               }
@@ -171,15 +186,28 @@
                 }
 
                 @if (row.badges && row.badges.length > 0) {
-                  <ul class="editable-slot-section__badges" role="list" aria-label="Row metadata badges">
+                  <ul
+                    class="editable-slot-section__badges"
+                    role="list"
+                    aria-label="Row metadata badges"
+                  >
                     @for (badge of row.badges; track $index) {
-                        <li><app-ui-tag class="editable-slot-section__badge" [value]="badge" severity="info" [rounded]="true" /></li>
+                      <li>
+                        <app-ui-tag
+                          class="editable-slot-section__badge"
+                          [value]="badge"
+                          severity="info"
+                          [rounded]="true"
+                        />
+                      </li>
                     }
                   </ul>
                 }
               </div>
 
-              @if (showRowMaintenanceActions() && !isRowReadonly(row) && (canEdit() || canDelete())) {
+              @if (
+                showRowMaintenanceActions() && !isRowReadonly(row) && (canEdit() || canDelete())
+              ) {
                 <div class="editable-slot-section__row-actions">
                   @if (canEdit()) {
                     <app-ui-button

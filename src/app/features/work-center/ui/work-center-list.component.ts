@@ -55,7 +55,9 @@ export class WorkCenterListComponent {
     this.itemKey(item.ruleSystemCode, item.workCenterCode);
 
   protected formatLocation(item: WorkCenterListItemModel): string {
-    const location = [item.city, item.countryCode].filter((value): value is string => !!value).join(' · ');
+    const location = [item.city, item.countryCode]
+      .filter((value): value is string => !!value)
+      .join(' · ');
     return location || this.texts.detailViewEmptyValue;
   }
 

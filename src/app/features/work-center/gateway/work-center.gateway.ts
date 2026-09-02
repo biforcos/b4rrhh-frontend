@@ -12,7 +12,10 @@ import {
   mapWorkCenterFormValueToCreateRequest,
   mapWorkCenterFormValueToUpdateRequest,
 } from '../mapper/work-center-form.mapper';
-import { mapWorkCenterListItemResponseToModel, mapWorkCenterResponseToDetailModel } from '../mapper/work-center.mapper';
+import {
+  mapWorkCenterListItemResponseToModel,
+  mapWorkCenterResponseToDetailModel,
+} from '../mapper/work-center.mapper';
 import { WorkCenterContactFormValue } from '../models/work-center-contact-form-value.model';
 import { WorkCenterContactModel } from '../models/work-center-contact.model';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
@@ -34,7 +37,9 @@ export class WorkCenterGateway {
   }
 
   getWorkCenter(key: WorkCenterBusinessKey): Observable<WorkCenterDetailModel> {
-    return this.client.getWorkCenter(key).pipe(map((response) => mapWorkCenterResponseToDetailModel(response)));
+    return this.client
+      .getWorkCenter(key)
+      .pipe(map((response) => mapWorkCenterResponseToDetailModel(response)));
   }
 
   createWorkCenter(formValue: WorkCenterFormValue): Observable<WorkCenterDetailModel> {
@@ -43,7 +48,10 @@ export class WorkCenterGateway {
       .pipe(map((response) => mapWorkCenterResponseToDetailModel(response)));
   }
 
-  updateWorkCenter(key: WorkCenterBusinessKey, formValue: WorkCenterFormValue): Observable<WorkCenterDetailModel> {
+  updateWorkCenter(
+    key: WorkCenterBusinessKey,
+    formValue: WorkCenterFormValue,
+  ): Observable<WorkCenterDetailModel> {
     return this.client
       .updateWorkCenter(key, mapWorkCenterFormValueToUpdateRequest(formValue))
       .pipe(map((response) => mapWorkCenterResponseToDetailModel(response)));
@@ -55,7 +63,10 @@ export class WorkCenterGateway {
       .pipe(map((items) => items.map((item) => mapWorkCenterContactResponseToModel(item))));
   }
 
-  createContact(key: WorkCenterBusinessKey, formValue: WorkCenterContactFormValue): Observable<WorkCenterContactModel> {
+  createContact(
+    key: WorkCenterBusinessKey,
+    formValue: WorkCenterContactFormValue,
+  ): Observable<WorkCenterContactModel> {
     return this.contactClient
       .createContact(key, mapWorkCenterContactFormValueToCreateRequest(formValue))
       .pipe(map((response) => mapWorkCenterContactResponseToModel(response)));

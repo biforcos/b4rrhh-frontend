@@ -47,8 +47,12 @@ export class EmployeeDetailHeaderComponent {
     lastName2: new FormControl('', { nonNullable: true }),
     preferredName: new FormControl('', { nonNullable: true }),
   });
-  protected readonly avatarInitials = computed(() => this.buildAvatarInitials(this.employee().displayName));
-  protected readonly statusTone = computed(() => this.resolveStatusTone(this.employee().statusLabel));
+  protected readonly avatarInitials = computed(() =>
+    this.buildAvatarInitials(this.employee().displayName),
+  );
+  protected readonly statusTone = computed(() =>
+    this.resolveStatusTone(this.employee().statusLabel),
+  );
 
   constructor() {
     effect(() => {

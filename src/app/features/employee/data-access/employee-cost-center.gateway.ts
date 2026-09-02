@@ -24,7 +24,9 @@ import {
 export class EmployeeCostCenterGateway {
   private readonly personnelApiService = inject(EmployeeCostCenterService);
 
-  readCurrentDistribution(key: EmployeeBusinessKey): Observable<EmployeeCostCenterWindowModel | null> {
+  readCurrentDistribution(
+    key: EmployeeBusinessKey,
+  ): Observable<EmployeeCostCenterWindowModel | null> {
     return this.personnelApiService
       .getCurrentCostCenterDistribution({
         ruleSystemCode: key.ruleSystemCode,
@@ -33,7 +35,9 @@ export class EmployeeCostCenterGateway {
       })
       .pipe(
         map((response) =>
-          response.currentDistribution ? mapCostCenterResponsesToWindowModel(response.currentDistribution) : null,
+          response.currentDistribution
+            ? mapCostCenterResponsesToWindowModel(response.currentDistribution)
+            : null,
         ),
       );
   }
@@ -79,7 +83,8 @@ export class EmployeeCostCenterGateway {
         ruleSystemCode: key.ruleSystemCode,
         employeeTypeCode: key.employeeTypeCode,
         employeeNumber: key.employeeNumber,
-        replaceCostCenterDistributionFromDateRequest: mapCostCenterDistributionReplaceDraftToRequests(draft),
+        replaceCostCenterDistributionFromDateRequest:
+          mapCostCenterDistributionReplaceDraftToRequests(draft),
       })
       .pipe(map((response) => mapCostCenterResponsesToWindowModel(response)));
   }
@@ -97,6 +102,10 @@ export class EmployeeCostCenterGateway {
         startDate,
         closeCostCenterDistributionRequest: mapCostCenterDistributionCloseDateToRequest(endDate),
       })
-      .pipe(map((response: CostCenterDistributionWindowResponse) => mapCostCenterResponsesToWindowModel(response)));
+      .pipe(
+        map((response: CostCenterDistributionWindowResponse) =>
+          mapCostCenterResponsesToWindowModel(response),
+        ),
+      );
   }
 }

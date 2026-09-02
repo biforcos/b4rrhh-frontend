@@ -23,7 +23,9 @@ import {
 export class EmployeeWorkCenterGateway {
   private readonly workCenterClient = inject(EmployeeWorkCenterReadClient);
 
-  readWorkCenters(employeeKey: EmployeeBusinessKey): Observable<ReadonlyArray<EmployeeWorkCenterModel>> {
+  readWorkCenters(
+    employeeKey: EmployeeBusinessKey,
+  ): Observable<ReadonlyArray<EmployeeWorkCenterModel>> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workCenterClient.readEmployeeWorkCentersByBusinessKey(normalizedKey).pipe(
@@ -56,7 +58,10 @@ export class EmployeeWorkCenterGateway {
       );
   }
 
-  createWorkCenter(employeeKey: EmployeeBusinessKey, draft: WorkCenterCreateDraft): Observable<void> {
+  createWorkCenter(
+    employeeKey: EmployeeBusinessKey,
+    draft: WorkCenterCreateDraft,
+  ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workCenterClient
@@ -64,7 +69,11 @@ export class EmployeeWorkCenterGateway {
       .pipe(map(() => undefined));
   }
 
-  closeWorkCenter(employeeKey: EmployeeBusinessKey, workCenterAssignmentNumber: number, endDate: string): Observable<void> {
+  closeWorkCenter(
+    employeeKey: EmployeeBusinessKey,
+    workCenterAssignmentNumber: number,
+    endDate: string,
+  ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workCenterClient
@@ -92,7 +101,10 @@ export class EmployeeWorkCenterGateway {
       .pipe(map(() => undefined));
   }
 
-  deleteWorkCenter(employeeKey: EmployeeBusinessKey, workCenterAssignmentNumber: number): Observable<void> {
+  deleteWorkCenter(
+    employeeKey: EmployeeBusinessKey,
+    workCenterAssignmentNumber: number,
+  ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workCenterClient

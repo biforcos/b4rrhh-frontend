@@ -145,39 +145,50 @@ describe('EmployeeFieldCatalogService', () => {
     };
 
     apiMock = {
-      getCatalogBindingsByResourceCode: vi.fn().mockImplementation(({ resourceCode }: { resourceCode: string }) =>
-        of({
-          resourceCode,
-          fields: bindingsByResource[resourceCode] ?? [],
-        }),
-      ),
+      getCatalogBindingsByResourceCode: vi
+        .fn()
+        .mockImplementation(({ resourceCode }: { resourceCode: string }) =>
+          of({
+            resourceCode,
+            fields: bindingsByResource[resourceCode] ?? [],
+          }),
+        ),
       getDirectCatalogOptions: vi
         .fn()
-        .mockImplementation(({ ruleSystemCode, ruleEntityTypeCode }: { ruleSystemCode: string; ruleEntityTypeCode: string }) =>
-          of({
+        .mockImplementation(
+          ({
             ruleSystemCode,
             ruleEntityTypeCode,
-            referenceDate: '2026-03-23',
-            items: directItemsByEntity[ruleEntityTypeCode] ?? [],
-          }),
+          }: {
+            ruleSystemCode: string;
+            ruleEntityTypeCode: string;
+          }) =>
+            of({
+              ruleSystemCode,
+              ruleEntityTypeCode,
+              referenceDate: '2026-03-23',
+              items: directItemsByEntity[ruleEntityTypeCode] ?? [],
+            }),
         ),
     };
 
     catalogsApiMock = {
-      getWorkCentersByCompany: vi.fn().mockImplementation(
-        ({ ruleSystemCode, companyCode }: { ruleSystemCode: string; companyCode: string }) =>
-          of({
-            ruleSystemCode,
-            companyCode,
-            referenceDate: '2026-03-23',
-            items: [
-              {
-                code: 'ES01-MAD',
-                name: 'Madrid ES01',
-              },
-            ],
-          }),
-      ),
+      getWorkCentersByCompany: vi
+        .fn()
+        .mockImplementation(
+          ({ ruleSystemCode, companyCode }: { ruleSystemCode: string; companyCode: string }) =>
+            of({
+              ruleSystemCode,
+              companyCode,
+              referenceDate: '2026-03-23',
+              items: [
+                {
+                  code: 'ES01-MAD',
+                  name: 'Madrid ES01',
+                },
+              ],
+            }),
+        ),
     };
 
     TestBed.configureTestingModule({
@@ -243,12 +254,16 @@ describe('EmployeeFieldCatalogService', () => {
     });
 
     expect(result).toEqual([]);
-    expect(thrownMessage).toBe('Missing active DIRECT binding for employee.contact.contactTypeCode.');
+    expect(thrownMessage).toBe(
+      'Missing active DIRECT binding for employee.contact.contactTypeCode.',
+    );
     expect(apiMock.getDirectCatalogOptions).not.toHaveBeenCalled();
   });
 
   it('emits an error when direct catalog request fails', () => {
-    apiMock.getDirectCatalogOptions.mockReturnValue(throwError(() => new Error('backend unavailable')));
+    apiMock.getDirectCatalogOptions.mockReturnValue(
+      throwError(() => new Error('backend unavailable')),
+    );
 
     let result: ReadonlyArray<{ value: string; label: string }> = [];
     let thrownMessage: string | null = null;
@@ -322,7 +337,13 @@ describe('EmployeeFieldCatalogService', () => {
 
   it('returns empty options for one presence field without affecting the others', () => {
     apiMock.getDirectCatalogOptions.mockImplementation(
-      ({ ruleSystemCode, ruleEntityTypeCode }: { ruleSystemCode: string; ruleEntityTypeCode: string }) => {
+      ({
+        ruleSystemCode,
+        ruleEntityTypeCode,
+      }: {
+        ruleSystemCode: string;
+        ruleEntityTypeCode: string;
+      }) => {
         if (ruleEntityTypeCode === 'EMPLOYEE_PRESENCE_EXIT_REASON') {
           return of({
             ruleSystemCode,

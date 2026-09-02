@@ -57,7 +57,9 @@
   color: var(--text-secondary);
   padding: 0 10px;
   overflow: hidden;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 
   &:hover {
     background: var(--surface-hover);
@@ -83,7 +85,6 @@
   color: var(--warning-text);
 }
 
-
 .index-panel__nav-icon {
   width: 20px;
   flex-shrink: 0;
@@ -94,7 +95,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 /* Delete photo button */
 .index-panel__delete-photo {

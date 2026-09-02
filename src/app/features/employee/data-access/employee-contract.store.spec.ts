@@ -58,7 +58,9 @@ describe('EmployeeContractStore', () => {
     store.loadContractsByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeContractsByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeContractsByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeContractsByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.contracts()).toEqual(contractsFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();
@@ -148,9 +150,13 @@ describe('EmployeeContractStore', () => {
       endDate: '2025-02-15',
     });
 
-    expect(readGatewayMock.closeContractOccurrence).toHaveBeenCalledWith(employeeBusinessKey, '2024-06-01', {
-      endDate: '2025-02-15',
-    });
+    expect(readGatewayMock.closeContractOccurrence).toHaveBeenCalledWith(
+      employeeBusinessKey,
+      '2024-06-01',
+      {
+        endDate: '2025-02-15',
+      },
+    );
     expect(readGatewayMock.readEmployeeContractsByBusinessKey).toHaveBeenCalledTimes(2);
     expect(store.success()).toBe('closed');
   });

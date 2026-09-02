@@ -23,7 +23,9 @@
     >
       <div listItemHeader class="work-center-list__identity-block">
         <span class="work-center-list__name">{{ workCenter.name }}</span>
-        <span class="work-center-list__company">{{ workCenter.companyCode || texts.detailViewEmptyValue }}</span>
+        <span class="work-center-list__company">{{
+          workCenter.companyCode || texts.detailViewEmptyValue
+        }}</span>
       </div>
 
       <div class="work-center-list__chips">

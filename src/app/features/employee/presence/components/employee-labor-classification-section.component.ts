@@ -39,7 +39,13 @@ interface LaborClassificationPeriodRow extends TemporalSectionRow {
 @Component({
   selector: 'app-employee-labor-classification-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    UiCatalogLabelComponent,
+  ],
   templateUrl: './employee-labor-classification-section.component.html',
 })
 export class EmployeeLaborClassificationSectionComponent {
@@ -76,7 +82,9 @@ export class EmployeeLaborClassificationSectionComponent {
       canDelete: false,
       agreementCode: lc.agreementCode,
       agreementLabel:
-        lc.agreementName ?? this.agreementOptionsState().find((o) => o.value === lc.agreementCode)?.label ?? null,
+        lc.agreementName ??
+        this.agreementOptionsState().find((o) => o.value === lc.agreementCode)?.label ??
+        null,
       agreementCategoryCode: lc.agreementCategoryCode,
       categoryLabel: lc.agreementCategoryName ?? null,
       grupoCotizacionCode: lc.grupoCotizacionCode ?? null,

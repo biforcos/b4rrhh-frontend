@@ -15,7 +15,9 @@ import { EmployeeContactModel } from '../models/employee-contact.model';
 export class EmployeeContactReadGateway {
   private readonly employeeContactReadClient = inject(EmployeeContactReadClient);
 
-  readEmployeeContactsByBusinessKey(key: EmployeeBusinessKey): Observable<ReadonlyArray<EmployeeContactModel>> {
+  readEmployeeContactsByBusinessKey(
+    key: EmployeeBusinessKey,
+  ): Observable<ReadonlyArray<EmployeeContactModel>> {
     return this.employeeContactReadClient.readEmployeeContactsByBusinessKey(key).pipe(
       map((contacts) =>
         contacts

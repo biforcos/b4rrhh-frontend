@@ -15,10 +15,14 @@
     </ng-template>
     <ng-template #cellContent let-row>
       <!-- ADR-051 §4: el código nunca va solo. -->
-      <td><app-ui-catalog-label [name]="row.familySituationLabel" [code]="row.familySituation" /></td>
+      <td>
+        <app-ui-catalog-label [name]="row.familySituationLabel" [code]="row.familySituation" />
+      </td>
       <td>{{ row.descendantsCount }}</td>
       <td>{{ row.ascendantsCount }}</td>
-      <td><app-ui-catalog-label [name]="row.disabilityDegreeLabel" [code]="row.disabilityDegree" /></td>
+      <td>
+        <app-ui-catalog-label [name]="row.disabilityDegreeLabel" [code]="row.disabilityDegree" />
+      </td>
     </ng-template>
   </app-temporal-section>
 
@@ -34,53 +38,59 @@
     (cancelled)="closeModal()"
   >
     @if (modalMode() === 'create') {
-      <app-ui-date-input
-        [value]="validFromDraft()"
-        (valueChanged)="validFromDraft.set($event)" />
+      <app-ui-date-input [value]="validFromDraft()" (valueChanged)="validFromDraft.set($event)" />
       <app-ui-select
         [options]="familySituationOptions"
         [value]="familySituationDraft()"
         placeholder="Situación familiar"
-        (valueChanged)="familySituationDraft.set($event)" />
+        (valueChanged)="familySituationDraft.set($event)"
+      />
       <input
         type="number"
         min="0"
         class="tax-information-section__count-input"
         [value]="descendantsCountDraft()"
         placeholder="Descendientes con derecho"
-        (input)="descendantsCountDraft.set($any($event.target).value)" />
+        (input)="descendantsCountDraft.set($any($event.target).value)"
+      />
       <input
         type="number"
         min="0"
         class="tax-information-section__count-input"
         [value]="ascendantsCountDraft()"
         placeholder="Ascendientes a cargo"
-        (input)="ascendantsCountDraft.set($any($event.target).value)" />
+        (input)="ascendantsCountDraft.set($any($event.target).value)"
+      />
       <app-ui-select
         [options]="disabilityDegreeOptions"
         [value]="disabilityDegreeDraft()"
         placeholder="Grado de discapacidad"
-        (valueChanged)="disabilityDegreeDraft.set($event)" />
+        (valueChanged)="disabilityDegreeDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="pensionCompensatoriaDraft()"
         placeholder="Pensión compensatoria"
-        (valueChanged)="pensionCompensatoriaDraft.set($event)" />
+        (valueChanged)="pensionCompensatoriaDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="geographicMobilityDraft()"
         placeholder="Movilidad geográfica"
-        (valueChanged)="geographicMobilityDraft.set($event)" />
+        (valueChanged)="geographicMobilityDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="habitualResidenceLoanDraft()"
         placeholder="Préstamo vivienda habitual"
-        (valueChanged)="habitualResidenceLoanDraft.set($event)" />
+        (valueChanged)="habitualResidenceLoanDraft.set($event)"
+      />
       <app-ui-select
         [options]="taxTerritoryOptions"
         [value]="taxTerritoryDraft()"
         placeholder="Territorio fiscal"
-        (valueChanged)="taxTerritoryDraft.set($event)" />
+        (valueChanged)="taxTerritoryDraft.set($event)"
+      />
     }
 
     @if (modalMode() === 'edit') {
@@ -88,52 +98,61 @@
         [options]="familySituationOptions"
         [value]="familySituationDraft()"
         placeholder="Situación familiar"
-        (valueChanged)="familySituationDraft.set($event)" />
+        (valueChanged)="familySituationDraft.set($event)"
+      />
       <input
         type="number"
         min="0"
         class="tax-information-section__count-input"
         [value]="descendantsCountDraft()"
         placeholder="Descendientes con derecho"
-        (input)="descendantsCountDraft.set($any($event.target).value)" />
+        (input)="descendantsCountDraft.set($any($event.target).value)"
+      />
       <input
         type="number"
         min="0"
         class="tax-information-section__count-input"
         [value]="ascendantsCountDraft()"
         placeholder="Ascendientes a cargo"
-        (input)="ascendantsCountDraft.set($any($event.target).value)" />
+        (input)="ascendantsCountDraft.set($any($event.target).value)"
+      />
       <app-ui-select
         [options]="disabilityDegreeOptions"
         [value]="disabilityDegreeDraft()"
         placeholder="Grado de discapacidad"
-        (valueChanged)="disabilityDegreeDraft.set($event)" />
+        (valueChanged)="disabilityDegreeDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="pensionCompensatoriaDraft()"
         placeholder="Pensión compensatoria"
-        (valueChanged)="pensionCompensatoriaDraft.set($event)" />
+        (valueChanged)="pensionCompensatoriaDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="geographicMobilityDraft()"
         placeholder="Movilidad geográfica"
-        (valueChanged)="geographicMobilityDraft.set($event)" />
+        (valueChanged)="geographicMobilityDraft.set($event)"
+      />
       <app-ui-select
         [options]="booleanOptions"
         [value]="habitualResidenceLoanDraft()"
         placeholder="Préstamo vivienda habitual"
-        (valueChanged)="habitualResidenceLoanDraft.set($event)" />
+        (valueChanged)="habitualResidenceLoanDraft.set($event)"
+      />
       <app-ui-select
         [options]="taxTerritoryOptions"
         [value]="taxTerritoryDraft()"
         placeholder="Territorio fiscal"
-        (valueChanged)="taxTerritoryDraft.set($event)" />
+        (valueChanged)="taxTerritoryDraft.set($event)"
+      />
     }
 
     @if (modalMode() === 'delete-confirm') {
       <p class="tax-information-section__delete-message">
         ¿Confirmar la eliminación del registro vigente desde
-        <strong>{{ editingValidFromLabel() }}</strong>?
+        <strong>{{ editingValidFromLabel() }}</strong
+        >?
       </p>
     }
   </app-period-modal>

@@ -1,4 +1,7 @@
-import { RehireEmployeeRequest, RehireEmployeeResponse } from '../../../core/api/generated/model/models';
+import {
+  RehireEmployeeRequest,
+  RehireEmployeeResponse,
+} from '../../../core/api/generated/model/models';
 import { RehireEmployeeDraft, RehireEmployeeResult } from '../models/employee-rehire.model';
 
 export function mapDraftToRehireRequest(draft: RehireEmployeeDraft): RehireEmployeeRequest {

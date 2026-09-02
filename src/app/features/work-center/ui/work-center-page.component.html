@@ -13,16 +13,25 @@
   <section slot="detail" class="work-center-page__detail-slot">
     @if (store.hasActiveDetail()) {
       @if (store.detailLoading()) {
-        <app-section-card [title]="texts.detailPanelTitle" [description]="texts.detailLoadingMessage">
-          <p class="work-center-page__feedback work-center-page__feedback--loading">{{ texts.detailLoadingMessage }}</p>
+        <app-section-card
+          [title]="texts.detailPanelTitle"
+          [description]="texts.detailLoadingMessage"
+        >
+          <p class="work-center-page__feedback work-center-page__feedback--loading">
+            {{ texts.detailLoadingMessage }}
+          </p>
         </app-section-card>
       } @else if (store.detailError() === 'not-found') {
         <app-section-card [title]="texts.detailPanelTitle">
-          <p class="work-center-page__feedback work-center-page__feedback--error">{{ texts.detailNotFoundMessage }}</p>
+          <p class="work-center-page__feedback work-center-page__feedback--error">
+            {{ texts.detailNotFoundMessage }}
+          </p>
         </app-section-card>
       } @else if (store.detailError()) {
         <app-section-card [title]="texts.detailPanelTitle">
-          <p class="work-center-page__feedback work-center-page__feedback--error">{{ texts.detailLoadFailedMessage }}</p>
+          <p class="work-center-page__feedback work-center-page__feedback--error">
+            {{ texts.detailLoadFailedMessage }}
+          </p>
         </app-section-card>
       } @else {
         <app-work-center-detail-panel

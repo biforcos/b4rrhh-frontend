@@ -30,7 +30,10 @@ import {
   buildEmptyWorkCenterContactFormValue,
   buildWorkCenterContactFormValueFromModel,
 } from '../mapper/work-center-contact.mapper';
-import { buildEmptyWorkCenterFormValue, buildWorkCenterFormValueFromDetail } from '../mapper/work-center-form.mapper';
+import {
+  buildEmptyWorkCenterFormValue,
+  buildWorkCenterFormValueFromDetail,
+} from '../mapper/work-center-form.mapper';
 import { WorkCenterContactFormValue } from '../models/work-center-contact-form-value.model';
 import { WorkCenterContactModel } from '../models/work-center-contact.model';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
@@ -73,7 +76,10 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   readonly submitted = output<WorkCenterFormValue>();
   readonly cancelled = output<void>();
   readonly contactCreateSubmitted = output<WorkCenterContactFormValue>();
-  readonly contactUpdateSubmitted = output<{ contactNumber: number; formValue: WorkCenterContactFormValue }>();
+  readonly contactUpdateSubmitted = output<{
+    contactNumber: number;
+    formValue: WorkCenterContactFormValue;
+  }>();
   readonly contactDeleteRequested = output<number>();
 
   protected readonly texts = workCenterTexts;
@@ -92,13 +98,24 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   protected readonly isCreateMode = computed(() => this.mode() === 'create');
   protected readonly isEditMode = computed(() => this.mode() === 'edit');
   protected readonly isViewMode = computed(() => this.mode() === 'view');
-  protected readonly isContactCreateMode = computed(() => this.contactEditorModeState() === 'create');
+  protected readonly isContactCreateMode = computed(
+    () => this.contactEditorModeState() === 'create',
+  );
   protected readonly isContactEditMode = computed(() => this.contactEditorModeState() === 'edit');
-  protected readonly isContactEditorVisible = computed(() => this.isContactCreateMode() || this.isContactEditMode());
-  protected readonly hasPersistedDetail = computed(() => this.detail() !== null && !this.isCreateMode());
-  protected readonly hasAvailableContactTypeOptions = computed(() => this.contactTypeOptionsState().length > 0);
+  protected readonly isContactEditorVisible = computed(
+    () => this.isContactCreateMode() || this.isContactEditMode(),
+  );
+  protected readonly hasPersistedDetail = computed(
+    () => this.detail() !== null && !this.isCreateMode(),
+  );
+  protected readonly hasAvailableContactTypeOptions = computed(
+    () => this.contactTypeOptionsState().length > 0,
+  );
   protected readonly canCreateContact = computed(
-    () => this.hasPersistedDetail() && !this.contactTypeOptionsLoadingState() && this.contactTypeOptionsState().length > 0,
+    () =>
+      this.hasPersistedDetail() &&
+      !this.contactTypeOptionsLoadingState() &&
+      this.contactTypeOptionsState().length > 0,
   );
   protected readonly contactTypeOptionsLoading = this.contactTypeOptionsLoadingState.asReadonly();
   protected readonly contactTypeOptionsError = this.contactTypeOptionsErrorState.asReadonly();
@@ -110,8 +127,13 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       return options;
     }
 
-    const editingContact = this.contacts().find((contact) => contact.contactNumber === editingContactNumber);
-    if (!editingContact || options.some((option) => option.value === editingContact.contactTypeCode)) {
+    const editingContact = this.contacts().find(
+      (contact) => contact.contactNumber === editingContactNumber,
+    );
+    if (
+      !editingContact ||
+      options.some((option) => option.value === editingContact.contactTypeCode)
+    ) {
       return options;
     }
 
@@ -129,8 +151,14 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
 
   constructor() {
     this.form = this.fb.group({
-      ruleSystemCode: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(5)]],
-      workCenterCode: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(30)]],
+      ruleSystemCode: [
+        { value: '', disabled: false },
+        [Validators.required, Validators.maxLength(5)],
+      ],
+      workCenterCode: [
+        { value: '', disabled: false },
+        [Validators.required, Validators.maxLength(30)],
+      ],
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
       startDate: [{ value: '', disabled: false }, [Validators.required]],
@@ -227,11 +255,17 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   protected get entityWorkCenterCode(): string {
-    return ((this.form.getRawValue()['workCenterCode'] as string | null) ?? '').trim() || this.texts.detailViewEmptyValue;
+    return (
+      ((this.form.getRawValue()['workCenterCode'] as string | null) ?? '').trim() ||
+      this.texts.detailViewEmptyValue
+    );
   }
 
   protected get entityCompanyCode(): string {
-    return ((this.form.getRawValue()['companyCode'] as string | null) ?? '').trim() || this.texts.detailViewEmptyValue;
+    return (
+      ((this.form.getRawValue()['companyCode'] as string | null) ?? '').trim() ||
+      this.texts.detailViewEmptyValue
+    );
   }
 
   protected get entityLocation(): string {
@@ -338,7 +372,9 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
 
   private rebuildForm(): void {
     const detail = this.detail();
-    const initialValue = detail ? this.toFormState(buildWorkCenterFormValueFromDetail(detail)) : this.toFormState(buildEmptyWorkCenterFormValue());
+    const initialValue = detail
+      ? this.toFormState(buildWorkCenterFormValueFromDetail(detail))
+      : this.toFormState(buildEmptyWorkCenterFormValue());
 
     this.form.reset(initialValue);
     this.form.markAsPristine();
@@ -369,7 +405,10 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       workCenterCode: raw['workCenterCode'] ?? '',
       name: raw['name'] ?? '',
       description: raw['description'] ?? '',
-      startDate: raw['startDate'] instanceof Date ? this.toIsoDate(raw['startDate']) : (raw['startDate'] ?? ''),
+      startDate:
+        raw['startDate'] instanceof Date
+          ? this.toIsoDate(raw['startDate'])
+          : (raw['startDate'] ?? ''),
       companyCode: raw['companyCode'] ?? '',
       street: raw['street'] ?? '',
       city: raw['city'] ?? '',
@@ -408,31 +447,36 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
 
     this.contactTypeOptionsLoadingState.set(true);
 
-    this.fieldCatalogService.loadContactTypeOptions(normalizedRuleSystemCode).pipe(take(1)).subscribe({
-      next: (options) => {
-        if (requestId !== this.contactTypeRequestId) {
-          return;
-        }
+    this.fieldCatalogService
+      .loadContactTypeOptions(normalizedRuleSystemCode)
+      .pipe(take(1))
+      .subscribe({
+        next: (options) => {
+          if (requestId !== this.contactTypeRequestId) {
+            return;
+          }
 
-        this.contactTypeOptionsLoadingState.set(false);
-        this.contactTypeOptionsState.set(options);
-        this.syncCreateSelectionWithAvailableOptions(options);
-      },
-      error: () => {
-        if (requestId !== this.contactTypeRequestId) {
-          return;
-        }
+          this.contactTypeOptionsLoadingState.set(false);
+          this.contactTypeOptionsState.set(options);
+          this.syncCreateSelectionWithAvailableOptions(options);
+        },
+        error: () => {
+          if (requestId !== this.contactTypeRequestId) {
+            return;
+          }
 
-        this.contactTypeOptionsLoadingState.set(false);
-        this.contactTypeOptionsErrorState.set(this.texts.contactsCatalogLoadFailedMessage);
-        if (this.isContactCreateMode()) {
-          this.contactForm.get('contactTypeCode')?.setValue('');
-        }
-      },
-    });
+          this.contactTypeOptionsLoadingState.set(false);
+          this.contactTypeOptionsErrorState.set(this.texts.contactsCatalogLoadFailedMessage);
+          if (this.isContactCreateMode()) {
+            this.contactForm.get('contactTypeCode')?.setValue('');
+          }
+        },
+      });
   }
 
-  private syncCreateSelectionWithAvailableOptions(options: ReadonlyArray<SlotKeyOption<string>>): void {
+  private syncCreateSelectionWithAvailableOptions(
+    options: ReadonlyArray<SlotKeyOption<string>>,
+  ): void {
     if (!this.isContactCreateMode()) {
       return;
     }

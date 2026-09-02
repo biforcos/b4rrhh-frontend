@@ -24,11 +24,20 @@ const initialUiState: SectionUiState = {
     >
       <div sectionCardActions class="employee-section-demo__header-actions">
         @if (uiState().mode === 'view' && !uiState().busy) {
-          <button type="button" (click)="startCreate()">{{ texts.sectionShellCreateAction }}</button>
-          <button type="button" (click)="startEdit(demoBusinessKey)">{{ texts.sectionShellEditAction }}</button>
+          <button type="button" (click)="startCreate()">
+            {{ texts.sectionShellCreateAction }}
+          </button>
+          <button type="button" (click)="startEdit(demoBusinessKey)">
+            {{ texts.sectionShellEditAction }}
+          </button>
         }
 
-        @if ((uiState().mode === 'editing' || uiState().mode === 'creating' || uiState().mode === 'confirming') && !uiState().busy) {
+        @if (
+          (uiState().mode === 'editing' ||
+            uiState().mode === 'creating' ||
+            uiState().mode === 'confirming') &&
+          !uiState().busy
+        ) {
           <button type="button" class="employee-section-demo__cancel-action" (click)="cancel()">
             {{ texts.sectionShellCancelAction }}
           </button>
@@ -42,17 +51,23 @@ const initialUiState: SectionUiState = {
 
         @if (uiState().mode === 'creating') {
           <p>{{ texts.sectionDemoCreatingMessage }}</p>
-          <button type="button" (click)="submitCreate()">{{ texts.sectionDemoSubmitCreateAction }}</button>
+          <button type="button" (click)="submitCreate()">
+            {{ texts.sectionDemoSubmitCreateAction }}
+          </button>
         }
 
         @if (uiState().mode === 'editing') {
           <p>{{ texts.sectionDemoEditingMessage }}</p>
-          <button type="button" (click)="submitEdit()">{{ texts.sectionDemoSubmitEditAction }}</button>
+          <button type="button" (click)="submitEdit()">
+            {{ texts.sectionDemoSubmitEditAction }}
+          </button>
         }
 
         @if (uiState().mode === 'confirming') {
           <p>{{ texts.sectionDemoConfirmingMessage }}</p>
-          <button type="button" (click)="confirmClose()">{{ texts.sectionDemoConfirmCloseAction }}</button>
+          <button type="button" (click)="confirmClose()">
+            {{ texts.sectionDemoConfirmCloseAction }}
+          </button>
         }
       </div>
     </app-employee-section-shell>

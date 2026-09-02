@@ -17,10 +17,17 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       (input)="onDateInput($event)"
     />
   `,
-  styles: [`
-    :host { display: block; width: 100%; }
-    input { width: 100%; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 100%;
+      }
+      input {
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class UiDateInputComponent {
   readonly value = input<string | null>('');

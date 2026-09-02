@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { mapEmployeeLaborClassificationErrorCode } from './employee-labor-classification.error.mapper';
 import {
   LaborClassificationCloseDraft,
@@ -28,9 +31,13 @@ export type EmployeeLaborClassificationErrorCode =
   providedIn: 'root',
 })
 export class EmployeeLaborClassificationStore {
-  private readonly employeeLaborClassificationReadGateway = inject(EmployeeLaborClassificationReadGateway);
+  private readonly employeeLaborClassificationReadGateway = inject(
+    EmployeeLaborClassificationReadGateway,
+  );
   private readonly selectedEmployeeKeyState = signal<EmployeeBusinessKey | null>(null);
-  private readonly laborClassificationsState = signal<ReadonlyArray<EmployeeLaborClassificationModel>>([]);
+  private readonly laborClassificationsState = signal<
+    ReadonlyArray<EmployeeLaborClassificationModel>
+  >([]);
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeLaborClassificationErrorCode | null>(null);
@@ -142,7 +149,10 @@ export class EmployeeLaborClassificationStore {
       });
   }
 
-  private loadLaborClassificationsByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadLaborClassificationsByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

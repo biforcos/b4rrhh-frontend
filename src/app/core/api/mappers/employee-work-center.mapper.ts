@@ -26,7 +26,8 @@ export function mapEmployeeWorkCenterApiToReadModel(
   const startsAtPresenceStart = source.startsAtPresenceStart === true;
   const hasDeleteForbiddenByPresenceReason =
     source.deleteForbiddenReason?.trim().toUpperCase() === 'STARTS_AT_PRESENCE_START';
-  const deleteForbiddenByPresenceReason = startsAtPresenceStart || hasDeleteForbiddenByPresenceReason;
+  const deleteForbiddenByPresenceReason =
+    startsAtPresenceStart || hasDeleteForbiddenByPresenceReason;
   const canDelete = source.canDelete ?? !deleteForbiddenByPresenceReason;
 
   return {

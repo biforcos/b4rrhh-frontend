@@ -15,7 +15,9 @@ import { EmployeeDetailModel } from '../models/employee-detail.model';
 export class EmployeeDetailReadGateway {
   private readonly employeeReadClient = inject(EmployeeReadClient);
 
-  readEmployeeDetailByBusinessKey(key: EmployeeBusinessKey): Observable<EmployeeDetailModel | null> {
+  readEmployeeDetailByBusinessKey(
+    key: EmployeeBusinessKey,
+  ): Observable<EmployeeDetailModel | null> {
     return this.employeeReadClient.readEmployeeByBusinessKey(key).pipe(
       map((employee) => {
         if (!employee) {

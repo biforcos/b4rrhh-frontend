@@ -1,155 +1,247 @@
-
 <div class="rehire-page-container">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <!-- Page header -->
-  <header class="rehire-page-header">
-    <h1 class="rehire-title">{{ texts.rehireEmployeeTitle }}</h1>
-    <p class="rehire-subtitle">{{ texts.rehireEmployeeSubtitle }}</p>
-  </header>
+    <!-- Page header -->
+    <header class="rehire-page-header">
+      <h1 class="rehire-title">{{ texts.rehireEmployeeTitle }}</h1>
+      <p class="rehire-subtitle">{{ texts.rehireEmployeeSubtitle }}</p>
+    </header>
 
-  <!-- Rehire data -->
-  <section class="rehire-section">
-    <h2 class="rehire-section-title">{{ texts.rehireEmployeeDataSectionTitle }}</h2>
-    <div class="rehire-fields">
-      <div class="rehire-field">
-        <label for="rehireDate">Fecha de reincorporación *</label>
-        <p-datepicker id="rehireDate" formControlName="rehireDate" dateFormat="yy-mm-dd" [fluid]="true" appendTo="body" [showIcon]="true"></p-datepicker>
+    <!-- Rehire data -->
+    <section class="rehire-section">
+      <h2 class="rehire-section-title">{{ texts.rehireEmployeeDataSectionTitle }}</h2>
+      <div class="rehire-fields">
+        <div class="rehire-field">
+          <label for="rehireDate">Fecha de reincorporación *</label>
+          <p-datepicker
+            id="rehireDate"
+            formControlName="rehireDate"
+            dateFormat="yy-mm-dd"
+            [fluid]="true"
+            appendTo="body"
+            [showIcon]="true"
+          ></p-datepicker>
+        </div>
+        <div class="rehire-field">
+          <label for="companyCode">Empresa *</label>
+          <p-select
+            id="companyCode"
+            formControlName="companyCode"
+            [options]="companies()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona empresa"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field">
+          <label for="entryReasonCode">Motivo *</label>
+          <p-select
+            id="entryReasonCode"
+            formControlName="entryReasonCode"
+            [options]="entryReasons()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona motivo"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
       </div>
-      <div class="rehire-field">
-        <label for="companyCode">Empresa *</label>
-        <p-select id="companyCode" formControlName="companyCode" [options]="companies()" optionLabel="label" optionValue="value" placeholder="Selecciona empresa" [fluid]="true" appendTo="body"></p-select>
-      </div>
-      <div class="rehire-field">
-        <label for="entryReasonCode">Motivo *</label>
-        <p-select id="entryReasonCode" formControlName="entryReasonCode" [options]="entryReasons()" optionLabel="label" optionValue="value" placeholder="Selecciona motivo" [fluid]="true" appendTo="body"></p-select>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Organizational context -->
-  <section class="rehire-section">
-    <h2 class="rehire-section-title">{{ texts.rehireEmployeeOrganizationSectionTitle }}</h2>
-    <div class="rehire-fields">
-      <div class="rehire-field">
-        <label for="workCenterCode">Centro de trabajo *</label>
-        <p-select id="workCenterCode" formControlName="workCenterCode" [options]="workCenters()" optionLabel="label" optionValue="value" placeholder="Selecciona centro" [fluid]="true" appendTo="body"></p-select>
+    <!-- Organizational context -->
+    <section class="rehire-section">
+      <h2 class="rehire-section-title">{{ texts.rehireEmployeeOrganizationSectionTitle }}</h2>
+      <div class="rehire-fields">
+        <div class="rehire-field">
+          <label for="workCenterCode">Centro de trabajo *</label>
+          <p-select
+            id="workCenterCode"
+            formControlName="workCenterCode"
+            [options]="workCenters()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona centro"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field">
+          <label>Distribución de centros de coste (opcional)</label>
+          <app-employee-cost-center-distribution-editor
+            #ccEditor
+            [initialValue]="null"
+            [options]="costCenterOptions()"
+            [dateLabel]="texts.costCenterSectionStartDateLabel"
+          ></app-employee-cost-center-distribution-editor>
+        </div>
       </div>
-      <div class="rehire-field">
-        <label>Distribución de centros de coste (opcional)</label>
-        <app-employee-cost-center-distribution-editor #ccEditor [initialValue]="null" [options]="costCenterOptions()" [dateLabel]="texts.costCenterSectionStartDateLabel"></app-employee-cost-center-distribution-editor>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Labor context -->
-  <section class="rehire-section">
-    <h2 class="rehire-section-title">{{ texts.rehireEmployeeLaborSectionTitle }}</h2>
-    <div class="rehire-fields rehire-fields--two-col">
-      <div class="rehire-field">
-        <label for="contractTypeCode">Tipo de contrato *</label>
-        <p-select id="contractTypeCode" formControlName="contractTypeCode" [options]="contractTypes()" optionLabel="label" optionValue="value" placeholder="Selecciona tipo" [fluid]="true" appendTo="body"></p-select>
-      </div>
-      <div class="rehire-field">
-        <label for="contractSubtypeCode">Subtipo</label>
-        <p-select id="contractSubtypeCode" formControlName="contractSubtypeCode" [options]="contractSubtypes()" optionLabel="label" optionValue="value" placeholder="Selecciona subtipo" [fluid]="true" appendTo="body"></p-select>
-      </div>
-      <div class="rehire-field">
-        <label for="agreementCode">Convenio *</label>
-        <p-select id="agreementCode" formControlName="agreementCode" [options]="agreements()" optionLabel="label" optionValue="value" placeholder="Selecciona convenio" [fluid]="true" appendTo="body"></p-select>
-      </div>
-      <div class="rehire-field">
-        <label for="agreementCategoryCode">Categoría *</label>
-        <p-select id="agreementCategoryCode" formControlName="agreementCategoryCode" [options]="agreementCategories()" optionLabel="label" optionValue="value" placeholder="Selecciona categoría" [fluid]="true" appendTo="body"></p-select>
-      </div>
-      <div class="rehire-field rehire-field--full" data-testid="rehire-working-time-block">
-        <label for="workingTimePercentage">{{ texts.rehireEmployeeWorkingTimeTitle }} *</label>
-        <p-inputnumber
-          inputId="workingTimePercentage"
-          formControlName="workingTimePercentage"
-          [min]="0"
-          [max]="100"
-          [maxFractionDigits]="2"
-          [suffix]="' %'"
-          [useGrouping]="false"
-          [fluid]="true"
-          placeholder="0"
-        ></p-inputnumber>
-        <p class="rehire-working-time-hint">{{ texts.rehireEmployeeWorkingTimeHint }}</p>
+    <!-- Labor context -->
+    <section class="rehire-section">
+      <h2 class="rehire-section-title">{{ texts.rehireEmployeeLaborSectionTitle }}</h2>
+      <div class="rehire-fields rehire-fields--two-col">
+        <div class="rehire-field">
+          <label for="contractTypeCode">Tipo de contrato *</label>
+          <p-select
+            id="contractTypeCode"
+            formControlName="contractTypeCode"
+            [options]="contractTypes()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona tipo"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field">
+          <label for="contractSubtypeCode">Subtipo</label>
+          <p-select
+            id="contractSubtypeCode"
+            formControlName="contractSubtypeCode"
+            [options]="contractSubtypes()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona subtipo"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field">
+          <label for="agreementCode">Convenio *</label>
+          <p-select
+            id="agreementCode"
+            formControlName="agreementCode"
+            [options]="agreements()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona convenio"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field">
+          <label for="agreementCategoryCode">Categoría *</label>
+          <p-select
+            id="agreementCategoryCode"
+            formControlName="agreementCategoryCode"
+            [options]="agreementCategories()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona categoría"
+            [fluid]="true"
+            appendTo="body"
+          ></p-select>
+        </div>
+        <div class="rehire-field rehire-field--full" data-testid="rehire-working-time-block">
+          <label for="workingTimePercentage">{{ texts.rehireEmployeeWorkingTimeTitle }} *</label>
+          <p-inputnumber
+            inputId="workingTimePercentage"
+            formControlName="workingTimePercentage"
+            [min]="0"
+            [max]="100"
+            [maxFractionDigits]="2"
+            [suffix]="' %'"
+            [useGrouping]="false"
+            [fluid]="true"
+            placeholder="0"
+          ></p-inputnumber>
+          <p class="rehire-working-time-hint">{{ texts.rehireEmployeeWorkingTimeHint }}</p>
 
-        @if (workingTimePercentageError(); as errorMessage) {
-          <p-message severity="error" [text]="errorMessage" styleClass="rehire-working-time-feedback" />
-        }
+          @if (workingTimePercentageError(); as errorMessage) {
+            <p-message
+              severity="error"
+              [text]="errorMessage"
+              styleClass="rehire-working-time-feedback"
+            />
+          }
 
-        @if (workingTimePreview(); as preview) {
-          <div class="rehire-working-time-preview" aria-live="polite">
-            <div class="rehire-working-time-preview__item">
-              <span class="rehire-working-time-preview__label">{{ texts.workingTimeSectionWeeklyHoursLabel }}</span>
-              <strong>{{ formatHours(preview.weeklyHours) }}h</strong>
+          @if (workingTimePreview(); as preview) {
+            <div class="rehire-working-time-preview" aria-live="polite">
+              <div class="rehire-working-time-preview__item">
+                <span class="rehire-working-time-preview__label">{{
+                  texts.workingTimeSectionWeeklyHoursLabel
+                }}</span>
+                <strong>{{ formatHours(preview.weeklyHours) }}h</strong>
+              </div>
+              <div class="rehire-working-time-preview__item">
+                <span class="rehire-working-time-preview__label">{{
+                  texts.workingTimeSectionDailyHoursLabel
+                }}</span>
+                <strong>{{ formatHours(preview.dailyHours) }}h</strong>
+              </div>
+              <div class="rehire-working-time-preview__item">
+                <span class="rehire-working-time-preview__label">{{
+                  texts.workingTimeSectionMonthlyHoursLabel
+                }}</span>
+                <strong>{{ formatHours(preview.monthlyHours) }}h</strong>
+              </div>
             </div>
-            <div class="rehire-working-time-preview__item">
-              <span class="rehire-working-time-preview__label">{{ texts.workingTimeSectionDailyHoursLabel }}</span>
-              <strong>{{ formatHours(preview.dailyHours) }}h</strong>
-            </div>
-            <div class="rehire-working-time-preview__item">
-              <span class="rehire-working-time-preview__label">{{ texts.workingTimeSectionMonthlyHoursLabel }}</span>
-              <strong>{{ formatHours(preview.monthlyHours) }}h</strong>
-            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    @if (result(); as result) {
+      <section class="rehire-section rehire-summary" data-testid="rehire-result-summary">
+        <h2 class="rehire-section-title">{{ texts.rehireEmployeeSummaryTitle }}</h2>
+        <div class="rehire-summary-row">
+          <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryEmployeeLabel }}</span>
+          <span>{{ detail()?.displayName ?? result.employeeKey.employeeNumber }}</span>
+        </div>
+        <div class="rehire-summary-row">
+          <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryStatusLabel }}</span>
+          <span>{{ formatStatusLabel(result.status) }}</span>
+        </div>
+        <div class="rehire-summary-row">
+          <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryDateLabel }}</span>
+          <span>{{ result.rehireDate | date: displayDateFormat }}</span>
+        </div>
+
+        @if (result.newWorkingTime; as workingTime) {
+          <div class="rehire-summary-working-time" data-testid="rehire-working-time-summary">
+            <h3 class="rehire-summary-working-time__title">
+              {{ texts.rehireEmployeeSummaryWorkingTimeTitle }}
+            </h3>
+            <p class="rehire-summary-working-time__primary">
+              {{ formatHours(workingTime.workingTimePercentage) }}% jornada
+            </p>
+            <p>
+              {{ formatHours(workingTime.weeklyHours) }}h/semana ·
+              {{ formatHours(workingTime.dailyHours) }}h/día ·
+              {{ formatHours(workingTime.monthlyHours) }}h/mes
+            </p>
+            <p>
+              {{ texts.rehireEmployeeSummarySincePrefix }}
+              {{ workingTime.startDate | date: displayDateFormat }}
+            </p>
           </div>
         }
-      </div>
-    </div>
-  </section>
+      </section>
+    }
 
-  @if (result(); as result) {
-    <section class="rehire-section rehire-summary" data-testid="rehire-result-summary">
-      <h2 class="rehire-section-title">{{ texts.rehireEmployeeSummaryTitle }}</h2>
-      <div class="rehire-summary-row">
-        <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryEmployeeLabel }}</span>
-        <span>{{ detail()?.displayName ?? result.employeeKey.employeeNumber }}</span>
+    <!-- Footer actions -->
+    <footer class="rehire-footer">
+      <div class="rehire-footer-actions">
+        <p-button
+          [label]="texts.rehireEmployeeCancelAction"
+          severity="secondary"
+          (click)="onCancel()"
+          [disabled]="rehiring()"
+        >
+          <ng-template #icon><b4-icon name="cerrar" [size]="16" /></ng-template>
+        </p-button>
+        <p-button
+          [label]="texts.rehireEmployeeAction"
+          (click)="onSubmit()"
+          [loading]="rehiring()"
+          [disabled]="submitDisabled()"
+        >
+          <ng-template #icon><b4-icon name="comprobar" [size]="16" /></ng-template>
+        </p-button>
       </div>
-      <div class="rehire-summary-row">
-        <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryStatusLabel }}</span>
-        <span>{{ formatStatusLabel(result.status) }}</span>
-      </div>
-      <div class="rehire-summary-row">
-        <span class="rehire-summary-label">{{ texts.rehireEmployeeSummaryDateLabel }}</span>
-        <span>{{ result.rehireDate | date: displayDateFormat }}</span>
-      </div>
-
-      @if (result.newWorkingTime; as workingTime) {
-        <div class="rehire-summary-working-time" data-testid="rehire-working-time-summary">
-          <h3 class="rehire-summary-working-time__title">{{ texts.rehireEmployeeSummaryWorkingTimeTitle }}</h3>
-          <p class="rehire-summary-working-time__primary">{{ formatHours(workingTime.workingTimePercentage) }}% jornada</p>
-          <p>
-            {{ formatHours(workingTime.weeklyHours) }}h/semana · {{ formatHours(workingTime.dailyHours) }}h/día ·
-            {{ formatHours(workingTime.monthlyHours) }}h/mes
-          </p>
-          <p>{{ texts.rehireEmployeeSummarySincePrefix }} {{ workingTime.startDate | date: displayDateFormat }}</p>
-        </div>
-      }
-    </section>
-  }
-
-  <!-- Footer actions -->
-  <footer class="rehire-footer">
-    <div class="rehire-footer-actions">
-      <p-button
-        [label]="texts.rehireEmployeeCancelAction"
-        severity="secondary"
-        (click)="onCancel()"
-        [disabled]="rehiring()"
-      >
-        <ng-template #icon><b4-icon name="cerrar" [size]="16" /></ng-template>
-      </p-button>
-      <p-button
-        [label]="texts.rehireEmployeeAction"
-        (click)="onSubmit()"
-        [loading]="rehiring()"
-        [disabled]="submitDisabled()"
-      >
-        <ng-template #icon><b4-icon name="comprobar" [size]="16" /></ng-template>
-      </p-button>
-    </div>
-  </footer>
+    </footer>
   </form>
 </div>

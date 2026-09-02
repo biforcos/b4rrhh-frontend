@@ -16,8 +16,12 @@ export class EmployeeLaborClassificationCatalogStore {
   private readonly effectiveDateState = signal<string | null>(null);
   private readonly selectedAgreementCodeState = signal<string | null>(null);
   private readonly selectedAgreementCategoryCodeState = signal<string | null>(null);
-  private readonly agreementsState = signal<ReadonlyArray<EmployeeLaborClassificationCatalogItemModel>>([]);
-  private readonly agreementCategoriesState = signal<ReadonlyArray<EmployeeLaborClassificationCatalogItemModel>>([]);
+  private readonly agreementsState = signal<
+    ReadonlyArray<EmployeeLaborClassificationCatalogItemModel>
+  >([]);
+  private readonly agreementCategoriesState = signal<
+    ReadonlyArray<EmployeeLaborClassificationCatalogItemModel>
+  >([]);
   private readonly loadingAgreementsState = signal(false);
   private readonly loadingCategoriesState = signal(false);
   private readonly errorState = signal<EmployeeLaborClassificationCatalogErrorCode | null>(null);

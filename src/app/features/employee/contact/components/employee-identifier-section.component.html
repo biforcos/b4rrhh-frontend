@@ -9,7 +9,11 @@
   (addClicked)="startCreate()"
 >
   @if (creating() || hasRows()) {
-    <ul class="slot-section__rows" role="list" [attr.aria-label]="texts.identifiersSectionListAriaLabel">
+    <ul
+      class="slot-section__rows"
+      role="list"
+      [attr.aria-label]="texts.identifiersSectionListAriaLabel"
+    >
       @if (creating()) {
         <li class="slot-section__row slot-section__row--draft">
           <div class="slot-section__form">
@@ -33,7 +37,9 @@
                 (input)="updateCreateDraftValue($any($event.target).value)"
               />
               @if (isCreateDniInvalid()) {
-                <small class="slot-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
+                <small class="slot-section__field-error">{{
+                  texts.identifiersSectionInvalidDniMessage
+                }}</small>
               }
             </label>
             <label class="slot-section__field">
@@ -47,14 +53,26 @@
             </label>
             <label class="slot-section__field">
               <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
-              <app-ui-date-input [value]="createDraft().expirationDate" (valueChanged)="updateCreateDraftExpirationDate($event)" />
+              <app-ui-date-input
+                [value]="createDraft().expirationDate"
+                (valueChanged)="updateCreateDraftExpirationDate($event)"
+              />
             </label>
             <label class="slot-section__field slot-section__field--check">
-              <input type="checkbox" [checked]="createDraft().isPrimary" (change)="updateCreateDraftIsPrimary($any($event.target).checked)" />
+              <input
+                type="checkbox"
+                [checked]="createDraft().isPrimary"
+                (change)="updateCreateDraftIsPrimary($any($event.target).checked)"
+              />
               <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
             </label>
             <div class="slot-section__form-actions">
-              <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelCreate()">
+              <button
+                type="button"
+                class="slot-section__btn"
+                [disabled]="sectionState().busy"
+                (click)="cancelCreate()"
+              >
                 {{ texts.identifiersSectionCancelAction }}
               </button>
               <button
@@ -92,7 +110,9 @@
                   (input)="updateEditDraftValue($any($event.target).value)"
                 />
                 @if (isEditDniInvalid()) {
-                  <small class="slot-section__field-error">{{ texts.identifiersSectionInvalidDniMessage }}</small>
+                  <small class="slot-section__field-error">{{
+                    texts.identifiersSectionInvalidDniMessage
+                  }}</small>
                 }
               </label>
               <label class="slot-section__field">
@@ -106,14 +126,26 @@
               </label>
               <label class="slot-section__field">
                 <span>{{ texts.identifiersSectionExpirationDateLabel }}</span>
-                <app-ui-date-input [value]="editDraft().expirationDate" (valueChanged)="updateEditDraftExpirationDate($event)" />
+                <app-ui-date-input
+                  [value]="editDraft().expirationDate"
+                  (valueChanged)="updateEditDraftExpirationDate($event)"
+                />
               </label>
               <label class="slot-section__field slot-section__field--check">
-                <input type="checkbox" [checked]="editDraft().isPrimary" (change)="updateEditDraftIsPrimary($any($event.target).checked)" />
+                <input
+                  type="checkbox"
+                  [checked]="editDraft().isPrimary"
+                  (change)="updateEditDraftIsPrimary($any($event.target).checked)"
+                />
                 <span>{{ texts.identifiersSectionIsPrimaryLabel }}</span>
               </label>
               <div class="slot-section__form-actions">
-                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelEdit()">
+                <button
+                  type="button"
+                  class="slot-section__btn"
+                  [disabled]="sectionState().busy"
+                  (click)="cancelEdit()"
+                >
                   {{ texts.identifiersSectionCancelAction }}
                 </button>
                 <button
@@ -139,7 +171,12 @@
             </p>
             @if (deletingKey() === row.key) {
               <div class="slot-section__actions">
-                <button type="button" class="slot-section__btn" [disabled]="sectionState().busy" (click)="cancelDelete()">
+                <button
+                  type="button"
+                  class="slot-section__btn"
+                  [disabled]="sectionState().busy"
+                  (click)="cancelDelete()"
+                >
                   {{ texts.identifiersSectionCancelAction }}
                 </button>
                 <button
@@ -151,7 +188,9 @@
                   {{ texts.identifiersSectionConfirmDeleteAction }}
                 </button>
               </div>
-              <p class="slot-section__confirm">{{ texts.identifiersSectionConfirmDeleteMessage }}</p>
+              <p class="slot-section__confirm">
+                {{ texts.identifiersSectionConfirmDeleteMessage }}
+              </p>
             } @else {
               <div class="slot-section__actions slot-section__actions--quiet">
                 <button

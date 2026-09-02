@@ -55,7 +55,9 @@ describe('CatalogStore', () => {
       loadRuleEntities: vi.fn().mockReturnValue(of([activeOccurrence, closedOccurrence])),
       createRuleEntity: vi.fn().mockReturnValue(of(activeOccurrence)),
       correctRuleEntityByBusinessKey: vi.fn().mockReturnValue(of(activeOccurrence)),
-      closeRuleEntityByBusinessKey: vi.fn().mockReturnValue(of({ ...activeOccurrence, active: false })),
+      closeRuleEntityByBusinessKey: vi
+        .fn()
+        .mockReturnValue(of({ ...activeOccurrence, active: false })),
       deleteRuleEntityByBusinessKey: vi.fn().mockReturnValue(of(void 0)),
     };
 
@@ -115,7 +117,9 @@ describe('CatalogStore', () => {
 
   it('shows clear conflict message when backend rejects delete with 409', () => {
     gatewayMock.deleteRuleEntityByBusinessKey.mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'RULE_ENTITY_IN_USE' } })),
+      throwError(
+        () => new HttpErrorResponse({ status: 409, error: { message: 'RULE_ENTITY_IN_USE' } }),
+      ),
     );
 
     store.requestDelete(closedOccurrence.occurrenceKey);

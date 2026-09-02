@@ -132,7 +132,9 @@ describe('EmployeeWorkCenterStore', () => {
   });
 
   it('keeps context and sets request-failed when mutation fails', () => {
-    gatewayMock.correctWorkCenter.mockReturnValue(throwError(() => new Error('backend unavailable')));
+    gatewayMock.correctWorkCenter.mockReturnValue(
+      throwError(() => new Error('backend unavailable')),
+    );
 
     store.loadWorkCenters(employeeBusinessKey);
     store.correctWorkCenter(employeeBusinessKey, 9, {

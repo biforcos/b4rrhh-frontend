@@ -64,7 +64,9 @@ describe('EmployeeContactStore', () => {
     store.loadContactsByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeContactsByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeContactsByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeContactsByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.contacts()).toEqual(contactsFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();

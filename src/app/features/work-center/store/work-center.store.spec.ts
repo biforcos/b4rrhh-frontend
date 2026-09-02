@@ -117,7 +117,10 @@ describe('WorkCenterStore', () => {
   it('surfaces backend validation errors on contact create failure', () => {
     const key = { ruleSystemCode: 'ESP', workCenterCode: 'MADRID-HQ' };
     gatewayMock.createContact.mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 400, error: { message: 'contactTypeCode is invalid' } })),
+      throwError(
+        () =>
+          new HttpErrorResponse({ status: 400, error: { message: 'contactTypeCode is invalid' } }),
+      ),
     );
 
     store.selectWorkCenter(key);

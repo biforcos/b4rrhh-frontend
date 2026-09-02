@@ -11,7 +11,9 @@
         [attr.aria-label]="texts.payrollInputsPrevPeriodAriaLabel"
         [disabled]="sectionState().busy"
         (click)="prevPeriod()"
-      >&#8249;</button>
+      >
+        &#8249;
+      </button>
       <span class="employee-payroll-input-section__period-label">{{ periodLabel() }}</span>
       <button
         type="button"
@@ -19,7 +21,9 @@
         [attr.aria-label]="texts.payrollInputsNextPeriodAriaLabel"
         [disabled]="sectionState().busy"
         (click)="nextPeriod()"
-      >&#8250;</button>
+      >
+        &#8250;
+      </button>
     </div>
 
     <app-ui-button
@@ -33,7 +37,9 @@
 
   <div class="employee-payroll-input-section__body">
     @if (creating()) {
-      <article class="employee-payroll-input-section__slot employee-payroll-input-section__slot--create">
+      <article
+        class="employee-payroll-input-section__slot employee-payroll-input-section__slot--create"
+      >
         <div class="employee-payroll-input-section__form-grid">
           <div class="employee-payroll-input-section__field">
             <span>{{ texts.payrollInputsConceptCodeLabel }}</span>
@@ -96,7 +102,9 @@
               <p class="employee-payroll-input-section__row-code">{{ row.conceptCode }}</p>
 
               @if (editingCode() === row.conceptCode) {
-                <label class="employee-payroll-input-section__field employee-payroll-input-section__field--inline">
+                <label
+                  class="employee-payroll-input-section__field employee-payroll-input-section__field--inline"
+                >
                   <span>{{ texts.payrollInputsQuantityLabel }}</span>
                   <input
                     type="number"
@@ -109,7 +117,9 @@
                   />
                 </label>
               } @else if (deletingCode() === row.conceptCode) {
-                <p class="employee-payroll-input-section__confirm-text">{{ texts.payrollInputsConfirmDeleteMessage }}</p>
+                <p class="employee-payroll-input-section__confirm-text">
+                  {{ texts.payrollInputsConfirmDeleteMessage }}
+                </p>
               } @else {
                 <p class="employee-payroll-input-section__row-quantity">{{ row.quantity }}</p>
               }

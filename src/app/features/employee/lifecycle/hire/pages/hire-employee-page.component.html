@@ -186,7 +186,9 @@
 
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="agreementCode">{{ texts.laborClassificationSectionAgreementLabel }} *</label>
+              <label for="agreementCode"
+                >{{ texts.laborClassificationSectionAgreementLabel }} *</label
+              >
               <p-select
                 id="agreementCode"
                 formControlName="agreementCode"
@@ -200,7 +202,9 @@
               ></p-select>
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="agreementCategoryCode">{{ texts.laborClassificationSectionCategoryLabel }} *</label>
+              <label for="agreementCategoryCode"
+                >{{ texts.laborClassificationSectionCategoryLabel }} *</label
+              >
               <p-select
                 id="agreementCategoryCode"
                 formControlName="agreementCategoryCode"
@@ -215,7 +219,10 @@
             </div>
           </div>
 
-          <div class="hire-working-time-block flex flex-column gap-2" data-testid="hire-working-time-block">
+          <div
+            class="hire-working-time-block flex flex-column gap-2"
+            data-testid="hire-working-time-block"
+          >
             <label for="workingTimePercentage">{{ texts.hireEmployeeWorkingTimeTitle }}</label>
             <p-inputnumber
               inputId="workingTimePercentage"
@@ -231,21 +238,31 @@
             <p class="hire-working-time-hint">{{ texts.hireEmployeeWorkingTimeHint }}</p>
 
             @if (workingTimePercentageError(); as errorMessage) {
-              <p-message severity="error" [text]="errorMessage" styleClass="hire-working-time-feedback" />
+              <p-message
+                severity="error"
+                [text]="errorMessage"
+                styleClass="hire-working-time-feedback"
+              />
             }
 
             @if (workingTimePreview(); as preview) {
               <div class="hire-working-time-preview" aria-live="polite">
                 <div class="hire-working-time-preview__item">
-                  <span class="hire-working-time-preview__label">{{ texts.workingTimeSectionWeeklyHoursLabel }}</span>
+                  <span class="hire-working-time-preview__label">{{
+                    texts.workingTimeSectionWeeklyHoursLabel
+                  }}</span>
                   <strong>{{ formatHours(preview.weeklyHours) }}h</strong>
                 </div>
                 <div class="hire-working-time-preview__item">
-                  <span class="hire-working-time-preview__label">{{ texts.workingTimeSectionDailyHoursLabel }}</span>
+                  <span class="hire-working-time-preview__label">{{
+                    texts.workingTimeSectionDailyHoursLabel
+                  }}</span>
                   <strong>{{ formatHours(preview.dailyHours) }}h</strong>
                 </div>
                 <div class="hire-working-time-preview__item">
-                  <span class="hire-working-time-preview__label">{{ texts.workingTimeSectionMonthlyHoursLabel }}</span>
+                  <span class="hire-working-time-preview__label">{{
+                    texts.workingTimeSectionMonthlyHoursLabel
+                  }}</span>
                   <strong>{{ formatHours(preview.monthlyHours) }}h</strong>
                 </div>
               </div>
@@ -257,7 +274,11 @@
 
     @if (result(); as result) {
       <div class="col-12 mt-4">
-        <p-card [header]="texts.hireEmployeeSummaryTitle" styleClass="hire-summary" data-testid="hire-result-summary">
+        <p-card
+          [header]="texts.hireEmployeeSummaryTitle"
+          styleClass="hire-summary"
+          data-testid="hire-result-summary"
+        >
           <div class="hire-summary__grid">
             <div class="hire-summary__row">
               <span class="hire-summary__label">{{ texts.hireEmployeeSummaryEmployeeLabel }}</span>
@@ -275,13 +296,21 @@
 
           @if (result.workingTime; as workingTime) {
             <div class="hire-summary__working-time" data-testid="hire-working-time-summary">
-              <h3 class="hire-summary__working-time-title">{{ texts.hireEmployeeSummaryWorkingTimeTitle }}</h3>
-              <p class="hire-summary__working-time-primary">{{ formatHours(workingTime.workingTimePercentage) }}% jornada</p>
+              <h3 class="hire-summary__working-time-title">
+                {{ texts.hireEmployeeSummaryWorkingTimeTitle }}
+              </h3>
+              <p class="hire-summary__working-time-primary">
+                {{ formatHours(workingTime.workingTimePercentage) }}% jornada
+              </p>
               <p>
-                {{ formatHours(workingTime.weeklyHours) }}h/semana · {{ formatHours(workingTime.dailyHours) }}h/día ·
+                {{ formatHours(workingTime.weeklyHours) }}h/semana ·
+                {{ formatHours(workingTime.dailyHours) }}h/día ·
                 {{ formatHours(workingTime.monthlyHours) }}h/mes
               </p>
-              <p>{{ texts.hireEmployeeSummarySincePrefix }} {{ workingTime.startDate | date: displayDateFormat }}</p>
+              <p>
+                {{ texts.hireEmployeeSummarySincePrefix }}
+                {{ workingTime.startDate | date: displayDateFormat }}
+              </p>
             </div>
           }
         </p-card>

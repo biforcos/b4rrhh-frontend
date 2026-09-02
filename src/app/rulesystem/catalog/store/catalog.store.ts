@@ -493,7 +493,10 @@ export class CatalogStore {
   private reconcileOperationWithItems(items: ReadonlyArray<RuleEntityModel>): void {
     const activeKeys = new Set(items.map((item) => item.occurrenceKey));
 
-    if (this.correctingOccurrenceKeyState() && !activeKeys.has(this.correctingOccurrenceKeyState()!)) {
+    if (
+      this.correctingOccurrenceKeyState() &&
+      !activeKeys.has(this.correctingOccurrenceKeyState()!)
+    ) {
       this.cancel();
       return;
     }
@@ -520,7 +523,10 @@ export class CatalogStore {
     return null;
   }
 
-  private resolveSelectedCode(currentCode: string | null, availableCodes: ReadonlyArray<string>): string | null {
+  private resolveSelectedCode(
+    currentCode: string | null,
+    availableCodes: ReadonlyArray<string>,
+  ): string | null {
     if (availableCodes.length === 0) {
       return null;
     }
@@ -530,7 +536,9 @@ export class CatalogStore {
       return availableCodes[0];
     }
 
-    return availableCodes.includes(normalizedCurrentCode) ? normalizedCurrentCode : availableCodes[0];
+    return availableCodes.includes(normalizedCurrentCode)
+      ? normalizedCurrentCode
+      : availableCodes[0];
   }
 }
 

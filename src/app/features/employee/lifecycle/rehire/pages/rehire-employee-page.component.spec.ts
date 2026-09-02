@@ -2,7 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 
-import { EmployeeRehireStore, RehireEmployeeErrorCode } from '../../../data-access/employee-rehire.store';
+import {
+  EmployeeRehireStore,
+  RehireEmployeeErrorCode,
+} from '../../../data-access/employee-rehire.store';
 import { EmployeeRehireCatalogService } from '../../../data-access/employee-rehire-catalog.service';
 import { EmployeeDetailStore } from '../../../data-access/employee-detail.store';
 import { GlobalMessageService } from '../../../data-access/employee-global-message.store';
@@ -112,7 +115,9 @@ describe('RehireEmployeePageComponent', () => {
 
     fixture = TestBed.createComponent(RehireEmployeePageComponent);
     component = fixture.componentInstance;
-    rehireCatalog = TestBed.inject(EmployeeRehireCatalogService) as unknown as MockEmployeeRehireCatalogService;
+    rehireCatalog = TestBed.inject(
+      EmployeeRehireCatalogService,
+    ) as unknown as MockEmployeeRehireCatalogService;
     fixture.detectChanges();
   });
 
@@ -142,7 +147,9 @@ describe('RehireEmployeePageComponent', () => {
 
     expect(rehireStore.rehire).not.toHaveBeenCalled();
     expect(component.form.controls.workingTimePercentage.touched).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain(employeeTexts.rehireEmployeeWorkingTimeRequiredMessage);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      employeeTexts.rehireEmployeeWorkingTimeRequiredMessage,
+    );
   });
 
   it('includes only workingTime.workingTimePercentage in the outgoing draft', () => {
@@ -234,13 +241,17 @@ describe('RehireEmployeePageComponent', () => {
     });
     fixture.detectChanges();
 
-    const summary = fixture.nativeElement.querySelector('[data-testid="rehire-working-time-summary"]') as HTMLElement;
+    const summary = fixture.nativeElement.querySelector(
+      '[data-testid="rehire-working-time-summary"]',
+    ) as HTMLElement;
 
     expect(summary).not.toBeNull();
     expect(summary.textContent).toContain('80% jornada');
     expect(summary.textContent).toContain('32h/semana · 6,4h/día · 133,34h/mes');
     expect(summary.textContent).toContain(employeeTexts.rehireEmployeeSummaryWorkingTimeTitle);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain(employeeTexts.employeeStatusActiveLabel);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      employeeTexts.employeeStatusActiveLabel,
+    );
     expect(summary.textContent).toContain(employeeTexts.rehireEmployeeSummarySincePrefix);
     expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('ACTIVE');
     expect(summary.textContent).not.toContain('12');

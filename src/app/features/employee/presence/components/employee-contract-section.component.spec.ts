@@ -39,19 +39,17 @@ describe('EmployeeContractSectionComponent', () => {
         .mockReturnValue(of([{ value: 'PERM', label: 'Indefinido' }])),
     };
     catalogGateway = {
-      loadContractSubtypes: vi
-        .fn()
-        .mockReturnValue(
-          of([
-            {
-              code: 'PERM-FULL',
-              label: 'Full · PERM-FULL',
-              name: 'Full',
-              startDate: '2020-01-01',
-              endDate: null,
-            },
-          ]),
-        ),
+      loadContractSubtypes: vi.fn().mockReturnValue(
+        of([
+          {
+            code: 'PERM-FULL',
+            label: 'Full · PERM-FULL',
+            name: 'Full',
+            startDate: '2020-01-01',
+            endDate: null,
+          },
+        ]),
+      ),
     };
 
     await TestBed.configureTestingModule({

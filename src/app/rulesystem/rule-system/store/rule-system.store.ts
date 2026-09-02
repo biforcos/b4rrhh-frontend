@@ -167,7 +167,11 @@ export class RuleSystemStore {
 
   private formatError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
-      if (typeof error.error === 'object' && error.error && typeof error.error.message === 'string') {
+      if (
+        typeof error.error === 'object' &&
+        error.error &&
+        typeof error.error.message === 'string'
+      ) {
         return error.error.message;
       }
 

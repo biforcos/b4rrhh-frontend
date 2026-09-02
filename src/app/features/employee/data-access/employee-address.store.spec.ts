@@ -62,7 +62,9 @@ describe('EmployeeAddressStore', () => {
     store.loadAddressesByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.addresses()).toEqual(addressesFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();

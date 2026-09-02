@@ -60,7 +60,11 @@ export class EmployeeWorkingTimeGateway {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workingTimeClient
-      .updateWorkingTimeByBusinessKey(normalizedKey, workingTimeNumber, mapWorkingTimeUpdateDraftToRequest(draft))
+      .updateWorkingTimeByBusinessKey(
+        normalizedKey,
+        workingTimeNumber,
+        mapWorkingTimeUpdateDraftToRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 
@@ -72,17 +76,26 @@ export class EmployeeWorkingTimeGateway {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workingTimeClient
-      .closeWorkingTimeByBusinessKey(normalizedKey, workingTimeNumber, mapWorkingTimeCloseDraftToRequest(draft))
+      .closeWorkingTimeByBusinessKey(
+        normalizedKey,
+        workingTimeNumber,
+        mapWorkingTimeCloseDraftToRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 
   private sortByTimelineRecency(
     items: ReadonlyArray<EmployeeWorkingTimeModel>,
   ): ReadonlyArray<EmployeeWorkingTimeModel> {
-    return sortByTimelineRecency(items, (left, right) => right.workingTimeNumber - left.workingTimeNumber);
+    return sortByTimelineRecency(
+      items,
+      (left, right) => right.workingTimeNumber - left.workingTimeNumber,
+    );
   }
 
-  private toEmployeeWorkingTimeModel(source: EmployeeWorkingTimeReadModel): EmployeeWorkingTimeModel {
+  private toEmployeeWorkingTimeModel(
+    source: EmployeeWorkingTimeReadModel,
+  ): EmployeeWorkingTimeModel {
     return {
       workingTimeNumber: source.workingTimeNumber,
       startDate: source.startDate,

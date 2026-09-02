@@ -19,7 +19,12 @@ export interface EmployeeSectionShellAction {
 @Component({
   selector: 'app-employee-section-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SectionCardComponent, SectionCardActionsDirective, SectionCardFooterDirective, UiButtonComponent],
+  imports: [
+    SectionCardComponent,
+    SectionCardActionsDirective,
+    SectionCardFooterDirective,
+    UiButtonComponent,
+  ],
   templateUrl: './employee-section-shell.component.html',
   styleUrl: './employee-section-shell.component.scss',
 })

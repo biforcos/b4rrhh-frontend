@@ -11,9 +11,16 @@ import { EmployeeWorkCenterSectionComponent } from './employee-work-center-secti
 const employeeKey = { ruleSystemCode: 'RS1', employeeTypeCode: 'EMP', employeeNumber: '0001' };
 
 const wc = (overrides: Partial<EmployeeWorkCenterModel> = {}): EmployeeWorkCenterModel => ({
-  workCenterAssignmentNumber: 1, workCenterCode: 'WC1', workCenterName: 'Centro 1',
-  startDate: '2024-01-01', endDate: null, isActive: true, canDelete: false,
-  startsAtPresenceStart: false, deleteForbiddenReason: null, ...overrides,
+  workCenterAssignmentNumber: 1,
+  workCenterCode: 'WC1',
+  workCenterName: 'Centro 1',
+  startDate: '2024-01-01',
+  endDate: null,
+  isActive: true,
+  canDelete: false,
+  startsAtPresenceStart: false,
+  deleteForbiddenReason: null,
+  ...overrides,
 });
 
 class MockWorkCenterStore {
@@ -38,7 +45,9 @@ describe('EmployeeWorkCenterSectionComponent', () => {
 
   beforeEach(async () => {
     store = new MockWorkCenterStore();
-    fieldCatalog = { loadWorkCenterOptions: vi.fn().mockReturnValue(of([{ value: 'WC1', label: 'Centro 1' }])) };
+    fieldCatalog = {
+      loadWorkCenterOptions: vi.fn().mockReturnValue(of([{ value: 'WC1', label: 'Centro 1' }])),
+    };
 
     await TestBed.configureTestingModule({
       imports: [EmployeeWorkCenterSectionComponent, NoopAnimationsModule],
@@ -78,7 +87,9 @@ describe('EmployeeWorkCenterSectionComponent', () => {
     c.endDateDraft.set('');
     c.submit();
     expect(store.createWorkCenter).toHaveBeenCalledWith(employeeKey, {
-      workCenterCode: 'WC1', startDate: '2025-06-01', endDate: '',
+      workCenterCode: 'WC1',
+      startDate: '2025-06-01',
+      endDate: '',
     });
   });
 
@@ -89,7 +100,11 @@ describe('EmployeeWorkCenterSectionComponent', () => {
     c.openEdit(0);
     c.workCenterCodeDraft.set('WC2');
     c.submit();
-    expect(store.correctWorkCenter).toHaveBeenCalledWith(employeeKey, 1, expect.objectContaining({ workCenterCode: 'WC2' }));
+    expect(store.correctWorkCenter).toHaveBeenCalledWith(
+      employeeKey,
+      1,
+      expect.objectContaining({ workCenterCode: 'WC2' }),
+    );
   });
 
   it('calls closeWorkCenter after switchToClose', () => {

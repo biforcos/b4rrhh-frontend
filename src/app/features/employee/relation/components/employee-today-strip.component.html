@@ -13,7 +13,12 @@
         </dt>
         <dd class="today__value">
           @if (item.value; as value) {
-            <button type="button" class="today__link" [title]="texts.todayGoToLaneAction" (click)="select(item)">
+            <button
+              type="button"
+              class="today__link"
+              [title]="texts.todayGoToLaneAction"
+              (click)="select(item)"
+            >
               {{ value }}
             </button>
             @if (item.code; as code) {

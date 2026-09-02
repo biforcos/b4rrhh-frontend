@@ -15,11 +15,18 @@ import { MessageModule } from 'primeng/message';
 import { TextareaModule } from 'primeng/textarea';
 
 import { companyTexts } from '../company.texts';
-import { buildCompanyFormValueFromDetail, buildEmptyCompanyFormValue } from '../mapper/company-form.mapper';
+import {
+  buildCompanyFormValueFromDetail,
+  buildEmptyCompanyFormValue,
+} from '../mapper/company-form.mapper';
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyFormValue } from '../models/company-form-value.model';
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
-import { EntityHeaderComponent, EntityHeaderMetadataItem, EntityHeaderStatus } from '../../../shared/ui/entity-header/entity-header.component';
+import {
+  EntityHeaderComponent,
+  EntityHeaderMetadataItem,
+  EntityHeaderStatus,
+} from '../../../shared/ui/entity-header/entity-header.component';
 import { SectionCardComponent } from '../../../shared/ui/section-card/section-card.component';
 import { formatDisplayDate } from '../../../shared/utils/local-date.util';
 
@@ -64,8 +71,14 @@ export class CompanyDetailPanelComponent implements OnChanges {
 
   constructor() {
     this.form = this.fb.group({
-      ruleSystemCode: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(5)]],
-      companyCode: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(30)]],
+      ruleSystemCode: [
+        { value: '', disabled: false },
+        [Validators.required, Validators.maxLength(5)],
+      ],
+      companyCode: [
+        { value: '', disabled: false },
+        [Validators.required, Validators.maxLength(30)],
+      ],
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
       startDate: [{ value: '', disabled: false }, [Validators.required]],
@@ -246,7 +259,10 @@ export class CompanyDetailPanelComponent implements OnChanges {
       companyCode: raw['companyCode'] ?? '',
       name: raw['name'] ?? '',
       description: raw['description'] ?? '',
-      startDate: raw['startDate'] instanceof Date ? this.toIsoDate(raw['startDate']) : (raw['startDate'] ?? ''),
+      startDate:
+        raw['startDate'] instanceof Date
+          ? this.toIsoDate(raw['startDate'])
+          : (raw['startDate'] ?? ''),
       legalName: raw['legalName'] ?? '',
       taxIdentifier: raw['taxIdentifier'] ?? '',
       street: raw['street'] ?? '',

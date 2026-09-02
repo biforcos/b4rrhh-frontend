@@ -3,7 +3,9 @@ import { CompanyResponse } from '../../../core/api/generated/model/company-respo
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyListItemModel } from '../models/company-list-item.model';
 
-export function mapCompanyListItemResponseToModel(response: CompanyListItemResponse): CompanyListItemModel {
+export function mapCompanyListItemResponseToModel(
+  response: CompanyListItemResponse,
+): CompanyListItemModel {
   return {
     ruleSystemCode: response.ruleSystemCode,
     companyCode: response.companyCode,

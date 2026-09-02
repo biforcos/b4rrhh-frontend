@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
 
-import { SectionCardActionsDirective, SectionCardFooterDirective } from './section-card-slots.directive';
+import {
+  SectionCardActionsDirective,
+  SectionCardFooterDirective,
+} from './section-card-slots.directive';
 
 @Component({
   selector: 'app-section-card',

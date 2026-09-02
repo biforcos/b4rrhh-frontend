@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { TagModule } from 'primeng/tag';
 
 import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
@@ -78,8 +86,10 @@ export class EmployeeIdentityBarComponent {
     const years = Math.floor(months / 12);
     const rest = months % 12;
     const parts: string[] = [];
-    if (years > 0) parts.push(`${years} ${years === 1 ? t.identityYearLabel : t.identityYearsLabel}`);
-    if (rest > 0) parts.push(`${rest} ${rest === 1 ? t.identityMonthLabel : t.identityMonthsLabel}`);
+    if (years > 0)
+      parts.push(`${years} ${years === 1 ? t.identityYearLabel : t.identityYearsLabel}`);
+    if (rest > 0)
+      parts.push(`${rest} ${rest === 1 ? t.identityMonthLabel : t.identityMonthsLabel}`);
     return parts.join(` ${t.identityAndLabel} `);
   });
 

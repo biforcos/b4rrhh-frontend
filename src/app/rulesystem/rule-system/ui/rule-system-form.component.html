@@ -53,7 +53,8 @@
     }
     @if (
       form.controls.countryCode.touched &&
-      (form.controls.countryCode.hasError('minlength') || form.controls.countryCode.hasError('maxlength'))
+      (form.controls.countryCode.hasError('minlength') ||
+        form.controls.countryCode.hasError('maxlength'))
     ) {
       <small class="rule-system-form__error">{{ texts.formCountryLengthMessage }}</small>
     }
@@ -71,7 +72,9 @@
   }
 
   @if (successMessage()) {
-    <p class="rule-system-form__feedback rule-system-form__feedback--success">{{ successMessage() }}</p>
+    <p class="rule-system-form__feedback rule-system-form__feedback--success">
+      {{ successMessage() }}
+    </p>
   }
 
   <div class="rule-system-form__actions">
@@ -86,7 +89,13 @@
     <app-ui-button
       type="submit"
       [disabled]="saving()"
-      [label]="saving() ? texts.saveBusyMessage : (isEditMode() ? texts.formSaveEditAction : texts.formSaveCreateAction)"
+      [label]="
+        saving()
+          ? texts.saveBusyMessage
+          : isEditMode()
+            ? texts.formSaveEditAction
+            : texts.formSaveCreateAction
+      "
     />
   </div>
 </form>

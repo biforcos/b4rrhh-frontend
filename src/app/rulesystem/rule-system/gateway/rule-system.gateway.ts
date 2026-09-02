@@ -6,7 +6,10 @@ import {
   mapFormModelToCreateRuleSystemRequest,
   mapFormModelToUpdateRuleSystemRequest,
 } from '../mapper/rule-system-form.mapper';
-import { mapRuleSystemResponseListToModel, mapRuleSystemResponseToModel } from '../mapper/rule-system.mapper';
+import {
+  mapRuleSystemResponseListToModel,
+  mapRuleSystemResponseToModel,
+} from '../mapper/rule-system.mapper';
 import { RuleSystemFormModel } from '../models/rule-system-form.model';
 import { RuleSystem } from '../models/rule-system.model';
 

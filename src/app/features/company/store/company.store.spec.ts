@@ -91,7 +91,10 @@ describe('CompanyStore', () => {
 
     expect(gatewayMock.createCompany).toHaveBeenCalledTimes(1);
     expect(gatewayMock.listCompanies).toHaveBeenCalledTimes(2);
-    expect(gatewayMock.getCompany).toHaveBeenCalledWith({ ruleSystemCode: 'ESP', companyCode: 'ACME' });
+    expect(gatewayMock.getCompany).toHaveBeenCalledWith({
+      ruleSystemCode: 'ESP',
+      companyCode: 'ACME',
+    });
     expect(store.submitSuccess()).toBe('created');
     expect(store.selectedKey()).toEqual({ ruleSystemCode: 'ESP', companyCode: 'ACME' });
     expect(store.selectedDetail()).toEqual(companyDetailFixture);
@@ -102,7 +105,10 @@ describe('CompanyStore', () => {
   it('loads company detail in view mode when selecting an item', () => {
     store.selectCompany({ ruleSystemCode: 'ESP', companyCode: 'ACME' });
 
-    expect(gatewayMock.getCompany).toHaveBeenCalledWith({ ruleSystemCode: 'ESP', companyCode: 'ACME' });
+    expect(gatewayMock.getCompany).toHaveBeenCalledWith({
+      ruleSystemCode: 'ESP',
+      companyCode: 'ACME',
+    });
     expect(store.selectedDetail()).toEqual(companyDetailFixture);
     expect(store.isViewing()).toBe(true);
     expect(store.isEditing()).toBe(false);
@@ -152,7 +158,9 @@ describe('CompanyStore', () => {
 
   it('exposes backend validation error message on create failure', () => {
     gatewayMock.createCompany.mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 400, error: { message: 'countryCode is invalid' } })),
+      throwError(
+        () => new HttpErrorResponse({ status: 400, error: { message: 'countryCode is invalid' } }),
+      ),
     );
 
     store.startCreate();

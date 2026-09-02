@@ -6,7 +6,9 @@
 
   <section class="catalog-page__selector-zone">
     @if (loadingRuleSystems()) {
-      <p class="catalog-page__feedback catalog-page__feedback--loading">{{ texts.loadingRuleSystems }}</p>
+      <p class="catalog-page__feedback catalog-page__feedback--loading">
+        {{ texts.loadingRuleSystems }}
+      </p>
     }
     <app-rule-system-selector
       [ruleSystems]="ruleSystems()"
@@ -28,7 +30,9 @@
     <aside class="catalog-page__panel catalog-page__panel--types">
       <h3>{{ texts.typePanelTitle }}</h3>
       @if (loadingRuleEntityTypes()) {
-        <p class="catalog-page__feedback catalog-page__feedback--loading">{{ texts.loadingRuleEntityTypes }}</p>
+        <p class="catalog-page__feedback catalog-page__feedback--loading">
+          {{ texts.loadingRuleEntityTypes }}
+        </p>
       } @else {
         <app-rule-entity-type-list
           [items]="ruleEntityTypes()"
@@ -50,7 +54,9 @@
       } @else if (!selectedRuleEntityTypeCode()) {
         <p class="catalog-page__empty">{{ texts.emptyNoType }}</p>
       } @else if (loadingRuleEntities()) {
-        <p class="catalog-page__feedback catalog-page__feedback--loading">{{ texts.loadingRuleEntities }}</p>
+        <p class="catalog-page__feedback catalog-page__feedback--loading">
+          {{ texts.loadingRuleEntities }}
+        </p>
       } @else if (ruleEntities().length === 0) {
         <p class="catalog-page__empty">{{ texts.emptyNoEntities }}</p>
       } @else {
@@ -70,7 +76,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}: {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}:
+              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
             </p>
 
             <div class="catalog-page__operation-form">
@@ -135,7 +142,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}: {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}:
+              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
             </p>
 
             <div class="catalog-page__operation-form">
@@ -179,7 +187,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}: {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}:
+              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
             </p>
             <p class="catalog-page__operation-warning">{{ texts.operationDeleteMessage }}</p>
 
@@ -189,7 +198,9 @@
                 class="catalog-page__operation-danger"
                 severity="danger"
                 [disabled]="mutating()"
-                [label]="mutating() ? texts.operationDeletingMessage : texts.operationConfirmDeleteAction"
+                [label]="
+                  mutating() ? texts.operationDeletingMessage : texts.operationConfirmDeleteAction
+                "
                 (pressed)="confirmDelete()"
               />
               <app-ui-button

@@ -16,7 +16,9 @@ export function toEmployeeBusinessKey(value: EmployeeBusinessKey): EmployeeBusin
   };
 }
 
-export function readEmployeeBusinessKeyFromParamMap(paramMap: ParamMap): EmployeeBusinessKey | null {
+export function readEmployeeBusinessKeyFromParamMap(
+  paramMap: ParamMap,
+): EmployeeBusinessKey | null {
   const ruleSystemCode = paramMap.get(employeeRouteParamNames.ruleSystemCode)?.trim() ?? '';
   const employeeTypeCode = paramMap.get(employeeRouteParamNames.employeeTypeCode)?.trim() ?? '';
   const employeeNumber = paramMap.get(employeeRouteParamNames.employeeNumber)?.trim() ?? '';

@@ -46,10 +46,14 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
 }
 
-.editable-slot-section__row:not(.editable-slot-section__row--editing):not(.editable-slot-section__row--draft):not(.editable-slot-section__row--confirming-delete) {
+.editable-slot-section__row:not(.editable-slot-section__row--editing):not(
+    .editable-slot-section__row--draft
+  ):not(.editable-slot-section__row--confirming-delete) {
   justify-content: space-between;
 }
 

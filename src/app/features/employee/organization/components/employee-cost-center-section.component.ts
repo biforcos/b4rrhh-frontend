@@ -1,5 +1,13 @@
 import {
-  ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked, viewChild
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { take } from 'rxjs';
 
@@ -27,7 +35,12 @@ interface CostCenterPeriodRow extends TemporalSectionRow {
 @Component({
   selector: 'app-employee-cost-center-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, EmployeeCostCenterDistributionEditorComponent, UiDateInputComponent],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    EmployeeCostCenterDistributionEditorComponent,
+    UiDateInputComponent,
+  ],
   templateUrl: './employee-cost-center-section.component.html',
 })
 export class EmployeeCostCenterSectionComponent {
@@ -90,7 +103,10 @@ export class EmployeeCostCenterSectionComponent {
     });
     effect(() => {
       const success = this.costCenterStore.success();
-      if (success) untracked(() => { if (this.modalVisible()) this.closeModal(); });
+      if (success)
+        untracked(() => {
+          if (this.modalVisible()) this.closeModal();
+        });
     });
   }
 
@@ -128,7 +144,10 @@ export class EmployeeCostCenterSectionComponent {
       if (!editor.isValid()) return;
       const v = editor.getValue();
       if (this.costCenterStore.currentDistribution()) {
-        this.costCenterStore.replaceDistribution(key, { effectiveDate: v.startDate, items: v.items });
+        this.costCenterStore.replaceDistribution(key, {
+          effectiveDate: v.startDate,
+          items: v.items,
+        });
       } else {
         this.costCenterStore.createDistribution(key, { startDate: v.startDate, items: v.items });
       }
@@ -143,9 +162,15 @@ export class EmployeeCostCenterSectionComponent {
   }
 
   private loadCostCenterOptions(ruleSystemCode: string | null): void {
-    if (!ruleSystemCode) { this.costCenterOptions.set([]); return; }
-    this.fieldCatalogService.loadCostCenterOptions(ruleSystemCode).pipe(take(1)).subscribe({
-      next: (opts) => this.costCenterOptions.set(opts),
-    });
+    if (!ruleSystemCode) {
+      this.costCenterOptions.set([]);
+      return;
+    }
+    this.fieldCatalogService
+      .loadCostCenterOptions(ruleSystemCode)
+      .pipe(take(1))
+      .subscribe({
+        next: (opts) => this.costCenterOptions.set(opts),
+      });
   }
 }

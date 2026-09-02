@@ -35,15 +35,19 @@ describe('PeriodModalComponent', () => {
   });
 
   it('emits cancelled and visibleChange(false) on cancel', () => {
-    const cancelSpy = vi.fn(); const visibleSpy = vi.fn();
-    c.cancelled.subscribe(cancelSpy); c.visibleChange.subscribe(visibleSpy);
+    const cancelSpy = vi.fn();
+    const visibleSpy = vi.fn();
+    c.cancelled.subscribe(cancelSpy);
+    c.visibleChange.subscribe(visibleSpy);
     c.onCancel();
     expect(cancelSpy).toHaveBeenCalled();
     expect(visibleSpy).toHaveBeenCalledWith(false);
   });
 
   it('emits closeActionClicked', () => {
-    const spy = vi.fn(); c.closeActionClicked.subscribe(spy);
-    c.onCloseAction(); expect(spy).toHaveBeenCalled();
+    const spy = vi.fn();
+    c.closeActionClicked.subscribe(spy);
+    c.onCloseAction();
+    expect(spy).toHaveBeenCalled();
   });
 });

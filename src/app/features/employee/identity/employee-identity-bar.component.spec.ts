@@ -25,12 +25,25 @@ const EMPLOYEE: EmployeeDetailModel = {
 describe('EmployeeIdentityBarComponent', () => {
   const refresh = vi.fn();
 
-  function render(overrides: Partial<{ employee: EmployeeDetailModel | null; status: 'ACTIVE' | 'TERMINATED'; hireDate: string | null; isAdmin: boolean }> = {}) {
+  function render(
+    overrides: Partial<{
+      employee: EmployeeDetailModel | null;
+      status: 'ACTIVE' | 'TERMINATED';
+      hireDate: string | null;
+      isAdmin: boolean;
+    }> = {},
+  ) {
     const fixture = TestBed.createComponent(EmployeeIdentityBarComponent);
     fixture.componentRef.setInput('employeeKey', KEY);
-    fixture.componentRef.setInput('employee', overrides.employee === undefined ? EMPLOYEE : overrides.employee);
+    fixture.componentRef.setInput(
+      'employee',
+      overrides.employee === undefined ? EMPLOYEE : overrides.employee,
+    );
     fixture.componentRef.setInput('status', overrides.status ?? 'ACTIVE');
-    fixture.componentRef.setInput('hireDate', overrides.hireDate === undefined ? '2023-10-02' : overrides.hireDate);
+    fixture.componentRef.setInput(
+      'hireDate',
+      overrides.hireDate === undefined ? '2023-10-02' : overrides.hireDate,
+    );
     fixture.componentRef.setInput('isAdmin', overrides.isAdmin ?? false);
     fixture.componentRef.setInput('today', '2026-08-29');
     fixture.detectChanges();
@@ -41,15 +54,26 @@ describe('EmployeeIdentityBarComponent', () => {
     refresh.mockReset();
     TestBed.configureTestingModule({
       providers: [
-        { provide: EmployeePhotoService, useValue: { deletePhoto: vi.fn().mockReturnValue(of(undefined)) } },
-        { provide: EmployeeDetailStore, useValue: { refreshEmployeeDetailByBusinessKey: refresh, selectedEmployeeDetail: signal(null) } },
+        {
+          provide: EmployeePhotoService,
+          useValue: { deletePhoto: vi.fn().mockReturnValue(of(undefined)) },
+        },
+        {
+          provide: EmployeeDetailStore,
+          useValue: {
+            refreshEmployeeDetailByBusinessKey: refresh,
+            selectedEmployeeDetail: signal(null),
+          },
+        },
       ],
     });
   });
 
   it('el nombre manda y la clave va detrás, con alta y antigüedad', () => {
     const el: HTMLElement = render().nativeElement;
-    expect(el.querySelector('h1.identity-bar__name')?.textContent?.trim()).toBe('Elena Serrano Ibáñez');
+    expect(el.querySelector('h1.identity-bar__name')?.textContent?.trim()).toBe(
+      'Elena Serrano Ibáñez',
+    );
     const meta = el.querySelector('.identity-bar__meta')?.textContent?.replace(/\s+/g, ' ').trim();
     expect(meta).toContain('EMP000003');
     expect(meta).toContain('ESP / INTERNAL');
@@ -60,22 +84,39 @@ describe('EmployeeIdentityBarComponent', () => {
 
   it('el estado calla cuando es activo y habla cuando es baja', () => {
     expect(render().nativeElement.querySelector('.identity-bar__status')).toBeNull();
-    expect(render({ status: 'TERMINATED' }).nativeElement.querySelector('.identity-bar__status')?.textContent?.trim()).toBe('Baja');
+    expect(
+      render({ status: 'TERMINATED' })
+        .nativeElement.querySelector('.identity-bar__status')
+        ?.textContent?.trim(),
+    ).toBe('Baja');
   });
 
   it('sin foto, iniciales; con foto, la foto', () => {
     const noPhoto: HTMLElement = render().nativeElement;
     expect(noPhoto.querySelector('.identity-bar__initials')?.textContent?.trim()).toBe('EI');
     expect(noPhoto.querySelector('img')).toBeNull();
-    const withPhoto: HTMLElement = render({ employee: { ...EMPLOYEE, photoUrl: 'http://minio/foto.jpg' } }).nativeElement;
-    expect(withPhoto.querySelector('img.identity-bar__photo')?.getAttribute('src')).toBe('http://minio/foto.jpg');
+    const withPhoto: HTMLElement = render({
+      employee: { ...EMPLOYEE, photoUrl: 'http://minio/foto.jpg' },
+    }).nativeElement;
+    expect(withPhoto.querySelector('img.identity-bar__photo')?.getAttribute('src')).toBe(
+      'http://minio/foto.jpg',
+    );
     expect(withPhoto.querySelector('.identity-bar__initials')).toBeNull();
   });
 
   it('la antigüedad cuenta meses enteros y no dice nada antes del alta', () => {
-    expect(render({ hireDate: '2026-08-10' }).nativeElement.querySelector('.identity-bar__meta')?.textContent).toContain('menos de un mes');
-    expect(render({ hireDate: '2025-08-29' }).nativeElement.querySelector('.identity-bar__meta')?.textContent).toContain('antigüedad 1 año');
-    expect(render({ hireDate: '2027-01-01' }).nativeElement.querySelector('.identity-bar__meta')?.textContent).not.toContain('antigüedad');
+    expect(
+      render({ hireDate: '2026-08-10' }).nativeElement.querySelector('.identity-bar__meta')
+        ?.textContent,
+    ).toContain('menos de un mes');
+    expect(
+      render({ hireDate: '2025-08-29' }).nativeElement.querySelector('.identity-bar__meta')
+        ?.textContent,
+    ).toContain('antigüedad 1 año');
+    expect(
+      render({ hireDate: '2027-01-01' }).nativeElement.querySelector('.identity-bar__meta')
+        ?.textContent,
+    ).not.toContain('antigüedad');
   });
 
   it('quien administra abre el diálogo de foto; al confirmar, la ficha se refresca sin recargar', () => {

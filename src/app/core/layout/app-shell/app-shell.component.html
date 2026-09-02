@@ -1,12 +1,22 @@
 <div class="app-shell">
   <aside class="app-shell__sidebar">
-    <a class="app-shell__brand" [routerLink]="['/inicio']" [attr.aria-label]="texts.brandHomeAriaLabel">
+    <a
+      class="app-shell__brand"
+      [routerLink]="['/inicio']"
+      [attr.aria-label]="texts.brandHomeAriaLabel"
+    >
       <!-- Isotipo (public/brand/isotipo-mono.svg): fill="currentColor", hereda el color por CSS.
            aria-hidden porque el enlace ya lleva aria-label: sin esto el lector lo diría dos veces. -->
       <svg class="app-shell__brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <path fill="currentColor" fill-rule="evenodd" d="M4 4 H17.55 A5.45 5.45 0 0 1 17.55 14.9 H4 Z M8.4 7.7 H17.55 A1.75 1.75 0 0 1 17.55 11.2 H8.4 Z M4 17.1 H22.55 A5.45 5.45 0 0 1 22.55 28.0 H4 Z M8.4 20.8 H22.55 A1.75 1.75 0 0 1 22.55 24.3 H8.4 Z M4 14.9 H8.4 V17.1 H4 Z" />
+        <path
+          fill="currentColor"
+          fill-rule="evenodd"
+          d="M4 4 H17.55 A5.45 5.45 0 0 1 17.55 14.9 H4 Z M8.4 7.7 H17.55 A1.75 1.75 0 0 1 17.55 11.2 H8.4 Z M4 17.1 H22.55 A5.45 5.45 0 0 1 22.55 28.0 H4 Z M8.4 20.8 H22.55 A1.75 1.75 0 0 1 22.55 24.3 H8.4 Z M4 14.9 H8.4 V17.1 H4 Z"
+        />
       </svg>
-      <span class="app-shell__brand-name"><strong>{{ texts.brandName }}</strong></span>
+      <span class="app-shell__brand-name"
+        ><strong>{{ texts.brandName }}</strong></span
+      >
     </a>
 
     <!-- El ámbito: el sistema de reglas activo (ADR-049). No es un destino, es el contexto
@@ -35,14 +45,20 @@
              sembrados se traducen: eso es una pregunta de backend. -->
         <span class="app-shell__scope-value" [title]="active.name">{{ active.code }}</span>
       } @else {
-        <span class="app-shell__scope-value">{{ scope.error() ? texts.scopeUnavailable : '…' }}</span>
+        <span class="app-shell__scope-value">{{
+          scope.error() ? texts.scopeUnavailable : '…'
+        }}</span>
       }
     </div>
 
     <nav class="app-shell__nav" [attr.aria-label]="texts.navigationAriaLabel">
-
       <span class="app-shell__nav-group-label">{{ texts.groupEmployees }}</span>
-      <a class="app-shell__nav-item" routerLink="/personas/empleados" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a
+        class="app-shell__nav-item"
+        routerLink="/personas/empleados"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+      >
         <b4-icon class="app-shell__nav-icon" name="empleado" [size]="20" />
         <span>{{ texts.sectionDirectory }}</span>
       </a>
@@ -54,7 +70,12 @@
       @for (group of menu.groups(); track group.code) {
         <span class="app-shell__nav-group-label">{{ group.name }}</span>
         @for (entry of group.entries; track entry.link) {
-          <a class="app-shell__nav-item" [routerLink]="entry.link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+          <a
+            class="app-shell__nav-item"
+            [routerLink]="entry.link"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }"
+          >
             <b4-icon class="app-shell__nav-icon" [name]="entry.icon" [size]="20" />
             <span>{{ entry.label }}</span>
           </a>
@@ -62,15 +83,24 @@
       }
 
       <span class="app-shell__nav-group-label">{{ texts.groupPayroll }}</span>
-      <a class="app-shell__nav-item" routerLink="/nomina/recibos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a
+        class="app-shell__nav-item"
+        routerLink="/nomina/recibos"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+      >
         <b4-icon class="app-shell__nav-icon" name="recibo" [size]="20" />
         <span>{{ texts.sectionRecibos }}</span>
       </a>
-      <a class="app-shell__nav-item" routerLink="/nomina/operaciones" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a
+        class="app-shell__nav-item"
+        routerLink="/nomina/operaciones"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+      >
         <b4-icon class="app-shell__nav-icon" name="operacion" [size]="20" />
         <span>{{ texts.sectionOperaciones }}</span>
       </a>
-
     </nav>
 
     <footer class="app-shell__footer">
@@ -78,7 +108,13 @@
         <span class="app-shell__user-avatar">{{ userInitials() }}</span>
         <span class="app-shell__user-name">{{ auth.subject() ?? '—' }}</span>
       </div>
-      <button class="app-shell__logout-btn" type="button" (click)="logout()" [title]="texts.authLogoutAction" [attr.aria-label]="texts.authLogoutAction">
+      <button
+        class="app-shell__logout-btn"
+        type="button"
+        (click)="logout()"
+        [title]="texts.authLogoutAction"
+        [attr.aria-label]="texts.authLogoutAction"
+      >
         <b4-icon name="salir" [size]="20" />
       </button>
     </footer>

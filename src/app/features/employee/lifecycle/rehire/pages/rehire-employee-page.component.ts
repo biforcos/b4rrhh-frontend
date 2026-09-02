@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
+  ViewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { EmployeeRehireStore, RehireEmployeeErrorCode } from '../../../data-access/employee-rehire.store';
+import {
+  EmployeeRehireStore,
+  RehireEmployeeErrorCode,
+} from '../../../data-access/employee-rehire.store';
 import { EmployeeRehireCatalogService } from '../../../data-access/employee-rehire-catalog.service';
 import { GlobalMessageService } from '../../../data-access/employee-global-message.store';
 import { employeeTexts } from '../../../employee.texts';
@@ -21,7 +32,10 @@ import { EmployeeDetailStore } from '../../../data-access/employee-detail.store'
 import { RehireEmployeeDraft } from '../../../models/employee-rehire.model';
 import { readEmployeeBusinessKeyFromParamMap } from '../../../routing/employee-route-key.util';
 import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
-import { buildWorkingTimePreview, formatWorkingTimeHours } from '../../../shared/utils/working-time-preview.util';
+import {
+  buildWorkingTimePreview,
+  formatWorkingTimeHours,
+} from '../../../shared/utils/working-time-preview.util';
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 
@@ -68,7 +82,10 @@ export class RehireEmployeePageComponent {
     contractSubtypeCode: [''],
     agreementCode: ['', Validators.required],
     agreementCategoryCode: ['', Validators.required],
-    workingTimePercentage: [null as number | null, [Validators.required, Validators.min(0.01), Validators.max(100)]],
+    workingTimePercentage: [
+      null as number | null,
+      [Validators.required, Validators.min(0.01), Validators.max(100)],
+    ],
   });
 
   // Bind catalog signals from catalog service
@@ -89,7 +106,9 @@ export class RehireEmployeePageComponent {
   readonly formStatus = toSignal(this.form.statusChanges.pipe(startWith(this.form.status)), {
     initialValue: this.form.status,
   });
-  readonly workingTimePreview = computed(() => buildWorkingTimePreview(this.form.controls.workingTimePercentage.value));
+  readonly workingTimePreview = computed(() =>
+    buildWorkingTimePreview(this.form.controls.workingTimePercentage.value),
+  );
   readonly submitDisabled = computed(() => this.rehiring() || this.formStatus() !== 'VALID');
 
   // Expose selected employee detail for template
@@ -103,10 +122,17 @@ export class RehireEmployeePageComponent {
     effect((onCleanup) => {
       const messages = this.buildGlobalMessages();
       untracked(() => {
-        this.globalMessageService.setSourceMessages(RehireEmployeePageComponent.GLOBAL_SOURCE_KEY, messages);
+        this.globalMessageService.setSourceMessages(
+          RehireEmployeePageComponent.GLOBAL_SOURCE_KEY,
+          messages,
+        );
       });
       onCleanup(() => {
-        untracked(() => this.globalMessageService.clearSourceMessages(RehireEmployeePageComponent.GLOBAL_SOURCE_KEY));
+        untracked(() =>
+          this.globalMessageService.clearSourceMessages(
+            RehireEmployeePageComponent.GLOBAL_SOURCE_KEY,
+          ),
+        );
       });
     });
 

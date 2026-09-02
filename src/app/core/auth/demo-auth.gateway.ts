@@ -18,6 +18,9 @@ export class DemoAuthGateway {
   }
 
   login(subject: string, password: string): Observable<DemoAuthResponse> {
-    return this.http.post<DemoAuthResponse>(`${this.basePath}/demo/auth/login`, { subject, password });
+    return this.http.post<DemoAuthResponse>(`${this.basePath}/demo/auth/login`, {
+      subject,
+      password,
+    });
   }
 }

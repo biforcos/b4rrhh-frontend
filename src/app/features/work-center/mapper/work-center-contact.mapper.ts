@@ -4,7 +4,9 @@ import { WorkCenterContactResponse } from '../../../core/api/generated/model/wor
 import { WorkCenterContactFormValue } from '../models/work-center-contact-form-value.model';
 import { WorkCenterContactModel } from '../models/work-center-contact.model';
 
-export function mapWorkCenterContactResponseToModel(response: WorkCenterContactResponse): WorkCenterContactModel {
+export function mapWorkCenterContactResponseToModel(
+  response: WorkCenterContactResponse,
+): WorkCenterContactModel {
   return {
     contactNumber: response.contactNumber,
     contactTypeCode: response.contactTypeCode,
@@ -20,7 +22,9 @@ export function buildEmptyWorkCenterContactFormValue(): WorkCenterContactFormVal
   };
 }
 
-export function buildWorkCenterContactFormValueFromModel(model: WorkCenterContactModel): WorkCenterContactFormValue {
+export function buildWorkCenterContactFormValueFromModel(
+  model: WorkCenterContactModel,
+): WorkCenterContactFormValue {
   return {
     contactTypeCode: model.contactTypeCode,
     contactValue: model.contactValue,

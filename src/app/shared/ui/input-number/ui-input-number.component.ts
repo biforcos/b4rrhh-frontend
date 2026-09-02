@@ -22,10 +22,17 @@ import { InputNumberModule } from 'primeng/inputnumber';
       [suffix]="suffix() ?? ''"
     />
   `,
-  styles: [`
-    :host { display: block; width: 100%; }
-    :host ::ng-deep .p-inputnumber { width: 100%; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 100%;
+      }
+      :host ::ng-deep .p-inputnumber {
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class UiInputNumberComponent {
   readonly value = input<number | null>(null);

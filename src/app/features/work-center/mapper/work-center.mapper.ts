@@ -3,7 +3,9 @@ import { WorkCenterResponse } from '../../../core/api/generated/model/work-cente
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
 import { WorkCenterListItemModel } from '../models/work-center-list-item.model';
 
-export function mapWorkCenterListItemResponseToModel(response: WorkCenterListItemResponse): WorkCenterListItemModel {
+export function mapWorkCenterListItemResponseToModel(
+  response: WorkCenterListItemResponse,
+): WorkCenterListItemModel {
   return {
     ruleSystemCode: response.ruleSystemCode,
     workCenterCode: response.workCenterCode,
@@ -17,7 +19,9 @@ export function mapWorkCenterListItemResponseToModel(response: WorkCenterListIte
   };
 }
 
-export function mapWorkCenterResponseToDetailModel(response: WorkCenterResponse): WorkCenterDetailModel {
+export function mapWorkCenterResponseToDetailModel(
+  response: WorkCenterResponse,
+): WorkCenterDetailModel {
   return {
     ruleSystemCode: response.ruleSystemCode,
     workCenterCode: response.workCenterCode,

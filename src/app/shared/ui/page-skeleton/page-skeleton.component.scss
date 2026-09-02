@@ -208,11 +208,13 @@
     border-top: 1px solid var(--border-default);
   }
 
-  .page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-toggle {
+  .page-skeleton__contextual:not(.page-skeleton__contextual--open)
+    .page-skeleton__contextual-toggle {
     flex-direction: row;
   }
 
-  .page-skeleton__contextual:not(.page-skeleton__contextual--open) .page-skeleton__contextual-title {
+  .page-skeleton__contextual:not(.page-skeleton__contextual--open)
+    .page-skeleton__contextual-title {
     writing-mode: horizontal-tb;
   }
 

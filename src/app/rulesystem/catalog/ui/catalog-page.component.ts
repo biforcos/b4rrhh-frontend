@@ -53,15 +53,21 @@ export class CatalogPageComponent {
   protected readonly createResetToken = this.store.createResetToken;
   protected readonly correctingOccurrence = computed(() => {
     const occurrenceKey = this.correctingOccurrenceKey();
-    return occurrenceKey ? this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null : null;
+    return occurrenceKey
+      ? (this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null)
+      : null;
   });
   protected readonly closingOccurrence = computed(() => {
     const occurrenceKey = this.closingOccurrenceKey();
-    return occurrenceKey ? this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null : null;
+    return occurrenceKey
+      ? (this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null)
+      : null;
   });
   protected readonly deletingOccurrence = computed(() => {
     const occurrenceKey = this.deletingOccurrenceKey();
-    return occurrenceKey ? this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null : null;
+    return occurrenceKey
+      ? (this.ruleEntities().find((item) => item.occurrenceKey === occurrenceKey) ?? null)
+      : null;
   });
 
   protected readonly hasContext = computed(

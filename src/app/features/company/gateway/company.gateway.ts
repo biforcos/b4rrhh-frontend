@@ -40,7 +40,10 @@ export class CompanyGateway {
       .pipe(map((response) => mapCompanyResponseToDetailModel(response)));
   }
 
-  updateCompany(key: CompanyBusinessKey, formValue: CompanyFormValue): Observable<CompanyDetailModel> {
+  updateCompany(
+    key: CompanyBusinessKey,
+    formValue: CompanyFormValue,
+  ): Observable<CompanyDetailModel> {
     const request = mapCompanyFormValueToUpdateRequest(formValue);
     return this.client
       .updateCompany(key, request)

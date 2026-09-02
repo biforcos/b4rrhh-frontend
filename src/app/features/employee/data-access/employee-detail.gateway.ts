@@ -13,11 +13,17 @@ import { mapEmployeeCoreIdentityDraftToUpdateRequest } from './employee-detail-e
 export class EmployeeDetailGateway {
   private readonly employeeReadClient = inject(EmployeeReadClient);
 
-  updateEmployeeCoreIdentity(employeeKey: EmployeeBusinessKey, draft: EmployeeCoreIdentityDraft): Observable<void> {
+  updateEmployeeCoreIdentity(
+    employeeKey: EmployeeBusinessKey,
+    draft: EmployeeCoreIdentityDraft,
+  ): Observable<void> {
     const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
 
     return this.employeeReadClient
-      .updateEmployeeByBusinessKey(normalizedEmployeeKey, mapEmployeeCoreIdentityDraftToUpdateRequest(draft))
+      .updateEmployeeByBusinessKey(
+        normalizedEmployeeKey,
+        mapEmployeeCoreIdentityDraftToUpdateRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 }

@@ -2,7 +2,9 @@ import { RuleEntityTypeResponse } from '../../../core/api/generated/model/rule-e
 
 import { RuleEntityTypeModel } from '../models/rule-entity-type.model';
 
-export function mapRuleEntityTypeResponseToModel(source: RuleEntityTypeResponse): RuleEntityTypeModel {
+export function mapRuleEntityTypeResponseToModel(
+  source: RuleEntityTypeResponse,
+): RuleEntityTypeModel {
   return {
     code: source.code,
     name: source.name,

@@ -40,7 +40,9 @@ describe('EmployeeLaborClassificationStore', () => {
 
   beforeEach(() => {
     readGatewayMock = {
-      readEmployeeLaborClassificationsByBusinessKey: vi.fn().mockReturnValue(of(laborClassificationsFixture)),
+      readEmployeeLaborClassificationsByBusinessKey: vi
+        .fn()
+        .mockReturnValue(of(laborClassificationsFixture)),
       replaceLaborClassificationFromDate: vi.fn().mockReturnValue(of(undefined)),
       correctLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
       closeLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),

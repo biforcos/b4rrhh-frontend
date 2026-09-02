@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeePresenceModel } from '../models/employee-presence.model';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { EmployeePresenceReadGateway } from './employee-presence-read.gateway';
 
 export type EmployeePresenceErrorCode = 'request-failed';
@@ -32,7 +35,10 @@ export class EmployeePresenceStore {
     this.loadPresencesByBusinessKeyInternal(key, true);
   }
 
-  private loadPresencesByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadPresencesByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

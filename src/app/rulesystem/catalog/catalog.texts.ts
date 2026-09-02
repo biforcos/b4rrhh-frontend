@@ -40,7 +40,8 @@ export const catalogTexts = {
   createStartDateRequired: 'Start date is required.',
   createEndDateInvalidRange: 'End date must be greater than or equal to start date.',
   operationPanelCorrectTitle: 'Corregir ocurrencia',
-  operationPanelCorrectSubtitle: 'Actualiza nombre, descripción o fecha fin de la ocurrencia seleccionada.',
+  operationPanelCorrectSubtitle:
+    'Actualiza nombre, descripción o fecha fin de la ocurrencia seleccionada.',
   operationPanelCloseTitle: 'Cerrar ocurrencia',
   operationPanelCloseSubtitle: 'Indica la fecha de fin para cerrar la ocurrencia vigente.',
   operationPanelDeleteTitle: 'Eliminar ocurrencia',
@@ -49,15 +50,18 @@ export const catalogTexts = {
   operationSubmitCorrectAction: 'Guardar corrección',
   operationSubmitCloseAction: 'Confirmar cierre',
   operationConfirmDeleteAction: 'Confirmar eliminación',
-  operationDeleteMessage: 'Confirma la eliminación de esta ocurrencia. Esta acción no se puede deshacer.',
+  operationDeleteMessage:
+    'Confirma la eliminación de esta ocurrencia. Esta acción no se puede deshacer.',
   operationDeletingMessage: 'Eliminando ocurrencia...',
   correctSuccessMessage: 'Rule entity corregida correctamente.',
   closeSuccessMessage: 'Rule entity cerrada correctamente.',
   deleteSuccessMessage: 'Rule entity eliminada correctamente.',
   correctInvalidMessage: 'Completa los datos de corrección con un rango de fechas válido.',
-  closeInvalidMessage: 'La fecha de cierre debe ser válida y mayor o igual al inicio de la ocurrencia.',
+  closeInvalidMessage:
+    'La fecha de cierre debe ser válida y mayor o igual al inicio de la ocurrencia.',
   conflictErrorMessagePrefix: 'No se pudo completar la operación por conflicto.',
-  conflictGenericErrorMessage: 'No se pudo completar la operación porque los datos entraron en conflicto.',
+  conflictGenericErrorMessage:
+    'No se pudo completar la operación porque los datos entraron en conflicto.',
   createSuccessMessage: 'Rule entity creada correctamente.',
   genericErrorMessage: 'No se pudo completar la operación. Reintenta.',
   creatingMessage: 'Creando rule entity...',

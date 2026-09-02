@@ -171,8 +171,12 @@
   margin: 0;
 }
 
-.ops-page__panel-title--invalidate { color: var(--error-text); }
-.ops-page__panel-title--calculate  { color: var(--success-text); }
+.ops-page__panel-title--invalidate {
+  color: var(--error-text);
+}
+.ops-page__panel-title--calculate {
+  color: var(--success-text);
+}
 
 .ops-page__engine-fields {
   display: grid;
@@ -209,10 +213,18 @@
 }
 
 /* Semantic counters — colors are intentional */
-.ops-page__counter--success { background: var(--success-bg); }
-.ops-page__counter--warn    { background: var(--warning-bg); }
-.ops-page__counter--error   { background: var(--error-bg); }
-.ops-page__counter--info    { background: var(--accent-muted); }
+.ops-page__counter--success {
+  background: var(--success-bg);
+}
+.ops-page__counter--warn {
+  background: var(--warning-bg);
+}
+.ops-page__counter--error {
+  background: var(--error-bg);
+}
+.ops-page__counter--info {
+  background: var(--accent-muted);
+}
 
 .ops-page__counter-value {
   font-size: 1rem;
@@ -256,11 +268,26 @@
   font-weight: 600;
 }
 
-.ops-badge--grey   { background: var(--surface-muted); color: var(--text-secondary); }
-.ops-badge--yellow { background: var(--warning-bg); color: var(--warning-text); }
-.ops-badge--green  { background: var(--success-bg); color: var(--success-text); }
-.ops-badge--orange { background: var(--warning-bg); color: var(--warning-text); }
-.ops-badge--red    { background: var(--error-bg); color: var(--error-text); }
+.ops-badge--grey {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+.ops-badge--yellow {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.ops-badge--green {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.ops-badge--orange {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.ops-badge--red {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
 
 .ops-page__progress-bar {
   background: var(--accent-muted);

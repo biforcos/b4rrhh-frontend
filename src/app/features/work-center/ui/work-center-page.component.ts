@@ -13,7 +13,12 @@ import { WorkCenterListComponent } from './work-center-list.component';
 @Component({
   selector: 'app-work-center-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MasterDetailPageShellComponent, SectionCardComponent, WorkCenterListComponent, WorkCenterDetailPanelComponent],
+  imports: [
+    MasterDetailPageShellComponent,
+    SectionCardComponent,
+    WorkCenterListComponent,
+    WorkCenterDetailPanelComponent,
+  ],
   templateUrl: './work-center-page.component.html',
   styleUrl: './work-center-page.component.scss',
 })
@@ -53,7 +58,10 @@ export class WorkCenterPageComponent {
     this.store.submitCreateContact(formValue);
   }
 
-  protected onContactUpdate(event: { contactNumber: number; formValue: WorkCenterContactFormValue }): void {
+  protected onContactUpdate(event: {
+    contactNumber: number;
+    formValue: WorkCenterContactFormValue;
+  }): void {
     this.store.submitUpdateContact(event.contactNumber, event.formValue);
   }
 

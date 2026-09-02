@@ -8,7 +8,12 @@
     </div>
     @if (addLabel(); as label) {
       <!-- Añadir es frecuente pero no es a lo que se viene: un enlace discreto, no un botón. -->
-      <button type="button" class="slot-section__add-btn" [disabled]="addDisabled()" (click)="addClicked.emit()">
+      <button
+        type="button"
+        class="slot-section__add-btn"
+        [disabled]="addDisabled()"
+        (click)="addClicked.emit()"
+      >
         <b4-icon name="anadir" [size]="16" />
         {{ label }}
       </button>

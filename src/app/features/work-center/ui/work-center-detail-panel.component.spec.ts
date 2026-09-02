@@ -113,7 +113,9 @@ describe('WorkCenterDetailPanelComponent', () => {
       countryCode: 'ESP',
     });
 
-    (fixture.nativeElement.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    (fixture.nativeElement.querySelector('form') as HTMLFormElement).dispatchEvent(
+      new Event('submit'),
+    );
     fixture.detectChanges();
 
     expect(emitSpy).toHaveBeenCalledWith({

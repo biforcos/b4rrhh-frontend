@@ -1,25 +1,74 @@
 .period-modal {
-  &__subtitle { font-size: 13px; color: var(--text-tertiary); margin: -8px 0 16px; }
-  &__body { display: flex; flex-direction: column; gap: 14px; }
-  &__note { font-size: 12px; color: var(--warning-text); margin: -4px 0 0; }
-  &__footer { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-  &__footer-actions { display: flex; gap: 8px; margin-left: auto; }
-  &__close-action-btn, &__cancel-btn {
-    background: none; border: 1px solid var(--border-default); border-radius: 7px;
-    padding: 7px 14px; font-size: 13px; color: var(--text-secondary); cursor: pointer;
-    &:hover { background: var(--surface-hover); }
+  &__subtitle {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin: -8px 0 16px;
+  }
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  &__note {
+    font-size: 12px;
+    color: var(--warning-text);
+    margin: -4px 0 0;
+  }
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  &__footer-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+  &__close-action-btn,
+  &__cancel-btn {
+    background: none;
+    border: 1px solid var(--border-default);
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    &:hover {
+      background: var(--surface-hover);
+    }
   }
   &__submit-btn {
-    background: var(--accent-primary); border: none; border-radius: 7px;
-    padding: 7px 16px; font-size: 13px; font-weight: 500; color: var(--text-inverse);
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    &:hover:not(:disabled) { background: var(--accent-primary-hover); }
-    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 7px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-inverse);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    &:hover:not(:disabled) {
+      background: var(--accent-primary-hover);
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
   &__spinner {
-    width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: var(--text-inverse); border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--text-inverse);
+    border-radius: 50%;
     animation: pm-spin 0.6s linear infinite;
   }
 }
-@keyframes pm-spin { to { transform: rotate(360deg); } }
+@keyframes pm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

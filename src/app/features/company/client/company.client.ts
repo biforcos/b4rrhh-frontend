@@ -29,7 +29,10 @@ export class CompanyClient {
     });
   }
 
-  updateCompany(key: CompanyBusinessKey, request: UpdateCompanyRequest): Observable<CompanyResponse> {
+  updateCompany(
+    key: CompanyBusinessKey,
+    request: UpdateCompanyRequest,
+  ): Observable<CompanyResponse> {
     return this.api.updateCompany({
       ruleSystemCode: key.ruleSystemCode,
       companyCode: key.companyCode,

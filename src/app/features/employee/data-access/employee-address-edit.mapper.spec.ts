@@ -1,4 +1,7 @@
-import { mapAddressDraftToCreateAddressRequest, mapAddressCloseDateToRequest } from './employee-address-edit.mapper';
+import {
+  mapAddressDraftToCreateAddressRequest,
+  mapAddressCloseDateToRequest,
+} from './employee-address-edit.mapper';
 
 describe('employee-address-edit.mapper', () => {
   it('maps address create draft to request normalizing codes', () => {

@@ -1,7 +1,14 @@
 <form class="create-rule-entity-form" [formGroup]="form" (ngSubmit)="submit()">
   <label>
     <span>{{ texts.createCodeLabel }}</span>
-    <input pInputText type="text" formControlName="code" maxlength="30" (input)="markInteraction()" [disabled]="disabled()" />
+    <input
+      pInputText
+      type="text"
+      formControlName="code"
+      maxlength="30"
+      (input)="markInteraction()"
+      [disabled]="disabled()"
+    />
     @if (form.controls.code.touched && form.controls.code.hasError('required')) {
       <small class="create-rule-entity-form__error">{{ texts.createCodeRequired }}</small>
     }
@@ -12,7 +19,14 @@
 
   <label>
     <span>{{ texts.createNameLabel }}</span>
-    <input pInputText type="text" formControlName="name" maxlength="100" (input)="markInteraction()" [disabled]="disabled()" />
+    <input
+      pInputText
+      type="text"
+      formControlName="name"
+      maxlength="100"
+      (input)="markInteraction()"
+      [disabled]="disabled()"
+    />
     @if (form.controls.name.touched && form.controls.name.hasError('required')) {
       <small class="create-rule-entity-form__error">{{ texts.createNameRequired }}</small>
     }
@@ -23,7 +37,13 @@
 
   <label>
     <span>{{ texts.createDescriptionLabel }}</span>
-    <textarea formControlName="description" maxlength="500" rows="3" (input)="markInteraction()" [disabled]="disabled()"></textarea>
+    <textarea
+      formControlName="description"
+      maxlength="500"
+      rows="3"
+      (input)="markInteraction()"
+      [disabled]="disabled()"
+    ></textarea>
     @if (form.controls.description.touched && form.controls.description.hasError('maxlength')) {
       <small class="create-rule-entity-form__error">{{ texts.createDescriptionMaxLength }}</small>
     }

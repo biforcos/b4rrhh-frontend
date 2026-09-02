@@ -26,19 +26,35 @@ export class EmployeeAddressGateway {
       .pipe(map(() => undefined));
   }
 
-  closeAddress(employeeKey: EmployeeBusinessKey, addressNumber: number, endDate: string): Observable<void> {
+  closeAddress(
+    employeeKey: EmployeeBusinessKey,
+    addressNumber: number,
+    endDate: string,
+  ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.addressClient
-      .closeAddressByBusinessKey(normalizedKey, addressNumber, mapAddressCloseDateToRequest(endDate))
+      .closeAddressByBusinessKey(
+        normalizedKey,
+        addressNumber,
+        mapAddressCloseDateToRequest(endDate),
+      )
       .pipe(map(() => undefined));
   }
 
-  updateAddress(employeeKey: EmployeeBusinessKey, addressNumber: number, draft: AddressEditCurrentDraft): Observable<void> {
+  updateAddress(
+    employeeKey: EmployeeBusinessKey,
+    addressNumber: number,
+    draft: AddressEditCurrentDraft,
+  ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.addressClient
-      .updateAddressByBusinessKey(normalizedKey, addressNumber, mapAddressEditCurrentDraftToUpdateAddressRequest(draft))
+      .updateAddressByBusinessKey(
+        normalizedKey,
+        addressNumber,
+        mapAddressEditCurrentDraftToUpdateAddressRequest(draft),
+      )
       .pipe(map(() => undefined));
   }
 }

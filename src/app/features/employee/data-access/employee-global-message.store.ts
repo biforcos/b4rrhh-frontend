@@ -17,8 +17,9 @@ export class GlobalMessageService {
 
   readonly messages = computed(() => {
     const sourceMessages = Object.values(this.sourceMessagesState()).flat();
-    return [...sourceMessages, ...this.transientMessagesState()]
-      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
+    return [...sourceMessages, ...this.transientMessagesState()].sort(
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime(),
+    );
   });
 
   readonly summary = computed<GlobalMessageSummary>(() => {
@@ -35,11 +36,15 @@ export class GlobalMessageService {
       successCount,
       infoCount,
       dominantLevel:
-        errorCount > 0 ? 'error'
-        : warningCount > 0 ? 'warning'
-          : successCount > 0 ? 'success'
-            : infoCount > 0 ? 'info'
-              : null,
+        errorCount > 0
+          ? 'error'
+          : warningCount > 0
+            ? 'warning'
+            : successCount > 0
+              ? 'success'
+              : infoCount > 0
+                ? 'info'
+                : null,
     };
   });
 
@@ -63,7 +68,9 @@ export class GlobalMessageService {
 
   setSourceMessages(sourceKey: string, messages: ReadonlyArray<GlobalUiMessageInput>): void {
     const existingMessages = untracked(() => this.sourceMessagesState()[sourceKey] ?? []);
-    const existingCreatedAtById = new Map(existingMessages.map((message) => [message.id, message.createdAt]));
+    const existingCreatedAtById = new Map(
+      existingMessages.map((message) => [message.id, message.createdAt]),
+    );
     const now = Date.now();
 
     const normalizedMessages = messages.map((message, index) => ({
@@ -95,7 +102,10 @@ export class GlobalMessageService {
       createdAt: new Date(),
     };
 
-    this.transientMessagesState.update((current) => [normalizedMessage, ...current.filter((item) => item.id !== normalizedMessage.id)]);
+    this.transientMessagesState.update((current) => [
+      normalizedMessage,
+      ...current.filter((item) => item.id !== normalizedMessage.id),
+    ]);
 
     const existingTimeout = this.transientTimeouts.get(normalizedMessage.id);
     if (existingTimeout) {
@@ -117,7 +127,7 @@ export class GlobalMessageService {
 
   success(
     text: string,
-    options: { id: string; sectionId?: string; sectionLabel?: string; autoHideMs?: number } ,
+    options: { id: string; sectionId?: string; sectionLabel?: string; autoHideMs?: number },
   ): void {
     this.publishTransientMessage(
       {
@@ -133,7 +143,7 @@ export class GlobalMessageService {
 
   info(
     text: string,
-    options: { id: string; sectionId?: string; sectionLabel?: string; autoHideMs?: number } ,
+    options: { id: string; sectionId?: string; sectionLabel?: string; autoHideMs?: number },
   ): void {
     this.publishTransientMessage(
       {

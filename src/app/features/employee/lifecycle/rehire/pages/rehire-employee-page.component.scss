@@ -1,152 +1,151 @@
-
 .rehire-page-container {
-	max-width: 700px;
-	margin: 0 auto;
-	padding: 2rem 1rem 3rem 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem 1rem;
 }
 
 .rehire-page-header {
-	margin-bottom: 1.5rem;
-	text-align: left;
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 .rehire-title {
-	font-size: 2rem;
-	font-weight: 700;
-	margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
 }
 .rehire-subtitle {
-	font-size: 1rem;
-	color: var(--text-secondary);
-	margin: 0.25rem 0 0 0;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
 }
 
 .rehire-summary {
-	background: var(--surface-hover);
-	border: 1px solid var(--border-default);
-	border-radius: 0.5rem;
-	padding: 1rem 1.5rem;
-	margin-bottom: 2rem;
-	font-size: 1rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-default);
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 .rehire-summary-row {
-	display: flex;
-	gap: 0.5rem;
-	align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 .rehire-summary-label {
-	font-weight: 600;
-	color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .rehire-section {
-	margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 .rehire-section-title {
-	font-size: 1.1rem;
-	font-weight: 600;
-	margin-bottom: 1rem;
-	color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
 }
 .rehire-fields {
-	display: flex;
-	flex-direction: column;
-	gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 .rehire-fields--two-col {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1.25rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 2rem;
 }
 .rehire-field--full {
-	grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 .rehire-field label {
-	font-weight: 500;
-	margin-bottom: 0.25rem;
-	color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: var(--text-secondary);
 }
 .rehire-field {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .rehire-footer {
-	margin-top: 2.5rem;
-	display: flex;
-	justify-content: flex-end;
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: flex-end;
 }
 .rehire-footer-actions {
-	display: flex;
-	gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .rehire-working-time-hint {
-	margin: 0;
-	color: var(--text-secondary);
-	font-size: 0.92rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
 }
 
 .rehire-working-time-preview {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .rehire-working-time-preview__item {
-	display: flex;
-	flex-direction: column;
-	gap: 0.3rem;
-	padding: 0.85rem 0.9rem;
-	border-radius: 0.85rem;
-	background: var(--surface-accent);
-	border: 1px solid var(--accent-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.85rem;
+  background: var(--surface-accent);
+  border: 1px solid var(--accent-border);
 }
 
 .rehire-working-time-preview__label {
-	color: var(--text-secondary);
-	font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 .rehire-summary-working-time {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border-default);
-	display: flex;
-	flex-direction: column;
-	gap: 0.35rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .rehire-summary-working-time__title {
-	margin: 0;
-	font-size: 1rem;
-	font-weight: 600;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .rehire-summary-working-time__primary {
-	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 700;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .rehire-summary-working-time p {
-	margin: 0;
+  margin: 0;
 }
 
 @media screen and (max-width: 768px) {
-	.rehire-fields--two-col {
-		grid-template-columns: 1fr;
-	}
+  .rehire-fields--two-col {
+    grid-template-columns: 1fr;
+  }
 
-	.rehire-working-time-preview {
-		grid-template-columns: 1fr;
-	}
+  .rehire-working-time-preview {
+    grid-template-columns: 1fr;
+  }
 
-	.rehire-summary-row {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+  .rehire-summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

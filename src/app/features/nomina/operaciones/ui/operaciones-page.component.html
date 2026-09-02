@@ -1,5 +1,4 @@
 <section class="ops-page" aria-label="Operaciones de cálculo">
-
   <!-- Contexto compartido -->
   <div class="ops-page__context">
     <div class="ops-page__context-fields">
@@ -21,14 +20,18 @@
             class="ops-page__period-btn"
             aria-label="Período anterior"
             (click)="store.prevPeriod()"
-          >&#8249;</button>
+          >
+            &#8249;
+          </button>
           <span class="ops-page__period-label">{{ store.periodLabel() }}</span>
           <button
             type="button"
             class="ops-page__period-btn"
             aria-label="Período siguiente"
             (click)="store.nextPeriod()"
-          >&#8250;</button>
+          >
+            &#8250;
+          </button>
         </div>
       </div>
 
@@ -55,7 +58,9 @@
             class="ops-page__target-tab"
             [class.ops-page__target-tab--active]="store.targetMode() === mode.value"
             (click)="store.setTargetMode(mode.value)"
-          >{{ mode.label }}</button>
+          >
+            {{ mode.label }}
+          </button>
         }
       </div>
 
@@ -98,7 +103,6 @@
 
   <!-- Paneles paralelos -->
   <div class="ops-page__panels">
-
     <!-- Panel invalidar -->
     <div class="ops-page__panel ops-page__panel--invalidate">
       <h2 class="ops-page__panel-title ops-page__panel-title--invalidate">Invalidar masivamente</h2>
@@ -182,11 +186,7 @@
         </label>
       </div>
 
-      <app-ui-button
-        label="Lanzar"
-        [disabled]="!store.canLaunch()"
-        (pressed)="store.launch()"
-      />
+      <app-ui-button label="Lanzar" [disabled]="!store.canLaunch()" (pressed)="store.launch()" />
 
       @if (store.launching()) {
         <p class="ops-page__status-text">Lanzando run…</p>
@@ -194,8 +194,12 @@
 
       @if (store.launchError()) {
         <p class="ops-page__error">
-          @if (store.launchError() === 'launch-failed') { No se pudo lanzar el cálculo. Reintenta. }
-          @if (store.launchError() === 'poll-failed') { Error al seguir el estado del run. Recarga la página para ver el resultado. }
+          @if (store.launchError() === 'launch-failed') {
+            No se pudo lanzar el cálculo. Reintenta.
+          }
+          @if (store.launchError() === 'poll-failed') {
+            Error al seguir el estado del run. Recarga la página para ver el resultado.
+          }
         </p>
       }
 
@@ -239,6 +243,5 @@
         </div>
       }
     </div>
-
   </div>
 </section>

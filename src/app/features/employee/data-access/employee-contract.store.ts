@@ -3,7 +3,10 @@ import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeContractModel } from '../models/employee-contract.model';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { mapEmployeeContractErrorCode } from './employee-contract.error.mapper';
 import {
   ContractCloseDraft,
@@ -132,7 +135,10 @@ export class EmployeeContractStore {
       });
   }
 
-  private loadContractsByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadContractsByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;
@@ -168,7 +174,9 @@ export class EmployeeContractStore {
             return;
           }
 
-          this.contractsState.set(this.employeeContractReadGateway.sortByTimelineRecency(contracts));
+          this.contractsState.set(
+            this.employeeContractReadGateway.sortByTimelineRecency(contracts),
+          );
           this.loadingState.set(false);
         },
         error: (error) => {

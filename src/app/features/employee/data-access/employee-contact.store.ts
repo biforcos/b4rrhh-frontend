@@ -6,7 +6,10 @@ import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeContactModel } from '../models/employee-contact.model';
 import { SlotDraft } from '../shared/ui/section/editable-slot-section.model';
 import { EmployeeContactGateway } from './employee-contact.gateway';
-import { areEmployeeBusinessKeysEqual, toEmployeeBusinessKey } from '../routing/employee-route-key.util';
+import {
+  areEmployeeBusinessKeysEqual,
+  toEmployeeBusinessKey,
+} from '../routing/employee-route-key.util';
 import { EmployeeContactReadGateway } from './employee-contact-read.gateway';
 
 export type EmployeeContactErrorCode = 'request-failed';
@@ -77,7 +80,11 @@ export class EmployeeContactStore {
       });
   }
 
-  updateContact(employeeKey: EmployeeBusinessKey, contactTypeCode: string, draft: SlotDraft<string>): void {
+  updateContact(
+    employeeKey: EmployeeBusinessKey,
+    contactTypeCode: string,
+    draft: SlotDraft<string>,
+  ): void {
     if (this.mutatingState()) {
       return;
     }
@@ -133,7 +140,10 @@ export class EmployeeContactStore {
       });
   }
 
-  private loadContactsByBusinessKeyInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
+  private loadContactsByBusinessKeyInternal(
+    key: EmployeeBusinessKey | null,
+    forceReload: boolean,
+  ): void {
     if (!key) {
       this.resetState();
       return;

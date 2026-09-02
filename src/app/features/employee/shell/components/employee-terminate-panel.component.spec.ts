@@ -14,7 +14,9 @@ import { BASE_PATH } from '../../../../core/api/generated/variables';
 import { employeeTexts } from '../../employee.texts';
 
 class MockEmployeeFieldCatalogService {
-  loadPresenceExitReasonOptions = vi.fn().mockReturnValue(of([{ value: 'VOL', label: 'Voluntaria' }]));
+  loadPresenceExitReasonOptions = vi
+    .fn()
+    .mockReturnValue(of([{ value: 'VOL', label: 'Voluntaria' }]));
 }
 
 class MockEmployeeDetailStore {

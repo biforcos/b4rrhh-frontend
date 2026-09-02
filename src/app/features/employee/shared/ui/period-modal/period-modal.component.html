@@ -27,12 +27,19 @@
         </button>
       }
       <div class="period-modal__footer-actions">
-        <button type="button" class="period-modal__cancel-btn" (click)="onCancel()">Cancelar</button>
-        <button type="button" class="period-modal__submit-btn"
+        <button type="button" class="period-modal__cancel-btn" (click)="onCancel()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="period-modal__submit-btn"
           [disabled]="!submitEnabled() || saving()"
           [attr.aria-busy]="saving() ? 'true' : null"
-          (click)="onSubmit()">
-          @if (saving()) { <span class="period-modal__spinner" aria-hidden="true"></span> }
+          (click)="onSubmit()"
+        >
+          @if (saving()) {
+            <span class="period-modal__spinner" aria-hidden="true"></span>
+          }
           {{ submitLabel() }}
         </button>
       </div>

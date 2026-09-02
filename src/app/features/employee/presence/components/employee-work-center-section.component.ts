@@ -1,5 +1,12 @@
 import {
-  ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
 } from '@angular/core';
 import { take } from 'rxjs';
 
@@ -28,7 +35,13 @@ interface WorkCenterPeriodRow extends TemporalSectionRow {
 @Component({
   selector: 'app-employee-work-center-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    UiCatalogLabelComponent,
+  ],
   templateUrl: './employee-work-center-section.component.html',
 })
 export class EmployeeWorkCenterSectionComponent {
@@ -82,7 +95,10 @@ export class EmployeeWorkCenterSectionComponent {
     });
     effect(() => {
       const success = this.workCenterStore.success();
-      if (success) untracked(() => { if (this.modalVisible()) this.closeModal(); });
+      if (success)
+        untracked(() => {
+          if (this.modalVisible()) this.closeModal();
+        });
     });
   }
 
@@ -150,9 +166,15 @@ export class EmployeeWorkCenterSectionComponent {
   }
 
   private loadWorkCenterOptions(ruleSystemCode: string | null): void {
-    if (!ruleSystemCode) { this.workCenterOptions.set([]); return; }
-    this.fieldCatalogService.loadWorkCenterOptions(ruleSystemCode).pipe(take(1)).subscribe({
-      next: (opts) => this.workCenterOptions.set(opts),
-    });
+    if (!ruleSystemCode) {
+      this.workCenterOptions.set([]);
+      return;
+    }
+    this.fieldCatalogService
+      .loadWorkCenterOptions(ruleSystemCode)
+      .pipe(take(1))
+      .subscribe({
+        next: (opts) => this.workCenterOptions.set(opts),
+      });
   }
 }

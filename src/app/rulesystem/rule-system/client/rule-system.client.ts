@@ -43,7 +43,9 @@ export class RuleSystemClient {
   }
 
   private buildUrl(path: string): string {
-    const normalizedBasePath = this.basePath.endsWith('/') ? this.basePath.slice(0, -1) : this.basePath;
+    const normalizedBasePath = this.basePath.endsWith('/')
+      ? this.basePath.slice(0, -1)
+      : this.basePath;
     return `${normalizedBasePath}${path}`;
   }
 }

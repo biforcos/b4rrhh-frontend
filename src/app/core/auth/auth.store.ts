@@ -41,7 +41,10 @@ export class AuthStore {
   async login(subject: string, expiresInMinutes?: number): Promise<boolean> {
     const trimmedSubject = subject.trim();
     if (!trimmedSubject) {
-      this.sessionState.update((state) => ({ ...state, error: appTexts.authLoginInvalidSubjectMessage }));
+      this.sessionState.update((state) => ({
+        ...state,
+        error: appTexts.authLoginInvalidSubjectMessage,
+      }));
       return false;
     }
     if (this.sessionState().loading) {
@@ -53,7 +56,9 @@ export class AuthStore {
     try {
       const response = await firstValueFrom(
         this.gateway.issueToken(
-          expiresInMinutes == null ? { subject: trimmedSubject } : { subject: trimmedSubject, expiresInMinutes },
+          expiresInMinutes == null
+            ? { subject: trimmedSubject }
+            : { subject: trimmedSubject, expiresInMinutes },
         ),
       );
 

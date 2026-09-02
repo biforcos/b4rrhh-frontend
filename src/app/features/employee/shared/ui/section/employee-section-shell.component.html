@@ -19,9 +19,16 @@
   <ng-content></ng-content>
 
   @if (hasFooterState()) {
-    <footer sectionCardFooter class="employee-section-shell__footer" role="status" aria-live="polite">
+    <footer
+      sectionCardFooter
+      class="employee-section-shell__footer"
+      role="status"
+      aria-live="polite"
+    >
       @if (showBusy()) {
-        <p class="employee-section-shell__status employee-section-shell__status--busy">Procesando cambios...</p>
+        <p class="employee-section-shell__status employee-section-shell__status--busy">
+          Procesando cambios...
+        </p>
       }
     </footer>
   }

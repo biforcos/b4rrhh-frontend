@@ -46,7 +46,9 @@ describe('CompanyListComponent', () => {
     fixture.componentRef.setInput('errorMessage', null);
     fixture.detectChanges();
 
-    const items = Array.from(fixture.nativeElement.querySelectorAll('.master-list-panel__item')) as HTMLElement[];
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll('.master-list-panel__item'),
+    ) as HTMLElement[];
     expect(items.length).toBe(2);
     expect(items[0]?.textContent ?? '').toContain('Empresa Uno');
     expect(items[0]?.textContent ?? '').toContain('Empresa Uno SA');
@@ -60,13 +62,17 @@ describe('CompanyListComponent', () => {
     fixture.componentRef.setInput('errorMessage', null);
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('#master-list-search') as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector(
+      '#master-list-search',
+    ) as HTMLInputElement;
     searchInput.value = 'dos';
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const items = Array.from(fixture.nativeElement.querySelectorAll('.master-list-panel__item')) as HTMLElement[];
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll('.master-list-panel__item'),
+    ) as HTMLElement[];
     expect(items.length).toBe(1);
     expect(items[0]?.textContent ?? '').toContain('Empresa Dos');
   });
@@ -81,7 +87,9 @@ describe('CompanyListComponent', () => {
     fixture.componentRef.setInput('errorMessage', null);
     fixture.detectChanges();
 
-    const firstItem = fixture.nativeElement.querySelector('.master-list-panel__item') as HTMLButtonElement;
+    const firstItem = fixture.nativeElement.querySelector(
+      '.master-list-panel__item',
+    ) as HTMLButtonElement;
     firstItem.click();
 
     expect(emitSpy).toHaveBeenCalledWith({ ruleSystemCode: 'ESP', companyCode: 'ES01' });
@@ -94,7 +102,9 @@ describe('CompanyListComponent', () => {
     fixture.componentRef.setInput('errorMessage', null);
     fixture.detectChanges();
 
-    const items = Array.from(fixture.nativeElement.querySelectorAll('.master-list-panel__item')) as HTMLElement[];
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll('.master-list-panel__item'),
+    ) as HTMLElement[];
     expect(items[1]?.textContent ?? '').not.toContain('Sin dato');
   });
 });

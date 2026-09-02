@@ -25,9 +25,12 @@ export class RuleSystemDetailPageComponent {
     this.route.data.pipe(map((data) => (data['mode'] === 'edit' ? 'edit' : 'create'))),
     { initialValue: 'create' as const },
   );
-  private readonly routeCode = toSignal(this.route.paramMap.pipe(map((params) => params.get('code') ?? '')), {
-    initialValue: this.route.snapshot.paramMap.get('code') ?? '',
-  });
+  private readonly routeCode = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('code') ?? '')),
+    {
+      initialValue: this.route.snapshot.paramMap.get('code') ?? '',
+    },
+  );
 
   protected readonly texts = ruleSystemTexts;
   protected readonly selected = this.store.selected;

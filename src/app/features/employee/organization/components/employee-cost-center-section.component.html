@@ -1,48 +1,45 @@
-  <app-temporal-section
-    anchorId="employee-section-cost-center"
-    title="Centro de coste"
-    addLabel="Nueva distribución"
-    [rows]="rows()"
-    (addClicked)="openNewDistribution()"
-    (editClicked)="openEdit($event)"
-  >
-    <ng-template #columnHeaders>
-      <th class="temporal-section__th">Centros</th>
-      <th class="temporal-section__th">Total</th>
-    </ng-template>
-    <ng-template #cellContent let-row>
-      <td class="temporal-section__td">{{ row.itemsSummary }}</td>
-      <td
-        class="temporal-section__td"
-        [class.temporal-section__total--ok]="row.totalPercentage === 100"
-        [class.temporal-section__total--err]="row.totalPercentage !== 100"
-      >
-        {{ row.totalPercentage }} %
-      </td>
-    </ng-template>
-  </app-temporal-section>
+<app-temporal-section
+  anchorId="employee-section-cost-center"
+  title="Centro de coste"
+  addLabel="Nueva distribución"
+  [rows]="rows()"
+  (addClicked)="openNewDistribution()"
+  (editClicked)="openEdit($event)"
+>
+  <ng-template #columnHeaders>
+    <th class="temporal-section__th">Centros</th>
+    <th class="temporal-section__th">Total</th>
+  </ng-template>
+  <ng-template #cellContent let-row>
+    <td class="temporal-section__td">{{ row.itemsSummary }}</td>
+    <td
+      class="temporal-section__td"
+      [class.temporal-section__total--ok]="row.totalPercentage === 100"
+      [class.temporal-section__total--err]="row.totalPercentage !== 100"
+    >
+      {{ row.totalPercentage }} %
+    </td>
+  </ng-template>
+</app-temporal-section>
 
-  <app-period-modal
-    [title]="modalMode() === 'close' ? 'Cerrar distribución de coste' : 'Nueva distribución de coste'"
-    [visible]="modalVisible()"
-    [saving]="saving()"
-    [submitEnabled]="isSubmitEnabled()"
-    [showCloseAction]="modalMode() === 'replace' && !!costCenterStore.currentDistribution()"
-    closeActionLabel="Cerrar distribución"
-    (visibleChange)="modalVisible.set($event)"
-    (submitted)="submit()"
-    (cancelled)="closeModal()"
-    (closeActionClicked)="openClose()"
-  >
-    @if (modalMode() === 'replace') {
-      <app-employee-cost-center-distribution-editor
-        dateLabel="Efectivo desde"
-        [options]="costCenterOptions()"
-      />
-    } @else {
-      <app-ui-date-input
-        [value]="endDateDraft()"
-        (valueChanged)="endDateDraft.set($event)"
-      />
-    }
-  </app-period-modal>
+<app-period-modal
+  [title]="modalMode() === 'close' ? 'Cerrar distribución de coste' : 'Nueva distribución de coste'"
+  [visible]="modalVisible()"
+  [saving]="saving()"
+  [submitEnabled]="isSubmitEnabled()"
+  [showCloseAction]="modalMode() === 'replace' && !!costCenterStore.currentDistribution()"
+  closeActionLabel="Cerrar distribución"
+  (visibleChange)="modalVisible.set($event)"
+  (submitted)="submit()"
+  (cancelled)="closeModal()"
+  (closeActionClicked)="openClose()"
+>
+  @if (modalMode() === 'replace') {
+    <app-employee-cost-center-distribution-editor
+      dateLabel="Efectivo desde"
+      [options]="costCenterOptions()"
+    />
+  } @else {
+    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+  }
+</app-period-modal>

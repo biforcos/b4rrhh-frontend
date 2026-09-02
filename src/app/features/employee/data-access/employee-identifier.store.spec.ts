@@ -64,7 +64,9 @@ describe('EmployeeIdentifierStore', () => {
     store.loadIdentifiersByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeIdentifiersByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeIdentifiersByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeIdentifiersByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.identifiers()).toEqual(identifiersFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();
@@ -135,29 +137,21 @@ describe('EmployeeIdentifierStore', () => {
   it('updates identifier and forces reload from backend after success', () => {
     store.loadIdentifiers(employeeBusinessKey);
 
-    store.updateIdentifier(
-      employeeBusinessKey,
-      'NIF',
-      {
-        key: 'NIF',
-        value: '87654321Z',
-        issuingCountryCode: 'ESP',
-        expirationDate: '',
-        isPrimary: true,
-      },
-    );
+    store.updateIdentifier(employeeBusinessKey, 'NIF', {
+      key: 'NIF',
+      value: '87654321Z',
+      issuingCountryCode: 'ESP',
+      expirationDate: '',
+      isPrimary: true,
+    });
 
-    expect(gatewayMock.updateIdentifier).toHaveBeenCalledWith(
-      employeeBusinessKey,
-      'NIF',
-      {
-        key: 'NIF',
-        value: '87654321Z',
-        issuingCountryCode: 'ESP',
-        expirationDate: '',
-        isPrimary: true,
-      },
-    );
+    expect(gatewayMock.updateIdentifier).toHaveBeenCalledWith(employeeBusinessKey, 'NIF', {
+      key: 'NIF',
+      value: '87654321Z',
+      issuingCountryCode: 'ESP',
+      expirationDate: '',
+      isPrimary: true,
+    });
     expect(readGatewayMock.readEmployeeIdentifiersByBusinessKey).toHaveBeenCalledTimes(2);
     expect(store.success()).toBe('updated');
   });
@@ -173,7 +167,9 @@ describe('EmployeeIdentifierStore', () => {
   });
 
   it('sets request-failed error when create identifier fails', () => {
-    gatewayMock.createIdentifier.mockReturnValue(throwError(() => new Error('backend unavailable')));
+    gatewayMock.createIdentifier.mockReturnValue(
+      throwError(() => new Error('backend unavailable')),
+    );
 
     store.createIdentifier(employeeBusinessKey, {
       key: 'NIF',

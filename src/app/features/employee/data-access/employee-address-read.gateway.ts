@@ -15,7 +15,9 @@ import { EmployeeAddressModel } from '../models/employee-address.model';
 export class EmployeeAddressReadGateway {
   private readonly employeeAddressReadClient = inject(EmployeeAddressReadClient);
 
-  readEmployeeAddressesByBusinessKey(key: EmployeeBusinessKey): Observable<ReadonlyArray<EmployeeAddressModel>> {
+  readEmployeeAddressesByBusinessKey(
+    key: EmployeeBusinessKey,
+  ): Observable<ReadonlyArray<EmployeeAddressModel>> {
     return this.employeeAddressReadClient.readEmployeeAddressesByBusinessKey(key).pipe(
       map((addresses) =>
         addresses

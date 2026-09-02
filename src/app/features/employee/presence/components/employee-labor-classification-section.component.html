@@ -1,83 +1,87 @@
-  <app-temporal-section
-    anchorId="employee-section-classification"
-    title="Convenio"
-    [rows]="rows()"
-    (addClicked)="openCreate()"
-    (editClicked)="openEdit($event)"
-  >
-    <ng-template #columnHeaders>
-      <th class="temporal-section__th">Convenio</th>
-      <th class="temporal-section__th">Categoría</th>
-      <th class="temporal-section__th">Grupo SS</th>
-    </ng-template>
-    <ng-template #cellContent let-row>
-      <!-- ADR-051 §4: el código nunca va solo. -->
-      <td class="temporal-section__td">
-        <app-ui-catalog-label [name]="row.agreementLabel" [code]="row.agreementCode" />
-      </td>
-      <td class="temporal-section__td">
-        @if (row.agreementCategoryCode; as categoryCode) {
-          <app-ui-catalog-label [name]="row.categoryLabel" [code]="categoryCode" />
-        } @else {
-          <span class="temporal-section__secondary">—</span>
-        }
-      </td>
-      <td class="temporal-section__td">
-        @if (row.grupoCotizacionCode) {
-          Grupo {{ row.grupoCotizacionCode }}
-        } @else {
-          <span class="temporal-section__secondary">—</span>
-        }
-      </td>
-    </ng-template>
-  </app-temporal-section>
+<app-temporal-section
+  anchorId="employee-section-classification"
+  title="Convenio"
+  [rows]="rows()"
+  (addClicked)="openCreate()"
+  (editClicked)="openEdit($event)"
+>
+  <ng-template #columnHeaders>
+    <th class="temporal-section__th">Convenio</th>
+    <th class="temporal-section__th">Categoría</th>
+    <th class="temporal-section__th">Grupo SS</th>
+  </ng-template>
+  <ng-template #cellContent let-row>
+    <!-- ADR-051 §4: el código nunca va solo. -->
+    <td class="temporal-section__td">
+      <app-ui-catalog-label [name]="row.agreementLabel" [code]="row.agreementCode" />
+    </td>
+    <td class="temporal-section__td">
+      @if (row.agreementCategoryCode; as categoryCode) {
+        <app-ui-catalog-label [name]="row.categoryLabel" [code]="categoryCode" />
+      } @else {
+        <span class="temporal-section__secondary">—</span>
+      }
+    </td>
+    <td class="temporal-section__td">
+      @if (row.grupoCotizacionCode) {
+        Grupo {{ row.grupoCotizacionCode }}
+      } @else {
+        <span class="temporal-section__secondary">—</span>
+      }
+    </td>
+  </ng-template>
+</app-temporal-section>
 
-  <app-period-modal
-    [title]="modalTitle()"
-    [subtitle]="modalSubtitle()"
-    [visible]="modalVisible()"
-    [saving]="saving()"
-    [submitEnabled]="isSubmitEnabled()"
-    [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-    [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
-    (visibleChange)="modalVisible.set($event)"
-    (submitted)="submit()"
-    (cancelled)="closeModal()"
-    (closeActionClicked)="switchToClose()"
-  >
-    @if (modalMode() === 'create') {
-      <app-ui-date-input
-        [value]="effectiveDateDraft()"
-        (valueChanged)="effectiveDateDraft.set($event)" />
-      <app-ui-select
-        [options]="agreementOptions()"
-        [value]="agreementCodeDraft()"
-        (valueChanged)="updateAgreementCode($event)" />
-      <app-ui-select
-        [options]="categoryOptions()"
-        [value]="agreementCategoryCodeDraft()"
-        [disabled]="categoryDisabled()"
-        (valueChanged)="agreementCategoryCodeDraft.set($event)" />
-    }
+<app-period-modal
+  [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
+  [visible]="modalVisible()"
+  [saving]="saving()"
+  [submitEnabled]="isSubmitEnabled()"
+  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+  [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
+  (visibleChange)="modalVisible.set($event)"
+  (submitted)="submit()"
+  (cancelled)="closeModal()"
+  (closeActionClicked)="switchToClose()"
+>
+  @if (modalMode() === 'create') {
+    <app-ui-date-input
+      [value]="effectiveDateDraft()"
+      (valueChanged)="effectiveDateDraft.set($event)"
+    />
+    <app-ui-select
+      [options]="agreementOptions()"
+      [value]="agreementCodeDraft()"
+      (valueChanged)="updateAgreementCode($event)"
+    />
+    <app-ui-select
+      [options]="categoryOptions()"
+      [value]="agreementCategoryCodeDraft()"
+      [disabled]="categoryDisabled()"
+      (valueChanged)="agreementCategoryCodeDraft.set($event)"
+    />
+  }
 
-    @if (modalMode() === 'edit') {
-      <app-ui-date-input
-        [value]="newStartDateDraft()"
-        (valueChanged)="newStartDateDraft.set($event)" />
-      <app-ui-select
-        [options]="agreementOptions()"
-        [value]="agreementCodeDraft()"
-        (valueChanged)="updateAgreementCode($event)" />
-      <app-ui-select
-        [options]="categoryOptions()"
-        [value]="agreementCategoryCodeDraft()"
-        [disabled]="categoryDisabled()"
-        (valueChanged)="agreementCategoryCodeDraft.set($event)" />
-    }
+  @if (modalMode() === 'edit') {
+    <app-ui-date-input
+      [value]="newStartDateDraft()"
+      (valueChanged)="newStartDateDraft.set($event)"
+    />
+    <app-ui-select
+      [options]="agreementOptions()"
+      [value]="agreementCodeDraft()"
+      (valueChanged)="updateAgreementCode($event)"
+    />
+    <app-ui-select
+      [options]="categoryOptions()"
+      [value]="agreementCategoryCodeDraft()"
+      [disabled]="categoryDisabled()"
+      (valueChanged)="agreementCategoryCodeDraft.set($event)"
+    />
+  }
 
-    @if (modalMode() === 'close') {
-      <app-ui-date-input
-        [value]="endDateDraft()"
-        (valueChanged)="endDateDraft.set($event)" />
-    }
-  </app-period-modal>
+  @if (modalMode() === 'close') {
+    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+  }
+</app-period-modal>

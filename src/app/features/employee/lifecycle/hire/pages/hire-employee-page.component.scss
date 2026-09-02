@@ -56,19 +56,45 @@
   }
 }
 
-.flex { display: flex; }
-.flex-column { flex-direction: column; }
-.gap-3 { gap: 1rem; }
-.gap-2 { gap: 0.5rem; }
-.justify-content-between { justify-content: space-between; }
-.align-items-center { align-items: center; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mt-4 { margin-top: 1.5rem; }
-.m-0 { margin: 0; }
-.text-3xl { font-size: 1.875rem; }
-.font-bold { font-weight: 700; }
-.text-600 { color: var(--text-secondary); }
-.w-full { width: 100%; }
+.flex {
+  display: flex;
+}
+.flex-column {
+  flex-direction: column;
+}
+.gap-3 {
+  gap: 1rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.justify-content-between {
+  justify-content: space-between;
+}
+.align-items-center {
+  align-items: center;
+}
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+.mt-4 {
+  margin-top: 1.5rem;
+}
+.m-0 {
+  margin: 0;
+}
+.text-3xl {
+  font-size: 1.875rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.text-600 {
+  color: var(--text-secondary);
+}
+.w-full {
+  width: 100%;
+}
 
 .hire-working-time-block {
   padding-top: 0.75rem;
@@ -145,7 +171,10 @@
 }
 
 :host ::ng-deep {
-  .w-full.p-dropdown, .w-full.p-calendar, .w-full.p-inputtext, .p-inputnumber {
+  .w-full.p-dropdown,
+  .w-full.p-calendar,
+  .w-full.p-inputtext,
+  .p-inputnumber {
     width: 100% !important;
   }
 }

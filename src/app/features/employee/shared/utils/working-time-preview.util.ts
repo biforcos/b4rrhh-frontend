@@ -4,13 +4,15 @@ export interface WorkingTimePreview {
   monthlyHours: number;
 }
 
-export function buildWorkingTimePreview(workingTimePercentage: number | null | undefined): WorkingTimePreview | null {
+export function buildWorkingTimePreview(
+  workingTimePercentage: number | null | undefined,
+): WorkingTimePreview | null {
   if (
-    workingTimePercentage === null
-    || workingTimePercentage === undefined
-    || !Number.isFinite(workingTimePercentage)
-    || workingTimePercentage <= 0
-    || workingTimePercentage > 100
+    workingTimePercentage === null ||
+    workingTimePercentage === undefined ||
+    !Number.isFinite(workingTimePercentage) ||
+    workingTimePercentage <= 0 ||
+    workingTimePercentage > 100
   ) {
     return null;
   }

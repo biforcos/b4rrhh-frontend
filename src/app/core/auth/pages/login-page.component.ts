@@ -30,8 +30,12 @@ import { LocalDevLoginPageComponent } from './local-dev-login-page.component';
     }
   `,
   styles: `
-    :host { display: contents; }
-    .login-page__cargando { min-height: 100dvh; }
+    :host {
+      display: contents;
+    }
+    .login-page__cargando {
+      min-height: 100dvh;
+    }
   `,
 })
 export class LoginPageComponent {

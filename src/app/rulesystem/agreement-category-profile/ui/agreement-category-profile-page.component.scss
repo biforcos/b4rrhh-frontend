@@ -5,8 +5,14 @@
   &__header {
     margin-bottom: 1.5rem;
 
-    h2 { margin: 0 0 0.25rem; }
-    p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+    h2 {
+      margin: 0 0 0.25rem;
+    }
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
   }
 
   &__selectors {
@@ -15,25 +21,34 @@
     margin-bottom: 1.5rem;
     max-width: 640px;
 
-    app-ui-select { flex: 1; }
+    app-ui-select {
+      flex: 1;
+    }
   }
 
   &__feedback {
     margin: 0.75rem 0;
     font-size: 0.9rem;
 
-    &--error { color: var(--error-text); }
-    &--success { color: var(--success-text); }
+    &--error {
+      color: var(--error-text);
+    }
+    &--success {
+      color: var(--success-text);
+    }
   }
 
-  &__empty { color: var(--text-secondary); }
+  &__empty {
+    color: var(--text-secondary);
+  }
 
   &__table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
 
-    th, td {
+    th,
+    td {
       padding: 0.6rem 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border-default);
@@ -49,11 +64,17 @@
     }
   }
 
-  &__row--editing td { background: var(--surface-raised); }
+  &__row--editing td {
+    background: var(--surface-raised);
+  }
 
-  &__cell--actions { width: 90px; }
+  &__cell--actions {
+    width: 90px;
+  }
 
-  &__code { font-weight: 500; }
+  &__code {
+    font-weight: 500;
+  }
 
   &__name {
     margin-left: 0.5rem;
@@ -61,7 +82,10 @@
     font-size: 0.85rem;
   }
 
-  &__edit-row td { padding: 0; border-bottom: 2px solid var(--accent-primary); }
+  &__edit-row td {
+    padding: 0;
+    border-bottom: 2px solid var(--accent-primary);
+  }
 
   &__edit-form {
     display: flex;
@@ -78,7 +102,11 @@
     gap: 0.3rem;
     min-width: 220px;
 
-    span { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+    span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
   }
 
   &__edit-actions {
