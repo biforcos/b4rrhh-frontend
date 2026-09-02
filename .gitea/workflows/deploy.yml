@@ -50,6 +50,11 @@ jobs:
           # build si un .scss de componente trae un color literal.
           # lint:icons es el del set de iconos (#11): tumba el build si vuelve
           # a colarse un icono de primeicons (pi pi-*).
+          # format:check es el candado de Prettier (#38): tumba el build si
+          # entra un fichero sin formatear. Va con los otros dos candados,
+          # antes de api:generate: el cliente generado no se formatea (esta
+          # en .gitignore y Prettier lo respeta), asi que no hace falta
+          # tenerlo para comprobarlo.
           docker create \
             --name "${{ env.NODE }}" \
             --cpus 5 \
@@ -63,6 +68,7 @@ jobs:
                    && npm ci \
                    && npm run lint:styles \
                    && npm run lint:icons \
+                   && npm run format:check \
                    && npm run api:generate \
                    && npm test -- --no-watch"
 
