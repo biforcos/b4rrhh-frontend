@@ -72,6 +72,6 @@ describe('EmployeePresenceSectionComponent', () => {
     const fixture = render();
     const row: HTMLElement = fixture.nativeElement.querySelector('.temporal-section__row');
     expect(row.textContent).toContain('XX99');
-    expect(row.querySelectorAll('.temporal-section__code')).toHaveLength(0);
+    expect(row.querySelectorAll('.ui-catalog-label__code')).toHaveLength(0);
   });
 });

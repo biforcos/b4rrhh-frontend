@@ -13,17 +13,11 @@
     <ng-template #cellContent let-row>
       <!-- ADR-051 §4: el código nunca va solo. -->
       <td class="temporal-section__td">
-        {{ row.agreementLabel ?? row.agreementCode }}
-        @if (row.agreementLabel) {
-          <span class="temporal-section__code">{{ row.agreementCode }}</span>
-        }
+        <app-ui-catalog-label [name]="row.agreementLabel" [code]="row.agreementCode" />
       </td>
       <td class="temporal-section__td">
-        @if (row.agreementCategoryCode) {
-          {{ row.categoryLabel ?? row.agreementCategoryCode }}
-          @if (row.categoryLabel) {
-            <span class="temporal-section__code">{{ row.agreementCategoryCode }}</span>
-          }
+        @if (row.agreementCategoryCode; as categoryCode) {
+          <app-ui-catalog-label [name]="row.categoryLabel" [code]="categoryCode" />
         } @else {
           <span class="temporal-section__secondary">—</span>
         }

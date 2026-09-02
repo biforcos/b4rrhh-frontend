@@ -14,10 +14,7 @@
   <ng-template #cellContent let-row>
     <!-- ADR-051 §4: el código nunca va solo. -->
     <td class="temporal-section__td">
-      {{ row.addressTypeName ?? row.addressTypeCode }}
-      @if (row.addressTypeName) {
-        <span class="temporal-section__code">{{ row.addressTypeCode }}</span>
-      }
+      <app-ui-catalog-label [name]="row.addressTypeName" [code]="row.addressTypeCode" />
     </td>
     <td class="temporal-section__td">
       {{ row.street }}

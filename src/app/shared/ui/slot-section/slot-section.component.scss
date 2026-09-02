@@ -107,21 +107,13 @@ app-slot-section {
   box-shadow: inset 3px 0 0 var(--error-border);
 }
 
-/* La clave: el literal del catálogo, en gris. El código, si hace falta, debajo (ADR-051 §4). */
+/* La clave: el literal del catálogo, en gris. El código, debajo, lo pone app-ui-catalog-label (ADR-051 §4). */
 .slot-section__key {
   margin: 0;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.3;
-}
-
-.slot-section__code {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-tertiary);
 }
 
 .slot-section__value {

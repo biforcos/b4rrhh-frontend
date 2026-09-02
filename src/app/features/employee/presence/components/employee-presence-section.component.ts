@@ -3,6 +3,7 @@ import { Observable, take } from 'rxjs';
 
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
+import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
 import { employeeTexts } from '../../employee.texts';
@@ -30,7 +31,7 @@ type LabelMap = Readonly<Record<string, string>>;
 @Component({
   selector: 'app-employee-presence-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent],
+  imports: [TemporalSectionComponent, UiCatalogLabelComponent],
   templateUrl: './employee-presence-section.component.html',
 })
 export class EmployeePresenceSectionComponent {

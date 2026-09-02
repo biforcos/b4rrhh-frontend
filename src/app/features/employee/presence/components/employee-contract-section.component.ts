@@ -20,6 +20,7 @@ import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.mod
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
+import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
@@ -36,7 +37,7 @@ interface ContractPeriodRow extends TemporalSectionRow {
 @Component({
   selector: 'app-employee-contract-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
   templateUrl: './employee-contract-section.component.html',
 })
 export class EmployeeContractSectionComponent {

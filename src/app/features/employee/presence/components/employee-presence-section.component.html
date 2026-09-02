@@ -14,23 +14,14 @@
   <ng-template #cellContent let-row>
     <!-- ADR-051 §4: el código nunca va solo. -->
     <td class="temporal-section__td">
-      {{ row.companyName ?? row.companyCode }}
-      @if (row.companyName) {
-        <span class="temporal-section__code">{{ row.companyCode }}</span>
-      }
+      <app-ui-catalog-label [name]="row.companyName" [code]="row.companyCode" />
     </td>
     <td class="temporal-section__td">
-      {{ row.entryReasonName ?? row.entryReasonCode }}
-      @if (row.entryReasonName) {
-        <span class="temporal-section__code">{{ row.entryReasonCode }}</span>
-      }
+      <app-ui-catalog-label [name]="row.entryReasonName" [code]="row.entryReasonCode" />
     </td>
     <td class="temporal-section__td">
-      @if (row.exitReasonCode) {
-        {{ row.exitReasonName ?? row.exitReasonCode }}
-        @if (row.exitReasonName) {
-          <span class="temporal-section__code">{{ row.exitReasonCode }}</span>
-        }
+      @if (row.exitReasonCode; as exitReasonCode) {
+        <app-ui-catalog-label [name]="row.exitReasonName" [code]="exitReasonCode" />
       } @else {
         <span class="temporal-section__secondary">—</span>
       }

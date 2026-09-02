@@ -8,11 +8,9 @@
   >
     <ng-template #columnHeaders><th class="temporal-section__th">Centro</th></ng-template>
     <ng-template #cellContent let-row>
+      <!-- ADR-051 §4: el código nunca va solo. -->
       <td class="temporal-section__td">
-        {{ row.workCenterName ?? row.workCenterCode }}
-        @if (row.workCenterName) {
-          <span class="temporal-section__code">{{ row.workCenterCode }}</span>
-        }
+        <app-ui-catalog-label [name]="row.workCenterName" [code]="row.workCenterCode" />
       </td>
     </ng-template>
   </app-temporal-section>

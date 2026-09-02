@@ -11,6 +11,7 @@ import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-section.component';
+import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import {
   SlotDraft,
   SlotKeyOption,
@@ -19,9 +20,11 @@ import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-
 
 interface ContactRowViewModel {
   key: string;
+  /** Lo que se lee: el literal del catálogo o, si no lo hay, el código. Para los `aria-label`. */
   typeLabel: string;
-  /** El código, cuando el literal lo tapa (ADR-051 §4); `null` si son el mismo. */
-  typeCode: string | null;
+  /** El literal del catálogo; `null` si no llegó y el código va solo (ADR-051 §4). */
+  typeName: string | null;
+  typeCode: string;
   value: string;
 }
 
@@ -35,7 +38,7 @@ function createEmptyContactDraft(): SlotDraft<string> {
 @Component({
   selector: 'app-employee-contact-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SlotSectionComponent, B4IconComponent, UiSelectComponent, InputTextModule],
+  imports: [SlotSectionComponent, B4IconComponent, UiSelectComponent, InputTextModule, UiCatalogLabelComponent],
   templateUrl: './employee-contact-section.component.html',
 })
 export class EmployeeContactSectionComponent {
@@ -65,7 +68,9 @@ export class EmployeeContactSectionComponent {
       .map((row) => ({
         key: row.key,
         typeLabel: row.keyLabel,
-        typeCode: row.secondaryText ?? null,
+        // El mapper deja el código en `secondaryText` solo cuando el literal lo tapa.
+        typeName: row.secondaryText ? row.keyLabel : null,
+        typeCode: row.key,
         value: row.value,
       }))
       .sort((left, right) => left.key.localeCompare(right.key)),

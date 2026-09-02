@@ -12,17 +12,11 @@
     <ng-template #cellContent let-row>
       <!-- ADR-051 §4: el código nunca va solo. -->
       <td class="temporal-section__td">
-        {{ row.contractTypeLabel ?? row.contractCode }}
-        @if (row.contractTypeLabel) {
-          <span class="temporal-section__code">{{ row.contractCode }}</span>
-        }
+        <app-ui-catalog-label [name]="row.contractTypeLabel" [code]="row.contractCode" />
       </td>
       <td class="temporal-section__td">
-        @if (row.contractSubtypeCode) {
-          {{ row.contractSubtypeLabel ?? row.contractSubtypeCode }}
-          @if (row.contractSubtypeLabel) {
-            <span class="temporal-section__code">{{ row.contractSubtypeCode }}</span>
-          }
+        @if (row.contractSubtypeCode; as subtypeCode) {
+          <app-ui-catalog-label [name]="row.contractSubtypeLabel" [code]="subtypeCode" />
         } @else {
           <span class="temporal-section__secondary">—</span>
         }

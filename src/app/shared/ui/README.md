@@ -116,6 +116,19 @@ Does not:
 - carry a colour of its own
 - replace the text label next to it (see `docs/identidad-visual.md`)
 
+## app-ui-catalog-label
+
+Use it for every catalog value in a row: the literal on top and the code underneath, in grey
+and monospace (ADR-051 §4). The code never goes alone.
+
+Does:
+- `name` (the catalog literal, nullable) and `code` (required)
+- without a literal, shows the code in its place and no second line: nothing gets invented
+
+Does not:
+- resolve the literal (that is the backend's, through `Accept-Language`, or the feature's)
+- carry feature-specific composition (a "Grupo" prefix, a "/ subtype" suffix)
+
 ## Rule of Use
 
 If behavior depends on catalog resolution, filtering rules, business keys, mutations, API contracts, or mode transitions, keep that behavior in the feature component, store, or gateway. Shared UI only carries structure and presentation.

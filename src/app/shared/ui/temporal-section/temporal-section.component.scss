@@ -144,7 +144,8 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   width: 80px;
 }
 
-/* ADR-051 §4: el código nunca va solo. El literal delante; el código detrás, en gris y monoespaciada. */
+/* Una segunda línea en gris y monoespaciada que no es un código de catálogo (las horas al día de la
+   jornada). Los códigos los pinta app-ui-catalog-label (ADR-051 §4). */
 .temporal-section__code {
   display: block;
   font-family: var(--font-mono);

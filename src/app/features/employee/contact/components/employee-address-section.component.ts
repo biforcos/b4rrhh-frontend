@@ -27,6 +27,7 @@ import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-i
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
+import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
 
 type AddressModalMode = 'create' | 'edit' | 'close';
@@ -67,6 +68,7 @@ function createEmptyAddressDraft(): AddressCreateDraft {
     PeriodModalComponent,
     UiDateInputComponent,
     UiSelectComponent,
+    UiCatalogLabelComponent,
     InputTextModule,
   ],
   templateUrl: './employee-address-section.component.html',

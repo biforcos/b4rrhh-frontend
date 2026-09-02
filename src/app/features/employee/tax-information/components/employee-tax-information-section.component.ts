@@ -16,6 +16,7 @@ import {
 import { EmployeeTaxInformationStore } from '../../data-access/employee-tax-information.store';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
+import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
@@ -27,9 +28,12 @@ type TaxInfoModalMode = 'create' | 'edit' | 'delete-confirm';
 
 interface TaxInfoPeriodRow extends TemporalSectionRow {
   familySituation: string;
+  /** El literal del valor, del mismo catálogo local que el formulario; `null` si no lo conoce. */
+  familySituationLabel: string | null;
   descendantsCount: number;
   ascendantsCount: number;
   disabilityDegree: string;
+  disabilityDegreeLabel: string | null;
 }
 
 const FAMILY_SITUATION_OPTIONS: ReadonlyArray<SlotKeyOption<string>> = [
@@ -57,10 +61,15 @@ const BOOLEAN_OPTIONS: ReadonlyArray<SlotKeyOption<string>> = [
   { value: 'true', label: 'Sí' },
 ];
 
+/** El literal de un valor en su catálogo local; `null` si el valor no está en él. */
+function optionLabel(options: ReadonlyArray<SlotKeyOption<string>>, value: string): string | null {
+  return options.find((option) => option.value === value)?.label ?? null;
+}
+
 @Component({
   selector: 'app-employee-tax-information-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent],
+  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
   templateUrl: './employee-tax-information-section.component.html',
   styleUrl: './employee-tax-information-section.component.scss',
 })
@@ -96,9 +105,11 @@ export class EmployeeTaxInformationSectionComponent {
       canEdit: true,
       canDelete: true,
       familySituation: r.familySituation,
+      familySituationLabel: optionLabel(FAMILY_SITUATION_OPTIONS, r.familySituation),
       descendantsCount: r.descendantsCount,
       ascendantsCount: r.ascendantsCount,
       disabilityDegree: r.disabilityDegree,
+      disabilityDegreeLabel: optionLabel(DISABILITY_DEGREE_OPTIONS, r.disabilityDegree),
     })),
   );
 

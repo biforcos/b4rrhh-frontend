@@ -14,10 +14,11 @@
       <th>Discapacidad</th>
     </ng-template>
     <ng-template #cellContent let-row>
-      <td>{{ row.familySituation }}</td>
+      <!-- ADR-051 §4: el código nunca va solo. -->
+      <td><app-ui-catalog-label [name]="row.familySituationLabel" [code]="row.familySituation" /></td>
       <td>{{ row.descendantsCount }}</td>
       <td>{{ row.ascendantsCount }}</td>
-      <td>{{ row.disabilityDegree }}</td>
+      <td><app-ui-catalog-label [name]="row.disabilityDegreeLabel" [code]="row.disabilityDegree" /></td>
     </ng-template>
   </app-temporal-section>
 

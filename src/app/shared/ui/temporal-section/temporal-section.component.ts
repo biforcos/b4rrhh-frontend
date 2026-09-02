@@ -29,7 +29,9 @@ import { TemporalSectionRow } from './temporal-section-row.model';
  *
  * Las fechas van en formato local. Lo que va en cada columna lo decide la sección con
  * `columnHeaders` y `cellContent`; la regla ADR-051 §4 —el código nunca va solo— la cumple la
- * sección con `.temporal-section__code` para el código junto al literal.
+ * sección pintando cada valor de catálogo con `app-ui-catalog-label`. Queda
+ * `.temporal-section__code` para una segunda línea que no es un código (las horas al día de la
+ * jornada).
  */
 @Component({
   selector: 'app-temporal-section',
