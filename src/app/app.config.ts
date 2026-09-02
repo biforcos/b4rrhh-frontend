@@ -8,6 +8,7 @@ import { b4rrhhPrimeNgThemePreset } from './core/theme/b4rrhh-primeng-theme.pres
 import { BASE_PATH } from './core/api/generated/variables';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { acceptLanguageInterceptor } from './core/i18n/accept-language.interceptor';
 import { provideSpanishLocale } from './core/i18n/spanish-locale';
 import { provideIconSprite } from './core/icons/icon-sprite';
 
@@ -17,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideSpanishLocale(),
     provideIconSprite(),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, acceptLanguageInterceptor])),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),
     providePrimeNG({
       theme: {
