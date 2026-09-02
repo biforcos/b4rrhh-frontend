@@ -11,6 +11,8 @@
     "test": "ng test",
     "lint:styles": "stylelint \"src/app/**/*.scss\"",
     "lint:icons": "node ./tools/lint-icons.mjs",
+    "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:pull": "node ./tools/openapi/pull-contract.mjs",
     "api:generate": "node ./tools/openapi/generate-client.mjs",
     "api:refresh": "npm run api:pull && npm run api:generate",
