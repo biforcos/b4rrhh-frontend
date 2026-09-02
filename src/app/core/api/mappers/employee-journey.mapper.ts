@@ -88,10 +88,16 @@ function mapEmployeeJourneyEventApiToReadModel(
   };
 }
 
-function normalizeStatus(value: EmployeeJourneyApiEventStatus): EmployeeJourneyReadEventStatus | null {
+function normalizeStatus(
+  value: EmployeeJourneyApiEventStatus,
+): EmployeeJourneyReadEventStatus | null {
   const normalizedValue = value.trim().toLowerCase();
 
-  if (normalizedValue === 'completed' || normalizedValue === 'current' || normalizedValue === 'future') {
+  if (
+    normalizedValue === 'completed' ||
+    normalizedValue === 'current' ||
+    normalizedValue === 'future'
+  ) {
     return normalizedValue;
   }
 

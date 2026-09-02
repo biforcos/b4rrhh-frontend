@@ -119,8 +119,8 @@ export class EmployeeJourneyTimelineComponent {
 
   protected readonly texts = employeeTexts;
   protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
-  protected readonly groupedTimelineEvents = computed<ReadonlyArray<GroupedJourneyEventViewModel>>(() =>
-    this.groupEventsByDate(this.journey()?.events ?? []),
+  protected readonly groupedTimelineEvents = computed<ReadonlyArray<GroupedJourneyEventViewModel>>(
+    () => this.groupEventsByDate(this.journey()?.events ?? []),
   );
   protected readonly presenceGroups = computed(() =>
     this.groupEventsByPresence(this.journey()?.events ?? [], this.presences() ?? []),
@@ -131,7 +131,8 @@ export class EmployeeJourneyTimelineComponent {
       return { totalEvents: 0, latestEventLabel: null, latestEventDate: null };
     }
 
-    const latestEvent = [...events].sort((left, right) => right.eventDate.localeCompare(left.eventDate))[0] ?? null;
+    const latestEvent =
+      [...events].sort((left, right) => right.eventDate.localeCompare(left.eventDate))[0] ?? null;
 
     return {
       totalEvents: events.length,
@@ -155,7 +156,9 @@ export class EmployeeJourneyTimelineComponent {
     }
 
     const eventsLabel =
-      totalEvents === 1 ? this.texts.timelineEventsSingularLabel : this.texts.timelineEventsPluralLabel;
+      totalEvents === 1
+        ? this.texts.timelineEventsSingularLabel
+        : this.texts.timelineEventsPluralLabel;
 
     if (!summary.latestEventLabel || !summary.latestEventDate) {
       return `${totalEvents} ${eventsLabel}`;
@@ -164,7 +167,9 @@ export class EmployeeJourneyTimelineComponent {
     return `${totalEvents} ${eventsLabel} · ${this.texts.timelineLastEventLabel}: ${summary.latestEventLabel} (${formatDisplayDate(summary.latestEventDate)})`;
   });
   protected readonly toggleAriaLabel = computed(() =>
-    this.isExpanded() ? this.texts.timelineCollapseActionLabel : this.texts.timelineExpandActionLabel,
+    this.isExpanded()
+      ? this.texts.timelineCollapseActionLabel
+      : this.texts.timelineExpandActionLabel,
   );
   protected readonly hasEvents = computed(() => this.presenceGroups().length > 0);
 
@@ -243,10 +248,12 @@ export class EmployeeJourneyTimelineComponent {
       }
 
       const primaryEvent = evs[primaryIndex];
-      const secondaryEvents = evs.filter((_, i) => i !== primaryIndex).map((e) => ({
-        id: `${e.eventDate}-${e.eventType}-secondary`,
-        summary: this.toSecondarySummary(e),
-      }));
+      const secondaryEvents = evs
+        .filter((_, i) => i !== primaryIndex)
+        .map((e) => ({
+          id: `${e.eventDate}-${e.eventType}-secondary`,
+          summary: this.toSecondarySummary(e),
+        }));
 
       result.push({
         eventDate: date,
@@ -360,12 +367,18 @@ export class EmployeeJourneyTimelineComponent {
     return null;
   }
 
-  private groupEventsByPresence(events: ReadonlyArray<EmployeeJourneyEventModel>, presences: ReadonlyArray<EmployeePresenceModel>) {
+  private groupEventsByPresence(
+    events: ReadonlyArray<EmployeeJourneyEventModel>,
+    presences: ReadonlyArray<EmployeePresenceModel>,
+  ) {
     // STEP 1: Build presence blocks from authoritative presences list
-    const presenceMap = new Map<string, {
-      presence: EmployeePresenceModel;
-      assigned: EmployeeJourneyEventModel[];
-    }>();
+    const presenceMap = new Map<
+      string,
+      {
+        presence: EmployeePresenceModel;
+        assigned: EmployeeJourneyEventModel[];
+      }
+    >();
 
     for (const p of presences) {
       const id = String((p as any).presenceNumber);
@@ -380,7 +393,10 @@ export class EmployeeJourneyTimelineComponent {
       const evDate = extractDate(ev.eventDate);
 
       // 2.1 presenceId in details
-      const detailsPresence = ev.details && (ev.details as any)['presenceNumber'] ? String((ev.details as any)['presenceNumber']) : null;
+      const detailsPresence =
+        ev.details && (ev.details as any)['presenceNumber']
+          ? String((ev.details as any)['presenceNumber'])
+          : null;
       if (detailsPresence && presenceMap.has(detailsPresence)) {
         presenceMap.get(detailsPresence)!.assigned.push(ev);
         continue;
@@ -423,16 +439,18 @@ export class EmployeeJourneyTimelineComponent {
 
       // The lifecycle events (HIRE, REHIRE, TERMINATION) travel on the PRESENCE track, which
       // has the highest priority, so the primary event of a date already names the day.
-      const dateGroups: PresenceDateGroupViewModel[] = Array.from(byDate.entries()).map(([date, evs]) => {
-        const primaryEvent = this.pickPrimaryEvent(evs);
+      const dateGroups: PresenceDateGroupViewModel[] = Array.from(byDate.entries()).map(
+        ([date, evs]) => {
+          const primaryEvent = this.pickPrimaryEvent(evs);
 
-        return {
-          eventDate: date,
-          primaryEventType: primaryEvent.eventType,
-          primaryEventLabel: this.resolveCompactEventLabel(primaryEvent),
-          secondaryEvents: this.resolveSecondaryEvents(evs),
-        };
-      });
+          return {
+            eventDate: date,
+            primaryEventType: primaryEvent.eventType,
+            primaryEventLabel: this.resolveCompactEventLabel(primaryEvent),
+            secondaryEvents: this.resolveSecondaryEvents(evs),
+          };
+        },
+      );
 
       // STEP 4: sort date groups DESC
       dateGroups.sort((a, b) => (b.eventDate ?? '').localeCompare(a.eventDate ?? ''));
@@ -469,7 +487,9 @@ export class EmployeeJourneyTimelineComponent {
       }));
   }
 
-  private pickPrimaryEvent(events: ReadonlyArray<EmployeeJourneyEventModel>): EmployeeJourneyEventModel {
+  private pickPrimaryEvent(
+    events: ReadonlyArray<EmployeeJourneyEventModel>,
+  ): EmployeeJourneyEventModel {
     let primaryEvent = events[0]!;
     let primaryPriority = Number.MAX_SAFE_INTEGER;
 

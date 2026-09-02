@@ -41,7 +41,9 @@ export class EmployeeJourneyReadGateway {
     };
   }
 
-  private toEmployeeJourneyHeaderModel(source: EmployeeJourneyReadModel['employee']): EmployeeJourneyHeaderModel {
+  private toEmployeeJourneyHeaderModel(
+    source: EmployeeJourneyReadModel['employee'],
+  ): EmployeeJourneyHeaderModel {
     return {
       ruleSystemCode: source.ruleSystemCode,
       employeeTypeCode: source.employeeTypeCode,
@@ -50,7 +52,9 @@ export class EmployeeJourneyReadGateway {
     };
   }
 
-  private toEmployeeJourneyEventModel(source: EmployeeJourneyReadEventModel): EmployeeJourneyEventModel {
+  private toEmployeeJourneyEventModel(
+    source: EmployeeJourneyReadEventModel,
+  ): EmployeeJourneyEventModel {
     return {
       eventDate: source.eventDate,
       eventType: source.eventType,

@@ -54,7 +54,9 @@ describe('EmployeeJourneyStore', () => {
     store.loadJourneyByBusinessKey(employeeBusinessKey);
 
     expect(readGatewayMock.readEmployeeJourneyByBusinessKey).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeJourneyByBusinessKey).toHaveBeenCalledWith(employeeBusinessKey);
+    expect(readGatewayMock.readEmployeeJourneyByBusinessKey).toHaveBeenCalledWith(
+      employeeBusinessKey,
+    );
     expect(store.journey()).toEqual(employeeJourneyFixture);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();
