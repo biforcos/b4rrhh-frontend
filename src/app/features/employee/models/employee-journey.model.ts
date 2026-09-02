@@ -1,3 +1,5 @@
+import { JourneyEventType } from '../../../core/api/generated/model/journey-event-type';
+
 export interface EmployeeJourneyHeaderModel {
   ruleSystemCode: string;
   employeeTypeCode: string;
@@ -7,12 +9,16 @@ export interface EmployeeJourneyHeaderModel {
 
 export type EmployeeJourneyEventStatus = 'completed' | 'current' | 'future';
 
+/**
+ * The event type codes the contract declares. Derived from the generated enum so that a new
+ * value in the backend reaches every exhaustive map over it and breaks the build there.
+ */
+export type EmployeeJourneyEventType = `${JourneyEventType}`;
+
 export interface EmployeeJourneyEventModel {
   eventDate: string;
-  eventType: string;
+  eventType: EmployeeJourneyEventType;
   trackCode: string;
-  title: string;
-  subtitle: string | null;
   status: EmployeeJourneyEventStatus;
   isCurrent: boolean;
   details: Readonly<Record<string, unknown>> | null;

@@ -6,6 +6,7 @@ import {
   EmployeeJourneyResponse,
   JourneyEmployeeHeader,
   JourneyEventResponse,
+  JourneyEventType,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
 
@@ -20,10 +21,8 @@ export type EmployeeJourneyApiEventStatus = 'completed' | 'current' | 'future';
 
 export interface EmployeeJourneyApiEventModel {
   eventDate: string;
-  eventType: string;
+  eventType: JourneyEventType;
   trackCode: string;
-  title: string;
-  subtitle: string | null;
   status: EmployeeJourneyApiEventStatus;
   isCurrent: boolean;
   details: Readonly<Record<string, unknown>> | null;
@@ -81,10 +80,8 @@ export class EmployeeJourneyReadClient {
   ): EmployeeJourneyApiEventModel {
     return {
       eventDate: source.eventDate,
-      eventType: String(source.eventType),
+      eventType: source.eventType,
       trackCode: String(source.trackCode),
-      title: source.title,
-      subtitle: this.normalizeOptionalString(source.subtitle),
       status: this.normalizeStatus(source.status),
       isCurrent: source.isCurrent,
       details: this.toReadonlyUnknownRecord(source.details),

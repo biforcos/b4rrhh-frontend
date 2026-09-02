@@ -6,6 +6,7 @@ import { employeeTexts } from '../../employee.texts';
 import {
   EmployeeJourneyEventModel,
   EmployeeJourneyEventStatus,
+  EmployeeJourneyEventType,
   EmployeeJourneyModel,
 } from '../../models/employee-journey.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
@@ -32,7 +33,7 @@ interface GroupedJourneyEventViewModel {
 
 interface PresenceDateGroupViewModel {
   eventDate: string;
-  semanticLabel: string | null;
+  primaryEventType: EmployeeJourneyEventType;
   primaryEventLabel: string;
   secondaryEvents: ReadonlyArray<GroupedJourneySecondaryEventViewModel>;
 }
@@ -65,10 +66,40 @@ const secondaryTrackLabelByCode: Readonly<Record<string, string>> = {
   LABOR_CLASSIFICATION: 'Clasificación',
 };
 
-const compactEventLabelByTrackCode: Readonly<Record<string, string>> = {
-  PRESENCE: 'Alta',
-  CONTRACT: 'Contrato',
-  LABOR_CLASSIFICATION: 'Clasificación',
+/**
+ * Both maps are exhaustive over the contract's event types on purpose: a new value in the
+ * backend enum must fail to compile here, not fall into a silent generic label.
+ */
+const eventLabelByType: Readonly<Record<EmployeeJourneyEventType, string>> = {
+  HIRE: employeeTexts.timelineEventHireLabel,
+  REHIRE: employeeTexts.timelineEventRehireLabel,
+  TERMINATION: employeeTexts.timelineEventTerminationLabel,
+  PRESENCE_START: employeeTexts.timelineEventPresenceStartLabel,
+  PRESENCE_END: employeeTexts.timelineEventPresenceEndLabel,
+  CONTRACT_START: employeeTexts.timelineEventContractStartLabel,
+  CONTRACT_CHANGE: employeeTexts.timelineEventContractChangeLabel,
+  CONTRACT_END: employeeTexts.timelineEventContractEndLabel,
+  LABOR_CLASSIFICATION_START: employeeTexts.timelineEventLaborClassificationStartLabel,
+  LABOR_CLASSIFICATION_CHANGE: employeeTexts.timelineEventLaborClassificationChangeLabel,
+  LABOR_CLASSIFICATION_END: employeeTexts.timelineEventLaborClassificationEndLabel,
+  WORK_CENTER_START: employeeTexts.timelineEventWorkCenterStartLabel,
+  WORK_CENTER_END: employeeTexts.timelineEventWorkCenterEndLabel,
+};
+
+const eventIconBackgroundByType: Readonly<Record<EmployeeJourneyEventType, string>> = {
+  HIRE: '#dcfce7',
+  REHIRE: '#dcfce7',
+  TERMINATION: '#fee2e2',
+  PRESENCE_START: '#dcfce7',
+  PRESENCE_END: '#fee2e2',
+  CONTRACT_START: '#ede9fe',
+  CONTRACT_CHANGE: '#ede9fe',
+  CONTRACT_END: '#ede9fe',
+  LABOR_CLASSIFICATION_START: '#eef2ff',
+  LABOR_CLASSIFICATION_CHANGE: '#eef2ff',
+  LABOR_CLASSIFICATION_END: '#eef2ff',
+  WORK_CENTER_START: '#f3f4f6',
+  WORK_CENTER_END: '#f3f4f6',
 };
 
 @Component({
@@ -155,13 +186,7 @@ export class EmployeeJourneyTimelineComponent {
   }
 
   protected resolveGroupIconBackground(group: PresenceDateGroupViewModel): string {
-    const label = (group.semanticLabel ?? group.primaryEventLabel).toLowerCase();
-    if (label.includes('alta') || label.includes('reingreso')) return '#dcfce7';
-    if (label.includes('baja') || label.includes('terminac') || label.includes('despido')) return '#fee2e2';
-    if (label.includes('contrato')) return '#ede9fe';
-    if (label.includes('jornada')) return '#e0f2fe';
-    if (label.includes('clasificac') || label.includes('convenio')) return '#eef2ff';
-    return '#f3f4f6';
+    return eventIconBackgroundByType[group.primaryEventType];
   }
 
   protected resolveStatusLabel(status: EmployeeJourneyEventStatus): string {
@@ -178,7 +203,7 @@ export class EmployeeJourneyTimelineComponent {
 
   protected trackGroupedEventBy(index: number, groupedEvent: GroupedJourneyEventViewModel): string {
     const primaryEvent = groupedEvent.primaryEvent;
-    return `${groupedEvent.eventDate}-${index}-${primaryEvent.eventType}-${primaryEvent.title}`;
+    return `${groupedEvent.eventDate}-${index}-${primaryEvent.eventType}`;
   }
 
   protected trackPresenceBy(_index: number, presence: { id: string }): string {
@@ -186,27 +211,7 @@ export class EmployeeJourneyTimelineComponent {
   }
 
   protected resolveCompactEventLabel(event: EmployeeJourneyEventModel): string {
-    const normalizedTrackCode = (event.trackCode ?? '').trim().toUpperCase();
-    const haystack = `${event.eventType} ${event.title} ${event.subtitle ?? ''}`.toLowerCase();
-
-    if (haystack.includes('work center') || haystack.includes('assignment') || haystack.includes('centro')) {
-      return this.texts.timelineEventWorkCenterLabel;
-    }
-
-    if (haystack.includes('termination') || haystack.includes('despido') || haystack.includes('baja') || haystack.includes('finish')) {
-      return this.texts.timelineEventTerminationLabel;
-    }
-
-    if (haystack.includes('rehire') || haystack.includes('reincorp') || haystack.includes('reingres')) {
-      return this.texts.timelineEventRehireLabel;
-    }
-
-    if (normalizedTrackCode in compactEventLabelByTrackCode) {
-      return compactEventLabelByTrackCode[normalizedTrackCode]!;
-    }
-
-    const normalizedTitle = event.title.trim();
-    return normalizedTitle || this.texts.timelineEventGenericLabel;
+    return eventLabelByType[event.eventType];
   }
 
   private groupEventsByDate(
@@ -271,11 +276,6 @@ export class EmployeeJourneyTimelineComponent {
   }
 
   private toSecondaryTrackValue(event: EmployeeJourneyEventModel): string | null {
-    const normalizedSubtitle = this.normalizeNarrativeValue(event.subtitle);
-    if (normalizedSubtitle) {
-      return normalizedSubtitle;
-    }
-
     const details = event.details;
     if (!details) {
       return null;
@@ -290,7 +290,7 @@ export class EmployeeJourneyTimelineComponent {
     }
 
     if (this.isPresenceTrack(event.trackCode)) {
-      return this.toPresenceContextSummary(details, null);
+      return this.toPresenceContextSummary(details);
     }
 
     return null;
@@ -301,14 +301,7 @@ export class EmployeeJourneyTimelineComponent {
     return secondaryTrackLabelByCode[normalizedTrackCode] ?? 'Evento';
   }
 
-  private toPresenceContextSummary(
-    details: Readonly<Record<string, unknown>> | null,
-    fallbackSubtitle: string | null,
-  ): string | null {
-    if (!details) {
-      return this.normalizeNarrativeValue(fallbackSubtitle);
-    }
-
+  private toPresenceContextSummary(details: Readonly<Record<string, unknown>>): string | null {
     const companyCode = this.toDisplayableValue((details as any)['companyCode']);
     const presenceNumber = this.toDisplayableValue((details as any)['presenceNumber']);
 
@@ -324,7 +317,7 @@ export class EmployeeJourneyTimelineComponent {
       return `período #${presenceNumber}`;
     }
 
-    return this.normalizeNarrativeValue(fallbackSubtitle);
+    return null;
   }
 
   private toPairedSummary(
@@ -340,15 +333,6 @@ export class EmployeeJourneyTimelineComponent {
     }
 
     return firstValue ?? secondValue;
-  }
-
-  private normalizeNarrativeValue(value: string | null | undefined): string | null {
-    const normalizedValue = value?.trim() ?? '';
-    if (!normalizedValue) {
-      return null;
-    }
-
-    return normalizedValue.replace(/\bperiod\s*#/gi, 'período #');
   }
 
   private isPresenceTrack(trackCode: string): boolean {
@@ -437,60 +421,23 @@ export class EmployeeJourneyTimelineComponent {
         byDate.set(dk, arr);
       }
 
-      const dateGroups: PresenceDateGroupViewModel[] = Array.from(byDate.entries()).map(([date, evs]) => ({
-        eventDate: date,
-        semanticLabel: null,
-        primaryEventLabel: this.resolvePrimaryEventLabel(evs),
-        secondaryEvents: this.resolveSecondaryEvents(evs),
-      }));
+      // The lifecycle events (HIRE, REHIRE, TERMINATION) travel on the PRESENCE track, which
+      // has the highest priority, so the primary event of a date already names the day.
+      const dateGroups: PresenceDateGroupViewModel[] = Array.from(byDate.entries()).map(([date, evs]) => {
+        const primaryEvent = this.pickPrimaryEvent(evs);
+
+        return {
+          eventDate: date,
+          primaryEventType: primaryEvent.eventType,
+          primaryEventLabel: this.resolveCompactEventLabel(primaryEvent),
+          secondaryEvents: this.resolveSecondaryEvents(evs),
+        };
+      });
 
       // STEP 4: sort date groups DESC
       dateGroups.sort((a, b) => (b.eventDate ?? '').localeCompare(a.eventDate ?? ''));
 
       // STEP 5: events inside groups keep stable order (already preserved)
-
-      // STEP 6: semantic labels strict rules
-      for (const dg of dateGroups) {
-        const evs = byDate.get(dg.eventDate) ?? [];
-        const hasContract = evs.some((e) => this.isContractTrack(e.trackCode));
-        const hasClassification = evs.some((e) => this.isLaborClassificationTrack(e.trackCode));
-        const hasAssignment = evs.some((e) => {
-          const code = (e.trackCode ?? '').toString().trim().toUpperCase();
-          if (code.includes('WORK') || code.includes('ASSIGN') || code.includes('ORGANIZ')) return true;
-          const txt = `${e.eventType} ${e.title} ${e.subtitle ?? ''}`.toLowerCase();
-          return txt.includes('assignment') || txt.includes('work center') || txt.includes('centro');
-        });
-
-        const isRehire = evs.some((e) => `${e.eventType} ${e.title} ${e.subtitle ?? ''}`.toLowerCase().includes('rehire'));
-        const isTermination = evs.some((e) => {
-          const code = (e.trackCode ?? '').toString().trim().toUpperCase();
-          const txt = `${e.eventType} ${e.title} ${e.subtitle ?? ''}`.toLowerCase();
-          return code === 'PRESENCE' && (txt.includes('baja') || txt.includes('termination') || txt.includes('despido') || txt.includes('finish'));
-        });
-
-        if (isRehire) {
-          dg.semanticLabel = this.texts.timelineSemanticRehireLabel;
-          continue;
-        }
-
-        if (isTermination) {
-          dg.semanticLabel = this.texts.timelineSemanticTerminationLabel;
-          continue;
-        }
-
-        if (hasContract && hasClassification && hasAssignment) {
-          dg.semanticLabel = this.texts.timelineSemanticHireLabel;
-          continue;
-        }
-
-        dg.semanticLabel = null;
-      }
-
-      for (const dg of dateGroups) {
-        if (dg.semanticLabel) {
-          dg.primaryEventLabel = dg.semanticLabel;
-        }
-      }
 
       result.push({
         id,
@@ -507,11 +454,6 @@ export class EmployeeJourneyTimelineComponent {
     // console.debug('timeline: presences', result.length, 'unassigned', unassignedEvents.length);
 
     return result;
-  }
-
-  private resolvePrimaryEventLabel(events: ReadonlyArray<EmployeeJourneyEventModel>): string {
-    const primaryEvent = this.pickPrimaryEvent(events);
-    return this.resolveCompactEventLabel(primaryEvent);
   }
 
   private resolveSecondaryEvents(

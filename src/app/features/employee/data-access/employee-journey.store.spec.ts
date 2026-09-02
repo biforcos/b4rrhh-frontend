@@ -23,8 +23,6 @@ const employeeJourneyFixture: EmployeeJourneyModel = {
       eventDate: '2024-01-01',
       eventType: 'CONTRACT_START',
       trackCode: 'CONTRACT',
-      title: 'Contrato indefinido',
-      subtitle: 'Inicio contractual',
       status: 'current',
       isCurrent: true,
       details: {

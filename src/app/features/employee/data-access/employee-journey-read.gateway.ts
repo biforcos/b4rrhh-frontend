@@ -55,8 +55,6 @@ export class EmployeeJourneyReadGateway {
       eventDate: source.eventDate,
       eventType: source.eventType,
       trackCode: source.trackCode,
-      title: source.title,
-      subtitle: source.subtitle,
       status: source.status,
       isCurrent: source.isCurrent,
       details: source.details,

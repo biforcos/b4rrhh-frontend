@@ -4,6 +4,7 @@ import {
   EmployeeJourneyApiHeaderModel,
   EmployeeJourneyApiModel,
 } from '../clients/employee-journey-read.client';
+import { JourneyEventType } from '../generated/model/journey-event-type';
 
 export interface EmployeeJourneyReadHeaderModel {
   ruleSystemCode: string;
@@ -16,10 +17,8 @@ export type EmployeeJourneyReadEventStatus = 'completed' | 'current' | 'future';
 
 export interface EmployeeJourneyReadEventModel {
   eventDate: string;
-  eventType: string;
+  eventType: JourneyEventType;
   trackCode: string;
-  title: string;
-  subtitle: string | null;
   status: EmployeeJourneyReadEventStatus;
   isCurrent: boolean;
   details: Readonly<Record<string, unknown>> | null;
@@ -71,12 +70,11 @@ function mapEmployeeJourneyEventApiToReadModel(
   source: EmployeeJourneyApiEventModel,
 ): EmployeeJourneyReadEventModel | null {
   const eventDate = source.eventDate.trim();
-  const eventType = source.eventType.trim();
+  const eventType = source.eventType;
   const trackCode = source.trackCode.trim();
-  const title = source.title.trim();
   const status = normalizeStatus(source.status);
 
-  if (!eventDate || !eventType || !trackCode || !title || !status) {
+  if (!eventDate || !eventType || !trackCode || !status) {
     return null;
   }
 
@@ -84,8 +82,6 @@ function mapEmployeeJourneyEventApiToReadModel(
     eventDate,
     eventType,
     trackCode,
-    title,
-    subtitle: normalizeOptionalString(source.subtitle),
     status,
     isCurrent: source.isCurrent,
     details: normalizeDetails(source.details),
