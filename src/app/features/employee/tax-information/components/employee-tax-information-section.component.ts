@@ -69,7 +69,13 @@ function optionLabel(options: ReadonlyArray<SlotKeyOption<string>>, value: strin
 @Component({
   selector: 'app-employee-tax-information-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TemporalSectionComponent, PeriodModalComponent, UiDateInputComponent, UiSelectComponent, UiCatalogLabelComponent],
+  imports: [
+    TemporalSectionComponent,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+    UiCatalogLabelComponent,
+  ],
   templateUrl: './employee-tax-information-section.component.html',
   styleUrl: './employee-tax-information-section.component.scss',
 })

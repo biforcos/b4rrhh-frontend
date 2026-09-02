@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { take } from 'rxjs';
 
@@ -12,10 +21,7 @@ import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-section.component';
 import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
-import {
-  SlotDraft,
-  SlotKeyOption,
-} from '../../shared/ui/section/editable-slot-section.model';
+import { SlotDraft, SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 
 interface ContactRowViewModel {
@@ -38,7 +44,13 @@ function createEmptyContactDraft(): SlotDraft<string> {
 @Component({
   selector: 'app-employee-contact-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SlotSectionComponent, B4IconComponent, UiSelectComponent, InputTextModule, UiCatalogLabelComponent],
+  imports: [
+    SlotSectionComponent,
+    B4IconComponent,
+    UiSelectComponent,
+    InputTextModule,
+    UiCatalogLabelComponent,
+  ],
   templateUrl: './employee-contact-section.component.html',
 })
 export class EmployeeContactSectionComponent {
@@ -55,7 +67,9 @@ export class EmployeeContactSectionComponent {
   private readonly localErrorMessageState = signal<string | null>(null);
   private readonly createDraftState = signal<SlotDraft<string>>(createEmptyContactDraft());
   private readonly editDraftValueState = signal('');
-  private readonly availableContactTypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
+  private readonly availableContactTypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>(
+    [],
+  );
   private readonly catalogLoadingState = signal(false);
 
   private catalogRequestId = 0;
@@ -79,7 +93,8 @@ export class EmployeeContactSectionComponent {
   protected readonly creating = this.creatingState.asReadonly();
   protected readonly createDraft = this.createDraftState.asReadonly();
   protected readonly editDraftValue = this.editDraftValueState.asReadonly();
-  protected readonly availableContactTypeOptions = this.availableContactTypeOptionsState.asReadonly();
+  protected readonly availableContactTypeOptions =
+    this.availableContactTypeOptionsState.asReadonly();
   protected readonly catalogOptionsLoading = this.catalogLoadingState.asReadonly();
   protected readonly editingKey = this.editingKeyState.asReadonly();
   protected readonly deletingKey = this.deletingKeyState.asReadonly();
@@ -113,7 +128,11 @@ export class EmployeeContactSectionComponent {
 
     effect((onCleanup) => {
       onCleanup(() => {
-        untracked(() => this.globalMessageService.clearSourceMessages(EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY));
+        untracked(() =>
+          this.globalMessageService.clearSourceMessages(
+            EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+          ),
+        );
       });
     });
 
@@ -369,20 +388,25 @@ export class EmployeeContactSectionComponent {
   }
 
   private publishGlobalFeedback(message: string): void {
-    this.globalMessageService.setSourceMessages(EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY, [
-      {
-        id: 'employee-contact-section-local-error',
-        level: 'error',
-        text: message,
-        sectionId: 'contact',
-        sectionLabel: this.texts.personalAreaLabel,
-        sticky: true,
-      },
-    ]);
+    this.globalMessageService.setSourceMessages(
+      EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+      [
+        {
+          id: 'employee-contact-section-local-error',
+          level: 'error',
+          text: message,
+          sectionId: 'contact',
+          sectionLabel: this.texts.personalAreaLabel,
+          sticky: true,
+        },
+      ],
+    );
   }
 
   private clearGlobalFeedback(): void {
-    this.globalMessageService.clearSourceMessages(EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY);
+    this.globalMessageService.clearSourceMessages(
+      EmployeeContactSectionComponent.GLOBAL_FEEDBACK_SOURCE_KEY,
+    );
   }
 
   private syncDraftKeyWithAvailableOptions(options: ReadonlyArray<SlotKeyOption<string>>): void {

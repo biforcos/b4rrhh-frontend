@@ -40,19 +40,41 @@ describe('EmployeePresenceSectionComponent', () => {
   it('es la sección que gobierna, sin acción de añadir, y va anclada', () => {
     const fixture = render();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('gobierna');
+    expect(
+      el.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim(),
+    ).toBe('gobierna');
     expect(el.querySelector('.temporal-section__add-btn')).toBeNull();
     expect(el.querySelector('#employee-section-presence')).not.toBeNull();
-    expect(el.querySelector('.temporal-section__empty')?.textContent).toContain('No hay presencias');
+    expect(el.querySelector('.temporal-section__empty')?.textContent).toContain(
+      'No hay presencias',
+    );
   });
 
   it('pinta cada periodo con el literal del catálogo y el código detrás, y las fechas en español', () => {
     presences.set([
-      { presenceNumber: 1, companyCode: 'ES01', entryReasonCode: 'HIRING', exitReasonCode: 'END', startDate: '2023-10-02', endDate: '2023-12-05', isActive: false },
-      { presenceNumber: 2, companyCode: 'ES01', entryReasonCode: 'HIRING', exitReasonCode: null, startDate: '2024-03-11', endDate: null, isActive: true },
+      {
+        presenceNumber: 1,
+        companyCode: 'ES01',
+        entryReasonCode: 'HIRING',
+        exitReasonCode: 'END',
+        startDate: '2023-10-02',
+        endDate: '2023-12-05',
+        isActive: false,
+      },
+      {
+        presenceNumber: 2,
+        companyCode: 'ES01',
+        entryReasonCode: 'HIRING',
+        exitReasonCode: null,
+        startDate: '2024-03-11',
+        endDate: null,
+        isActive: true,
+      },
     ]);
     const fixture = render();
-    const rows = Array.from(fixture.nativeElement.querySelectorAll('.temporal-section__row')) as HTMLElement[];
+    const rows = Array.from(
+      fixture.nativeElement.querySelectorAll('.temporal-section__row'),
+    ) as HTMLElement[];
     expect(rows).toHaveLength(2);
     const first = rows[0].textContent!.replace(/\s+/g, ' ');
     expect(first).toContain('02/10/2023 — 05/12/2023');
@@ -67,7 +89,15 @@ describe('EmployeePresenceSectionComponent', () => {
 
   it('sin catálogo, el código va solo y no se inventa un literal', () => {
     presences.set([
-      { presenceNumber: 1, companyCode: 'XX99', entryReasonCode: 'ZZ', exitReasonCode: null, startDate: '2024-03-11', endDate: null, isActive: true },
+      {
+        presenceNumber: 1,
+        companyCode: 'XX99',
+        entryReasonCode: 'ZZ',
+        exitReasonCode: null,
+        startDate: '2024-03-11',
+        endDate: null,
+        isActive: true,
+      },
     ]);
     const fixture = render();
     const row: HTMLElement = fixture.nativeElement.querySelector('.temporal-section__row');

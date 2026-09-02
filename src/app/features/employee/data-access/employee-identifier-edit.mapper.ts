@@ -1,4 +1,7 @@
-import { CreateIdentifierRequest, UpdateIdentifierRequest } from '../../../core/api/generated/model/models';
+import {
+  CreateIdentifierRequest,
+  UpdateIdentifierRequest,
+} from '../../../core/api/generated/model/models';
 import { EmployeeIdentifierApiModel } from '../../../core/api/clients/employee-identifier-read.client';
 import { EmployeeIdentifierModel } from '../models/employee-identifier.model';
 import { formatDisplayDate } from '../../../shared/utils/local-date.util';
@@ -50,14 +53,17 @@ export function mapEmployeeIdentifierModelToSlotRow(
   source: EmployeeIdentifierModel,
   texts: EmployeeIdentifierRowTexts,
 ): SlotRowViewModel<string> {
-  return mapEmployeeIdentifierApiToSlotRow({
-    identifierTypeCode: source.typeCode,
-    identifierTypeName: source.typeName,
-    identifierValue: source.value,
-    issuingCountryCode: source.issuingCountryCode,
-    expirationDate: source.expirationDate,
-    isPrimary: source.isPrimary,
-  }, texts);
+  return mapEmployeeIdentifierApiToSlotRow(
+    {
+      identifierTypeCode: source.typeCode,
+      identifierTypeName: source.typeName,
+      identifierValue: source.value,
+      issuingCountryCode: source.issuingCountryCode,
+      expirationDate: source.expirationDate,
+      isPrimary: source.isPrimary,
+    },
+    texts,
+  );
 }
 
 function buildSecondaryText(
@@ -69,9 +75,12 @@ function buildSecondaryText(
   const expirationDate = normalizeOptionalValue(source.expirationDate);
   // ADR-051 §5: las fechas, en formato local.
   const expirationLabel = expirationDate ? formatDisplayDate(expirationDate) : null;
-  const expirationSegment = expirationLabel && texts ? `${texts.expirationPrefix}: ${expirationLabel}` : expirationLabel;
+  const expirationSegment =
+    expirationLabel && texts ? `${texts.expirationPrefix}: ${expirationLabel}` : expirationLabel;
 
-  const segments = [typeCode, issuingCountryCode, expirationSegment].filter((segment): segment is string => Boolean(segment));
+  const segments = [typeCode, issuingCountryCode, expirationSegment].filter(
+    (segment): segment is string => Boolean(segment),
+  );
 
   return segments.length > 0 ? segments.join(' · ') : null;
 }
@@ -87,7 +96,9 @@ function buildBadges(
   return [texts.primaryBadge];
 }
 
-export function mapIdentifierDraftToCreateIdentifierRequest(draft: IdentifierDraft): CreateIdentifierRequest {
+export function mapIdentifierDraftToCreateIdentifierRequest(
+  draft: IdentifierDraft,
+): CreateIdentifierRequest {
   return {
     identifierTypeCode: normalizeIdentifierTypeCode(draft.key),
     identifierValue: normalizeValue(draft.value),
@@ -97,7 +108,9 @@ export function mapIdentifierDraftToCreateIdentifierRequest(draft: IdentifierDra
   };
 }
 
-export function mapIdentifierDraftToUpdateIdentifierRequest(draft: IdentifierDraft): UpdateIdentifierRequest {
+export function mapIdentifierDraftToUpdateIdentifierRequest(
+  draft: IdentifierDraft,
+): UpdateIdentifierRequest {
   return {
     identifierValue: normalizeValue(draft.value),
     issuingCountryCode: normalizeOptionalCountryCode(draft.issuingCountryCode),
