@@ -21,7 +21,7 @@ import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/tempo
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
-import { currentLocalDate } from '../../../../shared/utils/local-date.util';
+import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 type TaxInfoModalMode = 'create' | 'edit' | 'delete-confirm';
 
@@ -108,8 +108,14 @@ export class EmployeeTaxInformationSectionComponent {
     return 'Corregir información fiscal';
   });
 
-  protected readonly modalSubtitle = computed(() => {
+  /** La vigencia que se corrige o se borra, en formato local (ADR-051 §5). */
+  protected readonly editingValidFromLabel = computed(() => {
     const vf = this.editingValidFrom();
+    return vf ? formatDisplayDate(vf) : null;
+  });
+
+  protected readonly modalSubtitle = computed(() => {
+    const vf = this.editingValidFromLabel();
     return vf ? `Vigente desde ${vf}` : null;
   });
 

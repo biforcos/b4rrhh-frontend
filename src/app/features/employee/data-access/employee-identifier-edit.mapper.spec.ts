@@ -21,7 +21,7 @@ describe('employee-identifier-edit.mapper', () => {
     );
 
     expect(row.keyLabel).toBe('Documento nacional');
-    expect(row.secondaryText).toBe('NIF · ESP · Expira: 2030-12-31');
+    expect(row.secondaryText).toBe('NIF · ESP · Expira: 31/12/2030');
     expect(row.badges).toEqual(['Principal']);
   });
 

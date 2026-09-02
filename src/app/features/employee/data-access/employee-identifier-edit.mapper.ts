@@ -1,6 +1,7 @@
 import { CreateIdentifierRequest, UpdateIdentifierRequest } from '../../../core/api/generated/model/models';
 import { EmployeeIdentifierApiModel } from '../../../core/api/clients/employee-identifier-read.client';
 import { EmployeeIdentifierModel } from '../models/employee-identifier.model';
+import { formatDisplayDate } from '../../../shared/utils/local-date.util';
 import { SlotRowViewModel } from '../shared/ui/section/editable-slot-section.model';
 import { getCatalogDisplay } from '../shared/utils/catalog-display.util';
 
@@ -66,7 +67,9 @@ function buildSecondaryText(
 ): string | null {
   const issuingCountryCode = normalizeOptionalCountryCode(source.issuingCountryCode);
   const expirationDate = normalizeOptionalValue(source.expirationDate);
-  const expirationSegment = expirationDate && texts ? `${texts.expirationPrefix}: ${expirationDate}` : expirationDate;
+  // ADR-051 §5: las fechas, en formato local.
+  const expirationLabel = expirationDate ? formatDisplayDate(expirationDate) : null;
+  const expirationSegment = expirationLabel && texts ? `${texts.expirationPrefix}: ${expirationLabel}` : expirationLabel;
 
   const segments = [typeCode, issuingCountryCode, expirationSegment].filter((segment): segment is string => Boolean(segment));
 
