@@ -7121,11 +7121,15 @@ components:
 
     JourneyEventResponse:
       type: object
+      description: >-
+        One event of the timeline. The event carries its type code and its data; it carries
+        no human-readable phrase. Labelling the event type is the client's job, in the
+        client's language (ADR-052 §4). Everything the former `title` and `subtitle` said
+        is in `eventType` and `details`.
       required:
         - eventDate
         - eventType
         - trackCode
-        - title
         - status
         - isCurrent
         - details
@@ -7137,11 +7141,6 @@ components:
           $ref: "#/components/schemas/JourneyEventType"
         trackCode:
           $ref: "#/components/schemas/JourneyTrackCode"
-        title:
-          type: string
-        subtitle:
-          type: string
-          nullable: true
         status:
           $ref: "#/components/schemas/JourneyEventStatus"
         isCurrent:
