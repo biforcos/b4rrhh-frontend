@@ -193,6 +193,24 @@ npm run build
 npm run test
 ```
 
+### Formatting
+
+Prettier owns the formatting of everything under `src` (`.ts`, `.html`, `.scss`), with the
+configuration in [.prettierrc](.prettierrc). The pipeline runs `format:check` and fails the
+build on any file that is not formatted, so a clean `git status` means what it says.
+
+```bash
+npm run format        # rewrite files in place
+npm run format:check  # what the pipeline runs
+```
+
+The one-off commit that formatted the whole tree is listed in
+[.git-blame-ignore-revs](.git-blame-ignore-revs). Tell `git blame` to skip it, once per clone:
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 ---
 
 ## License

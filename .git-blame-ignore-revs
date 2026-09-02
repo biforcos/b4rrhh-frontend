@@ -1,0 +1,6 @@
+# Commits que git blame debe saltar: cambios masivos de formato sin contenido.
+# Activar una vez por clon:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Pasar Prettier a todo src de una vez (#38)
+1ea01448a17843fd0f9ed73b29e803c29d967544
