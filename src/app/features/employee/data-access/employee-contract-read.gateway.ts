@@ -6,6 +6,7 @@ import {
   EmployeeContractReadModel,
   mapEmployeeContractApiToReadModel,
 } from '../../../core/api/mappers/employee-contract.mapper';
+import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeContractModel } from '../models/employee-contract.model';
 import {
@@ -16,6 +17,18 @@ import {
   mapContractCorrectDraftToRequest,
   mapContractReplaceDraftToRequest,
 } from './employee-contract.mapper';
+
+/** Desempate propio del contrato, para dos períodos con el mismo estado y la misma fecha. */
+function compareContractCodes(left: EmployeeContractModel, right: EmployeeContractModel): number {
+  const contractCodeOrder = right.contractCode.localeCompare(left.contractCode);
+  if (contractCodeOrder !== 0) {
+    return contractCodeOrder;
+  }
+
+  const leftSubtype = left.contractSubtypeCode ?? '';
+  const rightSubtype = right.contractSubtypeCode ?? '';
+  return rightSubtype.localeCompare(leftSubtype);
+}
 
 @Injectable({
   providedIn: 'root',
@@ -68,25 +81,7 @@ export class EmployeeContractReadGateway {
   sortByTimelineRecency(
     contracts: ReadonlyArray<EmployeeContractModel>,
   ): ReadonlyArray<EmployeeContractModel> {
-    return [...contracts].sort((left, right) => {
-      if (left.isActive !== right.isActive) {
-        return left.isActive ? -1 : 1;
-      }
-
-      const startDateOrder = right.startDate.localeCompare(left.startDate);
-      if (startDateOrder !== 0) {
-        return startDateOrder;
-      }
-
-      const contractCodeOrder = right.contractCode.localeCompare(left.contractCode);
-      if (contractCodeOrder !== 0) {
-        return contractCodeOrder;
-      }
-
-      const leftSubtype = left.contractSubtypeCode ?? '';
-      const rightSubtype = right.contractSubtypeCode ?? '';
-      return rightSubtype.localeCompare(leftSubtype);
-    });
+    return sortByTimelineRecency(contracts, compareContractCodes);
   }
 
   private toEmployeeContractModel(source: EmployeeContractReadModel): EmployeeContractModel {

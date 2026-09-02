@@ -6,6 +6,7 @@ import {
   EmployeeWorkingTimeReadModel,
   mapEmployeeWorkingTimeApiToReadModel,
 } from '../../../core/api/mappers/employee-working-time.mapper';
+import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkingTimeModel } from '../models/employee-working-time.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
@@ -78,18 +79,7 @@ export class EmployeeWorkingTimeGateway {
   private sortByTimelineRecency(
     items: ReadonlyArray<EmployeeWorkingTimeModel>,
   ): ReadonlyArray<EmployeeWorkingTimeModel> {
-    return [...items].sort((left, right) => {
-      if (left.isActive !== right.isActive) {
-        return left.isActive ? -1 : 1;
-      }
-
-      const startDateOrder = right.startDate.localeCompare(left.startDate);
-      if (startDateOrder !== 0) {
-        return startDateOrder;
-      }
-
-      return right.workingTimeNumber - left.workingTimeNumber;
-    });
+    return sortByTimelineRecency(items, (left, right) => right.workingTimeNumber - left.workingTimeNumber);
   }
 
   private toEmployeeWorkingTimeModel(source: EmployeeWorkingTimeReadModel): EmployeeWorkingTimeModel {

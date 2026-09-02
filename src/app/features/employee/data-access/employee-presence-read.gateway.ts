@@ -6,6 +6,7 @@ import {
   EmployeePresenceReadModel,
   mapEmployeePresenceApiToReadModel,
 } from '../../../core/api/mappers/employee-presence.mapper';
+import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeePresenceModel } from '../models/employee-presence.model';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 
@@ -25,6 +26,8 @@ export class EmployeePresenceReadGateway {
           .filter((presence): presence is EmployeePresenceReadModel => presence !== null)
           .map((presence) => this.toEmployeePresenceModel(presence)),
       ),
+      // El backend sirve ascendente; la ficha ordena como las otras tres tablas (frontend#37).
+      map((presences) => sortByTimelineRecency(presences)),
     );
   }
 

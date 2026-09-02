@@ -6,6 +6,7 @@ import {
   EmployeeLaborClassificationReadModel,
   mapEmployeeLaborClassificationApiToReadModel,
 } from '../../../core/api/mappers/employee-labor-classification.mapper';
+import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
 import {
@@ -16,6 +17,19 @@ import {
   mapLaborClassificationCorrectDraftToRequest,
   mapLaborClassificationReplaceDraftToRequest,
 } from './employee-labor-classification.mapper';
+
+/** Desempate propio del convenio, para dos períodos con el mismo estado y la misma fecha. */
+function compareAgreementCodes(
+  left: EmployeeLaborClassificationModel,
+  right: EmployeeLaborClassificationModel,
+): number {
+  const agreementCodeOrder = right.agreementCode.localeCompare(left.agreementCode);
+  if (agreementCodeOrder !== 0) {
+    return agreementCodeOrder;
+  }
+
+  return right.agreementCategoryCode.localeCompare(left.agreementCategoryCode);
+}
 
 @Injectable({
   providedIn: 'root',
@@ -71,23 +85,7 @@ export class EmployeeLaborClassificationReadGateway {
   sortByTimelineRecency(
     classifications: ReadonlyArray<EmployeeLaborClassificationModel>,
   ): ReadonlyArray<EmployeeLaborClassificationModel> {
-    return [...classifications].sort((left, right) => {
-      if (left.isActive !== right.isActive) {
-        return left.isActive ? -1 : 1;
-      }
-
-      const startDateOrder = right.startDate.localeCompare(left.startDate);
-      if (startDateOrder !== 0) {
-        return startDateOrder;
-      }
-
-      const agreementCodeOrder = right.agreementCode.localeCompare(left.agreementCode);
-      if (agreementCodeOrder !== 0) {
-        return agreementCodeOrder;
-      }
-
-      return right.agreementCategoryCode.localeCompare(left.agreementCategoryCode);
-    });
+    return sortByTimelineRecency(classifications, compareAgreementCodes);
   }
 
   private toEmployeeLaborClassificationModel(
