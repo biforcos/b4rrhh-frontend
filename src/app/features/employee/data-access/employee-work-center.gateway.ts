@@ -6,6 +6,7 @@ import {
   EmployeeWorkCenterReadModel,
   mapEmployeeWorkCenterApiToReadModel,
 } from '../../../core/api/mappers/employee-work-center.mapper';
+import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkCenterModel } from '../models/employee-work-center.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
@@ -35,6 +36,8 @@ export class EmployeeWorkCenterGateway {
           .filter((workCenter): workCenter is EmployeeWorkCenterReadModel => workCenter !== null)
           .map((workCenter) => this.toEmployeeWorkCenterModel(workCenter)),
       ),
+      // El backend sirve ascendente; la ficha ordena como las otras tablas de períodos (frontend#37).
+      map((workCenters) => this.sortByTimelineRecency(workCenters)),
     );
   }
 
@@ -110,6 +113,17 @@ export class EmployeeWorkCenterGateway {
     return this.workCenterClient
       .deleteWorkCenterByBusinessKey(normalizedKey, workCenterAssignmentNumber)
       .pipe(map(() => undefined));
+  }
+
+  // Desempate como jornada: dos asignaciones con el mismo estado y la misma fecha de inicio
+  // se ordenan por número de asignación, el último dado de alta arriba.
+  private sortByTimelineRecency(
+    workCenters: ReadonlyArray<EmployeeWorkCenterModel>,
+  ): ReadonlyArray<EmployeeWorkCenterModel> {
+    return sortByTimelineRecency(
+      workCenters,
+      (left, right) => right.workCenterAssignmentNumber - left.workCenterAssignmentNumber,
+    );
   }
 
   private toEmployeeWorkCenterModel(source: EmployeeWorkCenterReadModel): EmployeeWorkCenterModel {

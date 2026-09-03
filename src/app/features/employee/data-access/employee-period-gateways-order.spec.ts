@@ -7,21 +7,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { EmployeeContractReadClient } from '../../../core/api/clients/employee-contract-read.client';
 import { EmployeeLaborClassificationReadClient } from '../../../core/api/clients/employee-labor-classification-read.client';
 import { EmployeePresenceReadClient } from '../../../core/api/clients/employee-presence-read.client';
+import { EmployeeWorkCenterReadClient } from '../../../core/api/clients/employee-work-center-read.client';
 import { EmployeeWorkingTimeReadClient } from '../../../core/api/clients/employee-working-time-read.client';
 import { EmployeeContractReadGateway } from './employee-contract-read.gateway';
 import { EmployeeLaborClassificationReadGateway } from './employee-labor-classification-read.gateway';
 import { EmployeePresenceReadGateway } from './employee-presence-read.gateway';
+import { EmployeeWorkCenterGateway } from './employee-work-center.gateway';
 import { EmployeeWorkingTimeGateway } from './employee-working-time.gateway';
 
 /**
- * Las cuatro tablas de períodos de la ficha ordenan igual (frontend#37): lo vigente arriba
+ * Las cinco tablas de períodos de la ficha ordenan igual (frontend#37): lo vigente arriba
  * y, dentro de cada grupo, por fecha de inicio descendente.
  *
  * La regla estaba copiada en tres gateways y el cuarto (presencia) no la tenía; nadie se
- * enteró hasta verlo en pantalla. Este spec recorre los cuatro con los mismos períodos y
- * exige el mismo orden, y además lee el fuente de `data-access` para que un quinto
- * vertical de períodos sin ordenar —o con su propia copia de la regla— falle aquí y no en
- * la ficha.
+ * enteró hasta verlo en pantalla. El issue contaba cuatro tablas; la lectura del fuente
+ * de `data-access` sacó la quinta (centro de trabajo), que tampoco ordenaba. Este spec
+ * recorre las cinco con los mismos períodos y exige el mismo orden, y además lee el
+ * fuente para que un sexto vertical de períodos sin ordenar —o con su propia copia de la
+ * regla— falle aquí y no en la ficha.
  */
 
 const employeeKey = {
@@ -145,6 +148,30 @@ describe('period gateways of the employee record', () => {
     expect(startDatesOf(workingTimes)).toEqual(expectedOrder);
   });
 
+  it('work center orders active first, then by start date descending', async () => {
+    const client = {
+      readEmployeeWorkCentersByBusinessKey: vi.fn().mockReturnValue(
+        of(
+          periods.map((period, index) => ({
+            workCenterAssignmentNumber: index + 1,
+            workCenterCode: 'WC_MADRID',
+            workCenterName: null,
+            ...period,
+          })),
+        ),
+      ),
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: EmployeeWorkCenterReadClient, useValue: client }],
+    });
+
+    const workCenters = await firstValueFrom(
+      TestBed.inject(EmployeeWorkCenterGateway).readWorkCenters(employeeKey),
+    );
+
+    expect(startDatesOf(workCenters)).toEqual(expectedOrder);
+  });
+
   describe('every period gateway in data-access', () => {
     const dataAccessDir = resolve(process.cwd(), 'src/app/features/employee/data-access');
 
@@ -154,8 +181,6 @@ describe('period gateways of the employee record', () => {
     const periodGatewaysOutsideTheRule: Record<string, string> = {
       'employee-address-read.gateway.ts':
         'las direcciones tienen su propio criterio (frontend#37, fuera de alcance)',
-      'employee-work-center.gateway.ts':
-        'el centro de trabajo no está entre las cuatro tablas del frontend#37; si se ordena, que sea con la regla común',
     };
 
     const gatewayFiles = readdirSync(dataAccessDir).filter((file) => file.endsWith('.gateway.ts'));
@@ -164,7 +189,7 @@ describe('period gateways of the employee record', () => {
     );
 
     it('is covered by this spec', () => {
-      expect(periodGatewayFiles).toHaveLength(4 + Object.keys(periodGatewaysOutsideTheRule).length);
+      expect(periodGatewayFiles).toHaveLength(5 + Object.keys(periodGatewaysOutsideTheRule).length);
     });
 
     it.each(periodGatewayFiles)('%s uses the shared comparator instead of its own copy', (file) => {
