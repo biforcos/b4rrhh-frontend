@@ -101,6 +101,16 @@
         <b4-icon class="app-shell__nav-icon" name="operacion" [size]="20" />
         <span>{{ texts.sectionOperaciones }}</span>
       </a>
+
+      <!-- El disenador NO es una ruta de Angular: es otra aplicacion servida
+           bajo /designer/ del mismo origen. Por eso href y no routerLink —
+           routerLink intentaria resolverlo con el router de aqui y daria el
+           "no encontrado" de esta SPA. Comparten localStorage por ser el mismo
+           origen, asi que se entra sin volver a identificarse. -->
+      <a class="app-shell__nav-item" href="/designer/">
+        <b4-icon class="app-shell__nav-icon" name="grafico" [size]="20" />
+        <span>{{ texts.sectionDesigner }}</span>
+      </a>
     </nav>
 
     <footer class="app-shell__footer">

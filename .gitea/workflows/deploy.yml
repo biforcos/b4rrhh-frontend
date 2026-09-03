@@ -107,9 +107,10 @@ jobs:
           ssh -i ~/.ssh/deploy deploy@${{ env.SERVIDOR }} \
             "cd /opt/b4rrhh && \
              [ -f .env.api-tag ] || echo 'API_TAG=latest' > .env.api-tag && \
+             [ -f .env.designer-tag ] || echo 'DESIGNER_TAG=latest' > .env.designer-tag && \
              echo 'WEB_TAG=${{ github.sha }}' > .env.web-tag && \
-             docker compose --env-file .env --env-file .env.api-tag --env-file .env.web-tag pull web && \
-             docker compose --env-file .env --env-file .env.api-tag --env-file .env.web-tag up -d && \
+             docker compose --env-file .env --env-file .env.api-tag --env-file .env.web-tag --env-file .env.designer-tag pull web && \
+             docker compose --env-file .env --env-file .env.api-tag --env-file .env.web-tag --env-file .env.designer-tag up -d && \
              docker image prune -f"
 
       - name: Comprobar que sigue en pie

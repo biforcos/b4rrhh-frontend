@@ -57,6 +57,7 @@ export const appTexts = {
   sectionRuleSystems: 'Sistemas de reglas',
   sectionRecibos: 'Recibos',
   sectionOperaciones: 'Operaciones',
+  sectionDesigner: 'Diseñador de nómina',
   homeTitle: 'Inicio',
   homeDescription:
     'Aplicación de administración de personal preparada para crecer por secciones funcionales.',
