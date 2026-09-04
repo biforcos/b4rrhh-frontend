@@ -618,6 +618,18 @@ export const employeeTexts = {
   workingTimeSectionCloseSuccessMessage: 'Jornada cerrada correctamente.',
   workingTimeSectionUpdateSuccessMessage: 'Jornada actualizada correctamente.',
   workingTimeSectionDeleteSuccessMessage: 'Jornada eliminada correctamente.',
+  workingTimeSectionAddTitle: 'Añadir jornada',
+  workingTimeSectionCorrectTitle: 'Corregir jornada',
+  workingTimeSectionRemoveTitle: 'Eliminar jornada',
+  workingTimeSectionAddSubmitAction: 'Añadir jornada',
+  workingTimeSectionCorrectSubmitAction: 'Guardar corrección',
+  workingTimeSectionRemoveSubmitAction: 'Eliminar jornada',
+  workingTimeSectionStartDateAriaLabel: 'Fecha inicio de la jornada',
+  workingTimeSectionEndDateAriaLabel: 'Fecha fin de la jornada (vacía si queda en vigor)',
+  workingTimeSectionPercentageAriaLabel: 'Porcentaje de jornada',
+  workingTimeSectionPlanningMessage: 'Calculando qué cambiaría…',
+  workingTimeSectionCoverageGapMessage:
+    'La jornada dejaría sin cubrir un tramo de la presencia del empleado.',
   periodCascadeWarningMessage:
     'La fecha de inicio del período anterior se ajustará automáticamente.',
   laborClassificationBlockTitle: 'Clasificación laboral',

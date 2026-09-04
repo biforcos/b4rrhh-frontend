@@ -123,12 +123,13 @@ describe('TemporalSectionComponent', () => {
     expect(fix.nativeElement.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 
-  it('borrar solo se ofrece en filas cerradas que lo permiten', () => {
+  it('borrar se ofrece en las filas que lo permiten, la vigente incluida (ADR-057)', () => {
     const { fix } = createHost([
-      row({ isActive: true }),
+      row({ isActive: true, canDelete: true }),
       row({ isActive: false, canDelete: true }),
+      row({ isActive: false }),
     ]);
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(1);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(2);
     const { fix: fix2 } = createHost([row({ isActive: false, canDelete: false })]);
     expect(fix2.nativeElement.querySelector('[aria-label^="Eliminar"]')).toBeNull();
   });

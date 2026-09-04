@@ -50,4 +50,16 @@ describe('PeriodModalComponent', () => {
     c.onCloseAction();
     expect(spy).toHaveBeenCalled();
   });
+
+  it('takes the note as one line or as several', () => {
+    const lines = () => (c as unknown as { noteLines: () => ReadonlyArray<string> }).noteLines();
+
+    expect(lines()).toEqual([]);
+
+    fix.componentRef.setInput('note', 'Una sola frase.');
+    expect(lines()).toEqual(['Una sola frase.']);
+
+    fix.componentRef.setInput('note', ['Se cerrará el 15.', 'Quedaría un hueco.']);
+    expect(lines()).toEqual(['Se cerrará el 15.', 'Quedaría un hueco.']);
+  });
 });

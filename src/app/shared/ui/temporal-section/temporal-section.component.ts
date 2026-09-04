@@ -90,6 +90,6 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   }
 
   protected showDelete(row: T): boolean {
-    return !row.isActive && row.canDelete === true;
+    return row.canDelete === true;
   }
 }

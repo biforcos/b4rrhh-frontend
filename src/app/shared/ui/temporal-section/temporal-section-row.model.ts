@@ -7,6 +7,10 @@ export interface TemporalSectionRow {
   isActive: boolean;
   /** Por defecto true: se ofrece editar. */
   canEdit?: boolean;
-  /** Por defecto false: se ofrece borrar, y solo en filas cerradas. */
+  /**
+   * Por defecto false: se ofrece borrar. La sección decide en qué filas; en una serie bajo
+   * ADR-057 borrar la última —la vigente— es la forma de deshacer un alta, y el plan del backend
+   * dice si se puede.
+   */
   canDelete?: boolean;
 }

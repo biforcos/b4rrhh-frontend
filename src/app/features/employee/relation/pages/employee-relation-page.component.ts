@@ -31,6 +31,7 @@ import {
   isEmployeeRelationAnchor,
 } from '../../routing/employee-route-builder.util';
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
+import { describeWorkingTimeConflict } from '../../shared/utils/working-time-plan-message.util';
 import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
 import { EmployeeTodayStripComponent } from '../components/employee-today-strip.component';
 
@@ -293,9 +294,17 @@ export class EmployeeRelationPageComponent {
 
   private mapWorkingTimeErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
+    // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
+    const conflictMessage = describeWorkingTimeConflict(
+      errorCode,
+      this.workingTimeStore.errorConflict(),
+    );
+    if (conflictMessage) return conflictMessage;
     switch (errorCode) {
       case 'WORKING_TIME_OVERLAP':
         return t.workingTimeSectionOverlapMessage;
+      case 'WORKING_TIME_COVERAGE_GAP':
+        return t.workingTimeSectionCoverageGapMessage;
       case 'WORKING_TIME_OUTSIDE_PRESENCE':
         return t.workingTimeSectionOutsidePresenceMessage;
       case 'WORKING_TIME_INVALID_PERCENTAGE':

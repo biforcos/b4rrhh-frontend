@@ -1,9 +1,11 @@
 <app-temporal-section
   anchorId="employee-section-working-time"
   title="Jornada"
+  [addLabel]="texts.workingTimeSectionAddTitle"
   [rows]="rows()"
-  (addClicked)="openCreate()"
-  (editClicked)="openEdit($event)"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
+  (deleteClicked)="openRemove($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">%</th>
@@ -18,42 +20,38 @@
   </ng-template>
 </app-temporal-section>
 
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué se cierra o se reabre, o
+     el hueco o solape con fechas que impide confirmar. -->
 <app-period-modal
   [title]="modalTitle()"
   [subtitle]="modalSubtitle()"
   [visible]="modalVisible()"
   [saving]="saving()"
   [submitEnabled]="isSubmitEnabled()"
-  [submitLabel]="modalMode() === 'close' ? 'Cerrar jornada' : 'Guardar'"
-  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-  [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
+  [submitLabel]="submitLabel()"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
-  (closeActionClicked)="switchToClose()"
 >
-  @if (modalMode() === 'create') {
-    <app-ui-date-input [value]="startDateDraft()" (valueChanged)="startDateDraft.set($event)" />
-    <app-ui-input-number
-      [value]="percentageDraft()"
-      (valueChanged)="percentageDraft.set($event)"
-      [min]="1"
-      [max]="100"
-    />
-  }
-  @if (modalMode() === 'edit') {
+  @if (modalMode() !== 'remove') {
     <app-ui-date-input
-      [value]="newStartDateDraft()"
-      (valueChanged)="newStartDateDraft.set($event)"
+      [ariaLabel]="texts.workingTimeSectionStartDateAriaLabel"
+      [value]="startDateDraft()"
+      (valueChanged)="startDateDraft.set($event)"
+    />
+    <app-ui-date-input
+      [ariaLabel]="texts.workingTimeSectionEndDateAriaLabel"
+      [value]="endDateDraft()"
+      (valueChanged)="endDateDraft.set($event)"
     />
     <app-ui-input-number
+      [ariaLabel]="texts.workingTimeSectionPercentageAriaLabel"
       [value]="percentageDraft()"
       (valueChanged)="percentageDraft.set($event)"
       [min]="1"
       [max]="100"
     />
-  }
-  @if (modalMode() === 'close') {
-    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
   }
 </app-period-modal>

@@ -14,8 +14,8 @@
   }
   <div class="period-modal__body">
     <ng-content />
-    @if (note(); as note) {
-      <p class="period-modal__note">{{ note }}</p>
+    @for (line of noteLines(); track $index) {
+      <p class="period-modal__note period-modal__note--{{ noteTone() }}">{{ line }}</p>
     }
   </div>
 
