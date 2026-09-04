@@ -15,6 +15,7 @@
  * Rejilla de dos columnas. La tinta cede antes que el formulario: su columna
  * tiene maximo (700) y minimo, y el papel no baja de 480. Al estrechar la
  * ventana, la que pierde ancho primero es la tinta.
+ *
  */
 .entrada {
   display: grid;
@@ -51,17 +52,30 @@
   pointer-events: none;
 }
 
-/* Cierra la tinta sobre el titular y la abre sobre el grafo. */
+/*
+ * Dos velos, y el orden importa: el primero es la capa de arriba.
+ *
+ * El de la derecha existe porque el grafo sangra por ese borde y la tinta lo
+ * recorta en seco. Sin el, las etiquetas del filo (TIPO_IRPF y compania)
+ * llegan al corte todavia legibles y se leen como cortadas, no como sangradas.
+ * Apagandolas antes de que lleguen, el dibujo se va de la pagina en vez de
+ * chocar contra ella.
+ *
+ * El diagonal es el de siempre: cierra la tinta sobre el titular y la abre
+ * sobre el grafo.
+ */
 .tinta__velo {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    148deg,
-    var(--accent-primary) 0%,
-    var(--accent-primary) 42%,
-    var(--accent-primary-clear) 100%
-  );
+  background:
+    linear-gradient(to right, var(--accent-primary-clear) 74%, var(--accent-primary) 100%),
+    linear-gradient(
+      148deg,
+      var(--accent-primary) 0%,
+      var(--accent-primary) 42%,
+      var(--accent-primary-clear) 100%
+    );
   pointer-events: none;
 }
 
@@ -194,8 +208,24 @@
 
 /* --- El papel --------------------------------------------------------- */
 
+/*
+ * La hoja se centra, pero dentro de un ancho con techo, y ese techo es el que
+ * evita que en una pantalla grande el formulario se quede varado.
+ *
+ * Sin el, la tinta topa en 700 y TODO el sobrante se lo lleva el papel: a 1440
+ * el reparto es 49/51 —la composicion que se diseno— pero a 2560 es 27/73, y
+ * la hoja acaba a 720 px de la tinta, que es lo unico con lo que dialoga. Con
+ * el techo se queda a 272 px pase lo que pase, y por debajo de ~1600 no cambia
+ * nada: min(100%, 900px) vale 100% mientras la columna sea mas estrecha.
+ *
+ * El sobrante queda a la derecha, donde no se ve: es --surface-app sobre
+ * --surface-app. Por eso el techo va aqui y no en la rejilla — tocar la
+ * rejilla cambia tambien el reparto a 1440, y ahi no habia nada que arreglar.
+ */
 .papel {
   display: grid;
+  grid-template-columns: min(100%, 900px);
+  justify-content: start;
   place-items: center;
   padding: 48px 32px;
 }
