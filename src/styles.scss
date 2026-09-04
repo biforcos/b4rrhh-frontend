@@ -7,8 +7,10 @@
  * unicos sitios donde puede vivir un color literal. Los .scss de componente
  * usan var(--token); stylelint (color-no-hex) lo vigila.
  *
- * Una sola rampa de neutros calidos, un solo acento (azul tinta) y tres
- * tripletes semanticos (error, aviso, exito). Si un componente necesita un
+ * Una sola rampa de neutros calidos, un solo acento (azul tinta) y cuatro
+ * tripletes semanticos: error, aviso, exito e info — este ultimo no es un
+ * cuarto tono, es el propio acento con nombre de severidad (frontend#41). Si
+ * un componente necesita un
  * color que no esta aqui, o falta un token y se anade aqui, o ese color no
  * deberia existir.
  */
