@@ -10,7 +10,7 @@ import { EmployeeWorkingTimeSectionComponent } from './employee-working-time-sec
 
 const employeeKey = { ruleSystemCode: 'RS1', employeeTypeCode: 'EMP', employeeNumber: '0001' };
 
-type WorkingTimeSuccess = 'created' | 'updated' | 'closed' | 'deleted' | null;
+type WorkingTimeSuccess = 'created' | 'updated' | 'deleted' | null;
 
 class MockWorkingTimeStore {
   readonly workingTimesState = signal<ReadonlyArray<EmployeeWorkingTimeModel>>([]);

@@ -17,7 +17,6 @@ import {
   mapEmployeeWorkingTimeErrorCode,
 } from './employee-working-time-error.mapper';
 import {
-  WorkingTimeCloseDraft,
   WorkingTimeCreateDraft,
   WorkingTimePlanDraft,
   WorkingTimeUpdateDraft,
@@ -35,7 +34,7 @@ export class EmployeeWorkingTimeStore {
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeWorkingTimeErrorCode | null>(null);
   private readonly errorConflictState = signal<EmployeeWorkingTimeConflictModel | null>(null);
-  private readonly successState = signal<'created' | 'updated' | 'closed' | 'deleted' | null>(null);
+  private readonly successState = signal<'created' | 'updated' | 'deleted' | null>(null);
   private readonly planState = signal<EmployeeWorkingTimePlanModel | null>(null);
   private readonly planningState = signal(false);
   private requestId = 0;
@@ -154,38 +153,6 @@ export class EmployeeWorkingTimeStore {
         next: () => {
           this.mutatingState.set(false);
           this.successState.set('updated');
-          this.loadWorkingTimesByBusinessKeyInternal(normalizedEmployeeKey, true);
-        },
-        error: (error) => {
-          this.mutatingState.set(false);
-          this.failWith(error);
-        },
-      });
-  }
-
-  closeWorkingTime(
-    employeeKey: EmployeeBusinessKey,
-    workingTimeNumber: number,
-    draft: WorkingTimeCloseDraft,
-  ): void {
-    if (this.mutatingState()) {
-      return;
-    }
-
-    const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
-
-    this.mutatingState.set(true);
-    this.errorState.set(null);
-    this.errorConflictState.set(null);
-    this.successState.set(null);
-
-    this.employeeWorkingTimeGateway
-      .closeEmployeeWorkingTime(normalizedEmployeeKey, workingTimeNumber, draft)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.mutatingState.set(false);
-          this.successState.set('closed');
           this.loadWorkingTimesByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {

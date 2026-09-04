@@ -72,7 +72,7 @@ export class EmployeeRelationPageComponent {
   private readonly globalMessageService = inject(GlobalMessageService);
 
   private previousContractSuccess: 'replaced' | 'corrected' | 'closed' | null = null;
-  private previousWorkingTimeSuccess: 'created' | 'updated' | 'closed' | 'deleted' | null = null;
+  private previousWorkingTimeSuccess: 'created' | 'updated' | 'deleted' | null = null;
   private previousLaborClassificationSuccess: 'replaced' | 'corrected' | 'closed' | null = null;
   private previousWorkCenterSuccess: 'created' | 'corrected' | 'closed' | 'deleted' | null = null;
   private previousCostCenterSuccess: 'created' | 'replaced' | 'closed' | null = null;
@@ -213,7 +213,6 @@ export class EmployeeRelationPageComponent {
         {
           created: t.workingTimeSectionCreateSuccessMessage,
           updated: t.workingTimeSectionUpdateSuccessMessage,
-          closed: t.workingTimeSectionCloseSuccessMessage,
           deleted: t.workingTimeSectionDeleteSuccessMessage,
         }[workingTimeSuccess],
       );

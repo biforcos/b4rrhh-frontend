@@ -56,7 +56,6 @@ describe('EmployeeWorkingTimeStore', () => {
   let gatewayMock: {
     getEmployeeWorkingTimes: ReturnType<typeof vi.fn>;
     createEmployeeWorkingTime: ReturnType<typeof vi.fn>;
-    closeEmployeeWorkingTime: ReturnType<typeof vi.fn>;
     deleteEmployeeWorkingTime: ReturnType<typeof vi.fn>;
     planEmployeeWorkingTimeChange: ReturnType<typeof vi.fn>;
   };
@@ -65,7 +64,6 @@ describe('EmployeeWorkingTimeStore', () => {
     gatewayMock = {
       getEmployeeWorkingTimes: vi.fn().mockReturnValue(of(workingTimesFixture)),
       createEmployeeWorkingTime: vi.fn().mockReturnValue(of(undefined)),
-      closeEmployeeWorkingTime: vi.fn().mockReturnValue(of(undefined)),
       deleteEmployeeWorkingTime: vi.fn().mockReturnValue(of(undefined)),
       planEmployeeWorkingTimeChange: vi.fn().mockReturnValue(of(acceptedPlan)),
     };
@@ -103,25 +101,17 @@ describe('EmployeeWorkingTimeStore', () => {
     expect(store.success()).toBe('created');
   });
 
-  it('closes active working time and refreshes list on success', () => {
-    store.loadWorkingTimesByBusinessKey(employeeBusinessKey);
-
-    store.closeWorkingTime(employeeBusinessKey, 2, { endDate: '2026-05-31' });
-
-    expect(gatewayMock.closeEmployeeWorkingTime).toHaveBeenCalledWith(employeeBusinessKey, 2, {
-      endDate: '2026-05-31',
-    });
-    expect(gatewayMock.getEmployeeWorkingTimes).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('closed');
-  });
-
   it('maps known functional backend code on mutation failure', () => {
-    gatewayMock.closeEmployeeWorkingTime.mockReturnValue(
+    gatewayMock.createEmployeeWorkingTime.mockReturnValue(
       throwError(() => ({ error: { code: 'WORKING_TIME_OUTSIDE_PRESENCE' } })),
     );
 
     store.loadWorkingTimesByBusinessKey(employeeBusinessKey);
-    store.closeWorkingTime(employeeBusinessKey, 2, { endDate: '2024-01-01' });
+    store.createWorkingTime(employeeBusinessKey, {
+      startDate: '2024-01-01',
+      endDate: null,
+      workingTimePercentage: 90,
+    });
 
     expect(store.error()).toBe('WORKING_TIME_OUTSIDE_PRESENCE');
     expect(store.workingTimes()).toEqual(workingTimesFixture);

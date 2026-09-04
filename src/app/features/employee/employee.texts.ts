@@ -615,7 +615,6 @@ export const employeeTexts = {
     'Se ha producido un conflicto de numeracion funcional al crear la jornada. Reintenta.',
   workingTimeSectionRequestFailedMessage: 'No se pudo procesar la operación de jornada. Reintenta.',
   workingTimeSectionCreateSuccessMessage: 'Jornada creada correctamente.',
-  workingTimeSectionCloseSuccessMessage: 'Jornada cerrada correctamente.',
   workingTimeSectionUpdateSuccessMessage: 'Jornada actualizada correctamente.',
   workingTimeSectionDeleteSuccessMessage: 'Jornada eliminada correctamente.',
   workingTimeSectionAddTitle: 'Añadir jornada',

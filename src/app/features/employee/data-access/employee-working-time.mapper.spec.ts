@@ -3,7 +3,6 @@ import {
   WorkingTimePlanResponseRejectionEnum,
 } from '../../../core/api/generated/model/models';
 import {
-  mapWorkingTimeCloseDraftToRequest,
   mapWorkingTimeCreateDraftToRequest,
   mapWorkingTimePlanDraftToRequest,
   mapWorkingTimePlanResponseToModel,
@@ -43,12 +42,6 @@ describe('employee-working-time.mapper', () => {
         workingTimePercentage: 50,
       }),
     ).toEqual({ startDate: '2026-04-02', endDate: '2026-06-30', workingTimePercentage: 50 });
-  });
-
-  it('maps close draft to request', () => {
-    expect(mapWorkingTimeCloseDraftToRequest({ endDate: '2026-12-31' })).toEqual({
-      endDate: '2026-12-31',
-    });
   });
 
   describe('plan draft', () => {

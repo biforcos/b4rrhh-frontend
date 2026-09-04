@@ -1,5 +1,4 @@
 import {
-  CloseWorkingTimeRequest,
   CreateWorkingTimeRequest,
   PlanWorkingTimeChangeRequest,
   PlanWorkingTimeChangeRequestOperationEnum,
@@ -31,10 +30,6 @@ export interface WorkingTimeUpdateDraft {
   workingTimePercentage: number;
 }
 
-export interface WorkingTimeCloseDraft {
-  endDate: string;
-}
-
 /** Lo que se pide planificar: la misma operación que luego se aplicaría, sin aplicarla. */
 export type WorkingTimePlanDraft =
   | { operation: 'ADD'; startDate: string; endDate: string | null }
@@ -58,14 +53,6 @@ export function mapWorkingTimeUpdateDraftToRequest(
     startDate: draft.startDate.trim(),
     endDate: trimOptionalDate(draft.endDate),
     workingTimePercentage: draft.workingTimePercentage,
-  };
-}
-
-export function mapWorkingTimeCloseDraftToRequest(
-  draft: WorkingTimeCloseDraft,
-): CloseWorkingTimeRequest {
-  return {
-    endDate: draft.endDate.trim(),
   };
 }
 

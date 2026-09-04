@@ -4,7 +4,6 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { EmployeeWorkingTimeService } from '../generated/api/employee-working-time.service';
 import {
-  CloseWorkingTimeRequest,
   CreateWorkingTimeRequest,
   PlanWorkingTimeChangeRequest,
   UpdateWorkingTimeRequest,
@@ -88,24 +87,6 @@ export class EmployeeWorkingTimeReadClient {
       ...normalizedKey,
       planWorkingTimeChangeRequest: request,
     });
-  }
-
-  closeWorkingTimeByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    workingTimeNumber: number,
-    request: CloseWorkingTimeRequest,
-  ): Observable<EmployeeWorkingTimeApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .closeWorkingTimeByBusinessKey({
-        ...normalizedKey,
-        workingTimeNumber,
-        closeWorkingTimeRequest: {
-          endDate: request.endDate.trim(),
-        },
-      })
-      .pipe(map((item: WorkingTimeResponse) => this.toEmployeeWorkingTimeApiModel(item)));
   }
 
   updateWorkingTimeByBusinessKey(

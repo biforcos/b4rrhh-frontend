@@ -12,11 +12,9 @@ import { EmployeeWorkingTimeModel } from '../models/employee-working-time.model'
 import { EmployeeWorkingTimePlanModel } from '../models/employee-working-time-plan.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
 import {
-  WorkingTimeCloseDraft,
   WorkingTimeCreateDraft,
   WorkingTimePlanDraft,
   WorkingTimeUpdateDraft,
-  mapWorkingTimeCloseDraftToRequest,
   mapWorkingTimeCreateDraftToRequest,
   mapWorkingTimePlanDraftToRequest,
   mapWorkingTimePlanResponseToModel,
@@ -68,22 +66,6 @@ export class EmployeeWorkingTimeGateway {
         normalizedKey,
         workingTimeNumber,
         mapWorkingTimeUpdateDraftToRequest(draft),
-      )
-      .pipe(map(() => undefined));
-  }
-
-  closeEmployeeWorkingTime(
-    employeeKey: EmployeeBusinessKey,
-    workingTimeNumber: number,
-    draft: WorkingTimeCloseDraft,
-  ): Observable<void> {
-    const normalizedKey = toEmployeeBusinessKey(employeeKey);
-
-    return this.workingTimeClient
-      .closeWorkingTimeByBusinessKey(
-        normalizedKey,
-        workingTimeNumber,
-        mapWorkingTimeCloseDraftToRequest(draft),
       )
       .pipe(map(() => undefined));
   }
