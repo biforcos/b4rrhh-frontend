@@ -18,7 +18,38 @@ export const appTexts = {
   // --- Demo publica ---
   demoLoginTitle: 'B4RRHH · demo',
   demoLoginIntro:
-    'Un ERP de nómina y recursos humanos. Esto es una demostración abierta: los datos son sintéticos y no corresponden a ninguna persona real.',
+    'Un ERP de nómina y recursos humanos. Cada concepto de la nómina declara de qué otros depende; el motor resuelve ese grafo y calcula. Esta es una demostración abierta: entra, toca y mira cómo se recalcula.',
+  // La portada (frontend#40): el bloque de tinta.
+  demoCoverKicker: 'Demo pública',
+  demoCoverHeadline: 'Detrás de cada nómina hay',
+  demoCoverHeadlineEmphasis: 'un grafo',
+  demoCoverSyntheticNotice:
+    'Datos sintéticos: ninguna persona ni empresa real. Se regeneran cada noche.',
+  demoCountsAriaLabel: 'Tamaño de la demo',
+  demoCountEmployees: 'empleados',
+  demoCountCalculatedPayrolls: 'nóminas calculadas',
+  demoCountPayrollConcepts: 'conceptos de nómina',
+  demoLoginFormAriaLabel: 'Acceso a la demo',
+  /**
+   * Quién es cada perfil, no qué tiene prohibido. Hoy los tres son funcionalmente
+   * idénticos (backend#4): prometer restricciones aquí sería mentir. Cuando los
+   * roles signifiquen algo, esta copia se endurece. La lista de perfiles sigue
+   * viniendo del backend; esto solo pone palabras a los que conoce.
+   */
+  demoProfileCopy: {
+    'hr.manager': {
+      title: 'Responsable de RRHH',
+      blurb: 'Contrata, edita la ficha y lanza el cálculo de nómina.',
+    },
+    auditor: {
+      title: 'Auditoría',
+      blurb: 'Recorre la plantilla, los recibos y el histórico.',
+    },
+    readonly: {
+      title: 'Consulta',
+      blurb: 'Para mirar sin la barra de acciones por medio.',
+    },
+  },
   demoLoginInviteTitle: 'Puedes tocar lo que quieras',
   demoLoginInvite:
     'Contrata, da de baja, recontrata, cambia contratos. Los datos se regeneran periódicamente, así que no hay nada que romper.',

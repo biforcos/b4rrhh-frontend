@@ -1,0 +1,387 @@
+/*
+ * La portada de la demo (frontend#40): tinta a la izquierda, papel a la derecha.
+ *
+ * Ningun color literal: todo por var(--token). Los que faltaban (el blanco a
+ * distintas opacidades sobre la tinta) estan en el :root de styles.scss.
+ */
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--surface-app);
+}
+
+/*
+ * Rejilla de dos columnas. La tinta cede antes que el formulario: su columna
+ * tiene maximo (700) y minimo, y el papel no baja de 480. Al estrechar la
+ * ventana, la que pierde ancho primero es la tinta.
+ */
+.entrada {
+  display: grid;
+  grid-template-columns: minmax(360px, 700px) minmax(480px, 1fr);
+  min-height: 100dvh;
+}
+
+/* --- La tinta --------------------------------------------------------- */
+
+.tinta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 56px 64px 48px;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+/* El grafo asoma por debajo del parrafo y sangra por el borde derecho; el
+   nodo LIQUIDO queda justo encima de la regla del pie, sin pisar las cifras.
+   Overflow visible para que el nodo que asoma por la izquierda del viewBox
+   tambien se vea. */
+.tinta__grafo {
+  position: absolute;
+  right: -10%;
+  bottom: 134px;
+  z-index: 0;
+  width: 74%;
+  max-width: 560px;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Cierra la tinta sobre el titular y la abre sobre el grafo. */
+.tinta__velo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    148deg,
+    var(--accent-primary) 0%,
+    var(--accent-primary) 42%,
+    var(--accent-primary-clear) 100%
+  );
+  pointer-events: none;
+}
+
+.tinta__contenido {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.tinta__rotulo {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-text-muted);
+}
+
+.tinta__titular {
+  margin: 28px 0 22px;
+  max-width: 12ch;
+  font-family: var(--font-heading);
+  font-size: 72px;
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--text-inverse);
+}
+
+.tinta__titular em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.tinta__parrafo {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ink-text-muted);
+}
+
+.tinta__pie {
+  display: grid;
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--ink-rule);
+}
+
+.cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 44px;
+  margin: 0;
+  padding: 0;
+}
+
+.cifra {
+  display: grid;
+  gap: 6px;
+}
+
+.cifra__valor {
+  grid-row: 1;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cifra__etiqueta {
+  grid-row: 2;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-text-muted);
+}
+
+.tinta__aviso {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-text-muted);
+}
+
+/* El grafo: aristas curvas y nodos con etiqueta en mono. El camino vivo
+   (BASE_CC -> CUOTA_TRAB -> LIQUIDO) sube de 0.16 a 0.5 y de 1.1 a 1.6. */
+.grafo__arista {
+  fill: none;
+  stroke: var(--ink-line);
+  stroke-width: 1.1;
+}
+
+.grafo__arista--viva {
+  stroke: var(--ink-line-strong);
+  stroke-width: 1.6;
+}
+
+.grafo__nodo rect {
+  fill: none;
+  stroke: var(--ink-node);
+  stroke-width: 1;
+}
+
+.grafo__nodo text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--ink-label);
+}
+
+.grafo__nodo--final rect {
+  fill: var(--text-inverse);
+  stroke: none;
+}
+
+.grafo__nodo--final text {
+  font-weight: 600;
+  fill: var(--accent-primary);
+}
+
+/* --- El papel --------------------------------------------------------- */
+
+.papel {
+  display: grid;
+  place-items: center;
+  padding: 48px 32px;
+}
+
+.papel__hoja {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 420px);
+}
+
+.papel__cabecera {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.papel__cabecera h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.papel__cabecera p,
+.formulario__pista {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.papel__cabecera strong {
+  color: var(--text-primary);
+}
+
+.formulario {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.perfiles {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.perfiles legend {
+  padding: 0 0 0.4rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Tarjeta de radio: el boton a la izquierda, tres lineas a la derecha. */
+.perfil {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'radio titulo sujeto'
+    'radio quien quien';
+  align-items: baseline;
+  gap: 0.2rem 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-panel);
+  cursor: pointer;
+}
+
+.perfil input {
+  grid-area: radio;
+  margin: 0;
+  accent-color: var(--accent-primary);
+}
+
+.perfil.is-selected {
+  border-color: var(--accent-primary);
+  background: var(--surface-accent);
+}
+
+/* El foco cae en el radio, que es pequeno: se ensena en toda la tarjeta. */
+.perfil:has(input:focus-visible) {
+  border-color: var(--accent-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.perfil__titulo {
+  grid-area: titulo;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.perfil__sujeto {
+  grid-area: sujeto;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.perfil__quien {
+  grid-area: quien;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.campo {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.formulario__error {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--error-border);
+  border-radius: var(--radius-sm);
+  background: var(--error-bg);
+  font-size: 0.88rem;
+  color: var(--error-text);
+}
+
+/* --- Anchos ----------------------------------------------------------- */
+
+/* A 1280 la tinta cede primero: su columna baja a 600 mientras el papel
+   sigue creciendo, y el titular baja con ella. */
+@media (max-width: 1280px) {
+  .entrada {
+    grid-template-columns: minmax(360px, 600px) minmax(480px, 1fr);
+  }
+
+  .tinta {
+    padding: 44px 48px 40px;
+  }
+
+  .tinta__titular {
+    font-size: 56px;
+  }
+
+  .cifra__valor {
+    font-size: 30px;
+  }
+}
+
+/* Por debajo de 900 deja de ser columna: banda superior con el titular y el
+   grafo recortado, y el formulario debajo a ancho completo. */
+@media (max-width: 900px) {
+  .entrada {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+  }
+
+  .tinta {
+    padding: 32px 28px 24px;
+  }
+
+  .tinta__grafo {
+    right: -14%;
+    bottom: -38%;
+    width: 64%;
+  }
+
+  .tinta__titular {
+    margin: 18px 0 16px;
+    font-size: 40px;
+  }
+
+  .tinta__parrafo,
+  .cifras {
+    display: none;
+  }
+
+  .tinta__pie {
+    margin-top: 0;
+    padding-top: 16px;
+  }
+
+  .papel {
+    padding: 32px 20px 40px;
+  }
+}

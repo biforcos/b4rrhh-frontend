@@ -1,0 +1,176 @@
+<div class="entrada">
+  <section class="tinta" aria-labelledby="entrada-titular">
+    <!--
+      El grafo de conceptos que calcula una nomina, grabado en la tinta. Es
+      decorativo: aria-hidden y fuera del orden de foco. El camino
+      BASE_CC -> CUOTA_TRAB -> LIQUIDO va mas vivo porque es el recorrido real
+      del calculo; la mirada sigue algo verdadero y termina en LIQUIDO, el
+      unico nodo con fondo propio.
+    -->
+    <svg
+      class="tinta__grafo"
+      viewBox="0 0 620 500"
+      preserveAspectRatio="xMaxYMax meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g class="grafo__aristas">
+        <path class="grafo__arista" d="M96 71 C96 111, 256 101, 256 141" />
+        <path class="grafo__arista" d="M256 71 C256 101, 256 111, 256 141" />
+        <path class="grafo__arista" d="M416 71 C416 111, 256 101, 256 141" />
+        <path class="grafo__arista" d="M256 171 C256 211, 156 201, 156 241" />
+        <path class="grafo__arista" d="M256 171 C256 211, 376 201, 376 241" />
+        <path class="grafo__arista" d="M556 171 C556 231, 156 181, 156 241" />
+        <path class="grafo__arista" d="M36 311 C36 345, 156 315, 156 341" />
+        <path class="grafo__arista" d="M376 271 C376 301, 376 311, 376 341" />
+        <path class="grafo__arista" d="M516 311 C516 345, 376 315, 376 341" />
+        <path class="grafo__arista" d="M376 371 C376 411, 266 401, 266 441" />
+        <path class="grafo__arista grafo__arista--viva" d="M156 271 C156 301, 156 311, 156 341" />
+        <path class="grafo__arista grafo__arista--viva" d="M156 371 C156 411, 266 401, 266 441" />
+      </g>
+      <g class="grafo__nodos">
+        <g class="grafo__nodo">
+          <rect x="40" y="41" width="112" height="30" rx="2" />
+          <text x="96" y="56">SAL_BASE</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="200" y="41" width="112" height="30" rx="2" />
+          <text x="256" y="56">PLUS_CONV</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="360" y="41" width="112" height="30" rx="2" />
+          <text x="416" y="56">H_EXTRA</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="200" y="141" width="112" height="30" rx="2" />
+          <text x="256" y="156">BRUTO</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="500" y="141" width="112" height="30" rx="2" />
+          <text x="556" y="156">DIAS_COT</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="100" y="241" width="112" height="30" rx="2" />
+          <text x="156" y="256">BASE_CC</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="320" y="241" width="112" height="30" rx="2" />
+          <text x="376" y="256">BASE_IRPF</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="-20" y="281" width="112" height="30" rx="2" />
+          <text x="36" y="296">TIPO_CC</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="460" y="281" width="112" height="30" rx="2" />
+          <text x="516" y="296">TIPO_IRPF</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="100" y="341" width="112" height="30" rx="2" />
+          <text x="156" y="356">CUOTA_TRAB</text>
+        </g>
+        <g class="grafo__nodo">
+          <rect x="320" y="341" width="112" height="30" rx="2" />
+          <text x="376" y="356">RET_IRPF</text>
+        </g>
+        <g class="grafo__nodo grafo__nodo--final">
+          <rect x="210" y="441" width="112" height="30" rx="2" />
+          <text x="266" y="456">LIQUIDO</text>
+        </g>
+      </g>
+    </svg>
+    <div class="tinta__velo"></div>
+
+    <div class="tinta__contenido">
+      <p class="tinta__rotulo">{{ texts.demoCoverKicker }}</p>
+      <h1 id="entrada-titular" class="tinta__titular">
+        {{ texts.demoCoverHeadline }} <em>{{ texts.demoCoverHeadlineEmphasis }}</em>
+      </h1>
+      <p class="tinta__parrafo">{{ texts.demoLoginIntro }}</p>
+
+      <div class="tinta__pie">
+        @if (counts(); as cifras) {
+          <dl class="cifras" [attr.aria-label]="texts.demoCountsAriaLabel">
+            <div class="cifra">
+              <dt class="cifra__etiqueta">{{ texts.demoCountEmployees }}</dt>
+              <dd class="cifra__valor">{{ cifras.employees | number }}</dd>
+            </div>
+            <div class="cifra">
+              <dt class="cifra__etiqueta">{{ texts.demoCountCalculatedPayrolls }}</dt>
+              <dd class="cifra__valor">{{ cifras.calculatedPayrolls | number }}</dd>
+            </div>
+            <div class="cifra">
+              <dt class="cifra__etiqueta">{{ texts.demoCountPayrollConcepts }}</dt>
+              <dd class="cifra__valor">{{ cifras.payrollConcepts | number }}</dd>
+            </div>
+          </dl>
+        }
+        <p class="tinta__aviso">{{ texts.demoCoverSyntheticNotice }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="papel" [attr.aria-label]="texts.demoLoginFormAriaLabel">
+    <div class="papel__hoja">
+      <header class="papel__cabecera">
+        <h2>{{ texts.demoLoginTitle }}</h2>
+        <p>
+          <strong>{{ texts.demoLoginInviteTitle }}.</strong>
+          {{ texts.demoLoginInvite }}
+        </p>
+      </header>
+
+      <form class="formulario" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset class="perfiles">
+          <legend>{{ texts.demoProfileLabel }}</legend>
+          @for (perfil of profiles(); track perfil.subject) {
+            <label
+              class="perfil"
+              [class.is-selected]="form.controls.subject.value === perfil.subject"
+            >
+              <input type="radio" formControlName="subject" [value]="perfil.subject" />
+              <span class="perfil__titulo">
+                @if (perfil.copy; as copy) {
+                  {{ copy.title }}
+                } @else {
+                  {{ perfil.subject }}
+                }
+              </span>
+              <span class="perfil__sujeto">{{ perfil.subject }}</span>
+              <span class="perfil__quien">
+                @if (perfil.copy; as copy) {
+                  {{ copy.blurb }}
+                } @else {
+                  {{ texts.demoRolesLabel }} {{ perfil.roles.join(', ') }}
+                }
+              </span>
+            </label>
+          }
+        </fieldset>
+
+        <label class="campo">
+          <span>{{ texts.demoPasswordLabel }}</span>
+          <input
+            pInputText
+            type="text"
+            formControlName="password"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+        <p class="formulario__pista">{{ texts.demoPasswordHint }}</p>
+
+        @if (auth.error()) {
+          <p class="formulario__error" role="alert">{{ auth.error() }}</p>
+        }
+
+        <app-ui-button
+          [label]="submitLabel()"
+          type="submit"
+          [fluid]="true"
+          [disabled]="form.invalid || auth.loading()"
+        />
+      </form>
+    </div>
+  </section>
+</div>

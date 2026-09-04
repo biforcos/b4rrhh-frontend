@@ -27,6 +27,16 @@ export interface DemoAuthInfo {
   subjects: DemoAuthSubjects;
 }
 
+/**
+ * El tamano de la demo, tal como lo sirve GET /demo/counts (backend#45).
+ * Tres numeros y nada mas: el contrato es cerrado a proposito.
+ */
+export interface DemoCounts {
+  employees: number;
+  calculatedPayrolls: number;
+  payrollConcepts: number;
+}
+
 export interface DemoAuthResponse {
   tokenType: string;
   token: string;

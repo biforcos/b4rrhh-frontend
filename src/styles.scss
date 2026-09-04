@@ -29,6 +29,21 @@
   --accent-border: #c3cfdc;
   --accent-muted: #f2f5f8;
 
+  /*
+   * Sobre tinta (frontend#40): lo que se pinta encima de --accent-primary en
+   * la portada. Blanco a distintas opacidades, nunca otro tono. --text-inverse
+   * es el texto pleno; estos son los grados intermedios y el mismo azul con la
+   * opacidad a cero, para que un degradado se cierre sobre la tinta sin pasar
+   * por el negro.
+   */
+  --accent-primary-clear: rgba(30, 58, 95, 0);
+  --ink-text-muted: rgba(255, 255, 255, 0.74);
+  --ink-rule: rgba(255, 255, 255, 0.22);
+  --ink-line: rgba(255, 255, 255, 0.16);
+  --ink-line-strong: rgba(255, 255, 255, 0.5);
+  --ink-node: rgba(255, 255, 255, 0.3);
+  --ink-label: rgba(255, 255, 255, 0.62);
+
   /* Text */
   --text-primary: #1f1d1a;
   --text-secondary: #5c574f;
