@@ -17,10 +17,7 @@ type UiTagSeverity =
   imports: [TagModule],
   template:
     '<p-tag [value]="value()" [severity]="severity()" [rounded]="rounded()" [icon]="icon()" />',
-  styles: [
-    ':host { display: inline-flex; align-items: center; }',
-    ':host :where(.p-tag) { border-radius: 999px; line-height: 1; }',
-  ],
+  styleUrl: './ui-tag.component.scss',
 })
 export class UiTagComponent {
   readonly value = input('');

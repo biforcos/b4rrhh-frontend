@@ -29,14 +29,7 @@ import { LocalDevLoginPageComponent } from './local-dev-login-page.component';
       }
     }
   `,
-  styles: `
-    :host {
-      display: contents;
-    }
-    .login-page__cargando {
-      min-height: 100dvh;
-    }
-  `,
+  styleUrl: './login-page.component.scss',
 })
 export class LoginPageComponent {
   protected readonly demoMode = inject(DemoModeService);

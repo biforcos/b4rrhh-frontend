@@ -1,0 +1,9 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+:host :where(.p-tag) {
+  border-radius: 999px;
+  line-height: 1;
+}

@@ -27,10 +27,7 @@ export type B4IconSize = 16 | 20 | 24;
       <use [attr.href]="href()" />
     </svg>
   `,
-  styles: [
-    ':host { display: inline-flex; flex: none; line-height: 0; vertical-align: middle; }',
-    'svg { display: block; }',
-  ],
+  styleUrl: './b4-icon.component.scss',
 })
 export class B4IconComponent {
   readonly name = input.required<B4IconName>();
