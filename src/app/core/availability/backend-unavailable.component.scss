@@ -1,0 +1,49 @@
+.backend-unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--surface-app);
+}
+
+.backend-unavailable__card {
+  text-align: center;
+  padding: 3rem 4rem;
+  background: var(--surface-panel);
+  border-radius: 8px;
+  box-shadow: var(--shadow-panel);
+}
+
+.backend-unavailable__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem;
+}
+
+.backend-unavailable__message {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 2rem;
+}
+
+.backend-unavailable__retry {
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-inverse);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-primary-hover);
+  }
+
+  &:disabled {
+    background: var(--accent-soft);
+    cursor: not-allowed;
+  }
+}

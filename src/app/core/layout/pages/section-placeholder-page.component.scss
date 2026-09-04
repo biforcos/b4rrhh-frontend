@@ -1,0 +1,23 @@
+.placeholder-page {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-panel);
+  border-radius: 0.8rem;
+  box-shadow: var(--shadow-panel);
+  padding: 1rem 1rem 1.1rem;
+  display: grid;
+  gap: 0.7rem;
+  max-width: 52rem;
+}
+
+.placeholder-page h2 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--text-primary);
+}
+
+.placeholder-page p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}

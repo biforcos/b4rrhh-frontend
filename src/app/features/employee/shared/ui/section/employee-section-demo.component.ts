@@ -72,60 +72,7 @@ const initialUiState: SectionUiState = {
       </div>
     </app-employee-section-shell>
   `,
-  styles: `
-    .employee-section-demo__header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.24rem;
-    }
-
-    .employee-section-demo__header-actions button {
-      border: 1px solid #cbd8e6;
-      border-radius: 999px;
-      background: #f8fbff;
-      color: #29435d;
-      font-size: 0.64rem;
-      font-weight: 600;
-      line-height: 1;
-      padding: 0.21rem 0.5rem;
-      cursor: pointer;
-    }
-
-    .employee-section-demo__header-actions button:hover {
-      background: #eef4fa;
-    }
-
-    .employee-section-demo__cancel-action {
-      border-color: #d6dfe8;
-      background: #fbfcfe;
-      color: #4f6479;
-    }
-
-    .employee-section-demo__content {
-      display: grid;
-      gap: 0.3rem;
-      font-size: 0.68rem;
-      color: #4f6478;
-    }
-
-    .employee-section-demo__content p {
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .employee-section-demo__content button {
-      width: fit-content;
-      border: 1px solid #bdd0e3;
-      border-radius: 999px;
-      background: #f4f9ff;
-      color: #29435d;
-      font-size: 0.62rem;
-      line-height: 1;
-      font-weight: 600;
-      padding: 0.2rem 0.45rem;
-      cursor: pointer;
-    }
-  `,
+  styleUrl: './employee-section-demo.component.scss',
 })
 export class EmployeeSectionDemoComponent implements SectionActionContract<string> {
   protected readonly texts = employeeTexts;

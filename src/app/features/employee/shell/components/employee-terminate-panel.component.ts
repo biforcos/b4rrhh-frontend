@@ -120,18 +120,7 @@ import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.mod
       }
     </app-panel>
   `,
-  styles: [
-    '.employee-terminate__form { display:flex; flex-direction:column; gap:8px }',
-    '.employee-terminate__actions { display:flex; gap:8px; justify-content:flex-end }',
-    '.employee-terminate__summary { margin-top: 1rem; }',
-    '.employee-terminate__summary-grid { display:flex; flex-direction:column; gap:0.75rem; }',
-    '.employee-terminate__summary-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; }',
-    '.employee-terminate__summary-label { font-weight:600; }',
-    '.employee-terminate__working-time { margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid var(--p-content-border-color, #e5e7eb); display:flex; flex-direction:column; gap:0.35rem; }',
-    '.employee-terminate__working-time-title { margin: 0; font-size: 1rem; font-weight: 600; }',
-    '.employee-terminate__working-time-primary { margin: 0; font-size: 1.05rem; font-weight: 700; }',
-    '.employee-terminate__working-time p { margin: 0; }',
-  ],
+  styleUrl: './employee-terminate-panel.component.scss',
 })
 export class EmployeeTerminatePanelComponent {
   private static readonly GLOBAL_FEEDBACK_SOURCE_KEY = 'employee-terminate-panel';

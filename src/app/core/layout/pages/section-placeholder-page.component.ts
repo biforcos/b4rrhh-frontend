@@ -15,31 +15,7 @@ import { appTexts } from '../../i18n/app-texts';
       <p>{{ description }}</p>
     </section>
   `,
-  styles: `
-    .placeholder-page {
-      border: 1px solid var(--border-subtle);
-      background: #ffffff;
-      border-radius: 0.8rem;
-      box-shadow: var(--shadow-panel);
-      padding: 1rem 1rem 1.1rem;
-      display: grid;
-      gap: 0.7rem;
-      max-width: 52rem;
-    }
-
-    .placeholder-page h2 {
-      margin: 0;
-      font-size: 1.02rem;
-      color: #17283c;
-    }
-
-    .placeholder-page p {
-      margin: 0;
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-  `,
+  styleUrl: './section-placeholder-page.component.scss',
 })
 export class SectionPlaceholderPageComponent {
   private readonly route = inject(ActivatedRoute);

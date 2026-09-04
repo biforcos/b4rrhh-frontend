@@ -76,6 +76,12 @@
   --success-bg: #edf2ea;
   --success-border: #cddcc8;
 
+  /* semantic info: es el acento. No hay un cuarto tono, hay un tercer uso
+     del azul tinta (frontend#41). */
+  --info-text: var(--text-accent);
+  --info-bg: var(--surface-accent);
+  --info-border: var(--accent-border);
+
   /* Radii */
   --radius-sm: 3px;
   --radius-md: 4px;
