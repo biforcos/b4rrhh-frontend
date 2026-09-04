@@ -50,6 +50,9 @@ jobs:
           # build si un .scss de componente trae un color literal.
           # lint:icons es el del set de iconos (#11): tumba el build si vuelve
           # a colarse un icono de primeicons (pi pi-*).
+          # lint:inline-styles cierra el hueco del primero (#41): tumba el
+          # build si un componente trae `styles:` en el .ts, que es donde el
+          # candado del color no llega.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -68,6 +71,7 @@ jobs:
                    && npm ci \
                    && npm run lint:styles \
                    && npm run lint:icons \
+                   && npm run lint:inline-styles \
                    && npm run format:check \
                    && npm run api:generate \
                    && npm test -- --no-watch"
