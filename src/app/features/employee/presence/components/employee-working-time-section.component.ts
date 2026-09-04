@@ -148,11 +148,13 @@ export class EmployeeWorkingTimeSectionComponent {
     if (mode === 'create') {
       this.workingTimeStore.createWorkingTime(key, {
         startDate: this.startDateDraft(),
+        endDate: null,
         workingTimePercentage: this.percentageDraft(),
       });
     } else if (mode === 'edit') {
       this.workingTimeStore.updateWorkingTime(key, this.editingNumber()!, {
         startDate: this.newStartDateDraft(),
+        endDate: null,
         workingTimePercentage: this.percentageDraft(),
       });
     } else {

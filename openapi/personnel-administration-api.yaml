@@ -1297,7 +1297,10 @@ paths:
               $ref: "#/components/schemas/CreateWorkingTimeRequest"
       responses:
         "201":
-          description: Working time created
+          description: >-
+            Working time added. If an existing working time was in force on the
+            new start date it has been closed the day before (ADR-057): that is
+            the only automatic consequence.
           content:
             application/json:
               schema:
@@ -1308,9 +1311,12 @@ paths:
           description: Employee not found
         "409":
           description: >-
-            Working time period overlaps another working time for the employee,
-            falls outside employee presence history,
-            or a functional numbering conflict was detected.
+            The resulting series would break an invariant (ADR-057). Error codes:
+            WORKING_TIME_OVERLAP (details.overlaps names the shared dates),
+            WORKING_TIME_COVERAGE_GAP (details.gaps names the uncovered stretches
+            of the presence and details.stretchCandidates the neighbouring
+            working times the user could stretch), WORKING_TIME_OUTSIDE_PRESENCE,
+            or WORKING_TIME_NUMBER_CONFLICT.
     get:
       operationId: listEmployeeWorkingTimesByBusinessKey
       summary: List employee working times by business key
@@ -1389,7 +1395,7 @@ paths:
           description: Employee or working time not found
     put:
       operationId: updateWorkingTimeByBusinessKey
-      summary: Correct a working time period (startDate and/or percentage)
+      summary: Correct a working time (dates and/or percentage)
       tags:
         - Employee Working Time
       parameters:
@@ -1425,7 +1431,9 @@ paths:
               $ref: "#/components/schemas/UpdateWorkingTimeRequest"
       responses:
         "200":
-          description: Working time corrected successfully
+          description: >-
+            Working time corrected. Nothing else moves (ADR-057): stretching or
+            shrinking a neighbour is a separate, explicit correction.
           content:
             application/json:
               schema:
@@ -1435,12 +1443,115 @@ paths:
         "404":
           description: Employee or working time not found
         "409":
-          description: New start date overlaps with another working time period
+          description: >-
+            The corrected dates would break an invariant (ADR-057):
+            WORKING_TIME_OVERLAP, WORKING_TIME_COVERAGE_GAP (details name the
+            gap and the neighbour to stretch) or WORKING_TIME_OUTSIDE_PRESENCE.
+    delete:
+      operationId: deleteWorkingTimeByBusinessKey
+      summary: Remove a working time
+      description: >-
+        Removing the last working time reopens the previous one up to where the
+        removed one ended (ADR-057). Removing one in the middle would leave the
+        presence uncovered and is rejected: the error names the neighbours the
+        user could stretch first.
+      tags:
+        - Employee Working Time
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: workingTimeNumber
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "204":
+          description: Working time removed
+        "404":
+          description: Employee or working time not found
+        "409":
+          description: >-
+            WORKING_TIME_COVERAGE_GAP: removing it would leave the presence
+            uncovered; details.gaps and details.stretchCandidates say where and
+            what to stretch.
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/working-times/plan:
+    post:
+      operationId: planWorkingTimeChangeByBusinessKey
+      summary: Plan a change to the working time series without applying it
+      description: >-
+        Answers what adding, removing or correcting a working time would do to
+        the series (ADR-057): what would be closed or reopened, what gap or
+        overlap would appear, and the series as it would be. Nothing is written.
+        A rejected plan is still a 200: the rejection and its reasons are in
+        the body, so the screen can show them before the user confirms.
+      tags:
+        - Employee Working Time
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanWorkingTimeChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingTimePlanResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: Employee or working time not found
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/working-times/{workingTimeNumber}/close:
     post:
       operationId: closeWorkingTimeByBusinessKey
       summary: Close employee working time by business key
+      deprecated: true
+      description: >-
+        Kept while the current screen still closes a working time before adding
+        the next one. To be removed once frontend#43 migrates the screen:
+        adding a working time already closes the one in force the day before
+        (ADR-057).
       tags:
         - Employee Working Time
       parameters:
@@ -7628,6 +7739,13 @@ components:
           type: string
           format: date
           description: Start date of the working time period (yyyy-MM-dd).
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            End date of the working time period (yyyy-MM-dd). Omit it for a
+            working time that is still in force.
         workingTimePercentage:
           type: number
           format: double
@@ -7653,15 +7771,138 @@ components:
           type: string
           format: date
           description: >-
-            Corrected start date (yyyy-MM-dd). When different from the current
-            startDate, the predecessor period's endDate is automatically adjusted
-            to newStartDate - 1 day.
+            Corrected start date (yyyy-MM-dd). No neighbour is adjusted: if the
+            new dates leave a gap or an overlap the correction is rejected and
+            the error names what to stretch.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Corrected end date (yyyy-MM-dd). Omit it to leave the working time open.
         workingTimePercentage:
           type: number
           format: double
           description: "Percentage from > 0 to <= 100. Source of truth for derived persisted hours."
           minimum: 0.01
           maximum: 100
+    PlanWorkingTimeChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new working time from startDate to endDate; REMOVE plans
+            removing workingTimeNumber; CORRECT plans giving workingTimeNumber
+            the dates startDate to endDate.
+        workingTimeNumber:
+          type: integer
+          format: int32
+          description: Required for REMOVE and CORRECT.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for a working time that stays open.
+    WorkingTimePeriod:
+      type: object
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    WorkingTimeOccurrence:
+      type: object
+      required:
+        - startDate
+      properties:
+        workingTimeNumber:
+          type: integer
+          format: int32
+          nullable: true
+          description: Null only for the working time a plan would add, which has no number yet.
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+    WorkingTimePlanAdjustment:
+      type: object
+      description: The one existing working time the plan would move on its own. Only its end date changes.
+      required:
+        - workingTimeNumber
+        - before
+        - after
+      properties:
+        workingTimeNumber:
+          type: integer
+          format: int32
+        before:
+          $ref: "#/components/schemas/WorkingTimePeriod"
+        after:
+          $ref: "#/components/schemas/WorkingTimePeriod"
+    WorkingTimePlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED]
+          description: Why the plan cannot be applied. Null when accepted.
+        occurrence:
+          $ref: "#/components/schemas/WorkingTimeOccurrence"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/WorkingTimePlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two working times would share.
+          items:
+            $ref: "#/components/schemas/WorkingTimePeriod"
+        gaps:
+          type: array
+          description: Stretches of the presence the resulting series would leave uncovered.
+          items:
+            $ref: "#/components/schemas/WorkingTimePeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/WorkingTimeOccurrence"
+        projected:
+          type: array
+          description: The series as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/WorkingTimeOccurrence"
     WorkingTimeResponse:
       type: object
       required:
@@ -7913,6 +8154,13 @@ components:
         grupoCotizacionCode:
           type: string
           nullable: true
+        grupoCotizacionName:
+          type: string
+          nullable: true
+          description: >-
+            Literal del grupo de cotización de la Seguridad Social. Es cita reglamentaria
+            (ADR-054), así que no se traduce: llega el literal base del catálogo.
+            Nulo cuando la categoría no tiene grupo, igual que grupoCotizacionCode.
         startDate:
           type: string
           format: date

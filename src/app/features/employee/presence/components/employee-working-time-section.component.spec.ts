@@ -74,6 +74,7 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
     c.submit();
     expect(store.createWorkingTime).toHaveBeenCalledWith(employeeKey, {
       startDate: '2025-06-01',
+      endDate: null,
       workingTimePercentage: 50,
     });
   });
@@ -98,6 +99,7 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
     c.submit();
     expect(store.updateWorkingTime).toHaveBeenCalledWith(employeeKey, 3, {
       startDate: '2024-01-01',
+      endDate: null,
       workingTimePercentage: 80,
     });
   });

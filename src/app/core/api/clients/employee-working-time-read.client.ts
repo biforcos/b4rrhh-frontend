@@ -6,7 +6,9 @@ import { EmployeeWorkingTimeService } from '../generated/api/employee-working-ti
 import {
   CloseWorkingTimeRequest,
   CreateWorkingTimeRequest,
+  PlanWorkingTimeChangeRequest,
   UpdateWorkingTimeRequest,
+  WorkingTimePlanResponse,
   WorkingTimeResponse,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
@@ -57,10 +59,35 @@ export class EmployeeWorkingTimeReadClient {
         ...normalizedKey,
         createWorkingTimeRequest: {
           startDate: request.startDate.trim(),
+          endDate: request.endDate?.trim() || null,
           workingTimePercentage: request.workingTimePercentage,
         },
       })
       .pipe(map((item: WorkingTimeResponse) => this.toEmployeeWorkingTimeApiModel(item)));
+  }
+
+  deleteWorkingTimeByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    workingTimeNumber: number,
+  ): Observable<void> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api
+      .deleteWorkingTimeByBusinessKey({ ...normalizedKey, workingTimeNumber })
+      .pipe(map(() => undefined));
+  }
+
+  /** Pide al backend qué haría un cambio a la serie sin aplicarlo (ADR-057). */
+  planWorkingTimeChangeByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    request: PlanWorkingTimeChangeRequest,
+  ): Observable<WorkingTimePlanResponse> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api.planWorkingTimeChangeByBusinessKey({
+      ...normalizedKey,
+      planWorkingTimeChangeRequest: request,
+    });
   }
 
   closeWorkingTimeByBusinessKey(

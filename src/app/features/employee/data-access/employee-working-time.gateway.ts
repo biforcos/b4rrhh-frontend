@@ -9,13 +9,17 @@ import {
 import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkingTimeModel } from '../models/employee-working-time.model';
+import { EmployeeWorkingTimePlanModel } from '../models/employee-working-time-plan.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
 import {
   WorkingTimeCloseDraft,
   WorkingTimeCreateDraft,
+  WorkingTimePlanDraft,
   WorkingTimeUpdateDraft,
   mapWorkingTimeCloseDraftToRequest,
   mapWorkingTimeCreateDraftToRequest,
+  mapWorkingTimePlanDraftToRequest,
+  mapWorkingTimePlanResponseToModel,
   mapWorkingTimeUpdateDraftToRequest,
 } from './employee-working-time.mapper';
 
@@ -82,6 +86,26 @@ export class EmployeeWorkingTimeGateway {
         mapWorkingTimeCloseDraftToRequest(draft),
       )
       .pipe(map(() => undefined));
+  }
+
+  deleteEmployeeWorkingTime(
+    employeeKey: EmployeeBusinessKey,
+    workingTimeNumber: number,
+  ): Observable<void> {
+    const normalizedKey = toEmployeeBusinessKey(employeeKey);
+
+    return this.workingTimeClient.deleteWorkingTimeByBusinessKey(normalizedKey, workingTimeNumber);
+  }
+
+  planEmployeeWorkingTimeChange(
+    employeeKey: EmployeeBusinessKey,
+    draft: WorkingTimePlanDraft,
+  ): Observable<EmployeeWorkingTimePlanModel> {
+    const normalizedKey = toEmployeeBusinessKey(employeeKey);
+
+    return this.workingTimeClient
+      .planWorkingTimeChangeByBusinessKey(normalizedKey, mapWorkingTimePlanDraftToRequest(draft))
+      .pipe(map((plan) => mapWorkingTimePlanResponseToModel(plan)));
   }
 
   private sortByTimelineRecency(

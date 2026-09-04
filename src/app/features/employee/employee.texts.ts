@@ -617,6 +617,7 @@ export const employeeTexts = {
   workingTimeSectionCreateSuccessMessage: 'Jornada creada correctamente.',
   workingTimeSectionCloseSuccessMessage: 'Jornada cerrada correctamente.',
   workingTimeSectionUpdateSuccessMessage: 'Jornada actualizada correctamente.',
+  workingTimeSectionDeleteSuccessMessage: 'Jornada eliminada correctamente.',
   periodCascadeWarningMessage:
     'La fecha de inicio del período anterior se ajustará automáticamente.',
   laborClassificationBlockTitle: 'Clasificación laboral',
