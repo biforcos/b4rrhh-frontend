@@ -46,6 +46,16 @@
   --ink-node: rgba(255, 255, 255, 0.3);
   --ink-label: rgba(255, 255, 255, 0.62);
 
+  /*
+   * El lienzo del designer (designer#2): la reticula de plano de dibujo y el
+   * trazo del camino activo. Van aqui porque este :root es la fuente de
+   * verdad del color y el designer lo copia; siguen la regla del bloque,
+   * blanco a distintas opacidades.
+   */
+  --ink-line-active: rgba(255, 255, 255, 0.78);
+  --ink-grid: rgba(255, 255, 255, 0.045); /* fina, cada 22px */
+  --ink-grid-major: rgba(255, 255, 255, 0.1); /* mayor, cada 110px */
+
   /* Text */
   --text-primary: #1f1d1a;
   --text-secondary: #5c574f;
