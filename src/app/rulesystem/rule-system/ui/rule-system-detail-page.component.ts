@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
@@ -64,21 +71,25 @@ export class RuleSystemDetailPageComponent {
   );
 
   constructor() {
+    // Las dependencias son el modo y el codigo de la ruta; lo que el store lea o escriba
+    // al preparar o cargar queda fuera del contexto reactivo (frontend#44).
     effect(() => {
       const mode = this.mode();
       const code = this.routeCode().trim();
 
-      if (mode === 'create') {
-        this.store.prepareCreate();
-        return;
-      }
+      untracked(() => {
+        if (mode === 'create') {
+          this.store.prepareCreate();
+          return;
+        }
 
-      if (!code) {
-        this.store.prepareCreate();
-        return;
-      }
+        if (!code) {
+          this.store.prepareCreate();
+          return;
+        }
 
-      this.store.loadDetail(code);
+        this.store.loadDetail(code);
+      });
     });
   }
 
