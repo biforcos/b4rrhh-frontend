@@ -95,12 +95,17 @@ export class EmployeeRelationPageComponent {
 
   constructor() {
     // La presencia y el centro de trabajo los carga la ficha; el resto, esta página.
+    // La única dependencia es la clave del empleado: lo que los stores leen y escriben al
+    // cargar (`loading`, `error`) no puede serlo, o un error persistente relanza el efecto
+    // sin fin (frontend#44).
     effect(() => {
       const key = this.activeEmployeeKey();
-      this.contractStore.loadContractsByBusinessKey(key);
-      this.workingTimeStore.loadWorkingTimesByBusinessKey(key);
-      this.laborClassificationStore.loadLaborClassificationsByBusinessKey(key);
-      this.costCenterStore.loadCostCenters(key);
+      untracked(() => {
+        this.contractStore.loadContractsByBusinessKey(key);
+        this.workingTimeStore.loadWorkingTimesByBusinessKey(key);
+        this.laborClassificationStore.loadLaborClassificationsByBusinessKey(key);
+        this.costCenterStore.loadCostCenters(key);
+      });
     });
 
     effect((onCleanup) => {
