@@ -143,5 +143,22 @@ describe('employee-working-time.mapper', () => {
         { workingTimeNumber: 3, startDate: '2026-03-08', endDate: null },
       ]);
     });
+
+    it('maps a plan rejected because the add is the correction of an existing working time', () => {
+      const plan = mapWorkingTimePlanResponseToModel({
+        operation: WorkingTimePlanResponseOperationEnum.Add,
+        accepted: false,
+        rejection: WorkingTimePlanResponseRejectionEnum.IsACorrection,
+        occurrence: { workingTimeNumber: null, startDate: '2026-03-01', endDate: null },
+        correctedOccurrence: { workingTimeNumber: 1, startDate: '2026-03-01', endDate: null },
+        overlaps: [],
+        gaps: [],
+        stretchCandidates: [],
+        projected: [],
+      });
+
+      expect(plan.accepted).toBe(false);
+      expect(plan.rejection).toBe('IS_A_CORRECTION');
+    });
   });
 });

@@ -134,6 +134,8 @@ function toPlanRejection(source: WorkingTimePlanResponseRejectionEnum): WorkingT
       return 'OVERLAP';
     case WorkingTimePlanResponseRejectionEnum.GapNotAllowed:
       return 'GAP_NOT_ALLOWED';
+    case WorkingTimePlanResponseRejectionEnum.IsACorrection:
+      return 'IS_A_CORRECTION';
   }
 }
 

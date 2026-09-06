@@ -18,7 +18,11 @@ export interface WorkingTimePlanAdjustment {
 
 export type WorkingTimePlanOperation = 'ADD' | 'REMOVE' | 'CORRECT';
 
-export type WorkingTimePlanRejection = 'OUTSIDE_PRESENCE' | 'OVERLAP' | 'GAP_NOT_ALLOWED';
+export type WorkingTimePlanRejection =
+  | 'OUTSIDE_PRESENCE'
+  | 'OVERLAP'
+  | 'GAP_NOT_ALLOWED'
+  | 'IS_A_CORRECTION';
 
 /**
  * Lo que un cambio haría a la serie de jornadas antes de aplicarlo (ADR-057, decisión 6): qué se

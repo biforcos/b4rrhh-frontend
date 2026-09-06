@@ -728,7 +728,12 @@ paths:
               $ref: "#/components/schemas/CreateAddressRequest"
       responses:
         "201":
-          description: Address created
+          description: >-
+            Address added to the series of its type (ADR-057). Addresses form one
+            series per employee and address type: the domicile, the fiscal address
+            and the mailing address live side by side. If an address of the same
+            type was in force on the new start date it has been closed the day
+            before: that is the only automatic consequence.
           content:
             application/json:
               schema:
@@ -738,7 +743,22 @@ paths:
         "404":
           description: Rule system, employee, or catalog not found
         "409":
-          description: Address period overlaps for the same employee and address type
+          description: >-
+            The resulting series of that type would break an invariant (ADR-057).
+            Error codes: ADDRESS_OVERLAP (details.overlaps names the dates shared
+            with another address of the same type), ADDRESS_COVERAGE_GAP (the type
+            is the domicile and details.gaps names the uncovered stretches of the
+            presence, details.stretchCandidates the neighbouring addresses the user
+            could stretch), ADDRESS_IS_A_CORRECTION (the new address starts on the
+            start date of an existing one of the same type, named in
+            details.correctedOccurrence: it would correct that one, not add a
+            second one, and has to be asked for as a correction), or
+            ADDRESS_TYPE_COVERAGE_NOT_DECLARED (the catalog does not say whether
+            the type is mandatory or optional).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressErrorResponse"
     get:
       operationId: listEmployeeAddressesByBusinessKey
       summary: List employee addresses by business key
@@ -819,14 +839,17 @@ paths:
           description: Rule system, employee, or address not found
     put:
       operationId: updateAddressByBusinessKey
-      summary: Correct employee address by business key
+      summary: Correct employee address by business key (fields and/or dates)
       tags:
         - Employee Address
       description: >-
         Administrative correction of the same address occurrence identified by
         ruleSystemCode, employeeTypeCode, employeeNumber, and addressNumber.
-        This operation does not create a new occurrence and does not mutate
-        occurrence identity fields.
+        This operation does not create a new occurrence and never changes the
+        address type, which names the series the occurrence belongs to. The
+        dates can be corrected too (ADR-057, decision 3): nothing else moves,
+        and the corrected dates are judged against the same invariants as an
+        add. Omit startDate to leave the dates as they are.
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
@@ -861,7 +884,9 @@ paths:
               $ref: "#/components/schemas/UpdateAddressRequest"
       responses:
         "200":
-          description: Address corrected
+          description: >-
+            Address corrected. Nothing else moves (ADR-057): stretching or
+            shrinking a neighbour is a separate, explicit correction.
           content:
             application/json:
               schema:
@@ -871,12 +896,133 @@ paths:
         "404":
           description: Rule system, employee, or address not found
         "409":
-          description: Domain conflict if correction is invalid
+          description: >-
+            The corrected dates would break an invariant of the series of that
+            type (ADR-057): ADDRESS_OVERLAP, or ADDRESS_COVERAGE_GAP when the
+            type is the domicile (details name the gap and the neighbour to
+            stretch).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressErrorResponse"
+    delete:
+      operationId: deleteAddressByBusinessKey
+      summary: Remove an address
+      description: >-
+        Removing the last address of its type reopens the previous one of the
+        same type up to where the removed one ended (ADR-057). Removing one in
+        the middle of the domicile would leave the presence uncovered and is
+        rejected: the error names the neighbours the user could stretch first.
+        In an optional type the gap is legal and the removal is accepted.
+      tags:
+        - Employee Address
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: addressNumber
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "204":
+          description: Address removed
+        "404":
+          description: Rule system, employee, or address not found
+        "409":
+          description: >-
+            ADDRESS_COVERAGE_GAP: removing it would leave the presence without a
+            domicile; details.gaps and details.stretchCandidates say where and
+            what to stretch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/addresses/plan:
+    post:
+      operationId: planAddressChangeByBusinessKey
+      summary: Plan a change to an address series without applying it
+      description: >-
+        Answers what adding, removing or correcting an address would do to the
+        series of its type (ADR-057): what would be closed or reopened, what gap
+        or overlap would appear, and the series as it would be. Nothing is
+        written. A rejected plan is still a 200: the rejection and its reasons
+        are in the body, so the screen can show them before the user confirms.
+        An ADD names the series by addressTypeCode; a REMOVE or a CORRECT takes
+        it from the address they are about.
+      tags:
+        - Employee Address
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanAddressChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressPlanResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: Employee or address not found
+        "409":
+          description: ADDRESS_TYPE_COVERAGE_NOT_DECLARED for a type the catalog gives no coverage to.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/addresses/{addressNumber}/close:
     post:
       operationId: closeAddressByBusinessKey
       summary: Close employee address by business key
+      deprecated: true
+      description: >-
+        Kept while the current screen still closes an address before adding the
+        next one. To be removed once the screen is migrated: adding an address
+        already closes the one of the same type in force the day before
+        (ADR-057).
       tags:
         - Employee Address
       parameters:
@@ -928,7 +1074,15 @@ paths:
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers:
     post:
       operationId: createWorkCenterByBusinessKey
-      summary: Create employee work center assignment by business key
+      summary: Add a work center assignment to the employee's series
+      description: >-
+        The add is planned against the invariants of the series (ADR-057):
+        inside the presence, no overlap, no gap. The one automatic consequence
+        is closing the assignment in force on the new start date the day
+        before it. An assignment that starts on the start date of an existing
+        one is not an add: it is rejected as WORK_CENTER_IS_A_CORRECTION,
+        naming the assignment it would correct, and has to be asked for as a
+        correction (PUT).
       tags:
         - Employee Work Center
       parameters:
@@ -970,9 +1124,16 @@ paths:
           description: Rule system, employee, or catalog not found
         "409":
           description: >-
-            The requested period overlaps an existing work center assignment for this employee,
-            or the period [startDate, endDate] is not fully contained within any of the
-            employee's active presence periods.
+            The resulting series would break an invariant (ADR-057):
+            WORK_CENTER_OVERLAP (details.overlaps), WORK_CENTER_COVERAGE_GAP
+            (details.gaps and details.stretchCandidates name the gap and the
+            neighbour to stretch), WORK_CENTER_OUTSIDE_PRESENCE,
+            WORK_CENTER_IS_A_CORRECTION (details.correctedOccurrence names the
+            assignment the add would correct), or WORK_CENTER_COMPANY_MISMATCH.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
     get:
       operationId: listEmployeeWorkCentersByBusinessKey
       summary: List employee work center assignments by business key
@@ -1014,13 +1175,19 @@ paths:
     post:
       operationId: replaceWorkCenterFromDateByBusinessKey
       summary: Replace employee work center assignment from effective date by business key
+      deprecated: true
       tags:
         - Employee Work Center
       description: >-
-        Canonical business operation to change employee work center assignment from an effective date.
-        If an assignment covers effectiveDate, it is closed at effectiveDate - 1 and a new assignment
-        starts at effectiveDate. If no assignment covers effectiveDate, a new assignment is created
-        directly when the temporal context is valid.
+        Kept while the workforce loader still calls it (the screen never did:
+        it adds). ADR-057 retires replace-from-date as a model: it is an add
+        (POST) whose end date is the tail of the assignment in force on the
+        effective date. If an assignment covers effectiveDate, it is closed at
+        effectiveDate - 1 and the new one starts at effectiveDate; if none
+        does, the new one is inserted. Starting on the very start date of an
+        existing assignment is no longer a silent replacement: it is rejected
+        as WORK_CENTER_IS_A_CORRECTION, naming the assignment, and the
+        correction is asked for as such (PUT).
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
@@ -1060,10 +1227,66 @@ paths:
           description: Rule system, employee, or catalog not found
         "409":
           description: >-
-            Work center replacement conflicts with temporal rules.
-            Resulting periods overlap another assignment for this employee,
-            are not fully contained within employee presence history,
-            or leave a required presence coverage gap.
+            The resulting series would break an invariant (ADR-057):
+            WORK_CENTER_OVERLAP, WORK_CENTER_COVERAGE_GAP,
+            WORK_CENTER_OUTSIDE_PRESENCE, WORK_CENTER_IS_A_CORRECTION or
+            WORK_CENTER_COMPANY_MISMATCH.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/plan:
+    post:
+      operationId: planWorkCenterChangeByBusinessKey
+      summary: Plan a change to the work center series without applying it
+      description: >-
+        Answers what adding, removing or correcting a work center assignment
+        would do to the series (ADR-057): what would be closed or reopened,
+        what gap or overlap would appear, and the series as it would be.
+        Nothing is written. A rejected plan is still a 200: the rejection and
+        its reasons are in the body, so the screen can show them before the
+        user confirms. An ADD on the start date of an existing assignment
+        comes back as a CORRECT of that assignment, rejected as
+        IS_A_CORRECTION.
+      tags:
+        - Employee Work Center
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanWorkCenterChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterPlanResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: Employee or work center assignment not found
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/{workCenterAssignmentNumber}:
     get:
@@ -1115,6 +1338,8 @@ paths:
         Administrative correction of an existing work center assignment occurrence.
         This operation corrects assignment content and dates for the same occurrence
         identified by business keys and does not represent a workflow transition.
+        Nothing else moves (ADR-057): stretching or shrinking a neighbour is a
+        separate correction of that neighbour.
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
@@ -1160,21 +1385,28 @@ paths:
           description: Rule system, employee, or work center assignment not found
         "409":
           description: >-
-            Work center assignment correction conflicts with temporal rules.
-            Resulting period overlaps another assignment for this employee,
-            is not fully contained within employee presence history,
-            or references an invalid catalog value.
+            The corrected dates would break an invariant (ADR-057):
+            WORK_CENTER_OVERLAP (details.overlaps), WORK_CENTER_COVERAGE_GAP
+            (details.gaps and details.stretchCandidates name the gap and the
+            neighbour to stretch) or WORK_CENTER_OUTSIDE_PRESENCE; or the
+            request is invalid by dates (WORK_CENTER_INVALID_PERIOD).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
     delete:
       operationId: deleteWorkCenterByBusinessKey
       summary: Delete employee work center assignment by business key
       tags:
         - Employee Work Center
       description: >-
-        Administrative deletion of a specific work center assignment occurrence identified by
-        business keys. This operation does not represent a workflow transition and does not
-        replace close. Deletion is forbidden when the assignment startDate exactly matches the
-        startDate of any presence for the same employee; in that case the occurrence must be
-        corrected instead of deleted.
+        Removes a work center assignment, bounded by the invariants of the
+        series (ADR-057 §3). Removing the last one reopens the previous one,
+        up to where the removed one ended. Removing one in the middle would
+        leave a stretch of the presence uncovered and is rejected as
+        WORK_CENTER_COVERAGE_GAP, naming the gap and the neighbours the user
+        could stretch first. The assignment that starts a presence is one
+        such case: it never goes without leaving a gap.
       parameters:
         - in: path
           name: ruleSystemCode
@@ -1207,13 +1439,26 @@ paths:
           description: Rule system, employee, or work center assignment not found
         "409":
           description: >-
-            Deletion is not allowed because the assignment startDate matches the startDate of
-            an employee presence. The occurrence must be corrected instead of deleted.
+            WORK_CENTER_COVERAGE_GAP: removing it would leave a stretch of the
+            presence without a work center; details.gaps names it and
+            details.stretchCandidates the neighbours the user could stretch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/{workCenterAssignmentNumber}/close:
     post:
       operationId: closeWorkCenterByBusinessKey
       summary: Close employee work center assignment by business key
+      deprecated: true
+      description: >-
+        Kept while the work center screen and the termination flow still
+        close an assignment. ADR-057 retires close as an operation: adding an
+        assignment already closes the one in force the day before, and any
+        other end date is a correction (PUT). Judged like a correction:
+        closing the assignment in force while the presence goes on is
+        rejected as WORK_CENTER_COVERAGE_GAP.
       tags:
         - Employee Work Center
       parameters:
@@ -1261,8 +1506,13 @@ paths:
           description: Rule system, employee, or work center assignment not found
         "409":
           description: >-
-            The work center assignment is already closed, or the resulting closed period
-            is not fully contained within any of the employee's active presence periods.
+            WORK_CENTER_ALREADY_CLOSED, or the closed period would break an
+            invariant (ADR-057): WORK_CENTER_COVERAGE_GAP (details name the gap
+            it would leave) or WORK_CENTER_OUTSIDE_PRESENCE.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/working-times:
     post:
@@ -1316,7 +1566,10 @@ paths:
             WORKING_TIME_COVERAGE_GAP (details.gaps names the uncovered stretches
             of the presence and details.stretchCandidates the neighbouring
             working times the user could stretch), WORKING_TIME_OUTSIDE_PRESENCE,
-            or WORKING_TIME_NUMBER_CONFLICT.
+            WORKING_TIME_IS_A_CORRECTION (the new working time starts on the
+            start date of an existing one, named in details.correctedOccurrence:
+            it would correct that one, not add a second one, and has to be asked
+            for as a correction), or WORKING_TIME_NUMBER_CONFLICT.
     get:
       operationId: listEmployeeWorkingTimesByBusinessKey
       summary: List employee working times by business key
@@ -1686,10 +1939,15 @@ paths:
       tags:
         - Employee Cost Center
       description: |
-        Creates a new distribution window starting at startDate.
-        Rejected if an active distribution already exists at startDate.
-        To replace an existing active distribution, use replace-from-date instead.
-        All items share the same startDate. Sum of allocationPercentage must be <= 100.
+        Adds a distribution window from startDate to endDate (open when omitted).
+        The occurrence is the window, the set of lines that share a start date, and
+        the series is judged by its invariants (ADR-057): the window in force on
+        startDate is closed the day before, every line of it; an overlap, a gap
+        inside the presence (coverage is mandatory) or a window outside the
+        presence is rejected naming what it ran into. Starting on the start date of
+        an existing window is not an add: it is rejected as COST_CENTER_IS_A_CORRECTION,
+        naming the window to correct with PUT.
+        All items share the same dates. Sum of allocationPercentage must be <= 100.
       parameters:
         - in: path
           name: ruleSystemCode
@@ -1723,23 +1981,229 @@ paths:
               schema:
                 $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
         "400":
-          description: Invalid request (invalid item, sum > 100, missing fields)
+          description: Invalid request (invalid item, sum > 100, missing fields, unknown catalog value)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "404":
-          description: Employee or catalog value not found
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "409":
-          description: An active distribution window already exists at startDate, or period is outside presence
+          description: >-
+            The resulting series would break an invariant (ADR-057):
+            COST_CENTER_OVERLAP (details.overlaps), COST_CENTER_OUTSIDE_PRESENCE,
+            or COST_CENTER_IS_A_CORRECTION (details.correctedOccurrence names the
+            window the add would correct). A gap the add leaves is not an
+            error: the series declares optional coverage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/plan:
+    post:
+      operationId: planCostCenterDistributionChange
+      summary: Plan a change to the cost center series without applying it
+      description: >-
+        Answers what adding, removing or correcting a distribution window would
+        do to the series (ADR-057): what would be closed or reopened, what gap
+        or overlap would appear, and the series as it would be. Nothing is
+        written. A rejected plan is still a 200: the rejection and its reasons
+        are in the body, so the screen can show them before the user confirms.
+        An ADD on the start date of an existing window comes back as a CORRECT
+        of that window, rejected as IS_A_CORRECTION. Windows are named by their
+        dates: the occurrence is the window, not the line.
+      tags:
+        - Employee Cost Center
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanCostCenterDistributionChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterDistributionPlanResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+        "404":
+          description: Employee or distribution window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/distributions/{startDate}:
+    put:
+      operationId: updateCostCenterDistribution
+      summary: Correct the cost center distribution window identified by startDate
+      tags:
+        - Employee Cost Center
+      description: >-
+        Administrative correction of a distribution window (ADR-057, decision 3).
+        Correcting a line is correcting the set: the window is replaced whole
+        with the items given. Omit startDate in the body to keep the dates the
+        window has and fix only its lines, without inventing a change in the
+        history. Give startDate (and endDate, omitted for a window that stays
+        open) to move the window; the corrected dates are judged by the same
+        invariants as an add and nothing else moves.
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: The startDate that identifies the distribution window to correct.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCostCenterDistributionRequest"
+      responses:
+        "200":
+          description: Distribution window corrected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
+        "400":
+          description: Invalid request (invalid item, sum > 100, missing fields, unknown catalog value)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+        "404":
+          description: Employee or distribution window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+        "409":
+          description: >-
+            The corrected dates would break an invariant (ADR-057):
+            COST_CENTER_OVERLAP (details.overlaps) or COST_CENTER_OUTSIDE_PRESENCE.
+            A gap the corrected dates leave is not an error: the series
+            declares optional coverage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
+    delete:
+      operationId: deleteCostCenterDistribution
+      summary: Delete the cost center distribution window identified by startDate
+      tags:
+        - Employee Cost Center
+      description: >-
+        Removes a distribution window, every line of it (ADR-057 §3).
+        Removing the last one reopens the previous one, up to where the
+        removed one ended. Removing one in the middle leaves a stretch of the
+        presence without a distribution, and that is accepted: the series
+        declares optional coverage, so the gap is a legal state and nothing
+        else moves. Ask POST /plan first to see the gap it would leave.
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: The startDate that identifies the distribution window to remove.
+      responses:
+        "204":
+          description: Distribution window removed
+        "404":
+          description: Employee or distribution window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/replace-from-date:
     post:
       operationId: replaceCostCenterDistributionFromDate
       summary: Replace the active cost center distribution from an effective date
+      deprecated: true
       tags:
         - Employee Cost Center
       description: |
-        Finds the active distribution window at effectiveDate - 1 day,
-        closes all its lines at effectiveDate - 1 day,
-        and creates a new window starting at effectiveDate with the provided items.
-        Atomic operation. Rejected if no active window exists before effectiveDate.
+        Deprecated (ADR-057): adding a window with POST /distributions already
+        closes the one in force the day before. Kept while the screen and the
+        workforce loader still call it. It is an add from effectiveDate whose
+        end date is the tail of the window in force on that date (open when
+        none is), judged by the same invariants: an effective date on the
+        start date of an existing window is rejected as
+        COST_CENTER_IS_A_CORRECTION and a resulting overlap as
+        COST_CENTER_OVERLAP. A gap it leaves is legal: the series declares
+        optional coverage.
       parameters:
         - in: path
           name: ruleSystemCode
@@ -1774,20 +2238,41 @@ paths:
                 $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
         "400":
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "404":
-          description: Employee, catalog value, or active window not found
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "409":
-          description: Period is outside presence
+          description: >-
+            The resulting series would break an invariant (ADR-057):
+            COST_CENTER_OVERLAP, COST_CENTER_OUTSIDE_PRESENCE
+            or COST_CENTER_IS_A_CORRECTION.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/distributions/{startDate}/close:
     post:
       operationId: closeCostCenterDistribution
       summary: Close the cost center distribution window identified by startDate
+      deprecated: true
       tags:
         - Employee Cost Center
       description: |
-        Closes all allocation lines in the window that shares the given startDate.
-        All lines in the window receive the same endDate.
+        Deprecated (ADR-057): adding the next window already closes the one in
+        force, and any other end date is a correction (PUT). Kept while the
+        screen still calls it. Every line of the window takes endDate, and the
+        result is judged by the invariants: closing the window in force while
+        the presence goes on leaves a gap, which is legal here (the series
+        declares optional coverage); an end date past the presence is
+        COST_CENTER_OUTSIDE_PRESENCE.
       parameters:
         - in: path
           name: ruleSystemCode
@@ -1829,15 +2314,34 @@ paths:
                 $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
         "400":
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "404":
           description: Employee or distribution window not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
         "409":
-          description: Resulting period is outside employee presence history
+          description: The resulting series would break an invariant (COST_CENTER_OUTSIDE_PRESENCE, COST_CENTER_OVERLAP)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts:
     post:
       operationId: createContractByBusinessKey
-      summary: Create employee contract by business key
+      summary: Add a contract to the employee's series
+      description: >-
+        The add is planned against the invariants of the series (ADR-057):
+        inside the presence, no overlap, no gap. The one automatic consequence
+        is closing the contract in force on the new start date the day before
+        it. A contract that starts on the start date of an existing one is not
+        an add: it is rejected as CONTRACT_IS_A_CORRECTION, naming the contract
+        it would correct, and has to be asked for as a correction (PUT).
       tags:
         - Employee Contract
       parameters:
@@ -1879,8 +2383,16 @@ paths:
           description: Employee or catalog values not found
         "409":
           description: >-
-            Contract period overlaps, is outside employee presence history,
-            or results in incomplete presence coverage.
+            The resulting series would break an invariant (ADR-057):
+            CONTRACT_OVERLAP (details.overlaps), CONTRACT_COVERAGE_GAP
+            (details.gaps and details.stretchCandidates name the gap and the
+            neighbour to stretch), CONTRACT_OUTSIDE_PRESENCE, or
+            CONTRACT_IS_A_CORRECTION (details.correctedOccurrence names the
+            contract the add would correct).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractErrorResponse"
     get:
       operationId: listEmployeeContractsByBusinessKey
       summary: List employee contracts by business key
@@ -1922,6 +2434,14 @@ paths:
     post:
       operationId: replaceContractFromDateByBusinessKey
       summary: Replace employee contract from effective date by business key
+      deprecated: true
+      description: >-
+        Kept while the contract screen and the workforce loader still call it.
+        ADR-057 retires replace-from-date as a model: it is an add (POST) whose
+        end date is the tail of the contract in force on the effective date.
+        Starting on the very start date of an existing contract is no longer a
+        silent replacement: it is rejected as CONTRACT_IS_A_CORRECTION, naming
+        the contract, and the correction is asked for as such (PUT).
       tags:
         - Employee Contract
       parameters:
@@ -2009,7 +2529,11 @@ paths:
           description: Employee or contract not found
     put:
       operationId: updateContractByBusinessKey
-      summary: Update employee contract by business key
+      summary: Correct a contract (codes and/or dates)
+      description: >-
+        Corrects the contract that starts on the path startDate. Nothing else
+        moves (ADR-057): stretching or shrinking a neighbour is a separate,
+        explicit correction, and a closed contract can be corrected too.
       tags:
         - Employee Contract
       parameters:
@@ -2057,13 +2581,125 @@ paths:
           description: Employee or contract not found
         "409":
           description: >-
-            Contract is already closed,
-            or the resulting timeline is invalid (overlap, outside presence, incomplete coverage).
+            The corrected dates would break an invariant (ADR-057):
+            CONTRACT_OVERLAP, CONTRACT_COVERAGE_GAP (details name the gap and
+            the neighbour to stretch) or CONTRACT_OUTSIDE_PRESENCE.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractErrorResponse"
+    delete:
+      operationId: deleteContractByBusinessKey
+      summary: Remove a contract
+      description: >-
+        Removing the last contract reopens the previous one up to where the
+        removed one ended (ADR-057). Removing one in the middle would leave the
+        presence uncovered and is rejected: the error names the neighbours the
+        user could stretch first.
+      tags:
+        - Employee Contract
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "204":
+          description: Contract removed
+        "404":
+          description: Employee or contract not found
+        "409":
+          description: >-
+            CONTRACT_COVERAGE_GAP: removing it would leave the presence
+            uncovered; details.gaps and details.stretchCandidates say where and
+            what to stretch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts/plan:
+    post:
+      operationId: planContractChangeByBusinessKey
+      summary: Plan a change to the contract series without applying it
+      description: >-
+        Answers what adding, removing or correcting a contract would do to the
+        series (ADR-057): what would be closed or reopened, what gap or overlap
+        would appear, and the series as it would be. Nothing is written. A
+        rejected plan is still a 200: the rejection and its reasons are in the
+        body, so the screen can show them before the user confirms. An ADD on
+        the start date of an existing contract comes back as a CORRECT of that
+        contract, rejected as IS_A_CORRECTION.
+      tags:
+        - Employee Contract
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanContractChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractPlanResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: Employee or contract not found
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts/{startDate}/close:
     post:
       operationId: closeContractByBusinessKey
       summary: Close employee contract by business key
+      deprecated: true
+      description: >-
+        Kept while the contract screen still closes a contract before adding
+        the next one. ADR-057 retires close as an operation: adding a contract
+        already closes the one in force the day before, and any other end date
+        is a correction (PUT). Judged like a correction: closing the contract
+        in force while the presence goes on is rejected as CONTRACT_COVERAGE_GAP.
       tags:
         - Employee Contract
       parameters:
@@ -2117,7 +2753,15 @@ paths:
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications:
     post:
       operationId: createLaborClassificationByBusinessKey
-      summary: Create employee labor classification by business key
+      summary: Add a labor classification to the employee's series
+      description: >-
+        The add is planned against the invariants of the series (ADR-057):
+        inside the presence, no overlap, no gap. The one automatic consequence
+        is closing the occurrence in force on the new start date the day
+        before it. An occurrence that starts on the start date of an existing
+        one is not an add: it is rejected as LABOR_CLASSIFICATION_IS_A_CORRECTION,
+        naming the occurrence it would correct, and has to be asked for as a
+        correction (PUT).
       tags:
         - Employee Labor Classification
       parameters:
@@ -2159,8 +2803,17 @@ paths:
           description: Employee or catalog values not found
         "409":
           description: >-
-            Labor classification period overlaps, is outside employee presence history,
-            or results in incomplete presence coverage.
+            The resulting series would break an invariant (ADR-057):
+            LABOR_CLASSIFICATION_OVERLAP (details.overlaps),
+            LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE (details.gaps and
+            details.stretchCandidates name the gap and the neighbour to
+            stretch), LABOR_CLASSIFICATION_OUTSIDE_PRESENCE, or
+            LABOR_CLASSIFICATION_IS_A_CORRECTION (details.correctedOccurrence
+            names the occurrence the add would correct).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaborClassificationErrorResponse"
     get:
       operationId: listEmployeeLaborClassificationsByBusinessKey
       summary: List employee labor classifications by business key
@@ -2202,6 +2855,15 @@ paths:
     post:
       operationId: replaceLaborClassificationFromDateByBusinessKey
       summary: Replace employee labor classification from effective date by business key
+      deprecated: true
+      description: >-
+        Kept while the labor classification screen and the workforce loader
+        still call it. ADR-057 retires replace-from-date as a model: it is an
+        add (POST) whose end date is the tail of the occurrence in force on the
+        effective date. Starting on the very start date of an existing
+        occurrence is no longer a silent replacement: it is rejected as
+        LABOR_CLASSIFICATION_IS_A_CORRECTION, naming the occurrence, and the
+        correction is asked for as such (PUT).
       tags:
         - Employee Labor Classification
       parameters:
@@ -2289,7 +2951,12 @@ paths:
           description: Employee or labor classification not found
     put:
       operationId: updateLaborClassificationByBusinessKey
-      summary: Update employee labor classification by business key
+      summary: Correct a labor classification (codes and/or dates)
+      description: >-
+        Corrects the labor classification that starts on the path startDate.
+        Nothing else moves (ADR-057): stretching or shrinking a neighbour is a
+        separate, explicit correction, and a closed occurrence can be
+        corrected too.
       tags:
         - Employee Labor Classification
       parameters:
@@ -2337,13 +3004,127 @@ paths:
           description: Employee or labor classification not found
         "409":
           description: >-
-            Labor classification is already closed,
-            or the resulting timeline is invalid (overlap, outside presence, incomplete coverage).
+            The corrected dates would break an invariant (ADR-057):
+            LABOR_CLASSIFICATION_OVERLAP, LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE
+            (details name the gap and the neighbour to stretch) or
+            LABOR_CLASSIFICATION_OUTSIDE_PRESENCE.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaborClassificationErrorResponse"
+    delete:
+      operationId: deleteLaborClassificationByBusinessKey
+      summary: Remove a labor classification
+      description: >-
+        Removing the last labor classification reopens the previous one up to
+        where the removed one ended (ADR-057). Removing one in the middle would
+        leave the presence uncovered and is rejected: the error names the
+        neighbours the user could stretch first.
+      tags:
+        - Employee Labor Classification
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "204":
+          description: Labor classification removed
+        "404":
+          description: Employee or labor classification not found
+        "409":
+          description: >-
+            LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE: removing it would leave
+            the presence uncovered; details.gaps and details.stretchCandidates
+            say where and what to stretch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaborClassificationErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications/plan:
+    post:
+      operationId: planLaborClassificationChangeByBusinessKey
+      summary: Plan a change to the labor classification series without applying it
+      description: >-
+        Answers what adding, removing or correcting a labor classification
+        would do to the series (ADR-057): what would be closed or reopened,
+        what gap or overlap would appear, and the series as it would be.
+        Nothing is written. A rejected plan is still a 200: the rejection and
+        its reasons are in the body, so the screen can show them before the
+        user confirms. An ADD on the start date of an existing occurrence comes
+        back as a CORRECT of that occurrence, rejected as IS_A_CORRECTION.
+      tags:
+        - Employee Labor Classification
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanLaborClassificationChangeRequest"
+      responses:
+        "200":
+          description: The plan, accepted or rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaborClassificationPlanResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: Employee or labor classification not found
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications/{startDate}/close:
     post:
       operationId: closeLaborClassificationByBusinessKey
       summary: Close employee labor classification by business key
+      deprecated: true
+      description: >-
+        Kept while the labor classification screen still closes an occurrence
+        before adding the next one. ADR-057 retires close as an operation:
+        adding an occurrence already closes the one in force the day before,
+        and any other end date is a correction (PUT). Judged like a correction:
+        closing the occurrence in force while the presence goes on is rejected
+        as LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE.
       tags:
         - Employee Labor Classification
       parameters:
@@ -7446,6 +8227,187 @@ components:
           type: string
           maxLength: 30
           nullable: true
+        startDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            The corrected start date. Omit it to leave both dates as they are;
+            when given, endDate is taken as given too (ADR-057, decision 3).
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: The corrected end date. Omit it, with startDate given, for an address that stays open.
+    AddressErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: >-
+            ADDRESS_NOT_FOUND, ADDRESS_INVALID_REQUEST, ADDRESS_ALREADY_CLOSED,
+            ADDRESS_OVERLAP, ADDRESS_COVERAGE_GAP, ADDRESS_IS_A_CORRECTION or
+            ADDRESS_TYPE_COVERAGE_NOT_DECLARED.
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: >-
+            What a plan rejection names (ADR-057). ADDRESS_OVERLAP: overlaps
+            (AddressPeriod[]). ADDRESS_COVERAGE_GAP: addressTypeCode, gaps
+            (AddressPeriod[]) and stretchCandidates (AddressOccurrence[]).
+            ADDRESS_IS_A_CORRECTION: correctedOccurrence (AddressOccurrence).
+            ADDRESS_TYPE_COVERAGE_NOT_DECLARED: addressTypeCode.
+    AddressPeriod:
+      type: object
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    AddressOccurrence:
+      type: object
+      required:
+        - startDate
+      properties:
+        addressNumber:
+          type: integer
+          format: int32
+          nullable: true
+          description: Null only for the address a plan would add, which has no number yet.
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+    PlanAddressChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new address of addressTypeCode from startDate to endDate;
+            REMOVE plans removing addressNumber; CORRECT plans giving
+            addressNumber the dates startDate to endDate.
+        addressTypeCode:
+          type: string
+          maxLength: 30
+          description: >-
+            Required for ADD: the series the address goes into. Optional for
+            REMOVE and CORRECT, whose series is the type of addressNumber; if
+            given it has to match.
+        addressNumber:
+          type: integer
+          format: int32
+          description: Required for REMOVE and CORRECT.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for an address that stays open.
+    AddressPlanAdjustment:
+      type: object
+      description: The one existing address the plan would move on its own. Only its end date changes.
+      required:
+        - addressNumber
+        - before
+        - after
+      properties:
+        addressNumber:
+          type: integer
+          format: int32
+        before:
+          $ref: "#/components/schemas/AddressPeriod"
+        after:
+          $ref: "#/components/schemas/AddressPeriod"
+    AddressPlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - addressTypeCode
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. An address
+            series may outlive the presence, so OUTSIDE_PRESENCE never occurs
+            here. IS_A_CORRECTION means the plan is not the operation it was
+            asked for: an ADD whose start date is the start date of an existing
+            address of the same type is the correction of that one (named in
+            correctedOccurrence) and has to be asked for as a CORRECT.
+        addressTypeCode:
+          type: string
+          description: The series the plan is about. Addresses of other types are never in it.
+        occurrence:
+          $ref: "#/components/schemas/AddressOccurrence"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the address as it stands today, the one occurrence
+            replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/AddressOccurrence"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/AddressPlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two addresses of the type would share.
+          items:
+            $ref: "#/components/schemas/AddressPeriod"
+        gaps:
+          type: array
+          description: >-
+            Stretches of the presence the resulting series would leave without
+            an address of the type. Legal, and still reported, when the type is
+            optional.
+          items:
+            $ref: "#/components/schemas/AddressPeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/AddressOccurrence"
+        projected:
+          type: array
+          description: The series of the type as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/AddressOccurrence"
     AddressResponse:
       type: object
       required:
@@ -7596,6 +8558,160 @@ components:
           type: string
           format: date
           nullable: true
+    EmployeeWorkCenterPeriod:
+      type: object
+      description: "A stretch of dates named by a plan or an error: a gap, or an overlap."
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    EmployeeWorkCenterOccurrence:
+      type: object
+      description: A work center assignment as a plan or an error names it, by its number and its dates.
+      required:
+        - startDate
+      properties:
+        workCenterAssignmentNumber:
+          type: integer
+          format: int32
+          nullable: true
+          description: Null only for the assignment a plan would add, which has no number yet.
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+    EmployeeWorkCenterErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+          description: >-
+            What a plan rejection names (ADR-057). WORK_CENTER_OVERLAP carries
+            overlaps (EmployeeWorkCenterPeriod[]); WORK_CENTER_COVERAGE_GAP
+            carries gaps (EmployeeWorkCenterPeriod[]) and stretchCandidates
+            (EmployeeWorkCenterOccurrence[]); WORK_CENTER_IS_A_CORRECTION
+            carries correctedOccurrence (EmployeeWorkCenterOccurrence), the
+            assignment the add would correct. Catalog errors carry field. Null
+            when the error has nothing to name.
+          additionalProperties: true
+    PlanWorkCenterChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new assignment from startDate to endDate; REMOVE plans
+            removing workCenterAssignmentNumber; CORRECT plans giving
+            workCenterAssignmentNumber the dates startDate to endDate.
+        workCenterAssignmentNumber:
+          type: integer
+          format: int32
+          description: Required for REMOVE and CORRECT.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for an assignment that stays open.
+    EmployeeWorkCenterPlanAdjustment:
+      type: object
+      description: The one existing assignment the plan would move on its own. Only its end date changes.
+      required:
+        - workCenterAssignmentNumber
+        - before
+        - after
+      properties:
+        workCenterAssignmentNumber:
+          type: integer
+          format: int32
+        before:
+          $ref: "#/components/schemas/EmployeeWorkCenterPeriod"
+        after:
+          $ref: "#/components/schemas/EmployeeWorkCenterPeriod"
+    EmployeeWorkCenterPlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. IS_A_CORRECTION
+            means the plan is not the operation it was asked for: an ADD whose
+            start date is the start date of an existing assignment is the
+            correction of that one (named in correctedOccurrence) and has to
+            be asked for as a CORRECT.
+        occurrence:
+          $ref: "#/components/schemas/EmployeeWorkCenterOccurrence"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the assignment as it stands today, the one
+            occurrence replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/EmployeeWorkCenterOccurrence"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/EmployeeWorkCenterPlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two assignments would share.
+          items:
+            $ref: "#/components/schemas/EmployeeWorkCenterPeriod"
+        gaps:
+          type: array
+          description: Stretches of the presence the resulting series would leave uncovered.
+          items:
+            $ref: "#/components/schemas/EmployeeWorkCenterPeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/EmployeeWorkCenterOccurrence"
+        projected:
+          type: array
+          description: The series as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/EmployeeWorkCenterOccurrence"
     CostCenterDistributionItemRequest:
       type: object
       additionalProperties: false
@@ -7622,6 +8738,15 @@ components:
           type: string
           format: date
           description: Start date of the new distribution window (yyyy-MM-dd).
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            End date shared by every line of the window (yyyy-MM-dd). Omit it
+            for a window that stays open. A window added inside a closed one
+            takes the dates the user gives (ADR-057): the covering window is
+            closed the day before, and the invariants judge what is left.
         items:
           type: array
           minItems: 1
@@ -7728,6 +8853,165 @@ components:
           description: Distribution windows ordered by startDate ascending.
           items:
             $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
+    UpdateCostCenterDistributionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: >-
+            The corrected start date. Omit it to keep the dates the window has
+            and correct only its lines.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            The corrected end date, read only when startDate comes. Omit it for
+            a window that stays open.
+        items:
+          type: array
+          minItems: 1
+          description: The lines the window has after the correction. They replace the current ones as a set.
+          items:
+            $ref: "#/components/schemas/CostCenterDistributionItemRequest"
+    CostCenterDistributionPeriod:
+      type: object
+      description: >-
+        A stretch of dates named by a plan or an error: a distribution window
+        (identified by its start date), a gap, or an overlap.
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    CostCenterErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+          description: >-
+            What a plan rejection names (ADR-057). COST_CENTER_OVERLAP carries
+            overlaps (CostCenterDistributionPeriod[]); COST_CENTER_COVERAGE_GAP
+            carries gaps and stretchCandidates (CostCenterDistributionPeriod[]),
+            though no operation produces it while the series declares optional
+            coverage; COST_CENTER_IS_A_CORRECTION carries correctedOccurrence
+            (CostCenterDistributionPeriod), the window the add would correct.
+            Catalog errors carry field. Null when the error has nothing to name.
+          additionalProperties: true
+    PlanCostCenterDistributionChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new window from startDate to endDate; REMOVE plans
+            removing the window that starts on windowStartDate; CORRECT plans
+            giving that window the dates startDate to endDate.
+        windowStartDate:
+          type: string
+          format: date
+          description: Required for REMOVE and CORRECT. Identifies the window by the day it starts.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for a window that stays open.
+    CostCenterDistributionPlanAdjustment:
+      type: object
+      description: The one existing window the plan would move on its own. Only its end date changes, for every line of it.
+      required:
+        - before
+        - after
+      properties:
+        before:
+          $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        after:
+          $ref: "#/components/schemas/CostCenterDistributionPeriod"
+    CostCenterDistributionPlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. IS_A_CORRECTION
+            means the plan is not the operation it was asked for: an ADD whose
+            start date is the start date of an existing window is the
+            correction of that one (named in correctedOccurrence) and has to
+            be asked for as a CORRECT.
+        occurrence:
+          $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the window as it stands today, the one
+            occurrence replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CostCenterDistributionPlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two windows would share.
+          items:
+            $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        gaps:
+          type: array
+          description: Stretches of the presence the resulting series would leave uncovered.
+          items:
+            $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/CostCenterDistributionPeriod"
+        projected:
+          type: array
+          description: The series as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/CostCenterDistributionPeriod"
     CreateWorkingTimeRequest:
       type: object
       additionalProperties: false
@@ -7875,10 +9159,22 @@ components:
         rejection:
           type: string
           nullable: true
-          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED]
-          description: Why the plan cannot be applied. Null when accepted.
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. IS_A_CORRECTION
+            means the plan is not the operation it was asked for: an ADD whose
+            start date is the start date of an existing working time is the
+            correction of that one (named in correctedOccurrence) and has to be
+            asked for as a CORRECT.
         occurrence:
           $ref: "#/components/schemas/WorkingTimeOccurrence"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the working time as it stands today, the one
+            occurrence replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/WorkingTimeOccurrence"
         adjustedOccurrence:
           nullable: true
           allOf:
@@ -8003,9 +9299,15 @@ components:
           format: date
           nullable: true
           description: >-
-            Corrected start date (yyyy-MM-dd). When provided and different from the
-            path startDate, the predecessor period's endDate is automatically adjusted
-            to newStartDate - 1 day. Must not overlap with other periods.
+            Corrected start date (yyyy-MM-dd). Omit it to keep the path
+            startDate. Nothing else moves (ADR-057): if the new start leaves a
+            gap the predecessor is not stretched, the request is rejected and
+            the error names it as the neighbour to stretch.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Corrected end date (yyyy-MM-dd). Omit it for a contract that stays open.
         contractCode:
           type: string
           minLength: 3
@@ -8054,6 +9356,149 @@ components:
           type: string
           format: date
           nullable: true
+    ContractPeriod:
+      type: object
+      description: >-
+        A stretch of dates named by a plan or an error: a contract (identified
+        by its start date), a gap, or an overlap.
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    ContractErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - CONTRACT_NOT_FOUND
+            - CONTRACT_EMPLOYEE_NOT_FOUND
+            - CONTRACT_INVALID_REQUEST
+            - CONTRACT_OVERLAP
+            - CONTRACT_COVERAGE_GAP
+            - CONTRACT_OUTSIDE_PRESENCE
+            - CONTRACT_IS_A_CORRECTION
+            - CONTRACT_ALREADY_CLOSED
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+          description: >-
+            What a plan rejection names (ADR-057). CONTRACT_OVERLAP carries
+            overlaps (ContractPeriod[]); CONTRACT_COVERAGE_GAP carries gaps and
+            stretchCandidates (ContractPeriod[] each); CONTRACT_IS_A_CORRECTION
+            carries correctedOccurrence (ContractPeriod), the contract the add
+            would correct. Null when the error has nothing to name.
+          additionalProperties: true
+    PlanContractChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new contract from startDate to endDate; REMOVE plans
+            removing the contract that starts on contractStartDate; CORRECT
+            plans giving that contract the dates startDate to endDate.
+        contractStartDate:
+          type: string
+          format: date
+          description: >-
+            Identifies the contract to remove or correct: a contract is
+            identified by the day it starts. Required for REMOVE and CORRECT.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for a contract that stays open.
+    ContractPlanAdjustment:
+      type: object
+      description: The one existing contract the plan would move on its own. Only its end date changes.
+      required:
+        - before
+        - after
+      properties:
+        before:
+          $ref: "#/components/schemas/ContractPeriod"
+        after:
+          $ref: "#/components/schemas/ContractPeriod"
+    ContractPlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. IS_A_CORRECTION
+            means the plan is not the operation it was asked for: an ADD whose
+            start date is the start date of an existing contract is the
+            correction of that one (named in correctedOccurrence) and has to be
+            asked for as a CORRECT.
+        occurrence:
+          $ref: "#/components/schemas/ContractPeriod"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the contract as it stands today, the one
+            occurrence replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/ContractPeriod"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ContractPlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two contracts would share.
+          items:
+            $ref: "#/components/schemas/ContractPeriod"
+        gaps:
+          type: array
+          description: Stretches of the presence the resulting series would leave uncovered.
+          items:
+            $ref: "#/components/schemas/ContractPeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/ContractPeriod"
+        projected:
+          type: array
+          description: The series as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/ContractPeriod"
     CreateLaborClassificationRequest:
       type: object
       additionalProperties: false
@@ -8115,9 +9560,15 @@ components:
           format: date
           nullable: true
           description: >-
-            Corrected start date (yyyy-MM-dd). When provided and different from the
-            path startDate, the predecessor period's endDate is automatically adjusted
-            to newStartDate - 1 day. Must not overlap with other periods.
+            Corrected start date (yyyy-MM-dd). Omit it to keep the path
+            startDate. Nothing else moves (ADR-057): if the new start leaves a
+            gap the predecessor is not stretched, the request is rejected and
+            the error names it as the neighbour to stretch.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Corrected end date (yyyy-MM-dd). Omit it for an occurrence that stays open.
         agreementCode:
           type: string
           maxLength: 30
@@ -8168,6 +9619,143 @@ components:
           type: string
           format: date
           nullable: true
+    LaborClassificationPeriod:
+      type: object
+      description: >-
+        A stretch of dates named by a plan or an error: a labor classification
+        (identified by its start date), a gap, or an overlap.
+      required:
+        - startDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null means onwards.
+    LaborClassificationErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+          description: >-
+            What a plan rejection names (ADR-057). LABOR_CLASSIFICATION_OVERLAP
+            carries overlaps (LaborClassificationPeriod[]);
+            LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE carries gaps and
+            stretchCandidates (LaborClassificationPeriod[] each);
+            LABOR_CLASSIFICATION_IS_A_CORRECTION carries correctedOccurrence
+            (LaborClassificationPeriod), the occurrence the add would correct.
+            Catalog errors carry field. Null when the error has nothing to name.
+          additionalProperties: true
+    PlanLaborClassificationChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+          description: >-
+            ADD plans a new labor classification from startDate to endDate;
+            REMOVE plans removing the one that starts on
+            laborClassificationStartDate; CORRECT plans giving that one the
+            dates startDate to endDate.
+        laborClassificationStartDate:
+          type: string
+          format: date
+          description: >-
+            Identifies the labor classification to remove or correct: it is
+            identified by the day it starts. Required for REMOVE and CORRECT.
+        startDate:
+          type: string
+          format: date
+          description: Required for ADD and CORRECT.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Omit it for an occurrence that stays open.
+    LaborClassificationPlanAdjustment:
+      type: object
+      description: The one existing labor classification the plan would move on its own. Only its end date changes.
+      required:
+        - before
+        - after
+      properties:
+        before:
+          $ref: "#/components/schemas/LaborClassificationPeriod"
+        after:
+          $ref: "#/components/schemas/LaborClassificationPeriod"
+    LaborClassificationPlanResponse:
+      type: object
+      required:
+        - operation
+        - accepted
+        - occurrence
+        - overlaps
+        - gaps
+        - stretchCandidates
+        - projected
+      properties:
+        operation:
+          type: string
+          enum: [ADD, REMOVE, CORRECT]
+        accepted:
+          type: boolean
+        rejection:
+          type: string
+          nullable: true
+          enum: [OUTSIDE_PRESENCE, OVERLAP, GAP_NOT_ALLOWED, IS_A_CORRECTION]
+          description: >-
+            Why the plan cannot be applied. Null when accepted. IS_A_CORRECTION
+            means the plan is not the operation it was asked for: an ADD whose
+            start date is the start date of an existing occurrence is the
+            correction of that one (named in correctedOccurrence) and has to be
+            asked for as a CORRECT.
+        occurrence:
+          $ref: "#/components/schemas/LaborClassificationPeriod"
+        correctedOccurrence:
+          nullable: true
+          description: >-
+            On a correction, the occurrence as it stands today, the one
+            occurrence replaces. Null on an add and on a removal.
+          allOf:
+            - $ref: "#/components/schemas/LaborClassificationPeriod"
+        adjustedOccurrence:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/LaborClassificationPlanAdjustment"
+        overlaps:
+          type: array
+          description: Dates two occurrences would share.
+          items:
+            $ref: "#/components/schemas/LaborClassificationPeriod"
+        gaps:
+          type: array
+          description: Stretches of the presence the resulting series would leave uncovered.
+          items:
+            $ref: "#/components/schemas/LaborClassificationPeriod"
+        stretchCandidates:
+          type: array
+          description: The neighbours of the gaps, which the user could stretch. Named, never moved.
+          items:
+            $ref: "#/components/schemas/LaborClassificationPeriod"
+        projected:
+          type: array
+          description: The series as it would be, accepted or not.
+          items:
+            $ref: "#/components/schemas/LaborClassificationPeriod"
     CreateIdentifierRequest:
       type: object
       additionalProperties: false
@@ -9386,7 +10974,7 @@ components:
 
     CreatePayrollConceptRequest:
       type: object
-      required: [conceptCode, conceptMnemonic, calculationType, functionalNature, resultCompositionMode, executionScope]
+      required: [conceptCode, conceptMnemonic, calculationType, functionalNature, executionScope]
       properties:
         conceptCode:
           type: string
@@ -9400,25 +10988,19 @@ components:
         functionalNature:
           type: string
           enum: [EARNING, DEDUCTION, BASE, INFORMATIONAL, TECHNICAL, TOTAL_EARNING, TOTAL_DEDUCTION, NET_PAY]
-        resultCompositionMode:
-          type: string
-          enum: [REPLACE, ACCUMULATE]
         executionScope:
           type: string
           enum: [SEGMENT, PERIOD]
         payslipOrderCode:
           type: string
           nullable: true
-        persistToConcepts:
-          type: boolean
-          default: true
         summary:
           type: string
           nullable: true
 
     PayrollConceptDesignerResponse:
       type: object
-      required: [ruleSystemCode, conceptCode, conceptMnemonic, calculationType, functionalNature, resultCompositionMode, executionScope, persistToConcepts]
+      required: [ruleSystemCode, conceptCode, conceptMnemonic, calculationType, functionalNature, executionScope]
       properties:
         ruleSystemCode:
           type: string
@@ -9430,15 +11012,11 @@ components:
           type: string
         functionalNature:
           type: string
-        resultCompositionMode:
-          type: string
         executionScope:
           type: string
         payslipOrderCode:
           type: string
           nullable: true
-        persistToConcepts:
-          type: boolean
         summary:
           type: string
           nullable: true
