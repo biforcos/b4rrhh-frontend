@@ -1,8 +1,8 @@
 import {
   mapCostCenterResponsesToHistoryModel,
   mapCostCenterDistributionCreateDraftToRequests,
-  mapCostCenterDistributionReplaceDraftToRequests,
-  mapCostCenterDistributionCloseDateToRequest,
+  mapCostCenterDistributionCorrectDraftToRequest,
+  mapCostCenterPlanDraftToRequest,
 } from './employee-cost-center.mapper';
 import { CostCenterDistributionWindowResponse } from '../../../core/api/generated/model/models';
 
@@ -75,33 +75,62 @@ describe('mapCostCenterResponsesToHistoryModel', () => {
 });
 
 describe('mapCostCenterDistributionCreateDraftToRequests', () => {
-  it('maps startDate and items', () => {
+  it('maps the window dates and normalizes item codes', () => {
     const result = mapCostCenterDistributionCreateDraftToRequests({
       startDate: '2024-01-01',
+      endDate: '',
       items: [{ costCenterCode: ' cc1 ', allocationPercentage: 100 }],
     });
 
     expect(result.startDate).toBe('2024-01-01');
+    expect(result.endDate).toBeNull();
     expect(result.items[0].costCenterCode).toBe('CC1');
     expect(result.items[0].allocationPercentage).toBe(100);
   });
 });
 
-describe('mapCostCenterDistributionReplaceDraftToRequests', () => {
-  it('maps effectiveDate and normalizes item codes', () => {
-    const result = mapCostCenterDistributionReplaceDraftToRequests({
-      effectiveDate: '2024-06-01',
+describe('mapCostCenterDistributionCorrectDraftToRequest', () => {
+  // ADR-057, decisión 3: mover la ventana es parte de corregirla, y la ventana se
+  // sustituye entera por las líneas dadas.
+  it('sends the corrected dates and the whole set of lines', () => {
+    const result = mapCostCenterDistributionCorrectDraftToRequest({
+      startDate: '2024-06-01',
+      endDate: '2024-12-31',
       items: [{ costCenterCode: ' cc2 ', allocationPercentage: 50 }],
     });
 
-    expect(result.effectiveDate).toBe('2024-06-01');
+    expect(result.startDate).toBe('2024-06-01');
+    expect(result.endDate).toBe('2024-12-31');
     expect(result.items[0].costCenterCode).toBe('CC2');
   });
 });
 
-describe('mapCostCenterDistributionCloseDateToRequest', () => {
-  it('trims the end date', () => {
-    const result = mapCostCenterDistributionCloseDateToRequest('  2024-12-31  ');
-    expect(result.endDate).toBe('2024-12-31');
+describe('mapCostCenterPlanDraftToRequest', () => {
+  it('names the window by the day it starts on a correction and on a removal', () => {
+    expect(
+      mapCostCenterPlanDraftToRequest({
+        operation: 'ADD',
+        startDate: '2024-06-01',
+        endDate: null,
+      }),
+    ).toEqual({ operation: 'ADD', startDate: '2024-06-01', endDate: null });
+
+    expect(
+      mapCostCenterPlanDraftToRequest({
+        operation: 'CORRECT',
+        windowStartDate: '2024-01-01',
+        startDate: '2024-02-01',
+        endDate: '2024-12-31',
+      }),
+    ).toEqual({
+      operation: 'CORRECT',
+      windowStartDate: '2024-01-01',
+      startDate: '2024-02-01',
+      endDate: '2024-12-31',
+    });
+
+    expect(
+      mapCostCenterPlanDraftToRequest({ operation: 'REMOVE', windowStartDate: '2024-01-01' }),
+    ).toEqual({ operation: 'REMOVE', windowStartDate: '2024-01-01' });
   });
 });

@@ -114,18 +114,19 @@ export const employeeTexts = {
   costCenterSectionSubtitle:
     'Gestiona la distribución del empleado en centros de coste. La suma de porcentajes debe ser menor o igual al 100%.',
   costCenterSectionAddAction: 'Añadir distribución',
-  costCenterSectionReplaceAction: 'Sustituir distribución desde fecha',
-  costCenterSectionCloseAction: 'Cerrar distribución',
+  costCenterSectionAddTitle: 'Añadir distribución',
+  costCenterSectionCorrectTitle: 'Corregir distribución',
+  costCenterSectionRemoveTitle: 'Eliminar distribución',
+  costCenterSectionAddSubmitAction: 'Añadir distribución',
+  costCenterSectionCorrectSubmitAction: 'Guardar corrección',
+  costCenterSectionRemoveSubmitAction: 'Eliminar distribución',
+  costCenterSectionPlanningMessage: 'Calculando qué cambiaría…',
   costCenterSectionCancelAction: 'Cancelar',
   costCenterSectionSaveAction: 'Guardar',
-  costCenterSectionConfirmCloseMessage:
-    'Confirma el cierre de la distribución activa. Se cerrarán todas las líneas asociadas.',
-  costCenterSectionConfirmCloseAction: 'Confirmar cierre',
   costCenterSectionEmptyMessage: 'No hay distribuciones de centros de coste cargadas.',
   costCenterSectionStartDateLabel: 'Fecha inicio',
   costCenterSectionEffectiveDateLabel: 'Fecha efectiva',
   costCenterSectionEndDateLabel: 'Fecha fin',
-  costCenterSectionCloseDateLabel: 'Fecha de cierre',
   costCenterSectionTotalLabel: 'Total asignado',
   costCenterSectionAddItemAction: 'Añadir línea',
   costCenterSectionRemoveItemAction: 'Quitar',
@@ -139,8 +140,15 @@ export const employeeTexts = {
   costCenterSectionMinItemsMessage: 'Debe haber al menos una línea de distribución.',
   costCenterSectionRequestFailedMessage: 'Error procesando centros de coste. Reintenta.',
   costCenterSectionCreateSuccessMessage: 'Distribución creada correctamente.',
-  costCenterSectionReplaceSuccessMessage: 'Distribución sustituida correctamente.',
-  costCenterSectionCloseSuccessMessage: 'Distribución cerrada correctamente.',
+  costCenterSectionCorrectSuccessMessage: 'Distribución corregida correctamente.',
+  costCenterSectionDeleteSuccessMessage: 'Distribución eliminada correctamente.',
+  costCenterSectionOverlapMessage: 'El tramo se solapa con otra distribución. Corrige las fechas.',
+  costCenterSectionOutsidePresenceMessage:
+    'La distribución tiene que caber dentro de un período de presencia del empleado.',
+  costCenterSectionIsACorrectionMessage:
+    'Ya hay una distribución que empieza ese día: es una corrección suya, no un alta.',
+  costCenterSectionNotFoundMessage:
+    'No se encontró la distribución seleccionada para este empleado.',
   payrollAreaLabel: 'Nómina',
   // --- Acciones de página (en la identidad, ADR-050 §1) ---
   pageActionsAriaLabel: 'Acciones de la ficha',

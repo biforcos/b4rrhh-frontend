@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
@@ -29,15 +36,17 @@ export interface CostCenterDistributionDraft {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form [formGroup]="form" class="cost-center-editor">
-      <div class="cost-center-editor__header">
-        <label class="cost-center-editor__field">
-          <span class="cost-center-editor__label">{{ dateLabel() }}</span>
-          <app-ui-date-input
-            [value]="form.controls.startDate.value"
-            (valueChanged)="form.controls.startDate.setValue($event)"
-          />
-        </label>
-      </div>
+      @if (showDateField()) {
+        <div class="cost-center-editor__header">
+          <label class="cost-center-editor__field">
+            <span class="cost-center-editor__label">{{ dateLabel() }}</span>
+            <app-ui-date-input
+              [value]="form.controls.startDate.value"
+              (valueChanged)="form.controls.startDate.setValue($event)"
+            />
+          </label>
+        </div>
+      }
 
       <div class="cost-center-editor__items" formArrayName="items">
         <div class="cost-center-editor__items-header">
@@ -116,21 +125,34 @@ export class EmployeeCostCenterDistributionEditorComponent {
   readonly initialValue = input<CostCenterDistributionDraft | null>(null);
   readonly options = input<ReadonlyArray<SlotKeyOption<string>>>([]);
   readonly loading = input(false);
+  /**
+   * Quién pone la fecha de la ventana. Falso cuando la pantalla la lleva fuera, junto a la de
+   * fin, porque el plan del backend se pide con las dos y aquí solo hay una (ADR-057).
+   */
+  readonly showDateField = input(true);
 
   readonly form = this.fb.group({
-    startDate: ['', Validators.required],
+    startDate: [''],
     items: this.fb.array([], [Validators.required, Validators.minLength(1)]),
   });
 
   constructor() {
-    // Sync external changes
-    const initial = this.initialValue();
-    if (initial) {
-      this.form.patchValue({ startDate: initial.startDate });
+    // `initialValue` es una entrada: en el constructor todavía no vale nada, así que el
+    // «sync external changes» que había aquí nunca llegó a sincronizar nada. Se hace al llegar.
+    effect(() => {
+      const initial = this.initialValue();
+      untracked(() => this.resetTo(initial));
+    });
+  }
+
+  private resetTo(initial: CostCenterDistributionDraft | null): void {
+    this.items.clear();
+    this.form.controls.startDate.setValue(initial?.startDate ?? '');
+    if (initial && initial.items.length > 0) {
       initial.items.forEach((item) => this.addItem(item));
-    } else if (this.items.length === 0) {
-      this.addItem();
+      return;
     }
+    this.addItem();
   }
 
   get items() {
@@ -163,7 +185,8 @@ export class EmployeeCostCenterDistributionEditorComponent {
   }
 
   isValid(): boolean {
-    return this.form.valid && this.totalPercentage() <= 100;
+    if (this.showDateField() && !this.form.controls.startDate.value) return false;
+    return this.items.valid && this.totalPercentage() <= 100;
   }
 
   getValue(): CostCenterDistributionDraft {

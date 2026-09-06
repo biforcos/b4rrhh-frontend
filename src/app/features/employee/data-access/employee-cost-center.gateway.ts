@@ -2,18 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map, throwError } from 'rxjs';
 
 import { EmployeeCostCenterService } from '../../../core/api/generated/api/employee-cost-center.service';
-import { CostCenterDistributionWindowResponse } from '../../../core/api/generated/model/models';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
+import { EmployeeCostCenterPlanModel } from '../models/employee-cost-center-plan.model';
 import {
   EmployeeCostCenterHistoryModel,
   EmployeeCostCenterWindowModel,
 } from '../models/employee-cost-center.model';
 import {
+  CostCenterDistributionCorrectDraft,
   CostCenterDistributionCreateDraft,
-  CostCenterDistributionReplaceDraft,
-  mapCostCenterDistributionCloseDateToRequest,
+  CostCenterPlanDraft,
+  mapCostCenterDistributionCorrectDraftToRequest,
   mapCostCenterDistributionCreateDraftToRequests,
-  mapCostCenterDistributionReplaceDraftToRequests,
+  mapCostCenterPlanDraftToRequest,
+  mapCostCenterPlanResponseToModel,
   mapCostCenterResponsesToHistoryModel,
   mapCostCenterResponsesToWindowModel,
 } from './employee-cost-center.mapper';
@@ -70,42 +72,49 @@ export class EmployeeCostCenterGateway {
       .pipe(map((response) => mapCostCenterResponsesToWindowModel(response)));
   }
 
-  replaceDistribution(
+  /** Pide al backend qué haría un cambio a la serie sin aplicarlo (ADR-057). */
+  planDistributionChange(
     key: EmployeeBusinessKey,
-    draft: CostCenterDistributionReplaceDraft,
+    draft: CostCenterPlanDraft,
+  ): Observable<EmployeeCostCenterPlanModel> {
+    return this.personnelApiService
+      .planCostCenterDistributionChange({
+        ruleSystemCode: key.ruleSystemCode,
+        employeeTypeCode: key.employeeTypeCode,
+        employeeNumber: key.employeeNumber,
+        planCostCenterDistributionChangeRequest: mapCostCenterPlanDraftToRequest(draft),
+      })
+      .pipe(map((plan) => mapCostCenterPlanResponseToModel(plan)));
+  }
+
+  correctDistribution(
+    key: EmployeeBusinessKey,
+    windowStartDate: string,
+    draft: CostCenterDistributionCorrectDraft,
   ): Observable<EmployeeCostCenterWindowModel> {
     if (!draft.items.length) {
       return throwError(() => new Error('Cost center distribution requires at least one item.'));
     }
 
     return this.personnelApiService
-      .replaceCostCenterDistributionFromDate({
+      .updateCostCenterDistribution({
         ruleSystemCode: key.ruleSystemCode,
         employeeTypeCode: key.employeeTypeCode,
         employeeNumber: key.employeeNumber,
-        replaceCostCenterDistributionFromDateRequest:
-          mapCostCenterDistributionReplaceDraftToRequests(draft),
+        startDate: windowStartDate,
+        updateCostCenterDistributionRequest: mapCostCenterDistributionCorrectDraftToRequest(draft),
       })
       .pipe(map((response) => mapCostCenterResponsesToWindowModel(response)));
   }
 
-  closeDistribution(
-    key: EmployeeBusinessKey,
-    startDate: string,
-    endDate: string,
-  ): Observable<EmployeeCostCenterWindowModel> {
+  deleteDistribution(key: EmployeeBusinessKey, windowStartDate: string): Observable<void> {
     return this.personnelApiService
-      .closeCostCenterDistribution({
+      .deleteCostCenterDistribution({
         ruleSystemCode: key.ruleSystemCode,
         employeeTypeCode: key.employeeTypeCode,
         employeeNumber: key.employeeNumber,
-        startDate,
-        closeCostCenterDistributionRequest: mapCostCenterDistributionCloseDateToRequest(endDate),
+        startDate: windowStartDate,
       })
-      .pipe(
-        map((response: CostCenterDistributionWindowResponse) =>
-          mapCostCenterResponsesToWindowModel(response),
-        ),
-      );
+      .pipe(map(() => undefined));
   }
 }

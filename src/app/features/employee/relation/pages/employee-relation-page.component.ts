@@ -33,6 +33,7 @@ import {
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
 import {
   CONTRACT_PLAN_VOCABULARY,
+  COST_CENTER_PLAN_VOCABULARY,
   LABOR_CLASSIFICATION_PLAN_VOCABULARY,
   WORK_CENTER_PLAN_VOCABULARY,
   describeTimelineConflict,
@@ -81,7 +82,7 @@ export class EmployeeRelationPageComponent {
   private previousWorkingTimeSuccess: 'created' | 'updated' | 'deleted' | null = null;
   private previousLaborClassificationSuccess: 'created' | 'corrected' | null = null;
   private previousWorkCenterSuccess: 'created' | 'corrected' | 'deleted' | null = null;
-  private previousCostCenterSuccess: 'created' | 'replaced' | 'closed' | null = null;
+  private previousCostCenterSuccess: 'created' | 'corrected' | 'deleted' | null = null;
 
   protected readonly texts = employeeTexts;
   protected readonly activeEmployeeKey = toSignal(
@@ -269,8 +270,8 @@ export class EmployeeRelationPageComponent {
         t.costCenterSectionTitle,
         {
           created: t.costCenterSectionCreateSuccessMessage,
-          replaced: t.costCenterSectionReplaceSuccessMessage,
-          closed: t.costCenterSectionCloseSuccessMessage,
+          corrected: t.costCenterSectionCorrectSuccessMessage,
+          deleted: t.costCenterSectionDeleteSuccessMessage,
         }[costCenterSuccess],
       );
     }
@@ -431,9 +432,29 @@ export class EmployeeRelationPageComponent {
   }
 
   private mapCostCenterErrorMessage(errorCode: string | null): string | null {
-    if (!errorCode) return null;
-    return errorCode === 'COST_CENTER_INVALID_WINDOW'
-      ? this.texts.costCenterSectionInvalidTotalMessage
-      : this.texts.costCenterSectionRequestFailedMessage;
+    const t = this.texts;
+    // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
+    const conflictMessage = describeTimelineConflict(
+      errorCode,
+      this.costCenterStore.errorConflict(),
+      COST_CENTER_PLAN_VOCABULARY,
+    );
+    if (conflictMessage) return conflictMessage;
+    switch (errorCode) {
+      case 'COST_CENTER_INVALID_WINDOW':
+        return t.costCenterSectionInvalidTotalMessage;
+      case 'COST_CENTER_OVERLAP':
+        return t.costCenterSectionOverlapMessage;
+      case 'COST_CENTER_OUTSIDE_PRESENCE':
+        return t.costCenterSectionOutsidePresenceMessage;
+      case 'COST_CENTER_IS_A_CORRECTION':
+        return t.costCenterSectionIsACorrectionMessage;
+      case 'COST_CENTER_DISTRIBUTION_NOT_FOUND':
+        return t.costCenterSectionNotFoundMessage;
+      case null:
+        return null;
+      default:
+        return t.costCenterSectionRequestFailedMessage;
+    }
   }
 }

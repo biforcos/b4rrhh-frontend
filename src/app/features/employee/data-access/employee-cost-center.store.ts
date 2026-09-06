@@ -2,15 +2,19 @@ import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
+import { EmployeeCostCenterPlanModel } from '../models/employee-cost-center-plan.model';
 import { EmployeeCostCenterWindowModel } from '../models/employee-cost-center.model';
 import {
   areEmployeeBusinessKeysEqual,
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
+import { readTimelineConflict } from '../shared/utils/timeline-conflict.util';
+import { TimelineConflict } from '../shared/utils/timeline-plan-message.util';
 import { EmployeeCostCenterGateway } from './employee-cost-center.gateway';
 import {
+  CostCenterDistributionCorrectDraft,
   CostCenterDistributionCreateDraft,
-  CostCenterDistributionReplaceDraft,
+  CostCenterPlanDraft,
 } from './employee-cost-center.mapper';
 import {
   EmployeeCostCenterErrorCode,
@@ -30,8 +34,12 @@ export class EmployeeCostCenterStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeCostCenterErrorCode | null>(null);
-  private readonly successState = signal<'created' | 'replaced' | 'closed' | null>(null);
+  private readonly errorConflictState = signal<TimelineConflict | null>(null);
+  private readonly successState = signal<'created' | 'corrected' | 'deleted' | null>(null);
+  private readonly planState = signal<EmployeeCostCenterPlanModel | null>(null);
+  private readonly planningState = signal(false);
   private requestId = 0;
+  private planRequestId = 0;
 
   readonly selectedEmployeeKey = this.selectedEmployeeKeyState.asReadonly();
   readonly currentDistribution = this.currentDistributionState.asReadonly();
@@ -39,15 +47,61 @@ export class EmployeeCostCenterStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Las fechas que acompañan al último error de invariante; null si el error no las trae. */
+  readonly errorConflict = this.errorConflictState.asReadonly();
   readonly success = this.successState.asReadonly();
+  /** El plan del cambio que la pantalla está preparando; null mientras se pide o si no hay ninguno. */
+  readonly plan = this.planState.asReadonly();
+  readonly planning = this.planningState.asReadonly();
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.errorConflictState.set(null);
     this.successState.set(null);
   }
 
   loadCostCenters(key: EmployeeBusinessKey | null): void {
     this.loadCostCentersInternal(key, false);
+  }
+
+  /**
+   * Pide al backend qué haría el cambio sin aplicarlo (ADR-057). Cada petición invalida la
+   * anterior: mientras llega la respuesta no hay plan, para que nadie confirme contra uno viejo.
+   */
+  planChange(employeeKey: EmployeeBusinessKey, draft: CostCenterPlanDraft): void {
+    const normalizedKey = toEmployeeBusinessKey(employeeKey);
+    const planRequestId = ++this.planRequestId;
+
+    this.planState.set(null);
+    this.planningState.set(true);
+
+    this.gateway
+      .planDistributionChange(normalizedKey, draft)
+      .pipe(take(1))
+      .subscribe({
+        next: (plan) => {
+          if (planRequestId !== this.planRequestId) {
+            return;
+          }
+
+          this.planState.set(plan);
+          this.planningState.set(false);
+        },
+        error: (error) => {
+          if (planRequestId !== this.planRequestId) {
+            return;
+          }
+
+          this.planningState.set(false);
+          this.handleMutationError(error);
+        },
+      });
+  }
+
+  clearPlan(): void {
+    this.planRequestId += 1;
+    this.planState.set(null);
+    this.planningState.set(false);
   }
 
   createDistribution(
@@ -67,33 +121,34 @@ export class EmployeeCostCenterStore {
       });
   }
 
-  replaceDistribution(
+  correctDistribution(
     employeeKey: EmployeeBusinessKey,
-    draft: CostCenterDistributionReplaceDraft,
+    windowStartDate: string,
+    draft: CostCenterDistributionCorrectDraft,
   ): void {
     if (this.mutatingState()) return;
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
     this.startMutation();
 
     this.gateway
-      .replaceDistribution(normalizedKey, draft)
+      .correctDistribution(normalizedKey, windowStartDate, draft)
       .pipe(take(1))
       .subscribe({
-        next: () => this.handleMutationSuccess('replaced', normalizedKey),
+        next: () => this.handleMutationSuccess('corrected', normalizedKey),
         error: (err) => this.handleMutationError(err),
       });
   }
 
-  closeDistribution(employeeKey: EmployeeBusinessKey, startDate: string, endDate: string): void {
+  deleteDistribution(employeeKey: EmployeeBusinessKey, windowStartDate: string): void {
     if (this.mutatingState()) return;
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
     this.startMutation();
 
     this.gateway
-      .closeDistribution(normalizedKey, startDate, endDate)
+      .deleteDistribution(normalizedKey, windowStartDate)
       .pipe(take(1))
       .subscribe({
-        next: () => this.handleMutationSuccess('closed', normalizedKey),
+        next: () => this.handleMutationSuccess('deleted', normalizedKey),
         error: (err) => this.handleMutationError(err),
       });
   }
@@ -101,11 +156,12 @@ export class EmployeeCostCenterStore {
   private startMutation(): void {
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.errorConflictState.set(null);
     this.successState.set(null);
   }
 
   private handleMutationSuccess(
-    type: 'created' | 'replaced' | 'closed',
+    type: 'created' | 'corrected' | 'deleted',
     key: EmployeeBusinessKey,
   ): void {
     this.mutatingState.set(false);
@@ -113,9 +169,10 @@ export class EmployeeCostCenterStore {
     this.loadCostCentersInternal(key, true);
   }
 
-  private handleMutationError(error: any): void {
+  private handleMutationError(error: unknown): void {
     this.mutatingState.set(false);
     this.errorState.set(mapEmployeeCostCenterErrorCode(error));
+    this.errorConflictState.set(readTimelineConflict(error));
   }
 
   private loadCostCentersInternal(key: EmployeeBusinessKey | null, forceReload: boolean): void {
@@ -156,7 +213,7 @@ export class EmployeeCostCenterStore {
           this.historyState.set(historyModel.distributionHistory);
           this.loadingState.set(false);
         },
-        error: (err) => {
+        error: () => {
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -166,12 +223,14 @@ export class EmployeeCostCenterStore {
 
   private resetState(): void {
     this.requestId++;
+    this.clearPlan();
     this.selectedEmployeeKeyState.set(null);
     this.currentDistributionState.set(null);
     this.historyState.set([]);
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.errorConflictState.set(null);
     this.successState.set(null);
   }
 }

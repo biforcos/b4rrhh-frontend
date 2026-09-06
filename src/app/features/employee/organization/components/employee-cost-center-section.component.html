@@ -1,10 +1,11 @@
 <app-temporal-section
   anchorId="employee-section-cost-center"
   title="Centro de coste"
-  addLabel="Nueva distribución"
+  [addLabel]="texts.costCenterSectionAddTitle"
   [rows]="rows()"
-  (addClicked)="openNewDistribution()"
-  (editClicked)="openEdit($event)"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
+  (deleteClicked)="openRemove($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">Centros</th>
@@ -22,24 +23,40 @@
   </ng-template>
 </app-temporal-section>
 
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué ventana se cierra o se
+     reabre y en qué fecha, y el hueco que quedaría. Aquí el hueco no impide nada: la cobertura
+     de centro de coste es opcional (`backend#54`) y el aviso dice que se queda y que es
+     válido. -->
 <app-period-modal
-  [title]="modalMode() === 'close' ? 'Cerrar distribución de coste' : 'Nueva distribución de coste'"
+  [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
   [visible]="modalVisible()"
   [saving]="saving()"
   [submitEnabled]="isSubmitEnabled()"
-  [showCloseAction]="modalMode() === 'replace' && !!costCenterStore.currentDistribution()"
-  closeActionLabel="Cerrar distribución"
+  [submitLabel]="submitLabel()"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
-  (closeActionClicked)="openClose()"
+  (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalMode() === 'replace') {
+  @if (modalVisible() && modalMode() !== 'remove') {
+    <app-ui-date-input
+      [ariaLabel]="texts.costCenterSectionStartDateLabel"
+      [value]="startDateDraft()"
+      (valueChanged)="startDateDraft.set($event)"
+    />
+    <app-ui-date-input
+      [ariaLabel]="texts.costCenterSectionEndDateLabel"
+      [value]="endDateDraft()"
+      (valueChanged)="endDateDraft.set($event)"
+    />
     <app-employee-cost-center-distribution-editor
-      dateLabel="Efectivo desde"
+      [showDateField]="false"
+      [initialValue]="editorInitialValue()"
       [options]="costCenterOptions()"
     />
-  } @else {
-    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
   }
 </app-period-modal>
