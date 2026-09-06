@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { EmployeeWorkCenterModel } from '../models/employee-work-center.model';
+import { EmployeeWorkCenterPlanModel } from '../models/employee-work-center-plan.model';
 import { EmployeeWorkCenterGateway } from './employee-work-center.gateway';
 import { EmployeeWorkCenterStore } from './employee-work-center.store';
 
@@ -34,12 +35,25 @@ const workCentersFixture: ReadonlyArray<EmployeeWorkCenterModel> = [
   },
 ];
 
+const planFixture: EmployeeWorkCenterPlanModel = {
+  operation: 'REMOVE',
+  accepted: true,
+  rejection: null,
+  occurrence: { workCenterAssignmentNumber: 10, startDate: '2025-01-01', endDate: null },
+  correctedOccurrence: null,
+  adjustedOccurrence: null,
+  overlaps: [],
+  gaps: [],
+  stretchCandidates: [],
+  projected: [],
+};
+
 describe('EmployeeWorkCenterStore', () => {
   let store: EmployeeWorkCenterStore;
   let gatewayMock: {
     readWorkCenters: ReturnType<typeof vi.fn>;
     createWorkCenter: ReturnType<typeof vi.fn>;
-    closeWorkCenter: ReturnType<typeof vi.fn>;
+    planWorkCenterChange: ReturnType<typeof vi.fn>;
     correctWorkCenter: ReturnType<typeof vi.fn>;
     deleteWorkCenter: ReturnType<typeof vi.fn>;
   };
@@ -48,7 +62,7 @@ describe('EmployeeWorkCenterStore', () => {
     gatewayMock = {
       readWorkCenters: vi.fn().mockReturnValue(of(workCentersFixture)),
       createWorkCenter: vi.fn().mockReturnValue(of(undefined)),
-      closeWorkCenter: vi.fn().mockReturnValue(of(undefined)),
+      planWorkCenterChange: vi.fn().mockReturnValue(of(planFixture)),
       correctWorkCenter: vi.fn().mockReturnValue(of(undefined)),
       deleteWorkCenter: vi.fn().mockReturnValue(of(undefined)),
     };
@@ -93,14 +107,17 @@ describe('EmployeeWorkCenterStore', () => {
     expect(store.success()).toBe('created');
   });
 
-  it('closes current work center and refreshes list on success', () => {
-    store.loadWorkCenters(employeeBusinessKey);
+  it('asks the backend for the plan and keeps it until it is cleared', () => {
+    const draft = { operation: 'REMOVE' as const, workCenterAssignmentNumber: 10 };
+    store.planChange(employeeBusinessKey, draft);
 
-    store.closeWorkCenter(employeeBusinessKey, 10, '2026-06-30');
+    expect(gatewayMock.planWorkCenterChange).toHaveBeenCalledWith(employeeBusinessKey, draft);
+    expect(store.plan()).toBe(planFixture);
+    expect(store.planning()).toBe(false);
 
-    expect(gatewayMock.closeWorkCenter).toHaveBeenCalledWith(employeeBusinessKey, 10, '2026-06-30');
-    expect(gatewayMock.readWorkCenters).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('closed');
+    store.clearPlan();
+
+    expect(store.plan()).toBeNull();
   });
 
   it('corrects existing work center occurrence and refreshes list on success', () => {
@@ -149,7 +166,7 @@ describe('EmployeeWorkCenterStore', () => {
   });
 
   it('maps known functional backend code on mutation failure', () => {
-    gatewayMock.closeWorkCenter.mockReturnValue(
+    gatewayMock.correctWorkCenter.mockReturnValue(
       throwError(() => ({
         error: {
           code: 'WORK_CENTER_OUTSIDE_PRESENCE',
@@ -158,11 +175,41 @@ describe('EmployeeWorkCenterStore', () => {
     );
 
     store.loadWorkCenters(employeeBusinessKey);
-    store.closeWorkCenter(employeeBusinessKey, 10, '2023-01-01');
+    store.correctWorkCenter(employeeBusinessKey, 10, {
+      workCenterCode: 'BCN-03',
+      startDate: '2023-01-01',
+      endDate: '',
+    });
 
     expect(store.error()).toBe('WORK_CENTER_OUTSIDE_PRESENCE');
     expect(store.workCenters()).toEqual(workCentersFixture);
     expect(store.mutating()).toBe(false);
+  });
+
+  // El 409 de invariante trae las fechas del hueco: se guardan para contarlo con ellas.
+  it('keeps the dates a rejection names alongside its code', () => {
+    gatewayMock.deleteWorkCenter.mockReturnValue(
+      throwError(() => ({
+        error: {
+          code: 'WORK_CENTER_COVERAGE_GAP',
+          details: {
+            gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }],
+            stretchCandidates: [{ startDate: '2026-01-01', endDate: '2026-01-31' }],
+          },
+        },
+      })),
+    );
+
+    store.loadWorkCenters(employeeBusinessKey);
+    store.deleteWorkCenter(employeeBusinessKey, 10);
+
+    expect(store.error()).toBe('WORK_CENTER_COVERAGE_GAP');
+    expect(store.errorConflict()?.gaps).toEqual([
+      { startDate: '2026-02-01', endDate: '2026-02-28' },
+    ]);
+    expect(store.errorConflict()?.stretchCandidates).toEqual([
+      { startDate: '2026-01-01', endDate: '2026-01-31' },
+    ]);
   });
 
   it('falls back to request-failed for unknown backend functional code', () => {

@@ -418,44 +418,48 @@ export const employeeTexts = {
   addressesSectionEndDateLabel: 'Fecha de fin',
   workCenterSectionTitle: 'Centro de trabajo',
   workCenterSectionSubtitle:
-    'Gestiona la asignación vigente y el histórico de centros de trabajo. Permite alta, cierre y corrección administrativa de ocurrencias.',
+    'Gestiona la asignación vigente y el histórico de centros de trabajo. Permite alta, corrección administrativa y borrado de ocurrencias.',
   workCenterSectionManageAction: 'Administrar asignaciones',
   workCenterSectionExitManageAction: 'Salir',
   workCenterSectionAddAction: 'Añadir asignación',
   workCenterSectionCorrectAction: 'Corregir ocurrencia',
-  workCenterSectionCloseAction: 'Cerrar',
   workCenterSectionDeleteAction: 'Eliminar',
   workCenterSectionCancelAction: 'Cancelar',
   workCenterSectionSaveCreateAction: 'Guardar',
   workCenterSectionSaveCorrectAction: 'Guardar corrección',
-  workCenterSectionConfirmCloseMessage: 'Confirma el cierre de esta asignación.',
-  workCenterSectionConfirmCloseAction: 'Confirmar cierre',
-  workCenterSectionConfirmDeleteMessage:
-    'Vas a eliminar esta asignación de centro de trabajo. Esta acción no se puede deshacer.',
-  workCenterSectionConfirmDeleteAction: 'Confirmar eliminación',
+  workCenterSectionAddTitle: 'Añadir asignación',
+  workCenterSectionCorrectTitle: 'Corregir asignación',
+  workCenterSectionRemoveTitle: 'Eliminar asignación',
+  workCenterSectionAddSubmitAction: 'Añadir asignación',
+  workCenterSectionCorrectSubmitAction: 'Guardar corrección',
+  workCenterSectionRemoveSubmitAction: 'Eliminar asignación',
+  workCenterSectionPlanningMessage: 'Calculando qué cambiaría…',
   workCenterSectionEmptyMessage: 'No hay asignaciones de centro de trabajo cargadas.',
   workCenterSectionRequestFailedMessage:
     'No se pudo procesar la operación de centro de trabajo. Reintenta.',
   workCenterSectionOverlapMessage:
     'La asignación se solapa con otra ocurrencia vigente o histórica para este empleado.',
+  workCenterSectionCoverageGapMessage:
+    'La presencia no puede quedar sin centro de trabajo. Alarga antes una asignación vecina.',
   workCenterSectionOutsidePresenceMessage:
     'El período de centro de trabajo debe estar dentro de un período de presencia del empleado.',
+  workCenterSectionIsACorrectionMessage:
+    'Ya hay una asignación que empieza ese día: es una corrección suya, no un alta.',
+  workCenterSectionCompanyMismatchMessage:
+    'El centro de trabajo pertenece a otra empresa que la de la presencia del empleado.',
   workCenterSectionCatalogNotFoundMessage:
     'El centro de trabajo indicado no existe en el catalogo disponible.',
   workCenterSectionNotFoundMessage:
     'No se encontro la asignación seleccionada de centro de trabajo.',
-  workCenterSectionAlreadyClosedMessage:
-    'La asignación ya esta cerrada y no admite un nuevo cierre.',
   workCenterSectionFunctionalInvalidPeriodMessage:
     'El período informado no es válido para esta operación de centro de trabajo.',
+  workCenterSectionAlreadyClosedMessage:
+    'La asignación ya esta cerrada y no admite un nuevo cierre.',
   workCenterSectionDeleteForbiddenAtPresenceStartMessage:
     'No se puede eliminar esta asignación porque inicia una presence del empleado. Corrigela si necesitas cambiarla.',
-  workCenterSectionDeleteDisabledPresenceStartReason:
-    'No eliminable: inicia una presence del empleado. Usa Corregir ocurrencia.',
   workCenterSectionLoadFailedMessage: 'No se pudo cargar la información de centro de trabajo.',
   workCenterSectionCreateSuccessMessage: 'Asignación creada correctamente.',
   workCenterSectionCorrectSuccessMessage: 'Asignación corregida correctamente.',
-  workCenterSectionCloseSuccessMessage: 'Asignación cerrada correctamente.',
   workCenterSectionDeleteSuccessMessage: 'Asignación eliminada correctamente.',
   workCenterSectionInvalidPeriodMessage:
     'El período es invalido. La fecha fin no puede ser anterior a la fecha inicio.',
@@ -469,12 +473,9 @@ export const employeeTexts = {
   workCenterSectionAssignmentLabel: 'Número de asignación',
   workCenterSectionCorrectionHint:
     'Corrigiendo la ocurrencia seleccionada sin crear una nueva asignación.',
-  workCenterSectionCloseHint:
-    'Define la fecha de cierre para finalizar la vigencia de la asignación actual.',
   workCenterSectionCodeLabel: 'Centro de trabajo',
   workCenterSectionStartDateLabel: 'Fecha inicio',
   workCenterSectionEndDateLabel: 'Fecha fin',
-  workCenterSectionCloseDateLabel: 'Fecha de cierre',
   personalIdentifiersBlockTitle: 'Identificadores',
   identifierBlockPrimaryLabel: 'Identificador principal',
   identifierBlockSecondaryTitle: 'Otros identificadores',

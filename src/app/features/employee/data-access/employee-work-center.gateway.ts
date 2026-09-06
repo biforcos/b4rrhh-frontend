@@ -9,13 +9,16 @@ import {
 import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeWorkCenterModel } from '../models/employee-work-center.model';
+import { EmployeeWorkCenterPlanModel } from '../models/employee-work-center-plan.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
 import {
   WorkCenterCorrectDraft,
   WorkCenterCreateDraft,
-  mapWorkCenterCloseDateToRequest,
+  WorkCenterPlanDraft,
   mapWorkCenterCorrectDraftToRequest,
   mapWorkCenterCreateDraftToRequest,
+  mapWorkCenterPlanDraftToRequest,
+  mapWorkCenterPlanResponseToModel,
 } from './employee-work-center.mapper';
 
 @Injectable({
@@ -72,20 +75,15 @@ export class EmployeeWorkCenterGateway {
       .pipe(map(() => undefined));
   }
 
-  closeWorkCenter(
+  planWorkCenterChange(
     employeeKey: EmployeeBusinessKey,
-    workCenterAssignmentNumber: number,
-    endDate: string,
-  ): Observable<void> {
+    draft: WorkCenterPlanDraft,
+  ): Observable<EmployeeWorkCenterPlanModel> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.workCenterClient
-      .closeWorkCenterByBusinessKey(
-        normalizedKey,
-        workCenterAssignmentNumber,
-        mapWorkCenterCloseDateToRequest(endDate),
-      )
-      .pipe(map(() => undefined));
+      .planWorkCenterChangeByBusinessKey(normalizedKey, mapWorkCenterPlanDraftToRequest(draft))
+      .pipe(map((plan) => mapWorkCenterPlanResponseToModel(plan)));
   }
 
   correctWorkCenter(

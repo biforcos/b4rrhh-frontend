@@ -34,6 +34,7 @@ import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-rout
 import {
   CONTRACT_PLAN_VOCABULARY,
   LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+  WORK_CENTER_PLAN_VOCABULARY,
   describeTimelineConflict,
 } from '../../shared/utils/timeline-plan-message.util';
 import { describeWorkingTimeConflict } from '../../shared/utils/working-time-plan-message.util';
@@ -79,7 +80,7 @@ export class EmployeeRelationPageComponent {
   private previousContractSuccess: 'created' | 'corrected' | null = null;
   private previousWorkingTimeSuccess: 'created' | 'updated' | 'deleted' | null = null;
   private previousLaborClassificationSuccess: 'created' | 'corrected' | null = null;
-  private previousWorkCenterSuccess: 'created' | 'corrected' | 'closed' | 'deleted' | null = null;
+  private previousWorkCenterSuccess: 'created' | 'corrected' | 'deleted' | null = null;
   private previousCostCenterSuccess: 'created' | 'replaced' | 'closed' | null = null;
 
   protected readonly texts = employeeTexts;
@@ -254,7 +255,6 @@ export class EmployeeRelationPageComponent {
         {
           created: t.workCenterSectionCreateSuccessMessage,
           corrected: t.workCenterSectionCorrectSuccessMessage,
-          closed: t.workCenterSectionCloseSuccessMessage,
           deleted: t.workCenterSectionDeleteSuccessMessage,
         }[workCenterSuccess],
       );
@@ -395,19 +395,32 @@ export class EmployeeRelationPageComponent {
 
   private mapWorkCenterErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
+    // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
+    const conflictMessage = describeTimelineConflict(
+      errorCode,
+      this.workCenterStore.errorConflict(),
+      WORK_CENTER_PLAN_VOCABULARY,
+    );
+    if (conflictMessage) return conflictMessage;
     switch (errorCode) {
       case 'WORK_CENTER_OVERLAP':
         return t.workCenterSectionOverlapMessage;
+      case 'WORK_CENTER_COVERAGE_GAP':
+        return t.workCenterSectionCoverageGapMessage;
       case 'WORK_CENTER_OUTSIDE_PRESENCE':
         return t.workCenterSectionOutsidePresenceMessage;
+      case 'WORK_CENTER_IS_A_CORRECTION':
+        return t.workCenterSectionIsACorrectionMessage;
+      case 'WORK_CENTER_COMPANY_MISMATCH':
+        return t.workCenterSectionCompanyMismatchMessage;
       case 'WORK_CENTER_CATALOG_NOT_FOUND':
         return t.workCenterSectionCatalogNotFoundMessage;
       case 'WORK_CENTER_NOT_FOUND':
         return t.workCenterSectionNotFoundMessage;
-      case 'WORK_CENTER_ALREADY_CLOSED':
-        return t.workCenterSectionAlreadyClosedMessage;
       case 'WORK_CENTER_INVALID_PERIOD':
         return t.workCenterSectionFunctionalInvalidPeriodMessage;
+      case 'WORK_CENTER_ALREADY_CLOSED':
+        return t.workCenterSectionAlreadyClosedMessage;
       case 'WORK_CENTER_DELETE_FORBIDDEN_AT_PRESENCE_START':
         return t.workCenterSectionDeleteForbiddenAtPresenceStartMessage;
       case 'request-failed':

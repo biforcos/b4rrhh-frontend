@@ -4,10 +4,11 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { EmployeeWorkCenterService } from '../generated/api/employee-work-center.service';
 import {
-  EmployeeCloseWorkCenterRequest,
   EmployeeCreateWorkCenterRequest,
   EmployeeUpdateWorkCenterRequest,
   EmployeeWorkCenterAssignmentResponse,
+  EmployeeWorkCenterPlanResponse,
+  PlanWorkCenterChangeRequest,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
 
@@ -85,22 +86,17 @@ export class EmployeeWorkCenterReadClient {
       .pipe(map((workCenter) => this.toEmployeeWorkCenterApiModel(workCenter)));
   }
 
-  closeWorkCenterByBusinessKey(
+  /** Pide al backend qué haría un cambio a la serie sin aplicarlo (ADR-057). */
+  planWorkCenterChangeByBusinessKey(
     key: EmployeeBusinessKeyApiQuery,
-    workCenterAssignmentNumber: number,
-    request: EmployeeCloseWorkCenterRequest,
-  ): Observable<EmployeeWorkCenterApiModel> {
+    request: PlanWorkCenterChangeRequest,
+  ): Observable<EmployeeWorkCenterPlanResponse> {
     const normalizedKey = this.normalizeKey(key);
 
-    return this.api
-      .closeWorkCenterByBusinessKey({
-        ...normalizedKey,
-        workCenterAssignmentNumber,
-        employeeCloseWorkCenterRequest: {
-          endDate: request.endDate.trim(),
-        },
-      })
-      .pipe(map((workCenter) => this.toEmployeeWorkCenterApiModel(workCenter)));
+    return this.api.planWorkCenterChangeByBusinessKey({
+      ...normalizedKey,
+      planWorkCenterChangeRequest: request,
+    });
   }
 
   updateWorkCenterByBusinessKey(

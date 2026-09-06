@@ -1,10 +1,11 @@
 <app-temporal-section
   anchorId="employee-section-work-center"
   title="Centro de trabajo"
+  [addLabel]="texts.workCenterSectionAddTitle"
   [rows]="rows()"
-  (addClicked)="openCreate()"
-  (editClicked)="openEdit($event)"
-  (deleteClicked)="confirmDelete($event)"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
+  (deleteClicked)="openRemove($event)"
 >
   <ng-template #columnHeaders><th class="temporal-section__th">Centro</th></ng-template>
   <ng-template #cellContent let-row>
@@ -15,27 +16,39 @@
   </ng-template>
 </app-temporal-section>
 
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué asignación se cierra o se
+     reabre y en qué fecha, o el hueco o solape con fechas que impide confirmar. Cuando el
+     rechazo nombra una corrección, el aviso trae también la salida. -->
 <app-period-modal
   [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
   [visible]="modalVisible()"
   [saving]="saving()"
   [submitEnabled]="isSubmitEnabled()"
-  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
+  [submitLabel]="submitLabel()"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
-  (closeActionClicked)="switchToClose()"
+  (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalMode() !== 'close') {
+  @if (modalMode() !== 'remove') {
     <app-ui-select
       [options]="workCenterOptions()"
       [value]="workCenterCodeDraft()"
       (valueChanged)="workCenterCodeDraft.set($event)"
     />
-    <app-ui-date-input [value]="startDateDraft()" (valueChanged)="startDateDraft.set($event)" />
-    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
-  }
-  @if (modalMode() === 'close') {
-    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
+    <app-ui-date-input
+      [ariaLabel]="texts.workCenterSectionStartDateLabel"
+      [value]="startDateDraft()"
+      (valueChanged)="startDateDraft.set($event)"
+    />
+    <app-ui-date-input
+      [ariaLabel]="texts.workCenterSectionEndDateLabel"
+      [value]="endDateDraft()"
+      (valueChanged)="endDateDraft.set($event)"
+    />
   }
 </app-period-modal>

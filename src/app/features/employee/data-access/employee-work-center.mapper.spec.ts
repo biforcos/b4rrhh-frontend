@@ -1,7 +1,7 @@
 import {
   mapWorkCenterCreateDraftToRequest,
   mapWorkCenterCorrectDraftToRequest,
-  mapWorkCenterCloseDateToRequest,
+  mapWorkCenterPlanDraftToRequest,
 } from './employee-work-center.mapper';
 
 describe('employee-work-center.mapper', () => {
@@ -25,7 +25,31 @@ describe('employee-work-center.mapper', () => {
     ).toEqual({ workCenterCode: 'WC2', startDate: '2026-02-01', endDate: '2026-12-31' });
   });
 
-  it('maps close date to request', () => {
-    expect(mapWorkCenterCloseDateToRequest('2026-12-31')).toEqual({ endDate: '2026-12-31' });
+  it('names the assignment by its number on a correction and on a removal', () => {
+    expect(
+      mapWorkCenterPlanDraftToRequest({
+        operation: 'ADD',
+        startDate: '2026-03-01',
+        endDate: null,
+      }),
+    ).toEqual({ operation: 'ADD', startDate: '2026-03-01', endDate: null });
+
+    expect(
+      mapWorkCenterPlanDraftToRequest({
+        operation: 'CORRECT',
+        workCenterAssignmentNumber: 9,
+        startDate: '2026-03-01',
+        endDate: '2026-06-30',
+      }),
+    ).toEqual({
+      operation: 'CORRECT',
+      workCenterAssignmentNumber: 9,
+      startDate: '2026-03-01',
+      endDate: '2026-06-30',
+    });
+
+    expect(
+      mapWorkCenterPlanDraftToRequest({ operation: 'REMOVE', workCenterAssignmentNumber: 9 }),
+    ).toEqual({ operation: 'REMOVE', workCenterAssignmentNumber: 9 });
   });
 });
