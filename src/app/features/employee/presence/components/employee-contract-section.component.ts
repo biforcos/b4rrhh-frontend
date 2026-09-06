@@ -12,6 +12,7 @@ import { take } from 'rxjs';
 
 import { EmployeeContractCatalogGateway } from '../../data-access/employee-contract-catalog.gateway';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
+import { ContractPlanDraft } from '../../data-access/employee-contract.mapper';
 import { EmployeeContractStore } from '../../data-access/employee-contract.store';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -21,11 +22,25 @@ import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-i
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
-import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
+import {
+  PeriodModalComponent,
+  PeriodModalNoteTone,
+} from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
-import { currentLocalDate } from '../../../../shared/utils/local-date.util';
+import {
+  CONTRACT_PLAN_VOCABULARY,
+  describeCorrectionSwitchAction,
+  describeTimelinePlan,
+} from '../../shared/utils/timeline-plan-message.util';
+import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
-type ContractModalMode = 'create' | 'edit' | 'close';
+/**
+ * Lo que se puede hacer con la serie de contratos (ADR-057): añadir uno con inicio y fin, y
+ * corregir las fechas o los códigos de otro. No hay «cerrar»: añadir el siguiente ya cierra el
+ * vigente el día anterior, y cualquier otra fecha fin es una corrección. El plan viene del
+ * backend; aquí no se comprueba ningún invariante ni se estira ninguna vecina.
+ */
+type ContractModalMode = 'add' | 'correct';
 
 interface ContractPeriodRow extends TemporalSectionRow {
   contractCode: string;
@@ -54,14 +69,15 @@ export class EmployeeContractSectionComponent {
   private readonly contractCatalogGateway = inject(EmployeeContractCatalogGateway);
 
   protected readonly modalVisible = signal(false);
-  protected readonly modalMode = signal<ContractModalMode>('create');
+  protected readonly modalMode = signal<ContractModalMode>('add');
+  /** El contrato que se corrige, nombrado por el día en que empieza hoy. */
   protected readonly editingStartDate = signal<string | null>(null);
-  protected readonly editingIsActive = signal(false);
-  protected readonly effectiveDateDraft = signal('');
-  protected readonly newStartDateDraft = signal('');
+  protected readonly editingPeriod = signal<string | null>(null);
+  protected readonly startDateDraft = signal(currentLocalDate());
+  /** Vacío para un contrato que queda en vigor. */
+  protected readonly endDateDraft = signal('');
   protected readonly contractCodeDraft = signal('');
   protected readonly contractSubtypeCodeDraft = signal('');
-  protected readonly endDateDraft = signal('');
 
   private readonly contractTypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   private readonly subtypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
@@ -95,39 +111,69 @@ export class EmployeeContractSectionComponent {
     () => !this.contractCodeDraft() || this.subtypeLoadingState(),
   );
   protected readonly saving = computed(() => this.contractStore.mutating());
-  protected readonly showCascadeWarning = computed(
-    () =>
-      this.modalMode() === 'edit' &&
-      !!this.newStartDateDraft() &&
-      this.newStartDateDraft() !== this.editingStartDate(),
+
+  /** El cambio que se planificaría con lo que hay en el formulario; null si aún no está completo. */
+  protected readonly planDraft = computed<ContractPlanDraft | null>(() => {
+    if (!this.modalVisible()) return null;
+
+    const startDate = this.startDateDraft();
+    if (!startDate) return null;
+    const endDate = this.endDateDraft() || null;
+
+    if (this.modalMode() === 'add') return { operation: 'ADD', startDate, endDate };
+
+    const contractStartDate = this.editingStartDate();
+    return contractStartDate === null
+      ? null
+      : { operation: 'CORRECT', contractStartDate, startDate, endDate };
+  });
+
+  protected readonly plan = computed(() => this.contractStore.plan());
+
+  protected readonly planNotice = computed(() => {
+    const plan = this.plan();
+    return plan ? describeTimelinePlan(plan, CONTRACT_PLAN_VOCABULARY) : null;
+  });
+
+  protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
+    if (this.contractStore.planning()) return [this.texts.contractSectionPlanningMessage];
+    return this.planNotice()?.lines ?? [];
+  });
+
+  protected readonly noteTone = computed<PeriodModalNoteTone>(
+    () => this.planNotice()?.tone ?? 'info',
   );
 
-  protected readonly modalTitle = computed(() => {
-    if (this.modalMode() === 'create') return 'Nuevo período — Contrato';
-    if (this.modalMode() === 'close') return 'Cerrar período — Contrato';
-    return 'Editar período — Contrato';
+  /**
+   * El alta que empieza el mismo día que un contrato existente es su corrección, y el backend lo
+   * dice nombrándolo. Se ofrece pasar a corregirlo sin volver a teclear: eso es lo que da la
+   * comodidad que `EXACT_START` daba adivinando.
+   */
+  protected readonly correctionOffer = computed<string | null>(() => {
+    const plan = this.plan();
+    if (!plan || plan.rejection !== 'IS_A_CORRECTION' || !plan.correctedOccurrence) return null;
+    return describeCorrectionSwitchAction(plan.correctedOccurrence, CONTRACT_PLAN_VOCABULARY);
   });
 
-  protected readonly modalSubtitle = computed(() => {
-    const sd = this.editingStartDate();
-    return sd ? `Desde ${sd}` : null;
-  });
+  protected readonly modalTitle = computed(() =>
+    this.modalMode() === 'add'
+      ? this.texts.contractSectionAddTitle
+      : this.texts.contractSectionCorrectTitle,
+  );
 
+  protected readonly submitLabel = computed(() =>
+    this.modalMode() === 'add'
+      ? this.texts.contractSectionAddSubmitAction
+      : this.texts.contractSectionCorrectSubmitAction,
+  );
+
+  protected readonly modalSubtitle = computed(() => this.editingPeriod());
+
+  /** Solo se confirma lo que el backend ya ha dicho que puede aplicar. */
   protected readonly isSubmitEnabled = computed(() => {
-    const mode = this.modalMode();
-    if (mode === 'create')
-      return (
-        !!this.effectiveDateDraft() &&
-        !!this.contractCodeDraft() &&
-        !!this.contractSubtypeCodeDraft()
-      );
-    if (mode === 'edit')
-      return (
-        !!this.newStartDateDraft() &&
-        !!this.contractCodeDraft() &&
-        !!this.contractSubtypeCodeDraft()
-      );
-    return !!this.endDateDraft();
+    if (!this.planDraft()) return false;
+    if (!this.contractCodeDraft() || !this.contractSubtypeCodeDraft()) return false;
+    return this.plan()?.accepted === true;
   });
 
   constructor() {
@@ -146,64 +192,83 @@ export class EmployeeContractSectionComponent {
           if (this.modalVisible()) this.closeModal();
         });
     });
+
+    // Cada cambio del formulario vuelve a pedir el plan: lo que se enseña es siempre lo que
+    // pasaría con lo que hay escrito ahora.
+    effect(() => {
+      const key = this.employeeBusinessKey();
+      const draft = this.planDraft();
+      untracked(() => {
+        if (key && draft) this.contractStore.planChange(key, draft);
+        else this.contractStore.clearPlan();
+      });
+    });
   }
 
-  protected openCreate(): void {
+  protected openAdd(): void {
     this.contractStore.clearFeedback();
-    this.modalMode.set('create');
-    this.effectiveDateDraft.set(currentLocalDate());
+    this.modalMode.set('add');
+    this.editingStartDate.set(null);
+    this.editingPeriod.set(null);
+    this.startDateDraft.set(currentLocalDate());
+    this.endDateDraft.set('');
     this.contractCodeDraft.set('');
     this.contractSubtypeCodeDraft.set('');
     this.subtypeOptionsState.set([]);
     this.modalVisible.set(true);
   }
 
-  protected openEdit(index: number): void {
+  protected openCorrect(index: number): void {
     const row = this.rows()[index];
     if (!row) return;
     this.contractStore.clearFeedback();
-    this.modalMode.set('edit');
+    this.modalMode.set('correct');
     this.editingStartDate.set(row.startDate);
-    this.editingIsActive.set(row.isActive);
-    this.newStartDateDraft.set(row.startDate);
+    this.editingPeriod.set(this.describePeriod(row));
+    this.startDateDraft.set(row.startDate);
+    this.endDateDraft.set(row.endDate ?? '');
     this.contractCodeDraft.set(row.contractCode);
     this.contractSubtypeCodeDraft.set(row.contractSubtypeCode ?? '');
-    this.loadSubtypeOptions(row.contractCode, row.startDate, row.contractSubtypeCode ?? null);
+    this.loadSubtypeOptions(row.contractCode, row.startDate);
     this.modalVisible.set(true);
   }
 
-  protected switchToClose(): void {
-    this.modalMode.set('close');
-    this.endDateDraft.set(currentLocalDate());
+  /** Del rechazo al camino: se corrige el contrato que el backend nombra, con lo ya escrito. */
+  protected switchToCorrection(): void {
+    const corrected = this.plan()?.correctedOccurrence;
+    if (!corrected) return;
+    this.modalMode.set('correct');
+    this.editingStartDate.set(corrected.startDate);
+    this.editingPeriod.set(
+      this.describeDates(corrected.startDate, corrected.endDate) + ' · contrato que se corrige',
+    );
   }
 
   protected submit(): void {
     const key = this.employeeBusinessKey();
-    if (!key || this.contractStore.mutating()) return;
-    const mode = this.modalMode();
+    if (!key || !this.isSubmitEnabled() || this.contractStore.mutating()) return;
 
-    if (mode === 'create') {
-      this.contractStore.replaceFromDate(key, {
-        effectiveDate: this.effectiveDateDraft(),
-        contractCode: this.contractCodeDraft(),
-        contractSubtypeCode: this.contractSubtypeCodeDraft(),
-      });
-    } else if (mode === 'edit') {
-      this.contractStore.correctOccurrence(key, this.editingStartDate()!, {
-        startDate: this.newStartDateDraft(),
-        endDate: null,
-        contractCode: this.contractCodeDraft(),
-        contractSubtypeCode: this.contractSubtypeCodeDraft(),
-      });
-    } else {
-      this.contractStore.closeOccurrence(key, this.editingStartDate()!, {
-        endDate: this.endDateDraft(),
-      });
+    const draft = {
+      startDate: this.startDateDraft(),
+      endDate: this.endDateDraft() || null,
+      contractCode: this.contractCodeDraft(),
+      contractSubtypeCode: this.contractSubtypeCodeDraft(),
+    };
+
+    if (this.modalMode() === 'add') {
+      this.contractStore.createContract(key, draft);
+      return;
+    }
+
+    const contractStartDate = this.editingStartDate();
+    if (contractStartDate !== null) {
+      this.contractStore.correctOccurrence(key, contractStartDate, draft);
     }
   }
 
   protected closeModal(): void {
     this.modalVisible.set(false);
+    this.contractStore.clearPlan();
     this.contractStore.clearFeedback();
   }
 
@@ -212,8 +277,19 @@ export class EmployeeContractSectionComponent {
     this.contractCodeDraft.set(value);
     if (changed) {
       this.contractSubtypeCodeDraft.set('');
-      this.loadSubtypeOptions(value, this.effectiveDateDraft() || null, null);
+      this.loadSubtypeOptions(value, this.startDateDraft() || null);
     }
+  }
+
+  private describePeriod(row: ContractPeriodRow): string {
+    return this.describeDates(row.startDate, row.endDate);
+  }
+
+  private describeDates(startDate: string, endDate: string | null): string {
+    const start = formatDisplayDate(startDate);
+    return endDate
+      ? `Del ${start} al ${formatDisplayDate(endDate)}`
+      : `Desde el ${start}, en vigor`;
   }
 
   private loadContractTypeOptions(ruleSystemCode: string | null): void {
@@ -232,11 +308,7 @@ export class EmployeeContractSectionComponent {
       });
   }
 
-  private loadSubtypeOptions(
-    contractCode: string,
-    referenceDate: string | null,
-    preferred: string | null,
-  ): void {
+  private loadSubtypeOptions(contractCode: string, referenceDate: string | null): void {
     if (!contractCode) {
       this.subtypeOptionsState.set([]);
       return;

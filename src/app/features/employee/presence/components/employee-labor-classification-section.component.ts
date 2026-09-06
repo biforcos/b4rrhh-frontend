@@ -12,6 +12,7 @@ import { take } from 'rxjs';
 
 import { EmployeeLaborClassificationCatalogGateway } from '../../data-access/employee-labor-classification-catalog.gateway';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
+import { LaborClassificationPlanDraft } from '../../data-access/employee-labor-classification.mapper';
 import { EmployeeLaborClassificationStore } from '../../data-access/employee-labor-classification.store';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -22,11 +23,25 @@ import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-i
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
-import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
+import {
+  PeriodModalComponent,
+  PeriodModalNoteTone,
+} from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
-import { currentLocalDate } from '../../../../shared/utils/local-date.util';
+import {
+  LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+  describeCorrectionSwitchAction,
+  describeTimelinePlan,
+} from '../../shared/utils/timeline-plan-message.util';
+import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
-type LaborClassificationModalMode = 'create' | 'edit' | 'close';
+/**
+ * Lo que se puede hacer con la serie de clasificaciones (ADR-057): añadir una con inicio y fin, y
+ * corregir las fechas o los códigos de otra. No hay «cerrar»: añadir la siguiente ya cierra la
+ * vigente el día anterior, y cualquier otra fecha fin es una corrección. El plan viene del
+ * backend; aquí no se comprueba ningún invariante ni se estira ninguna vecina.
+ */
+type LaborClassificationModalMode = 'add' | 'correct';
 
 interface LaborClassificationPeriodRow extends TemporalSectionRow {
   agreementCode: string;
@@ -56,14 +71,15 @@ export class EmployeeLaborClassificationSectionComponent {
   private readonly catalogGateway = inject(EmployeeLaborClassificationCatalogGateway);
 
   protected readonly modalVisible = signal(false);
-  protected readonly modalMode = signal<LaborClassificationModalMode>('create');
+  protected readonly modalMode = signal<LaborClassificationModalMode>('add');
+  /** La clasificación que se corrige, nombrada por el día en que empieza hoy. */
   protected readonly editingStartDate = signal<string | null>(null);
-  protected readonly editingIsActive = signal(false);
-  protected readonly effectiveDateDraft = signal('');
-  protected readonly newStartDateDraft = signal('');
+  protected readonly editingPeriod = signal<string | null>(null);
+  protected readonly startDateDraft = signal(currentLocalDate());
+  /** Vacío para una clasificación que queda en vigor. */
+  protected readonly endDateDraft = signal('');
   protected readonly agreementCodeDraft = signal('');
   protected readonly agreementCategoryCodeDraft = signal('');
-  protected readonly endDateDraft = signal('');
 
   private readonly agreementOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   private readonly categoryOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
@@ -98,39 +114,73 @@ export class EmployeeLaborClassificationSectionComponent {
     () => !this.agreementCodeDraft() || this.categoryLoadingState(),
   );
   protected readonly saving = computed(() => this.classificationStore.mutating());
-  protected readonly showCascadeWarning = computed(
-    () =>
-      this.modalMode() === 'edit' &&
-      !!this.newStartDateDraft() &&
-      this.newStartDateDraft() !== this.editingStartDate(),
+
+  /** El cambio que se planificaría con lo que hay en el formulario; null si aún no está completo. */
+  protected readonly planDraft = computed<LaborClassificationPlanDraft | null>(() => {
+    if (!this.modalVisible()) return null;
+
+    const startDate = this.startDateDraft();
+    if (!startDate) return null;
+    const endDate = this.endDateDraft() || null;
+
+    if (this.modalMode() === 'add') return { operation: 'ADD', startDate, endDate };
+
+    const laborClassificationStartDate = this.editingStartDate();
+    return laborClassificationStartDate === null
+      ? null
+      : { operation: 'CORRECT', laborClassificationStartDate, startDate, endDate };
+  });
+
+  protected readonly plan = computed(() => this.classificationStore.plan());
+
+  protected readonly planNotice = computed(() => {
+    const plan = this.plan();
+    return plan ? describeTimelinePlan(plan, LABOR_CLASSIFICATION_PLAN_VOCABULARY) : null;
+  });
+
+  protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
+    if (this.classificationStore.planning())
+      return [this.texts.laborClassificationSectionPlanningMessage];
+    return this.planNotice()?.lines ?? [];
+  });
+
+  protected readonly noteTone = computed<PeriodModalNoteTone>(
+    () => this.planNotice()?.tone ?? 'info',
   );
 
-  protected readonly modalTitle = computed(() => {
-    if (this.modalMode() === 'create') return 'Nuevo período — Convenio';
-    if (this.modalMode() === 'close') return 'Cerrar período — Convenio';
-    return 'Editar período — Convenio';
+  /**
+   * El alta que empieza el mismo día que una clasificación existente es su corrección, y el
+   * backend lo dice nombrándola. Se ofrece pasar a corregirla sin volver a teclear: eso es lo que
+   * da la comodidad que `EXACT_START` daba adivinando.
+   */
+  protected readonly correctionOffer = computed<string | null>(() => {
+    const plan = this.plan();
+    if (!plan || plan.rejection !== 'IS_A_CORRECTION' || !plan.correctedOccurrence) return null;
+    return describeCorrectionSwitchAction(
+      plan.correctedOccurrence,
+      LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+    );
   });
 
-  protected readonly modalSubtitle = computed(() => {
-    const sd = this.editingStartDate();
-    return sd ? `Desde ${sd}` : null;
-  });
+  protected readonly modalTitle = computed(() =>
+    this.modalMode() === 'add'
+      ? this.texts.laborClassificationSectionAddTitle
+      : this.texts.laborClassificationSectionCorrectTitle,
+  );
 
+  protected readonly submitLabel = computed(() =>
+    this.modalMode() === 'add'
+      ? this.texts.laborClassificationSectionAddSubmitAction
+      : this.texts.laborClassificationSectionCorrectSubmitAction,
+  );
+
+  protected readonly modalSubtitle = computed(() => this.editingPeriod());
+
+  /** Solo se confirma lo que el backend ya ha dicho que puede aplicar. */
   protected readonly isSubmitEnabled = computed(() => {
-    const mode = this.modalMode();
-    if (mode === 'create')
-      return (
-        !!this.effectiveDateDraft() &&
-        !!this.agreementCodeDraft() &&
-        !!this.agreementCategoryCodeDraft()
-      );
-    if (mode === 'edit')
-      return (
-        !!this.newStartDateDraft() &&
-        !!this.agreementCodeDraft() &&
-        !!this.agreementCategoryCodeDraft()
-      );
-    return !!this.endDateDraft();
+    if (!this.planDraft()) return false;
+    if (!this.agreementCodeDraft() || !this.agreementCategoryCodeDraft()) return false;
+    return this.plan()?.accepted === true;
   });
 
   constructor() {
@@ -149,64 +199,84 @@ export class EmployeeLaborClassificationSectionComponent {
           if (this.modalVisible()) this.closeModal();
         });
     });
+
+    // Cada cambio del formulario vuelve a pedir el plan: lo que se enseña es siempre lo que
+    // pasaría con lo que hay escrito ahora.
+    effect(() => {
+      const key = this.employeeBusinessKey();
+      const draft = this.planDraft();
+      untracked(() => {
+        if (key && draft) this.classificationStore.planChange(key, draft);
+        else this.classificationStore.clearPlan();
+      });
+    });
   }
 
-  protected openCreate(): void {
+  protected openAdd(): void {
     this.classificationStore.clearFeedback();
-    this.modalMode.set('create');
-    this.effectiveDateDraft.set(currentLocalDate());
+    this.modalMode.set('add');
+    this.editingStartDate.set(null);
+    this.editingPeriod.set(null);
+    this.startDateDraft.set(currentLocalDate());
+    this.endDateDraft.set('');
     this.agreementCodeDraft.set('');
     this.agreementCategoryCodeDraft.set('');
     this.categoryOptionsState.set([]);
     this.modalVisible.set(true);
   }
 
-  protected openEdit(index: number): void {
+  protected openCorrect(index: number): void {
     const row = this.rows()[index];
     if (!row) return;
     this.classificationStore.clearFeedback();
-    this.modalMode.set('edit');
+    this.modalMode.set('correct');
     this.editingStartDate.set(row.startDate);
-    this.editingIsActive.set(row.isActive);
-    this.newStartDateDraft.set(row.startDate);
+    this.editingPeriod.set(this.describePeriod(row));
+    this.startDateDraft.set(row.startDate);
+    this.endDateDraft.set(row.endDate ?? '');
     this.agreementCodeDraft.set(row.agreementCode);
     this.agreementCategoryCodeDraft.set(row.agreementCategoryCode ?? '');
-    this.loadCategoryOptions(row.agreementCode, row.startDate, row.agreementCategoryCode ?? null);
+    this.loadCategoryOptions(row.agreementCode, row.startDate);
     this.modalVisible.set(true);
   }
 
-  protected switchToClose(): void {
-    this.modalMode.set('close');
-    this.endDateDraft.set(currentLocalDate());
+  /** Del rechazo al camino: se corrige la clasificación que el backend nombra, con lo ya escrito. */
+  protected switchToCorrection(): void {
+    const corrected = this.plan()?.correctedOccurrence;
+    if (!corrected) return;
+    this.modalMode.set('correct');
+    this.editingStartDate.set(corrected.startDate);
+    this.editingPeriod.set(
+      this.describeDates(corrected.startDate, corrected.endDate) +
+        ' · clasificación que se corrige',
+    );
   }
 
   protected submit(): void {
     const key = this.employeeBusinessKey();
-    if (!key || this.classificationStore.mutating()) return;
-    const mode = this.modalMode();
+    if (!key || !this.isSubmitEnabled() || this.classificationStore.mutating()) return;
 
-    if (mode === 'create') {
-      this.classificationStore.replaceFromDate(key, {
-        effectiveDate: this.effectiveDateDraft(),
-        agreementCode: this.agreementCodeDraft(),
-        agreementCategoryCode: this.agreementCategoryCodeDraft(),
-      });
-    } else if (mode === 'edit') {
-      this.classificationStore.correctOccurrence(key, this.editingStartDate()!, {
-        startDate: this.newStartDateDraft(),
-        endDate: null,
-        agreementCode: this.agreementCodeDraft(),
-        agreementCategoryCode: this.agreementCategoryCodeDraft(),
-      });
-    } else {
-      this.classificationStore.closeOccurrence(key, this.editingStartDate()!, {
-        endDate: this.endDateDraft(),
-      });
+    const draft = {
+      startDate: this.startDateDraft(),
+      endDate: this.endDateDraft() || null,
+      agreementCode: this.agreementCodeDraft(),
+      agreementCategoryCode: this.agreementCategoryCodeDraft(),
+    };
+
+    if (this.modalMode() === 'add') {
+      this.classificationStore.createLaborClassification(key, draft);
+      return;
+    }
+
+    const laborClassificationStartDate = this.editingStartDate();
+    if (laborClassificationStartDate !== null) {
+      this.classificationStore.correctOccurrence(key, laborClassificationStartDate, draft);
     }
   }
 
   protected closeModal(): void {
     this.modalVisible.set(false);
+    this.classificationStore.clearPlan();
     this.classificationStore.clearFeedback();
   }
 
@@ -215,8 +285,19 @@ export class EmployeeLaborClassificationSectionComponent {
     this.agreementCodeDraft.set(value);
     if (changed) {
       this.agreementCategoryCodeDraft.set('');
-      this.loadCategoryOptions(value, this.effectiveDateDraft() || null, null);
+      this.loadCategoryOptions(value, this.startDateDraft() || null);
     }
+  }
+
+  private describePeriod(row: LaborClassificationPeriodRow): string {
+    return this.describeDates(row.startDate, row.endDate);
+  }
+
+  private describeDates(startDate: string, endDate: string | null): string {
+    const start = formatDisplayDate(startDate);
+    return endDate
+      ? `Del ${start} al ${formatDisplayDate(endDate)}`
+      : `Desde el ${start}, en vigor`;
   }
 
   private loadAgreementOptions(ruleSystemCode: string | null): void {
@@ -235,11 +316,7 @@ export class EmployeeLaborClassificationSectionComponent {
       });
   }
 
-  private loadCategoryOptions(
-    agreementCode: string,
-    referenceDate: string | null,
-    preferred: string | null,
-  ): void {
+  private loadCategoryOptions(agreementCode: string, referenceDate: string | null): void {
     if (!agreementCode) {
       this.categoryOptionsState.set([]);
       return;

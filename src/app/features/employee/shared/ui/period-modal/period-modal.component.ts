@@ -26,11 +26,18 @@ export class PeriodModalComponent {
    */
   readonly note = input<string | ReadonlyArray<string> | null>(null);
   readonly noteTone = input<PeriodModalNoteTone>('warning');
+  /**
+   * La salida que el aviso ofrece, cuando la hay: un rechazo que nombra el camino —«esto es una
+   * corrección del contrato del 1 de marzo»— se acompaña de la acción que lo toma, junto al texto
+   * que la explica y no en el pie, para que se lea como una sola cosa.
+   */
+  readonly noteActionLabel = input<string | null>(null);
 
   readonly visibleChange = output<boolean>();
   readonly submitted = output<void>();
   readonly cancelled = output<void>();
   readonly closeActionClicked = output<void>();
+  readonly noteActionClicked = output<void>();
 
   protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
     const note = this.note();

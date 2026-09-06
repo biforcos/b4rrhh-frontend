@@ -650,8 +650,6 @@ export const employeeTexts = {
   workingTimeSectionPlanningMessage: 'Calculando qué cambiaría…',
   workingTimeSectionCoverageGapMessage:
     'La jornada dejaría sin cubrir un tramo de la presencia del empleado.',
-  periodCascadeWarningMessage:
-    'La fecha de inicio del período anterior se ajustará automáticamente.',
   laborClassificationBlockTitle: 'Clasificación laboral',
   laborClassificationBlockCurrentLabel: 'Clasificación actual',
   laborClassificationBlockCurrentActiveSectionLabel: 'Clasificación activa',

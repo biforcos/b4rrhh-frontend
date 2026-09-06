@@ -1,9 +1,10 @@
 <app-temporal-section
   anchorId="employee-section-classification"
   title="Convenio"
+  [addLabel]="texts.laborClassificationSectionAddTitle"
   [rows]="rows()"
-  (addClicked)="openCreate()"
-  (editClicked)="openEdit($event)"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">Convenio</th>
@@ -32,56 +33,43 @@
   </ng-template>
 </app-temporal-section>
 
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué clasificación se cierra y en
+     qué fecha, o el hueco o solape con fechas que impide confirmar. Cuando el rechazo nombra una
+     corrección, el aviso trae también la salida. -->
 <app-period-modal
   [title]="modalTitle()"
   [subtitle]="modalSubtitle()"
   [visible]="modalVisible()"
   [saving]="saving()"
   [submitEnabled]="isSubmitEnabled()"
-  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-  [note]="showCascadeWarning() ? texts.periodCascadeWarningMessage : null"
+  [submitLabel]="submitLabel()"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
-  (closeActionClicked)="switchToClose()"
+  (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalMode() === 'create') {
-    <app-ui-date-input
-      [value]="effectiveDateDraft()"
-      (valueChanged)="effectiveDateDraft.set($event)"
-    />
-    <app-ui-select
-      [options]="agreementOptions()"
-      [value]="agreementCodeDraft()"
-      (valueChanged)="updateAgreementCode($event)"
-    />
-    <app-ui-select
-      [options]="categoryOptions()"
-      [value]="agreementCategoryCodeDraft()"
-      [disabled]="categoryDisabled()"
-      (valueChanged)="agreementCategoryCodeDraft.set($event)"
-    />
-  }
-
-  @if (modalMode() === 'edit') {
-    <app-ui-date-input
-      [value]="newStartDateDraft()"
-      (valueChanged)="newStartDateDraft.set($event)"
-    />
-    <app-ui-select
-      [options]="agreementOptions()"
-      [value]="agreementCodeDraft()"
-      (valueChanged)="updateAgreementCode($event)"
-    />
-    <app-ui-select
-      [options]="categoryOptions()"
-      [value]="agreementCategoryCodeDraft()"
-      [disabled]="categoryDisabled()"
-      (valueChanged)="agreementCategoryCodeDraft.set($event)"
-    />
-  }
-
-  @if (modalMode() === 'close') {
-    <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
-  }
+  <app-ui-date-input
+    [ariaLabel]="texts.laborClassificationSectionStartDateAriaLabel"
+    [value]="startDateDraft()"
+    (valueChanged)="startDateDraft.set($event)"
+  />
+  <app-ui-date-input
+    [ariaLabel]="texts.laborClassificationSectionEndDateAriaLabel"
+    [value]="endDateDraft()"
+    (valueChanged)="endDateDraft.set($event)"
+  />
+  <app-ui-select
+    [options]="agreementOptions()"
+    [value]="agreementCodeDraft()"
+    (valueChanged)="updateAgreementCode($event)"
+  />
+  <app-ui-select
+    [options]="categoryOptions()"
+    [value]="agreementCategoryCodeDraft()"
+    [disabled]="categoryDisabled()"
+    (valueChanged)="agreementCategoryCodeDraft.set($event)"
+  />
 </app-period-modal>

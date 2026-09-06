@@ -17,6 +17,11 @@
     @for (line of noteLines(); track $index) {
       <p class="period-modal__note period-modal__note--{{ noteTone() }}">{{ line }}</p>
     }
+    @if (noteActionLabel(); as label) {
+      <button type="button" class="period-modal__note-action" (click)="noteActionClicked.emit()">
+        {{ label }}
+      </button>
+    }
   </div>
 
   <ng-template pTemplate="footer">
