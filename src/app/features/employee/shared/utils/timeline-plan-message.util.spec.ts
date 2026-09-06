@@ -1,7 +1,10 @@
 import {
+  ADDRESS_PLAN_VOCABULARY,
   CONTRACT_PLAN_VOCABULARY,
+  COST_CENTER_PLAN_VOCABULARY,
   LABOR_CLASSIFICATION_PLAN_VOCABULARY,
   TimelinePlan,
+  WORK_CENTER_PLAN_VOCABULARY,
   describeCorrectionSwitchAction,
   describeTimelineConflict,
   describeTimelinePlan,
@@ -131,6 +134,56 @@ describe('describeTimelinePlan', () => {
     expect(notice.lines).toEqual([
       'Ya hay un contrato del 1 de marzo al 30 de junio de 2026: esto no es un alta, sino una corrección suya.',
     ]);
+  });
+
+  // backend#54: la de centro de coste es la única serie del producto donde el hueco es legal.
+  it('says an accepted gap stays, and why, in a series with optional coverage', () => {
+    const notice = describeTimelinePlan(
+      plan({
+        operation: 'REMOVE',
+        gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }],
+      }),
+      COST_CENTER_PLAN_VOCABULARY,
+    );
+
+    expect(notice.tone).toBe('warning');
+    expect(notice.lines).toEqual([
+      'Quedará un hueco del 1 al 28 de febrero de 2026: la cobertura de centro de coste es opcional, así que el hueco es válido y se queda como está.',
+    ]);
+  });
+
+  // ADR-057, decisión 1: el domicilio es obligatorio y los demás tipos no. El mismo hueco se
+  // cuenta al revés según lo que responda el plan, y la pantalla no adivina cuál es cuál.
+  it('tells apart the gap the domicile rejects from the one an optional type accepts', () => {
+    const gaps = [{ startDate: '2026-02-01', endDate: '2026-02-28' }];
+
+    expect(
+      describeTimelinePlan(
+        plan({ accepted: false, rejection: 'GAP_NOT_ALLOWED', gaps }),
+        ADDRESS_PLAN_VOCABULARY,
+      ),
+    ).toEqual({
+      tone: 'error',
+      lines: ['Quedaría un hueco del 1 al 28 de febrero de 2026.'],
+    });
+
+    expect(describeTimelinePlan(plan({ gaps }), ADDRESS_PLAN_VOCABULARY)).toEqual({
+      tone: 'warning',
+      lines: [
+        'Quedará un hueco del 1 al 28 de febrero de 2026: este tipo de dirección no es obligatorio, así que el hueco es válido y se queda como está.',
+      ],
+    });
+  });
+
+  // En una serie obligatoria el plan aceptado nunca trae huecos, y el vocabulario no explica
+  // ninguno: si alguno llegara, se cuenta a secas y no se inventa que es legal.
+  it('reports a gap with no explanation when the vertical declares mandatory coverage', () => {
+    expect(
+      describeTimelinePlan(
+        plan({ gaps: [{ startDate: '2026-02-01', endDate: null }] }),
+        WORK_CENTER_PLAN_VOCABULARY,
+      ).lines,
+    ).toEqual(['Quedará un hueco desde el 1 de febrero de 2026 en adelante.']);
   });
 
   it('says the occurrence would fall outside the presence', () => {
