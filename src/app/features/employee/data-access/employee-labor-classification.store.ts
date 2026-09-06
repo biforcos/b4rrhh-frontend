@@ -17,11 +17,9 @@ import {
   mapEmployeeLaborClassificationErrorCode,
 } from './employee-labor-classification.error.mapper';
 import {
-  LaborClassificationCloseDraft,
   LaborClassificationCorrectDraft,
   LaborClassificationCreateDraft,
   LaborClassificationPlanDraft,
-  LaborClassificationReplaceDraft,
 } from './employee-labor-classification.mapper';
 import { EmployeeLaborClassificationReadGateway } from './employee-labor-classification-read.gateway';
 
@@ -44,9 +42,7 @@ export class EmployeeLaborClassificationStore {
   private readonly errorConflictState = signal<EmployeeLaborClassificationConflictModel | null>(
     null,
   );
-  private readonly successState = signal<'created' | 'replaced' | 'corrected' | 'closed' | null>(
-    null,
-  );
+  private readonly successState = signal<'created' | 'corrected' | null>(null);
   private readonly planState = signal<EmployeeLaborClassificationPlanModel | null>(null);
   private readonly planningState = signal(false);
   private requestId = 0;
@@ -150,34 +146,6 @@ export class EmployeeLaborClassificationStore {
     this.loadLaborClassificationsByBusinessKeyInternal(key, false);
   }
 
-  replaceFromDate(employeeKey: EmployeeBusinessKey, draft: LaborClassificationReplaceDraft): void {
-    if (this.mutatingState()) {
-      return;
-    }
-
-    const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
-
-    this.mutatingState.set(true);
-    this.errorState.set(null);
-    this.errorConflictState.set(null);
-    this.successState.set(null);
-
-    this.employeeLaborClassificationReadGateway
-      .replaceLaborClassificationFromDate(normalizedEmployeeKey, draft)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.mutatingState.set(false);
-          this.successState.set('replaced');
-          this.loadLaborClassificationsByBusinessKeyInternal(normalizedEmployeeKey, true);
-        },
-        error: (error) => {
-          this.mutatingState.set(false);
-          this.failWith(error);
-        },
-      });
-  }
-
   correctOccurrence(
     employeeKey: EmployeeBusinessKey,
     startDate: string,
@@ -201,38 +169,6 @@ export class EmployeeLaborClassificationStore {
         next: () => {
           this.mutatingState.set(false);
           this.successState.set('corrected');
-          this.loadLaborClassificationsByBusinessKeyInternal(normalizedEmployeeKey, true);
-        },
-        error: (error) => {
-          this.mutatingState.set(false);
-          this.failWith(error);
-        },
-      });
-  }
-
-  closeOccurrence(
-    employeeKey: EmployeeBusinessKey,
-    startDate: string,
-    draft: LaborClassificationCloseDraft,
-  ): void {
-    if (this.mutatingState()) {
-      return;
-    }
-
-    const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
-
-    this.mutatingState.set(true);
-    this.errorState.set(null);
-    this.errorConflictState.set(null);
-    this.successState.set(null);
-
-    this.employeeLaborClassificationReadGateway
-      .closeLaborClassificationOccurrence(normalizedEmployeeKey, startDate, draft)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.mutatingState.set(false);
-          this.successState.set('closed');
           this.loadLaborClassificationsByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {

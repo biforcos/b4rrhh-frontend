@@ -4,25 +4,13 @@ import {
   LaborClassificationPlanResponseRejectionEnum,
 } from '../../../core/api/generated/model/models';
 import {
-  mapLaborClassificationReplaceDraftToRequest,
   mapLaborClassificationCorrectDraftToRequest,
-  mapLaborClassificationCloseDraftToRequest,
   mapLaborClassificationCreateDraftToRequest,
   mapLaborClassificationPlanDraftToRequest,
   mapLaborClassificationPlanResponseToModel,
 } from './employee-labor-classification.mapper';
 
 describe('employee-labor-classification.mapper', () => {
-  it('maps replace draft to request normalizing codes', () => {
-    expect(
-      mapLaborClassificationReplaceDraftToRequest({
-        effectiveDate: '2026-01-01',
-        agreementCode: 'ag1',
-        agreementCategoryCode: 'cat1',
-      }),
-    ).toEqual({ effectiveDate: '2026-01-01', agreementCode: 'AG1', agreementCategoryCode: 'CAT1' });
-  });
-
   it('maps correct draft to request with unchanged startDate as null', () => {
     expect(
       mapLaborClassificationCorrectDraftToRequest({
@@ -52,12 +40,6 @@ describe('employee-labor-classification.mapper', () => {
       endDate: '2026-06-30',
       agreementCode: 'AG2',
       agreementCategoryCode: 'CAT2',
-    });
-  });
-
-  it('maps close draft to request', () => {
-    expect(mapLaborClassificationCloseDraftToRequest({ endDate: '2026-12-31' })).toEqual({
-      endDate: '2026-12-31',
     });
   });
 

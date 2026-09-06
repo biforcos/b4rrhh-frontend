@@ -11,17 +11,13 @@ import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeContractModel } from '../models/employee-contract.model';
 import { EmployeeContractPlanModel } from '../models/employee-contract-plan.model';
 import {
-  ContractCloseDraft,
   ContractCorrectDraft,
   ContractCreateDraft,
   ContractPlanDraft,
-  ContractReplaceDraft,
-  mapContractCloseDraftToRequest,
   mapContractCorrectDraftToRequest,
   mapContractCreateDraftToRequest,
   mapContractPlanDraftToRequest,
   mapContractPlanResponseToModel,
-  mapContractReplaceDraftToRequest,
 } from './employee-contract.mapper';
 
 /** Desempate propio del contrato, para dos períodos con el mismo estado y la misma fecha. */
@@ -70,12 +66,6 @@ export class EmployeeContractReadGateway {
       .pipe(map((plan) => mapContractPlanResponseToModel(plan)));
   }
 
-  replaceContractFromDate(key: EmployeeBusinessKey, draft: ContractReplaceDraft): Observable<void> {
-    return this.employeeContractReadClient
-      .replaceContractFromDateByBusinessKey(key, mapContractReplaceDraftToRequest(draft))
-      .pipe(map(() => undefined));
-  }
-
   correctContractOccurrence(
     key: EmployeeBusinessKey,
     startDate: string,
@@ -83,16 +73,6 @@ export class EmployeeContractReadGateway {
   ): Observable<void> {
     return this.employeeContractReadClient
       .updateContractByBusinessKey(key, startDate, mapContractCorrectDraftToRequest(draft))
-      .pipe(map(() => undefined));
-  }
-
-  closeContractOccurrence(
-    key: EmployeeBusinessKey,
-    startDate: string,
-    draft: ContractCloseDraft,
-  ): Observable<void> {
-    return this.employeeContractReadClient
-      .closeContractByBusinessKey(key, startDate, mapContractCloseDraftToRequest(draft))
       .pipe(map(() => undefined));
   }
 

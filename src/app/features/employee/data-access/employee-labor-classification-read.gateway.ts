@@ -11,17 +11,13 @@ import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
 import { EmployeeLaborClassificationPlanModel } from '../models/employee-labor-classification-plan.model';
 import {
-  LaborClassificationCloseDraft,
   LaborClassificationCorrectDraft,
   LaborClassificationCreateDraft,
   LaborClassificationPlanDraft,
-  LaborClassificationReplaceDraft,
-  mapLaborClassificationCloseDraftToRequest,
   mapLaborClassificationCorrectDraftToRequest,
   mapLaborClassificationCreateDraftToRequest,
   mapLaborClassificationPlanDraftToRequest,
   mapLaborClassificationPlanResponseToModel,
-  mapLaborClassificationReplaceDraftToRequest,
 } from './employee-labor-classification.mapper';
 
 /** Desempate propio del convenio, para dos períodos con el mismo estado y la misma fecha. */
@@ -87,18 +83,6 @@ export class EmployeeLaborClassificationReadGateway {
       .pipe(map((plan) => mapLaborClassificationPlanResponseToModel(plan)));
   }
 
-  replaceLaborClassificationFromDate(
-    key: EmployeeBusinessKey,
-    draft: LaborClassificationReplaceDraft,
-  ): Observable<void> {
-    return this.employeeLaborClassificationReadClient
-      .replaceLaborClassificationFromDateByBusinessKey(
-        key,
-        mapLaborClassificationReplaceDraftToRequest(draft),
-      )
-      .pipe(map(() => undefined));
-  }
-
   correctLaborClassificationOccurrence(
     key: EmployeeBusinessKey,
     startDate: string,
@@ -109,20 +93,6 @@ export class EmployeeLaborClassificationReadGateway {
         key,
         startDate,
         mapLaborClassificationCorrectDraftToRequest(draft),
-      )
-      .pipe(map(() => undefined));
-  }
-
-  closeLaborClassificationOccurrence(
-    key: EmployeeBusinessKey,
-    startDate: string,
-    draft: LaborClassificationCloseDraft,
-  ): Observable<void> {
-    return this.employeeLaborClassificationReadClient
-      .closeLaborClassificationByBusinessKey(
-        key,
-        startDate,
-        mapLaborClassificationCloseDraftToRequest(draft),
       )
       .pipe(map(() => undefined));
   }

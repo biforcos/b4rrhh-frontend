@@ -4,25 +4,13 @@ import {
   ContractPlanResponseRejectionEnum,
 } from '../../../core/api/generated/model/models';
 import {
-  mapContractReplaceDraftToRequest,
   mapContractCorrectDraftToRequest,
-  mapContractCloseDraftToRequest,
   mapContractCreateDraftToRequest,
   mapContractPlanDraftToRequest,
   mapContractPlanResponseToModel,
 } from './employee-contract.mapper';
 
 describe('employee-contract.mapper', () => {
-  it('maps replace draft to request normalizing codes', () => {
-    expect(
-      mapContractReplaceDraftToRequest({
-        effectiveDate: '2026-01-01',
-        contractCode: 'perm',
-        contractSubtypeCode: 'full',
-      }),
-    ).toEqual({ effectiveDate: '2026-01-01', contractCode: 'PERM', contractSubtypeCode: 'FULL' });
-  });
-
   it('maps correct draft to request with unchanged startDate as null', () => {
     expect(
       mapContractCorrectDraftToRequest({
@@ -52,12 +40,6 @@ describe('employee-contract.mapper', () => {
       endDate: '2026-06-30',
       contractCode: 'TEMP',
       contractSubtypeCode: 'EVT',
-    });
-  });
-
-  it('maps close draft to request', () => {
-    expect(mapContractCloseDraftToRequest({ endDate: '2026-12-31' })).toEqual({
-      endDate: '2026-12-31',
     });
   });
 

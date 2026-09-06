@@ -76,14 +76,9 @@ export class EmployeeRelationPageComponent {
   private readonly costCenterStore = inject(EmployeeCostCenterStore);
   private readonly globalMessageService = inject(GlobalMessageService);
 
-  private previousContractSuccess: 'created' | 'replaced' | 'corrected' | 'closed' | null = null;
+  private previousContractSuccess: 'created' | 'corrected' | null = null;
   private previousWorkingTimeSuccess: 'created' | 'updated' | 'deleted' | null = null;
-  private previousLaborClassificationSuccess:
-    | 'created'
-    | 'replaced'
-    | 'corrected'
-    | 'closed'
-    | null = null;
+  private previousLaborClassificationSuccess: 'created' | 'corrected' | null = null;
   private previousWorkCenterSuccess: 'created' | 'corrected' | 'closed' | 'deleted' | null = null;
   private previousCostCenterSuccess: 'created' | 'replaced' | 'closed' | null = null;
 
@@ -212,9 +207,7 @@ export class EmployeeRelationPageComponent {
         t.lifelineLaneContract,
         {
           created: t.contractSectionCreateSuccessMessage,
-          replaced: t.contractSectionReplaceSuccessMessage,
           corrected: t.contractSectionCorrectSuccessMessage,
-          closed: t.contractSectionCloseSuccessMessage,
         }[contractSuccess],
       );
     }
@@ -246,9 +239,7 @@ export class EmployeeRelationPageComponent {
         t.lifelineLaneClassification,
         {
           created: t.laborClassificationSectionCreateSuccessMessage,
-          replaced: t.laborClassificationSectionReplaceSuccessMessage,
           corrected: t.laborClassificationSectionCorrectSuccessMessage,
-          closed: t.laborClassificationSectionCloseSuccessMessage,
         }[laborClassificationSuccess],
       );
     }

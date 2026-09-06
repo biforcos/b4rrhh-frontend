@@ -51,9 +51,7 @@ describe('EmployeeLaborClassificationStore', () => {
     readEmployeeLaborClassificationsByBusinessKey: ReturnType<typeof vi.fn>;
     createLaborClassification: ReturnType<typeof vi.fn>;
     planLaborClassificationChange: ReturnType<typeof vi.fn>;
-    replaceLaborClassificationFromDate: ReturnType<typeof vi.fn>;
     correctLaborClassificationOccurrence: ReturnType<typeof vi.fn>;
-    closeLaborClassificationOccurrence: ReturnType<typeof vi.fn>;
     sortByTimelineRecency: ReturnType<typeof vi.fn>;
   };
 
@@ -64,9 +62,7 @@ describe('EmployeeLaborClassificationStore', () => {
         .mockReturnValue(of(laborClassificationsFixture)),
       createLaborClassification: vi.fn().mockReturnValue(of(undefined)),
       planLaborClassificationChange: vi.fn().mockReturnValue(of(acceptedPlan)),
-      replaceLaborClassificationFromDate: vi.fn().mockReturnValue(of(undefined)),
       correctLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
-      closeLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
       sortByTimelineRecency: vi.fn().mockImplementation((classifications) => classifications),
     };
 
@@ -129,21 +125,6 @@ describe('EmployeeLaborClassificationStore', () => {
     expect(readGatewayMock.readEmployeeLaborClassificationsByBusinessKey).toHaveBeenCalledTimes(1);
   });
 
-  it('replaces labor classification from date and reloads data after success', () => {
-    store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
-
-    store.replaceFromDate(employeeBusinessKey, {
-      effectiveDate: '2025-01-01',
-      agreementCode: 'AGREE-02',
-      agreementCategoryCode: 'CAT-C',
-    });
-
-    expect(readGatewayMock.replaceLaborClassificationFromDate).toHaveBeenCalledTimes(1);
-    expect(readGatewayMock.readEmployeeLaborClassificationsByBusinessKey).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('replaced');
-    expect(store.mutating()).toBe(false);
-  });
-
   it('corrects a historical occurrence and reloads data after success', () => {
     store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
 
@@ -168,32 +149,15 @@ describe('EmployeeLaborClassificationStore', () => {
     expect(store.success()).toBe('corrected');
   });
 
-  it('closes current occurrence and reloads data after success', () => {
+  it('keeps loaded context when the add fails and exposes error state', () => {
     store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
-
-    store.closeOccurrence(employeeBusinessKey, '2024-06-01', {
-      endDate: '2025-02-15',
-    });
-
-    expect(readGatewayMock.closeLaborClassificationOccurrence).toHaveBeenCalledWith(
-      employeeBusinessKey,
-      '2024-06-01',
-      {
-        endDate: '2025-02-15',
-      },
-    );
-    expect(readGatewayMock.readEmployeeLaborClassificationsByBusinessKey).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('closed');
-  });
-
-  it('keeps loaded context when replace fails and exposes error state', () => {
-    store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
-    readGatewayMock.replaceLaborClassificationFromDate.mockReturnValue(
+    readGatewayMock.createLaborClassification.mockReturnValue(
       throwError(() => new Error('backend unavailable')),
     );
 
-    store.replaceFromDate(employeeBusinessKey, {
-      effectiveDate: '2025-01-01',
+    store.createLaborClassification(employeeBusinessKey, {
+      startDate: '2025-01-01',
+      endDate: null,
       agreementCode: 'AGREE-02',
       agreementCategoryCode: 'CAT-C',
     });
@@ -272,13 +236,14 @@ describe('EmployeeLaborClassificationStore', () => {
 
   it('clears success and error feedback without clearing loaded data', () => {
     store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
-    store.replaceFromDate(employeeBusinessKey, {
-      effectiveDate: '2025-01-01',
+    store.createLaborClassification(employeeBusinessKey, {
+      startDate: '2025-01-01',
+      endDate: null,
       agreementCode: 'AGREE-02',
       agreementCategoryCode: 'CAT-C',
     });
 
-    expect(store.success()).toBe('replaced');
+    expect(store.success()).toBe('created');
     expect(store.laborClassifications()).toEqual(laborClassificationsFixture);
 
     store.clearFeedback();

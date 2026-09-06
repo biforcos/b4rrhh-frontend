@@ -560,9 +560,7 @@ export const employeeTexts = {
   contractSectionCloseDateInvalidMessage:
     'La fecha de cierre debe ser igual o posterior al inicio de la ocurrencia.',
   contractSectionRequestFailedMessage: 'No se pudo procesar la operación de contrato. Reintenta.',
-  contractSectionReplaceSuccessMessage: 'Contrato reemplazado correctamente.',
   contractSectionCorrectSuccessMessage: 'Contrato corregido correctamente.',
-  contractSectionCloseSuccessMessage: 'Contrato cerrado correctamente.',
   contractSectionAddTitle: 'Añadir contrato',
   contractSectionCorrectTitle: 'Corregir contrato',
   contractSectionAddSubmitAction: 'Añadir contrato',
@@ -736,9 +734,7 @@ export const employeeTexts = {
     'No se pudo procesar la operación de clasificación laboral. Reintenta.',
   laborClassificationSectionCatalogRequestFailedMessage:
     'No se pudo cargar el catalogo de convenios y categorías. Reintenta.',
-  laborClassificationSectionReplaceSuccessMessage: 'Clasificación reemplazada correctamente.',
   laborClassificationSectionCorrectSuccessMessage: 'Clasificación corregida correctamente.',
-  laborClassificationSectionCloseSuccessMessage: 'Clasificación cerrada correctamente.',
   laborClassificationSectionAddTitle: 'Añadir clasificación laboral',
   laborClassificationSectionCorrectTitle: 'Corregir clasificación laboral',
   laborClassificationSectionAddSubmitAction: 'Añadir clasificación',

@@ -4,12 +4,10 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { EmployeeContractService } from '../generated/api/employee-contract.service';
 import {
-  CloseContractRequest,
   ContractPlanResponse,
   ContractResponse,
   CreateContractRequest,
   PlanContractChangeRequest,
-  ReplaceContractFromDateRequest,
   UpdateContractRequest,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
@@ -65,24 +63,6 @@ export class EmployeeContractReadClient {
       .pipe(map((contract) => this.toEmployeeContractApiModel(contract)));
   }
 
-  replaceContractFromDateByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    request: ReplaceContractFromDateRequest,
-  ): Observable<EmployeeContractApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .replaceContractFromDateByBusinessKey({
-        ...normalizedKey,
-        replaceContractFromDateRequest: {
-          effectiveDate: request.effectiveDate.trim(),
-          contractCode: request.contractCode.trim().toUpperCase(),
-          contractSubtypeCode: request.contractSubtypeCode.trim().toUpperCase(),
-        },
-      })
-      .pipe(map((contract) => this.toEmployeeContractApiModel(contract)));
-  }
-
   updateContractByBusinessKey(
     key: EmployeeBusinessKeyApiQuery,
     startDate: string,
@@ -117,24 +97,6 @@ export class EmployeeContractReadClient {
       ...normalizedKey,
       planContractChangeRequest: request,
     });
-  }
-
-  closeContractByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    startDate: string,
-    request: CloseContractRequest,
-  ): Observable<EmployeeContractApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .closeContractByBusinessKey({
-        ...normalizedKey,
-        startDate: startDate.trim(),
-        closeContractRequest: {
-          endDate: request.endDate.trim(),
-        },
-      })
-      .pipe(map((contract) => this.toEmployeeContractApiModel(contract)));
   }
 
   private normalizeKey(key: EmployeeBusinessKeyApiQuery): EmployeeBusinessKeyApiQuery {

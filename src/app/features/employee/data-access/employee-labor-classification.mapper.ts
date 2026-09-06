@@ -1,5 +1,4 @@
 import {
-  CloseLaborClassificationRequest,
   CreateLaborClassificationRequest,
   LaborClassificationPeriod,
   LaborClassificationPlanResponse,
@@ -7,7 +6,6 @@ import {
   LaborClassificationPlanResponseRejectionEnum,
   PlanLaborClassificationChangeRequest,
   PlanLaborClassificationChangeRequestOperationEnum,
-  ReplaceLaborClassificationFromDateRequest,
   UpdateLaborClassificationRequest,
 } from '../../../core/api/generated/model/models';
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
@@ -17,12 +15,6 @@ import {
   LaborClassificationPlanOperation,
   LaborClassificationPlanRejection,
 } from '../models/employee-labor-classification-plan.model';
-
-export interface LaborClassificationReplaceDraft {
-  effectiveDate: string;
-  agreementCode: string;
-  agreementCategoryCode: string;
-}
 
 /** El alta de una clasificación: su tramo y sus códigos. Lo que se cierra lo dice el plan (ADR-057). */
 export interface LaborClassificationCreateDraft {
@@ -55,40 +47,12 @@ export type LaborClassificationPlanDraft =
       endDate: string | null;
     };
 
-export interface LaborClassificationCloseDraft {
-  endDate: string;
-}
-
-export function createEmptyLaborClassificationReplaceDraft(): LaborClassificationReplaceDraft {
-  return {
-    effectiveDate: '',
-    agreementCode: '',
-    agreementCategoryCode: '',
-  };
-}
-
 export function createEmptyLaborClassificationCorrectDraft(): LaborClassificationCorrectDraft {
   return {
     startDate: '',
     endDate: null,
     agreementCode: '',
     agreementCategoryCode: '',
-  };
-}
-
-export function createEmptyLaborClassificationCloseDraft(): LaborClassificationCloseDraft {
-  return {
-    endDate: '',
-  };
-}
-
-export function mapLaborClassificationReplaceDraftToRequest(
-  source: LaborClassificationReplaceDraft,
-): ReplaceLaborClassificationFromDateRequest {
-  return {
-    effectiveDate: source.effectiveDate.trim(),
-    agreementCode: source.agreementCode.trim().toUpperCase(),
-    agreementCategoryCode: source.agreementCategoryCode.trim().toUpperCase(),
   };
 }
 
@@ -182,14 +146,6 @@ function toPlanRejection(
 function trimOptionalDate(value: string | null | undefined): string | null {
   const trimmed = value?.trim() ?? '';
   return trimmed.length > 0 ? trimmed : null;
-}
-
-export function mapLaborClassificationCloseDraftToRequest(
-  source: LaborClassificationCloseDraft,
-): CloseLaborClassificationRequest {
-  return {
-    endDate: source.endDate.trim(),
-  };
 }
 
 export function mapLaborClassificationCreateDraftToRequest(

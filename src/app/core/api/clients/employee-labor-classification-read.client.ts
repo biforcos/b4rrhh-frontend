@@ -4,12 +4,10 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { EmployeeLaborClassificationService } from '../generated/api/employee-labor-classification.service';
 import {
-  CloseLaborClassificationRequest,
   CreateLaborClassificationRequest,
   LaborClassificationPlanResponse,
   LaborClassificationResponse,
   PlanLaborClassificationChangeRequest,
-  ReplaceLaborClassificationFromDateRequest,
   UpdateLaborClassificationRequest,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
@@ -109,42 +107,6 @@ export class EmployeeLaborClassificationReadClient {
       ...normalizedKey,
       planLaborClassificationChangeRequest: request,
     });
-  }
-
-  closeLaborClassificationByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    startDate: string,
-    request: CloseLaborClassificationRequest,
-  ): Observable<EmployeeLaborClassificationApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .closeLaborClassificationByBusinessKey({
-        ...normalizedKey,
-        startDate: startDate.trim(),
-        closeLaborClassificationRequest: {
-          endDate: request.endDate.trim(),
-        },
-      })
-      .pipe(map((classification) => this.toEmployeeLaborClassificationApiModel(classification)));
-  }
-
-  replaceLaborClassificationFromDateByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    request: ReplaceLaborClassificationFromDateRequest,
-  ): Observable<EmployeeLaborClassificationApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .replaceLaborClassificationFromDateByBusinessKey({
-        ...normalizedKey,
-        replaceLaborClassificationFromDateRequest: {
-          effectiveDate: request.effectiveDate.trim(),
-          agreementCode: request.agreementCode.trim().toUpperCase(),
-          agreementCategoryCode: request.agreementCategoryCode.trim().toUpperCase(),
-        },
-      })
-      .pipe(map((classification) => this.toEmployeeLaborClassificationApiModel(classification)));
   }
 
   private normalizeKey(key: EmployeeBusinessKeyApiQuery): EmployeeBusinessKeyApiQuery {

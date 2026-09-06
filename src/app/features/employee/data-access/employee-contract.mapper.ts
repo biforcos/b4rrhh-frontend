@@ -1,5 +1,4 @@
 import {
-  CloseContractRequest,
   ContractPeriod,
   ContractPlanResponse,
   ContractPlanResponseOperationEnum,
@@ -7,7 +6,6 @@ import {
   CreateContractRequest,
   PlanContractChangeRequest,
   PlanContractChangeRequestOperationEnum,
-  ReplaceContractFromDateRequest,
   UpdateContractRequest,
 } from '../../../core/api/generated/model/models';
 import { EmployeeContractModel } from '../models/employee-contract.model';
@@ -17,12 +15,6 @@ import {
   ContractPlanRejection,
   EmployeeContractPlanModel,
 } from '../models/employee-contract-plan.model';
-
-export interface ContractReplaceDraft {
-  effectiveDate: string;
-  contractCode: string;
-  contractSubtypeCode: string;
-}
 
 /** El alta de un contrato: su tramo y sus códigos. Lo que se cierra lo dice el plan (ADR-057). */
 export interface ContractCreateDraft {
@@ -55,40 +47,12 @@ export type ContractPlanDraft =
       endDate: string | null;
     };
 
-export interface ContractCloseDraft {
-  endDate: string;
-}
-
-export function createEmptyContractReplaceDraft(): ContractReplaceDraft {
-  return {
-    effectiveDate: '',
-    contractCode: '',
-    contractSubtypeCode: '',
-  };
-}
-
 export function createEmptyContractCorrectDraft(): ContractCorrectDraft {
   return {
     startDate: '',
     endDate: null,
     contractCode: '',
     contractSubtypeCode: '',
-  };
-}
-
-export function createEmptyContractCloseDraft(): ContractCloseDraft {
-  return {
-    endDate: '',
-  };
-}
-
-export function mapContractReplaceDraftToRequest(
-  source: ContractReplaceDraft,
-): ReplaceContractFromDateRequest {
-  return {
-    effectiveDate: source.effectiveDate.trim(),
-    contractCode: source.contractCode.trim().toUpperCase(),
-    contractSubtypeCode: source.contractSubtypeCode.trim().toUpperCase(),
   };
 }
 
@@ -176,12 +140,6 @@ function toPlanRejection(source: ContractPlanResponseRejectionEnum): ContractPla
 function trimOptionalDate(value: string | null | undefined): string | null {
   const trimmed = value?.trim() ?? '';
   return trimmed.length > 0 ? trimmed : null;
-}
-
-export function mapContractCloseDraftToRequest(source: ContractCloseDraft): CloseContractRequest {
-  return {
-    endDate: source.endDate.trim(),
-  };
 }
 
 export function mapContractCreateDraftToRequest(

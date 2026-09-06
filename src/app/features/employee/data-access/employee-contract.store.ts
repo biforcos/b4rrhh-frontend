@@ -17,11 +17,9 @@ import {
   mapEmployeeContractErrorCode,
 } from './employee-contract.error.mapper';
 import {
-  ContractCloseDraft,
   ContractCorrectDraft,
   ContractCreateDraft,
   ContractPlanDraft,
-  ContractReplaceDraft,
 } from './employee-contract.mapper';
 import { EmployeeContractReadGateway } from './employee-contract-read.gateway';
 
@@ -38,9 +36,7 @@ export class EmployeeContractStore {
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeContractErrorCode | null>(null);
   private readonly errorConflictState = signal<EmployeeContractConflictModel | null>(null);
-  private readonly successState = signal<'created' | 'replaced' | 'corrected' | 'closed' | null>(
-    null,
-  );
+  private readonly successState = signal<'created' | 'corrected' | null>(null);
   private readonly planState = signal<EmployeeContractPlanModel | null>(null);
   private readonly planningState = signal(false);
   private requestId = 0;
@@ -141,34 +137,6 @@ export class EmployeeContractStore {
     this.loadContractsByBusinessKeyInternal(key, false);
   }
 
-  replaceFromDate(employeeKey: EmployeeBusinessKey, draft: ContractReplaceDraft): void {
-    if (this.mutatingState()) {
-      return;
-    }
-
-    const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
-
-    this.mutatingState.set(true);
-    this.errorState.set(null);
-    this.errorConflictState.set(null);
-    this.successState.set(null);
-
-    this.employeeContractReadGateway
-      .replaceContractFromDate(normalizedEmployeeKey, draft)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.mutatingState.set(false);
-          this.successState.set('replaced');
-          this.loadContractsByBusinessKeyInternal(normalizedEmployeeKey, true);
-        },
-        error: (error) => {
-          this.mutatingState.set(false);
-          this.failWith(error);
-        },
-      });
-  }
-
   correctOccurrence(
     employeeKey: EmployeeBusinessKey,
     startDate: string,
@@ -192,38 +160,6 @@ export class EmployeeContractStore {
         next: () => {
           this.mutatingState.set(false);
           this.successState.set('corrected');
-          this.loadContractsByBusinessKeyInternal(normalizedEmployeeKey, true);
-        },
-        error: (error) => {
-          this.mutatingState.set(false);
-          this.failWith(error);
-        },
-      });
-  }
-
-  closeOccurrence(
-    employeeKey: EmployeeBusinessKey,
-    startDate: string,
-    draft: ContractCloseDraft,
-  ): void {
-    if (this.mutatingState()) {
-      return;
-    }
-
-    const normalizedEmployeeKey = toEmployeeBusinessKey(employeeKey);
-
-    this.mutatingState.set(true);
-    this.errorState.set(null);
-    this.errorConflictState.set(null);
-    this.successState.set(null);
-
-    this.employeeContractReadGateway
-      .closeContractOccurrence(normalizedEmployeeKey, startDate, draft)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.mutatingState.set(false);
-          this.successState.set('closed');
           this.loadContractsByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
