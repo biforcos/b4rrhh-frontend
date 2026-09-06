@@ -6,14 +6,19 @@
  *
  * Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor.
  */
+/* El aire entre secciones va en el anfitrión, para que una sección que no se apila con otras
+   —la de IRPF, dentro de su caja— pueda quitarlo sin tocar el resto. */
 app-temporal-section {
   display: block;
+  margin-top: 40px;
   scroll-margin-top: 16px;
 }
 
+/* El filete va encima del título, no debajo: separa secciones, en vez de separar el título de su
+   propio contenido. */
 .temporal-section {
-  padding: 14px 0 6px;
-  border-top: 1px solid var(--border-strong);
+  padding: 22px 0 6px;
+  border-top: 1px solid var(--border-default);
 }
 
 app-temporal-section.temporal-section-host--governs .temporal-section {
@@ -21,12 +26,14 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   border-top-color: var(--accent-primary);
 }
 
+/* «Contrato» y «PERÍODO | TIPO | SUBTIPO» son los dos rótulos, y pegados competían: el aire de
+   aquí es lo que hace que el título mande. */
 .temporal-section__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 18px;
 }
 
 .temporal-section__heading {
@@ -38,7 +45,8 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
 
 .temporal-section__title {
   margin: 0;
-  font-size: 1rem;
+  font-family: var(--font-heading);
+  font-size: 23px;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -94,10 +102,11 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   border-collapse: collapse;
 }
 
+/* La cabecera de columnas retrocede: es rótulo del archivo, no del apartado. */
 .temporal-section__th {
   text-align: left;
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-soft);
   font-weight: 500;
   padding: 6px 10px;
   border-bottom: 1px solid var(--border-default);
@@ -144,14 +153,15 @@ app-temporal-section.temporal-section-host--governs .temporal-section {
   width: 80px;
 }
 
-/* Una segunda línea en gris y monoespaciada que no es un código de catálogo (las horas al día de la
-   jornada). Los códigos los pinta app-ui-catalog-label (ADR-051 §4). */
+/* Un dato secundario en gris y monoespaciada que no es un código de catálogo (las horas al día de
+   la jornada). Va detrás y en la misma línea, como los códigos, que los pinta app-ui-catalog-label
+   (ADR-051 §4): ninguna celda de la ficha gasta una segunda línea. */
 .temporal-section__code {
-  display: block;
+  margin-left: 7px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
-  color: var(--text-tertiary);
+  color: var(--text-soft);
 }
 
 .temporal-section__secondary {

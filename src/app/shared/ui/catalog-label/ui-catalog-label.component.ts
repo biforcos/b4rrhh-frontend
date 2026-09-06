@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
- * Un valor de catálogo: el literal y, debajo, su código en gris y monoespaciada (ADR-051 §4).
- * `420` se lee «Sustitución en proceso de selección» con el `420` debajo: quien conoce el
- * catálogo sigue leyendo el número; quien no, entiende la fila.
+ * Un valor de catálogo: el literal y, detrás y en la misma línea, su código en gris y
+ * monoespaciada (ADR-051 §4). `420` se lee «Sustitución en proceso de selección» con el `420`
+ * detrás: quien conoce el catálogo sigue leyendo el número; quien no, entiende la fila.
  *
  * Sin literal —el catálogo no lo tiene o no llegó— el código va solo y no se inventa nada: no
  * hay línea gris porque no habría nada que distinguir de la de arriba.
@@ -18,7 +18,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   template: `
     <span class="ui-catalog-label__name">{{ shownName() }}</span>
     @if (shownCode(); as code) {
-      <!-- El espacio no se ve (el código va en bloque) pero separa las dos partes al copiar o al leer en voz. -->
+      <!-- El aire lo pone el margen; el espacio se queda porque separa las dos partes al copiar
+           la fila o al leerla en voz. -->
       &ngsp;<span class="ui-catalog-label__code">{{ code }}</span>
     }
   `,

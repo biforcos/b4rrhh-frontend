@@ -19,7 +19,7 @@ describe('UiCatalogLabelComponent', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('pinta el literal y el código debajo: el código nunca va solo (ADR-051 §4)', () => {
+  it('pinta el literal y el código detrás: el código nunca va solo (ADR-051 §4)', () => {
     const el = render('Sustitución en proceso de selección');
 
     expect(el.querySelector('.ui-catalog-label__name')?.textContent?.trim()).toBe(

@@ -110,13 +110,20 @@ describe('EmployeeTodayStripComponent', () => {
     expect(el.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 
-  it('sin vigencia lo dice en gris; sin centro de coste, «sin asignar» como aviso', () => {
+  it('sin vigencia y sin centro de coste se dicen con el literal, cada uno el suyo', () => {
     const el: HTMLElement = render().nativeElement;
     const items = el.querySelectorAll('.today__item');
     expect(items[4].querySelector('.today__none')?.textContent?.trim()).toBe('sin vigencia');
     expect(items[4].classList.contains('today__item--anomaly')).toBe(false);
     expect(items[5].querySelector('.today__none')?.textContent?.trim()).toBe('sin asignar');
     expect(items[5].classList.contains('today__item--anomaly')).toBe(true);
+  });
+
+  it('dice de qué día habla, porque «hoy» solo no basta con histórico', () => {
+    const el: HTMLElement = render().nativeElement;
+    expect(el.querySelector('.today__subtitle')?.textContent?.trim()).toMatch(
+      /^Lo vigente a \d{1,2} de \p{L}+ de \d{4}$/u,
+    );
   });
 
   it('cada valor lleva a su carril', () => {

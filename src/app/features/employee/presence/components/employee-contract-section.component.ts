@@ -239,9 +239,7 @@ export class EmployeeContractSectionComponent {
     if (!corrected) return;
     this.modalMode.set('correct');
     this.editingStartDate.set(corrected.startDate);
-    this.editingPeriod.set(
-      this.describeDates(corrected.startDate, corrected.endDate) + ' · contrato que se corrige',
-    );
+    this.editingPeriod.set(this.describeDates(corrected.startDate, corrected.endDate));
   }
 
   protected submit(): void {

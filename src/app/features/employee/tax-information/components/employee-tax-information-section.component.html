@@ -8,19 +8,19 @@
     (deleteClicked)="openDeleteConfirm($event)"
   >
     <ng-template #columnHeaders>
-      <th>Situación familiar</th>
-      <th>Desc.</th>
-      <th>Asc.</th>
-      <th>Discapacidad</th>
+      <th class="temporal-section__th">Situación familiar</th>
+      <th class="temporal-section__th">Desc.</th>
+      <th class="temporal-section__th">Asc.</th>
+      <th class="temporal-section__th">Discapacidad</th>
     </ng-template>
     <ng-template #cellContent let-row>
       <!-- ADR-051 §4: el código nunca va solo. -->
-      <td>
+      <td class="temporal-section__td">
         <app-ui-catalog-label [name]="row.familySituationLabel" [code]="row.familySituation" />
       </td>
-      <td>{{ row.descendantsCount }}</td>
-      <td>{{ row.ascendantsCount }}</td>
-      <td>
+      <td class="temporal-section__td">{{ row.descendantsCount }}</td>
+      <td class="temporal-section__td">{{ row.ascendantsCount }}</td>
+      <td class="temporal-section__td">
         <app-ui-catalog-label [name]="row.disabilityDegreeLabel" [code]="row.disabilityDegree" />
       </td>
     </ng-template>

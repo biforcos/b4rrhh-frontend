@@ -1,7 +1,14 @@
-/* Una sola columna de carriles bajo la línea de vida: el ancho lo pone el esqueleto (ADR-050). */
+/* Una sola columna de carriles bajo la línea de vida: el ancho lo pone el esqueleto (ADR-050).
+   Sin hueco de rejilla: el aire entre secciones lo trae cada sección temporal, y sumarle el de
+   aquí dejaría una separación que no es la que se midió. */
 .employee-relation {
   display: grid;
-  gap: 16px;
+  gap: 0;
+}
+
+/* «Hoy» sí se separa de la línea de vida: son dos formas de lo mismo, no dos apartados. */
+.employee-relation__today {
+  margin-top: 16px;
 }
 
 .employee-relation__lane {

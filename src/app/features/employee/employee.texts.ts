@@ -198,6 +198,7 @@ export const employeeTexts = {
   timelineTitle: 'Historial',
   // --- La tira «Hoy» (frontend#25) ---
   todayTitle: 'Hoy',
+  todayCurrentAtLabel: 'Lo vigente a',
   todaySinceLabel: 'desde',
   todayHoursPerDayLabel: 'h/día',
   todayAllocatedLabel: 'asignado',

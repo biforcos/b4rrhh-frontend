@@ -2,7 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
-import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import {
+  currentLocalDate,
+  formatDisplayDate,
+  formatLongDisplayDate,
+} from '../../../../shared/utils/local-date.util';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeContractModel } from '../../models/employee-contract.model';
 import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center.model';
@@ -22,7 +26,7 @@ export interface TodayItem {
   code: string | null;
   /** Desde cuándo rige, ya formateada. */
   since: string | null;
-  /** Sin vigencia: lo normal («sin vigencia») o una anomalía que hay que ver («sin asignar»). */
+  /** Sin vigencia: lo normal («sin vigencia») o el estado que se nombra aparte («sin asignar»). */
   emptyLabel: string;
   anomaly: boolean;
 }
@@ -35,8 +39,9 @@ const HOURS = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
  * forma; el bloque da el valor, que es lo que se copia y se pega. El orden es el de los carriles
  * del eje, del índice y de las secciones, para saltar de uno a otro sin releer.
  *
- * Y es donde aparece lo anómalo: un empleado sin centro de coste es un problema de imputación, y
- * aquí se lee «sin asignar» en tono de aviso.
+ * Y es donde se nombra lo que falta: un empleado sin centro de coste no se imputa, y aquí se lee
+ * «sin asignar». Lo dice el literal, no el color: en tinta de acento parecía un enlace que no
+ * lleva a ninguna parte, y no es un aviso, es un estado.
  */
 @Component({
   selector: 'app-employee-today-strip',
@@ -56,6 +61,12 @@ export class EmployeeTodayStripComponent {
   readonly laneRequested = output<EmployeeRelationAnchor>();
 
   protected readonly texts = employeeTexts;
+
+  /**
+   * «Hoy» es ambiguo en una ficha con histórico y dos etapas, así que se dice de qué día se
+   * habla. La fecha se lee al pintar: la ficha no se deja abierta de un día para otro.
+   */
+  protected readonly currentDateLabel = `${employeeTexts.todayCurrentAtLabel} ${formatLongDisplayDate(currentLocalDate())}`;
 
   protected readonly items = computed<ReadonlyArray<TodayItem>>(() => {
     const t = this.texts;

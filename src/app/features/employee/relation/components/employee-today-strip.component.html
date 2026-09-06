@@ -1,5 +1,6 @@
 <section class="today" [attr.aria-label]="texts.todayTitle">
   <h2 class="today__title">{{ texts.todayTitle }}</h2>
+  <p class="today__subtitle">{{ currentDateLabel }}</p>
   <dl class="today__grid">
     @for (item of items(); track item.anchor) {
       <div

@@ -11,10 +11,18 @@
 }
 
 .today__title {
-  margin: 0 0 8px;
-  font-size: 1rem;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 23px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* «Hoy» solo es ambiguo en una ficha con histórico: la fecha lo desambigua. */
+.today__subtitle {
+  margin: 2px 0 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
 /* A dos columnas, para que no ocupe media pantalla. */
@@ -25,24 +33,29 @@
   margin: 0;
 }
 
-/* Una línea por vigencia: etiqueta | valor (código debajo) | desde ‹fecha› a la derecha. */
+/* Una línea por vigencia: etiqueta | valor (código debajo) | desde ‹fecha› a la derecha. La
+   primera columna da justo para el rótulo más largo en versalitas («CENTROS DE COSTE») sin
+   partirlo, y ni un pixel más: lo que sobre es del valor, que es a lo que se viene. */
 .today__item {
   display: grid;
-  grid-template-columns: 128px minmax(0, 1fr) auto;
+  grid-template-columns: 136px minmax(0, 1fr) auto;
   align-items: start;
   column-gap: 12px;
   padding: 7px 0;
   border-bottom: 1px solid var(--surface-muted);
 }
 
+/* El rótulo es rótulo: pequeño, en versalitas y apagado. Lo que pesa es el valor. */
 .today__label {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-top: 2px;
-  font-size: 12px;
+  padding-top: 4px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
 .today__value,
@@ -59,7 +72,7 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
   text-align: left;
@@ -95,14 +108,13 @@
 }
 
 .today__none {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-soft);
 }
 
-/* Lo anómalo se ve: sin centro de coste no se imputa. */
+/* «sin asignar» es un estado, no un aviso ni un enlace: lo dice el literal, no el color. */
 .today__item--anomaly .today__none {
-  color: var(--warning-text);
-  font-weight: 600;
+  color: var(--text-tertiary);
 }
 
 @media (max-width: 960px) {

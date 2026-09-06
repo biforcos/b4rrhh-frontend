@@ -2,11 +2,15 @@
   display: block;
 }
 
-/* ADR-051 §4: el literal delante; el código debajo, en gris y monoespaciada. */
+/*
+ * ADR-051 §4: el literal delante; el código detrás, en la misma línea, en gris y monoespaciada.
+ * Iba debajo, y eso convertía cada celda en dos líneas: una fila de Presencia eran ocho líneas de
+ * texto y se leía como mezcla. Detrás no se pierde ni un dato y la fila vuelve a ser una línea.
+ */
 .ui-catalog-label__code {
-  display: block;
+  margin-left: 7px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 400;
-  color: var(--text-tertiary);
+  color: var(--text-soft);
 }

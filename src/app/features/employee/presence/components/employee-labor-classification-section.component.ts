@@ -246,10 +246,7 @@ export class EmployeeLaborClassificationSectionComponent {
     if (!corrected) return;
     this.modalMode.set('correct');
     this.editingStartDate.set(corrected.startDate);
-    this.editingPeriod.set(
-      this.describeDates(corrected.startDate, corrected.endDate) +
-        ' · clasificación que se corrige',
-    );
+    this.editingPeriod.set(this.describeDates(corrected.startDate, corrected.endDate));
   }
 
   protected submit(): void {
