@@ -1,4 +1,7 @@
-import { mapEmployeeLaborClassificationErrorCode } from './employee-labor-classification.error.mapper';
+import {
+  mapEmployeeLaborClassificationConflict,
+  mapEmployeeLaborClassificationErrorCode,
+} from './employee-labor-classification.error.mapper';
 
 describe('mapEmployeeLaborClassificationErrorCode', () => {
   it('recognizes LABOR_CLASSIFICATION_OVERLAP from nested error.code', () => {
@@ -18,6 +21,7 @@ describe('mapEmployeeLaborClassificationErrorCode', () => {
       'LABOR_CLASSIFICATION_OVERLAP',
       'LABOR_CLASSIFICATION_OUTSIDE_PRESENCE',
       'LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE',
+      'LABOR_CLASSIFICATION_IS_A_CORRECTION',
       'LABOR_CLASSIFICATION_INVALID_PERIOD',
       'LABOR_CLASSIFICATION_ALREADY_CLOSED',
       'LABOR_CLASSIFICATION_NOT_FOUND',
@@ -42,5 +46,51 @@ describe('mapEmployeeLaborClassificationErrorCode', () => {
 
   it('returns request-failed when error.code is not a string', () => {
     expect(mapEmployeeLaborClassificationErrorCode({ error: { code: 42 } })).toBe('request-failed');
+  });
+});
+
+describe('mapEmployeeLaborClassificationConflict', () => {
+  it('keeps the gap and the neighbour the user could stretch', () => {
+    const error = {
+      error: {
+        code: 'LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE',
+        details: {
+          gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }],
+          stretchCandidates: [{ startDate: '2026-01-01', endDate: '2026-01-31' }],
+        },
+      },
+    };
+
+    expect(mapEmployeeLaborClassificationConflict(error)).toEqual({
+      overlaps: [],
+      gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }],
+      stretchCandidates: [{ startDate: '2026-01-01', endDate: '2026-01-31' }],
+      correctedOccurrence: null,
+    });
+  });
+
+  it('keeps the occurrence the add would correct', () => {
+    const error = {
+      error: {
+        code: 'LABOR_CLASSIFICATION_IS_A_CORRECTION',
+        details: { correctedOccurrence: { startDate: '2026-03-01' } },
+      },
+    };
+
+    expect(mapEmployeeLaborClassificationConflict(error).correctedOccurrence).toEqual({
+      startDate: '2026-03-01',
+      endDate: null,
+    });
+  });
+
+  it('comes back empty when the error names nothing', () => {
+    expect(
+      mapEmployeeLaborClassificationConflict({ error: { code: 'AGREEMENT_NOT_FOUND' } }),
+    ).toEqual({
+      overlaps: [],
+      gaps: [],
+      stretchCandidates: [],
+      correctedOccurrence: null,
+    });
   });
 });

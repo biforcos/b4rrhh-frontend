@@ -191,6 +191,7 @@ export class EmployeeContractSectionComponent {
     } else if (mode === 'edit') {
       this.contractStore.correctOccurrence(key, this.editingStartDate()!, {
         startDate: this.newStartDateDraft(),
+        endDate: null,
         contractCode: this.contractCodeDraft(),
         contractSubtypeCode: this.contractSubtypeCodeDraft(),
       });

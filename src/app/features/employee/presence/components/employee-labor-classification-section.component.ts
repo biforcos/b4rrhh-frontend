@@ -194,6 +194,7 @@ export class EmployeeLaborClassificationSectionComponent {
     } else if (mode === 'edit') {
       this.classificationStore.correctOccurrence(key, this.editingStartDate()!, {
         startDate: this.newStartDateDraft(),
+        endDate: null,
         agreementCode: this.agreementCodeDraft(),
         agreementCategoryCode: this.agreementCategoryCodeDraft(),
       });

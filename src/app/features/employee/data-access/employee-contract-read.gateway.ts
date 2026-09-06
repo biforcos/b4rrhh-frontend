@@ -9,12 +9,18 @@ import {
 import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeContractModel } from '../models/employee-contract.model';
+import { EmployeeContractPlanModel } from '../models/employee-contract-plan.model';
 import {
   ContractCloseDraft,
   ContractCorrectDraft,
+  ContractCreateDraft,
+  ContractPlanDraft,
   ContractReplaceDraft,
   mapContractCloseDraftToRequest,
   mapContractCorrectDraftToRequest,
+  mapContractCreateDraftToRequest,
+  mapContractPlanDraftToRequest,
+  mapContractPlanResponseToModel,
   mapContractReplaceDraftToRequest,
 } from './employee-contract.mapper';
 
@@ -47,6 +53,21 @@ export class EmployeeContractReadGateway {
           .map((contract) => this.toEmployeeContractModel(contract)),
       ),
     );
+  }
+
+  createContract(key: EmployeeBusinessKey, draft: ContractCreateDraft): Observable<void> {
+    return this.employeeContractReadClient
+      .createContractByBusinessKey(key, mapContractCreateDraftToRequest(draft))
+      .pipe(map(() => undefined));
+  }
+
+  planContractChange(
+    key: EmployeeBusinessKey,
+    draft: ContractPlanDraft,
+  ): Observable<EmployeeContractPlanModel> {
+    return this.employeeContractReadClient
+      .planContractChangeByBusinessKey(key, mapContractPlanDraftToRequest(draft))
+      .pipe(map((plan) => mapContractPlanResponseToModel(plan)));
   }
 
   replaceContractFromDate(key: EmployeeBusinessKey, draft: ContractReplaceDraft): Observable<void> {

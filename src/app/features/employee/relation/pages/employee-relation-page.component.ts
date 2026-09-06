@@ -31,6 +31,11 @@ import {
   isEmployeeRelationAnchor,
 } from '../../routing/employee-route-builder.util';
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
+import {
+  CONTRACT_PLAN_VOCABULARY,
+  LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+  describeTimelineConflict,
+} from '../../shared/utils/timeline-plan-message.util';
 import { describeWorkingTimeConflict } from '../../shared/utils/working-time-plan-message.util';
 import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
 import { EmployeeTodayStripComponent } from '../components/employee-today-strip.component';
@@ -71,9 +76,14 @@ export class EmployeeRelationPageComponent {
   private readonly costCenterStore = inject(EmployeeCostCenterStore);
   private readonly globalMessageService = inject(GlobalMessageService);
 
-  private previousContractSuccess: 'replaced' | 'corrected' | 'closed' | null = null;
+  private previousContractSuccess: 'created' | 'replaced' | 'corrected' | 'closed' | null = null;
   private previousWorkingTimeSuccess: 'created' | 'updated' | 'deleted' | null = null;
-  private previousLaborClassificationSuccess: 'replaced' | 'corrected' | 'closed' | null = null;
+  private previousLaborClassificationSuccess:
+    | 'created'
+    | 'replaced'
+    | 'corrected'
+    | 'closed'
+    | null = null;
   private previousWorkCenterSuccess: 'created' | 'corrected' | 'closed' | 'deleted' | null = null;
   private previousCostCenterSuccess: 'created' | 'replaced' | 'closed' | null = null;
 
@@ -201,6 +211,7 @@ export class EmployeeRelationPageComponent {
         'contract',
         t.lifelineLaneContract,
         {
+          created: t.contractSectionCreateSuccessMessage,
           replaced: t.contractSectionReplaceSuccessMessage,
           corrected: t.contractSectionCorrectSuccessMessage,
           closed: t.contractSectionCloseSuccessMessage,
@@ -234,6 +245,7 @@ export class EmployeeRelationPageComponent {
         'classification',
         t.lifelineLaneClassification,
         {
+          created: t.laborClassificationSectionCreateSuccessMessage,
           replaced: t.laborClassificationSectionReplaceSuccessMessage,
           corrected: t.laborClassificationSectionCorrectSuccessMessage,
           closed: t.laborClassificationSectionCloseSuccessMessage,
@@ -290,10 +302,36 @@ export class EmployeeRelationPageComponent {
   }
 
   private mapContractErrorMessage(errorCode: string | null): string | null {
-    if (!errorCode) return null;
-    return errorCode === 'request-failed'
-      ? this.texts.contractSectionRequestFailedMessage
-      : errorCode;
+    const t = this.texts;
+    // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
+    const conflictMessage = describeTimelineConflict(
+      errorCode,
+      this.contractStore.errorConflict(),
+      CONTRACT_PLAN_VOCABULARY,
+    );
+    if (conflictMessage) return conflictMessage;
+    switch (errorCode) {
+      case 'CONTRACT_OVERLAP':
+        return t.contractSectionOverlapMessage;
+      case 'CONTRACT_COVERAGE_GAP':
+        return t.contractSectionCoverageGapMessage;
+      case 'CONTRACT_OUTSIDE_PRESENCE':
+        return t.contractSectionOutsidePresenceMessage;
+      case 'CONTRACT_IS_A_CORRECTION':
+        return t.contractSectionIsACorrectionMessage;
+      case 'CONTRACT_ALREADY_CLOSED':
+        return t.contractSectionAlreadyClosedMessage;
+      case 'CONTRACT_NOT_FOUND':
+        return t.contractSectionNotFoundMessage;
+      case 'CONTRACT_EMPLOYEE_NOT_FOUND':
+        return t.contractSectionEmployeeNotFoundMessage;
+      case 'CONTRACT_INVALID_REQUEST':
+        return t.contractSectionInvalidRequestMessage;
+      case 'request-failed':
+        return t.contractSectionRequestFailedMessage;
+      default:
+        return null;
+    }
   }
 
   private mapWorkingTimeErrorMessage(errorCode: string | null): string | null {
@@ -330,7 +368,15 @@ export class EmployeeRelationPageComponent {
 
   private mapLaborClassificationErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
+    const conflictMessage = describeTimelineConflict(
+      errorCode,
+      this.laborClassificationStore.errorConflict(),
+      LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+    );
+    if (conflictMessage) return conflictMessage;
     switch (errorCode) {
+      case 'LABOR_CLASSIFICATION_IS_A_CORRECTION':
+        return t.laborClassificationSectionIsACorrectionMessage;
       case 'LABOR_CLASSIFICATION_OVERLAP':
         return t.laborClassificationSectionOverlapMessage;
       case 'LABOR_CLASSIFICATION_OUTSIDE_PRESENCE':

@@ -124,6 +124,7 @@ describe('EmployeeContractSectionComponent', () => {
     component.submit();
     expect(store.correctOccurrence).toHaveBeenCalledWith(employeeKey, '2024-01-01', {
       startDate: '2024-01-01',
+      endDate: null,
       contractCode: 'TEMP',
       contractSubtypeCode: 'TEMP-EVT',
     });

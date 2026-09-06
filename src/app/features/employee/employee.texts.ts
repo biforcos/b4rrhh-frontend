@@ -563,6 +563,27 @@ export const employeeTexts = {
   contractSectionReplaceSuccessMessage: 'Contrato reemplazado correctamente.',
   contractSectionCorrectSuccessMessage: 'Contrato corregido correctamente.',
   contractSectionCloseSuccessMessage: 'Contrato cerrado correctamente.',
+  contractSectionAddTitle: 'Añadir contrato',
+  contractSectionCorrectTitle: 'Corregir contrato',
+  contractSectionAddSubmitAction: 'Añadir contrato',
+  contractSectionCorrectSubmitAction: 'Guardar corrección',
+  contractSectionStartDateAriaLabel: 'Fecha inicio del contrato',
+  contractSectionEndDateAriaLabel: 'Fecha fin del contrato (vacía si queda en vigor)',
+  contractSectionPlanningMessage: 'Calculando qué cambiaría…',
+  contractSectionCreateSuccessMessage: 'Contrato añadido correctamente.',
+  contractSectionOverlapMessage:
+    'El contrato se solapa con otro período vigente o histórico del empleado.',
+  contractSectionCoverageGapMessage:
+    'El contrato dejaría sin cubrir un tramo de la presencia del empleado.',
+  contractSectionOutsidePresenceMessage:
+    'El contrato debe quedar dentro de un período de presencia del empleado.',
+  contractSectionIsACorrectionMessage:
+    'Ya hay un contrato que empieza ese día: el alta es en realidad una corrección suya.',
+  contractSectionAlreadyClosedMessage: 'El contrato ya está cerrado y no admite un nuevo cierre.',
+  contractSectionNotFoundMessage: 'No se encontró el contrato seleccionado para este empleado.',
+  contractSectionEmployeeNotFoundMessage: 'No se encontró el empleado de este contrato.',
+  contractSectionInvalidRequestMessage:
+    'Los datos del contrato no son válidos para esta operación.',
   workingTimeSectionTitle: 'Jornada',
   workingTimeSectionSubtitle: 'Gestiona la jornada actual y su histórico dentro del area laboral.',
   workingTimeSectionManageAction: 'Nueva jornada',
@@ -720,6 +741,17 @@ export const employeeTexts = {
   laborClassificationSectionReplaceSuccessMessage: 'Clasificación reemplazada correctamente.',
   laborClassificationSectionCorrectSuccessMessage: 'Clasificación corregida correctamente.',
   laborClassificationSectionCloseSuccessMessage: 'Clasificación cerrada correctamente.',
+  laborClassificationSectionAddTitle: 'Añadir clasificación laboral',
+  laborClassificationSectionCorrectTitle: 'Corregir clasificación laboral',
+  laborClassificationSectionAddSubmitAction: 'Añadir clasificación',
+  laborClassificationSectionCorrectSubmitAction: 'Guardar corrección',
+  laborClassificationSectionStartDateAriaLabel: 'Fecha inicio de la clasificación laboral',
+  laborClassificationSectionEndDateAriaLabel:
+    'Fecha fin de la clasificación laboral (vacía si queda en vigor)',
+  laborClassificationSectionPlanningMessage: 'Calculando qué cambiaría…',
+  laborClassificationSectionCreateSuccessMessage: 'Clasificación añadida correctamente.',
+  laborClassificationSectionIsACorrectionMessage:
+    'Ya hay una clasificación que empieza ese día: el alta es en realidad una corrección suya.',
   laborFutureBlockTitle: 'Evolucion laboral',
   laborFutureBlockDescription:
     'Preparado para eventos de movilidad, cambios de categoría y transiciones de jornada.',

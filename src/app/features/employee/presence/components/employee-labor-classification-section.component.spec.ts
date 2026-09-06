@@ -128,6 +128,7 @@ describe('EmployeeLaborClassificationSectionComponent', () => {
     c.submit();
     expect(store.correctOccurrence).toHaveBeenCalledWith(employeeKey, '2024-01-01', {
       startDate: '2024-01-01',
+      endDate: null,
       agreementCode: 'AGR2',
       agreementCategoryCode: 'CAT2',
     });

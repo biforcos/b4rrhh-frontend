@@ -6,7 +6,9 @@ import { EmployeeLaborClassificationService } from '../generated/api/employee-la
 import {
   CloseLaborClassificationRequest,
   CreateLaborClassificationRequest,
+  LaborClassificationPlanResponse,
   LaborClassificationResponse,
+  PlanLaborClassificationChangeRequest,
   ReplaceLaborClassificationFromDateRequest,
   UpdateLaborClassificationRequest,
 } from '../generated/model/models';
@@ -85,11 +87,28 @@ export class EmployeeLaborClassificationReadClient {
         ...normalizedKey,
         startDate: startDate.trim(),
         updateLaborClassificationRequest: {
+          // Las fechas corregidas viajan: la corrección de una clasificación son sus códigos y su
+          // tramo (ADR-057). Dejarlas fuera hacía que cambiar el inicio no cambiara nada.
+          startDate: this.normalizeOptionalValue(request.startDate),
+          endDate: this.normalizeOptionalValue(request.endDate),
           agreementCode: request.agreementCode.trim().toUpperCase(),
           agreementCategoryCode: request.agreementCategoryCode.trim().toUpperCase(),
         },
       })
       .pipe(map((classification) => this.toEmployeeLaborClassificationApiModel(classification)));
+  }
+
+  /** Pide al backend qué haría un cambio a la serie sin aplicarlo (ADR-057). */
+  planLaborClassificationChangeByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    request: PlanLaborClassificationChangeRequest,
+  ): Observable<LaborClassificationPlanResponse> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api.planLaborClassificationChangeByBusinessKey({
+      ...normalizedKey,
+      planLaborClassificationChangeRequest: request,
+    });
   }
 
   closeLaborClassificationByBusinessKey(

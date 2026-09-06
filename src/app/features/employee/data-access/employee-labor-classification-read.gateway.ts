@@ -9,12 +9,18 @@ import {
 import { sortByTimelineRecency } from '../../../shared/utils/period-order.util';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
+import { EmployeeLaborClassificationPlanModel } from '../models/employee-labor-classification-plan.model';
 import {
   LaborClassificationCloseDraft,
   LaborClassificationCorrectDraft,
+  LaborClassificationCreateDraft,
+  LaborClassificationPlanDraft,
   LaborClassificationReplaceDraft,
   mapLaborClassificationCloseDraftToRequest,
   mapLaborClassificationCorrectDraftToRequest,
+  mapLaborClassificationCreateDraftToRequest,
+  mapLaborClassificationPlanDraftToRequest,
+  mapLaborClassificationPlanResponseToModel,
   mapLaborClassificationReplaceDraftToRequest,
 } from './employee-labor-classification.mapper';
 
@@ -55,6 +61,30 @@ export class EmployeeLaborClassificationReadGateway {
             .map((classification) => this.toEmployeeLaborClassificationModel(classification)),
         ),
       );
+  }
+
+  createLaborClassification(
+    key: EmployeeBusinessKey,
+    draft: LaborClassificationCreateDraft,
+  ): Observable<void> {
+    return this.employeeLaborClassificationReadClient
+      .createLaborClassificationByBusinessKey(
+        key,
+        mapLaborClassificationCreateDraftToRequest(draft),
+      )
+      .pipe(map(() => undefined));
+  }
+
+  planLaborClassificationChange(
+    key: EmployeeBusinessKey,
+    draft: LaborClassificationPlanDraft,
+  ): Observable<EmployeeLaborClassificationPlanModel> {
+    return this.employeeLaborClassificationReadClient
+      .planLaborClassificationChangeByBusinessKey(
+        key,
+        mapLaborClassificationPlanDraftToRequest(draft),
+      )
+      .pipe(map((plan) => mapLaborClassificationPlanResponseToModel(plan)));
   }
 
   replaceLaborClassificationFromDate(

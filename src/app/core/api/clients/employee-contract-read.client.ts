@@ -5,8 +5,10 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { EmployeeContractService } from '../generated/api/employee-contract.service';
 import {
   CloseContractRequest,
+  ContractPlanResponse,
   ContractResponse,
   CreateContractRequest,
+  PlanContractChangeRequest,
   ReplaceContractFromDateRequest,
   UpdateContractRequest,
 } from '../generated/model/models';
@@ -93,11 +95,28 @@ export class EmployeeContractReadClient {
         ...normalizedKey,
         startDate: startDate.trim(),
         updateContractRequest: {
+          // Las fechas corregidas viajan: la corrección de un contrato son sus códigos y su
+          // tramo (ADR-057). Dejarlas fuera hacía que cambiar el inicio no cambiara nada.
+          startDate: this.normalizeOptionalValue(request.startDate),
+          endDate: this.normalizeOptionalValue(request.endDate),
           contractCode: request.contractCode.trim().toUpperCase(),
           contractSubtypeCode: request.contractSubtypeCode.trim().toUpperCase(),
         },
       })
       .pipe(map((contract) => this.toEmployeeContractApiModel(contract)));
+  }
+
+  /** Pide al backend qué haría un cambio a la serie sin aplicarlo (ADR-057). */
+  planContractChangeByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    request: PlanContractChangeRequest,
+  ): Observable<ContractPlanResponse> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api.planContractChangeByBusinessKey({
+      ...normalizedKey,
+      planContractChangeRequest: request,
+    });
   }
 
   closeContractByBusinessKey(

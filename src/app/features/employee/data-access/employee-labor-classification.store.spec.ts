@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { EmployeeLaborClassificationModel } from '../models/employee-labor-classification.model';
+import { EmployeeLaborClassificationPlanModel } from '../models/employee-labor-classification-plan.model';
 import { EmployeeLaborClassificationReadGateway } from './employee-labor-classification-read.gateway';
 import { EmployeeLaborClassificationStore } from './employee-labor-classification.store';
 
@@ -28,10 +29,28 @@ const laborClassificationsFixture: ReadonlyArray<EmployeeLaborClassificationMode
   },
 ];
 
+const acceptedPlan: EmployeeLaborClassificationPlanModel = {
+  operation: 'ADD',
+  accepted: true,
+  rejection: null,
+  occurrence: { startDate: '2025-01-01', endDate: null },
+  correctedOccurrence: null,
+  adjustedOccurrence: {
+    before: { startDate: '2024-06-01', endDate: null },
+    after: { startDate: '2024-06-01', endDate: '2024-12-31' },
+  },
+  overlaps: [],
+  gaps: [],
+  stretchCandidates: [],
+  projected: [],
+};
+
 describe('EmployeeLaborClassificationStore', () => {
   let store: EmployeeLaborClassificationStore;
   let readGatewayMock: {
     readEmployeeLaborClassificationsByBusinessKey: ReturnType<typeof vi.fn>;
+    createLaborClassification: ReturnType<typeof vi.fn>;
+    planLaborClassificationChange: ReturnType<typeof vi.fn>;
     replaceLaborClassificationFromDate: ReturnType<typeof vi.fn>;
     correctLaborClassificationOccurrence: ReturnType<typeof vi.fn>;
     closeLaborClassificationOccurrence: ReturnType<typeof vi.fn>;
@@ -43,6 +62,8 @@ describe('EmployeeLaborClassificationStore', () => {
       readEmployeeLaborClassificationsByBusinessKey: vi
         .fn()
         .mockReturnValue(of(laborClassificationsFixture)),
+      createLaborClassification: vi.fn().mockReturnValue(of(undefined)),
+      planLaborClassificationChange: vi.fn().mockReturnValue(of(acceptedPlan)),
       replaceLaborClassificationFromDate: vi.fn().mockReturnValue(of(undefined)),
       correctLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
       closeLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
@@ -128,6 +149,7 @@ describe('EmployeeLaborClassificationStore', () => {
 
     store.correctOccurrence(employeeBusinessKey, '2022-01-01', {
       startDate: '2022-01-01',
+      endDate: '2024-05-31',
       agreementCode: 'AGREE-01',
       agreementCategoryCode: 'CAT-Z',
     });
@@ -137,6 +159,7 @@ describe('EmployeeLaborClassificationStore', () => {
       '2022-01-01',
       {
         startDate: '2022-01-01',
+        endDate: '2024-05-31',
         agreementCode: 'AGREE-01',
         agreementCategoryCode: 'CAT-Z',
       },
@@ -179,6 +202,72 @@ describe('EmployeeLaborClassificationStore', () => {
     expect(store.mutating()).toBe(false);
     expect(store.selectedEmployeeKey()).toEqual(employeeBusinessKey);
     expect(store.laborClassifications()).toEqual(laborClassificationsFixture);
+  });
+
+  it('adds a labor classification and reloads after success', () => {
+    store.loadLaborClassificationsByBusinessKey(employeeBusinessKey);
+
+    store.createLaborClassification(employeeBusinessKey, {
+      startDate: '2025-01-01',
+      endDate: null,
+      agreementCode: 'AGREE-02',
+      agreementCategoryCode: 'CAT-C',
+    });
+
+    expect(readGatewayMock.createLaborClassification).toHaveBeenCalledTimes(1);
+    expect(readGatewayMock.readEmployeeLaborClassificationsByBusinessKey).toHaveBeenCalledTimes(2);
+    expect(store.success()).toBe('created');
+  });
+
+  it('exposes the plan of a change and nothing is written', () => {
+    store.planChange(employeeBusinessKey, {
+      operation: 'ADD',
+      startDate: '2025-01-01',
+      endDate: null,
+    });
+
+    expect(readGatewayMock.planLaborClassificationChange).toHaveBeenCalledTimes(1);
+    expect(store.plan()).toEqual(acceptedPlan);
+    expect(store.planning()).toBe(false);
+    expect(readGatewayMock.createLaborClassification).not.toHaveBeenCalled();
+  });
+
+  it('drops the plan so nobody confirms against an old one', () => {
+    store.planChange(employeeBusinessKey, {
+      operation: 'ADD',
+      startDate: '2025-01-01',
+      endDate: null,
+    });
+    store.clearPlan();
+
+    expect(store.plan()).toBeNull();
+    expect(store.planning()).toBe(false);
+  });
+
+  it('keeps the dates a rejected invariant names', () => {
+    readGatewayMock.createLaborClassification.mockReturnValue(
+      throwError(() => ({
+        error: {
+          code: 'LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE',
+          details: {
+            gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }],
+            stretchCandidates: [{ startDate: '2026-01-01', endDate: '2026-01-31' }],
+          },
+        },
+      })),
+    );
+
+    store.createLaborClassification(employeeBusinessKey, {
+      startDate: '2026-03-01',
+      endDate: null,
+      agreementCode: 'AGREE-02',
+      agreementCategoryCode: 'CAT-C',
+    });
+
+    expect(store.error()).toBe('LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE');
+    expect(store.errorConflict()?.gaps).toEqual([
+      { startDate: '2026-02-01', endDate: '2026-02-28' },
+    ]);
   });
 
   it('clears success and error feedback without clearing loaded data', () => {
