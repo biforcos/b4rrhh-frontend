@@ -385,20 +385,28 @@ export const employeeTexts = {
   addressLoadFailedMessage: 'No se pudo cargar la información de direcciones.',
   addressesSectionTitle: 'Direcciones',
   addressesSectionAddAction: 'Añadir dirección',
-  addressesSectionEditCurrentAction: 'Corregir dirección vigente',
-  addressesSectionCloseAction: 'Cerrar dirección',
-  addressesSectionCloseTitle: 'Cerrar dirección',
-  addressesSectionSaveCreateAction: 'Guardar',
-  addressesSectionSaveEditCurrentAction: 'Guardar corrección',
-  addressesSectionConfirmCloseAction: 'Confirmar cierre',
+  addressesSectionCorrectTitle: 'Corregir dirección',
+  addressesSectionRemoveTitle: 'Eliminar dirección',
+  addressesSectionAddSubmitAction: 'Añadir dirección',
+  addressesSectionCorrectSubmitAction: 'Guardar corrección',
+  addressesSectionRemoveSubmitAction: 'Eliminar dirección',
+  addressesSectionPlanningMessage: 'Calculando qué cambiaría…',
   addressesSectionEmptyMessage: 'Sin direcciones. Añade la primera con «Añadir dirección».',
   addressesSectionRequestFailedMessage:
     'No se pudo procesar la operación de direcciones. Reintenta.',
   addressesSectionCreateSuccessMessage: 'Dirección creada correctamente.',
-  addressesSectionEditCurrentSuccessMessage: 'Dirección corregida correctamente.',
-  addressesSectionCloseSuccessMessage: 'Dirección cerrada correctamente.',
-  addressesSectionEditCurrentHint:
-    'Se corrigen los datos de la dirección vigente. Si la persona se ha mudado, ciérrala y añade la nueva.',
+  addressesSectionCorrectSuccessMessage: 'Dirección corregida correctamente.',
+  addressesSectionDeleteSuccessMessage: 'Dirección eliminada correctamente.',
+  addressesSectionOverlapMessage:
+    'El tramo se solapa con otra dirección del mismo tipo. Corrige las fechas.',
+  addressesSectionCoverageGapMessage:
+    'El domicilio no puede quedar sin cubrir mientras dura la presencia.',
+  addressesSectionIsACorrectionMessage:
+    'Ya hay una dirección de ese tipo que empieza ese día: es una corrección suya, no un alta.',
+  addressesSectionTypeCoverageNotDeclaredMessage:
+    'El catálogo no dice si este tipo de dirección es obligatorio. Revísalo antes de seguir.',
+  addressesSectionNotFoundMessage: 'No se encontró la dirección seleccionada para este empleado.',
+  addressesSectionInvalidRequestMessage: 'Completa los datos obligatorios de la dirección.',
   addressesSectionTypeLabel: 'Tipo de dirección',
   addressesSectionAddressColumn: 'Dirección',
   addressesSectionStreetLabel: 'Calle',

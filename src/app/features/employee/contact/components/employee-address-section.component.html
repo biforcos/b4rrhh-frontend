@@ -4,8 +4,9 @@
   [rows]="rows()"
   [addLabel]="texts.addressesSectionAddAction"
   [emptyMessage]="texts.addressesSectionEmptyMessage"
-  (addClicked)="openCreate()"
-  (editClicked)="openEdit($event)"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
+  (deleteClicked)="openRemove($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">{{ texts.addressesSectionTypeLabel }}</th>
@@ -28,22 +29,28 @@
   </ng-template>
 </app-temporal-section>
 
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué dirección del mismo tipo
+     se cierra y en qué fecha, el hueco que queda —rechazo en el domicilio, consecuencia legal en
+     los demás tipos— o el solape que impide confirmar. Cuando el rechazo nombra una corrección,
+     el aviso trae también la salida. -->
 <app-period-modal
   [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
   [visible]="modalVisible()"
   [saving]="saving()"
   [submitEnabled]="isSubmitEnabled()"
   [submitLabel]="submitLabel()"
-  [showCloseAction]="modalMode() === 'edit' && editingIsActive()"
-  [closeActionLabel]="texts.addressesSectionCloseAction"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
-  (closeActionClicked)="switchToClose()"
+  (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalMode() !== 'close') {
+  @if (modalMode() !== 'remove') {
     <div class="address-form">
-      @if (modalMode() === 'create') {
+      @if (modalMode() === 'add') {
         <label class="address-form__field">
           <span>{{ texts.addressesSectionTypeLabel }}</span>
           <app-ui-select
@@ -54,17 +61,21 @@
             (valueChanged)="updateDraft('addressTypeCode', $event)"
           />
         </label>
-        <label class="address-form__field">
-          <span>{{ texts.addressesSectionStartDateLabel }}</span>
-          <app-ui-date-input
-            [value]="draft().startDate"
-            (valueChanged)="updateDraft('startDate', $event)"
-          />
-        </label>
-      } @else {
-        <!-- Las fechas no se corrigen desde aquí: lo que se toca son los datos de la vigente. -->
-        <p class="address-form__hint">{{ texts.addressesSectionEditCurrentHint }}</p>
       }
+      <label class="address-form__field">
+        <span>{{ texts.addressesSectionStartDateLabel }}</span>
+        <app-ui-date-input
+          [value]="draft().startDate"
+          (valueChanged)="updateDraft('startDate', $event)"
+        />
+      </label>
+      <label class="address-form__field">
+        <span>{{ texts.addressesSectionEndDateLabel }}</span>
+        <app-ui-date-input
+          [value]="draft().endDate"
+          (valueChanged)="updateDraft('endDate', $event)"
+        />
+      </label>
       <label class="address-form__field address-form__field--wide">
         <span>{{ texts.addressesSectionStreetLabel }}</span>
         <input
@@ -109,13 +120,6 @@
           [value]="draft().countryCode"
           (input)="updateDraft('countryCode', $any($event.target).value)"
         />
-      </label>
-    </div>
-  } @else {
-    <div class="address-form">
-      <label class="address-form__field address-form__field--wide">
-        <span>{{ texts.addressesSectionEndDateLabel }}</span>
-        <app-ui-date-input [value]="endDateDraft()" (valueChanged)="endDateDraft.set($event)" />
       </label>
     </div>
   }

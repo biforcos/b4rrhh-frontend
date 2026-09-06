@@ -3,13 +3,16 @@ import { Observable, map } from 'rxjs';
 
 import { EmployeeAddressReadClient } from '../../../core/api/clients/employee-address-read.client';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
+import { EmployeeAddressPlanModel } from '../models/employee-address-plan.model';
 import { toEmployeeBusinessKey } from '../routing/employee-route-key.util';
 import {
+  AddressCorrectDraft,
   AddressCreateDraft,
-  AddressEditCurrentDraft,
-  mapAddressCloseDateToRequest,
+  AddressPlanDraft,
+  mapAddressCorrectDraftToUpdateAddressRequest,
   mapAddressDraftToCreateAddressRequest,
-  mapAddressEditCurrentDraftToUpdateAddressRequest,
+  mapAddressPlanDraftToRequest,
+  mapAddressPlanResponseToModel,
 } from './employee-address-edit.mapper';
 
 @Injectable({
@@ -26,26 +29,21 @@ export class EmployeeAddressGateway {
       .pipe(map(() => undefined));
   }
 
-  closeAddress(
+  planAddressChange(
     employeeKey: EmployeeBusinessKey,
-    addressNumber: number,
-    endDate: string,
-  ): Observable<void> {
+    draft: AddressPlanDraft,
+  ): Observable<EmployeeAddressPlanModel> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
     return this.addressClient
-      .closeAddressByBusinessKey(
-        normalizedKey,
-        addressNumber,
-        mapAddressCloseDateToRequest(endDate),
-      )
-      .pipe(map(() => undefined));
+      .planAddressChangeByBusinessKey(normalizedKey, mapAddressPlanDraftToRequest(draft))
+      .pipe(map((plan) => mapAddressPlanResponseToModel(plan)));
   }
 
-  updateAddress(
+  correctAddress(
     employeeKey: EmployeeBusinessKey,
     addressNumber: number,
-    draft: AddressEditCurrentDraft,
+    draft: AddressCorrectDraft,
   ): Observable<void> {
     const normalizedKey = toEmployeeBusinessKey(employeeKey);
 
@@ -53,8 +51,14 @@ export class EmployeeAddressGateway {
       .updateAddressByBusinessKey(
         normalizedKey,
         addressNumber,
-        mapAddressEditCurrentDraftToUpdateAddressRequest(draft),
+        mapAddressCorrectDraftToUpdateAddressRequest(draft),
       )
       .pipe(map(() => undefined));
+  }
+
+  deleteAddress(employeeKey: EmployeeBusinessKey, addressNumber: number): Observable<void> {
+    const normalizedKey = toEmployeeBusinessKey(employeeKey);
+
+    return this.addressClient.deleteAddressByBusinessKey(normalizedKey, addressNumber);
   }
 }

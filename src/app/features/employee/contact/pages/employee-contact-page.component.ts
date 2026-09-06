@@ -20,6 +20,10 @@ import { EmployeeIdentifierStore } from '../../data-access/employee-identifier.s
 import { employeeTexts } from '../../employee.texts';
 import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-route-key.util';
+import {
+  ADDRESS_PLAN_VOCABULARY,
+  describeTimelineConflict,
+} from '../../shared/utils/timeline-plan-message.util';
 
 @Component({
   selector: 'app-employee-contact-page',
@@ -39,7 +43,7 @@ export class EmployeeContactPageComponent {
   private readonly employeeIdentifierStore = inject(EmployeeIdentifierStore);
   private readonly globalMessageService = inject(GlobalMessageService);
   private previousContactSuccess: 'created' | 'updated' | 'deleted' | null = null;
-  private previousAddressSuccess: 'created' | 'updated' | 'closed' | null = null;
+  private previousAddressSuccess: 'created' | 'corrected' | 'deleted' | null = null;
   private previousIdentifierSuccess: 'created' | 'updated' | 'deleted' | null = null;
 
   protected readonly texts = employeeTexts;
@@ -100,11 +104,12 @@ export class EmployeeContactPageComponent {
       });
     }
 
-    if (this.addressesError() === 'request-failed') {
+    const addressErrorMessage = this.mapAddressErrorMessage(this.addressesError());
+    if (addressErrorMessage) {
       messages.push({
         id: 'address-error',
         level: 'error',
-        text: this.texts.addressesSectionRequestFailedMessage,
+        text: addressErrorMessage,
         sectionId: 'contact',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
@@ -180,16 +185,45 @@ export class EmployeeContactPageComponent {
     return this.texts.contactsSectionDeleteSuccessMessage;
   }
 
-  private mapAddressSuccessMessage(success: 'created' | 'updated' | 'closed'): string {
+  private mapAddressSuccessMessage(success: 'created' | 'corrected' | 'deleted'): string {
     if (success === 'created') {
       return this.texts.addressesSectionCreateSuccessMessage;
     }
 
-    if (success === 'updated') {
-      return this.texts.addressesSectionEditCurrentSuccessMessage;
+    if (success === 'corrected') {
+      return this.texts.addressesSectionCorrectSuccessMessage;
     }
 
-    return this.texts.addressesSectionCloseSuccessMessage;
+    return this.texts.addressesSectionDeleteSuccessMessage;
+  }
+
+  private mapAddressErrorMessage(errorCode: string | null): string | null {
+    const t = this.texts;
+    // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
+    const conflictMessage = describeTimelineConflict(
+      errorCode,
+      this.employeeAddressStore.errorConflict(),
+      ADDRESS_PLAN_VOCABULARY,
+    );
+    if (conflictMessage) return conflictMessage;
+    switch (errorCode) {
+      case 'ADDRESS_OVERLAP':
+        return t.addressesSectionOverlapMessage;
+      case 'ADDRESS_COVERAGE_GAP':
+        return t.addressesSectionCoverageGapMessage;
+      case 'ADDRESS_IS_A_CORRECTION':
+        return t.addressesSectionIsACorrectionMessage;
+      case 'ADDRESS_TYPE_COVERAGE_NOT_DECLARED':
+        return t.addressesSectionTypeCoverageNotDeclaredMessage;
+      case 'ADDRESS_NOT_FOUND':
+        return t.addressesSectionNotFoundMessage;
+      case 'ADDRESS_INVALID_REQUEST':
+        return t.addressesSectionInvalidRequestMessage;
+      case 'request-failed':
+        return t.addressesSectionRequestFailedMessage;
+      default:
+        return null;
+    }
   }
 
   private mapIdentifierSuccessMessage(success: 'created' | 'updated' | 'deleted'): string {

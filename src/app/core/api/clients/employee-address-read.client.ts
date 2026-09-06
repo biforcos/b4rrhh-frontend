@@ -4,9 +4,10 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { EmployeeAddressService } from '../generated/api/employee-address.service';
 import {
+  AddressPlanResponse,
   AddressResponse,
-  CloseAddressRequest,
   CreateAddressRequest,
+  PlanAddressChangeRequest,
   UpdateAddressRequest,
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
@@ -70,24 +71,6 @@ export class EmployeeAddressReadClient {
       .pipe(map((address) => this.toEmployeeAddressApiModel(address)));
   }
 
-  closeAddressByBusinessKey(
-    key: EmployeeBusinessKeyApiQuery,
-    addressNumber: number,
-    request: CloseAddressRequest,
-  ): Observable<EmployeeAddressApiModel> {
-    const normalizedKey = this.normalizeKey(key);
-
-    return this.api
-      .closeAddressByBusinessKey({
-        ...normalizedKey,
-        addressNumber,
-        closeAddressRequest: {
-          endDate: request.endDate.trim(),
-        },
-      })
-      .pipe(map((address) => this.toEmployeeAddressApiModel(address)));
-  }
-
   updateAddressByBusinessKey(
     key: EmployeeBusinessKeyApiQuery,
     addressNumber: number,
@@ -105,9 +88,37 @@ export class EmployeeAddressReadClient {
           countryCode: request.countryCode.trim().toUpperCase(),
           postalCode: this.normalizeOptionalValue(request.postalCode),
           regionCode: this.normalizeOptionalValue(request.regionCode),
+          // Las fechas corregidas viajan: corregir una dirección son sus datos y su tramo
+          // (ADR-057, decisión 3). Sin ellas el backend deja el tramo como estaba.
+          startDate: this.normalizeOptionalValue(request.startDate),
+          endDate: this.normalizeOptionalValue(request.endDate),
         },
       })
       .pipe(map((address) => this.toEmployeeAddressApiModel(address)));
+  }
+
+  deleteAddressByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    addressNumber: number,
+  ): Observable<void> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api
+      .deleteAddressByBusinessKey({ ...normalizedKey, addressNumber })
+      .pipe(map(() => undefined));
+  }
+
+  /** Pide al backend qué haría un cambio a la serie del tipo sin aplicarlo (ADR-057). */
+  planAddressChangeByBusinessKey(
+    key: EmployeeBusinessKeyApiQuery,
+    request: PlanAddressChangeRequest,
+  ): Observable<AddressPlanResponse> {
+    const normalizedKey = this.normalizeKey(key);
+
+    return this.api.planAddressChangeByBusinessKey({
+      ...normalizedKey,
+      planAddressChangeRequest: request,
+    });
   }
 
   private normalizeKey(key: EmployeeBusinessKeyApiQuery): EmployeeBusinessKeyApiQuery {

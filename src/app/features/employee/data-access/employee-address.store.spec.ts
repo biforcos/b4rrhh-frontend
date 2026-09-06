@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { EmployeeAddressModel } from '../models/employee-address.model';
+import { EmployeeAddressPlanModel } from '../models/employee-address-plan.model';
 import { EmployeeAddressGateway } from './employee-address.gateway';
 import { EmployeeAddressReadGateway } from './employee-address-read.gateway';
 import { EmployeeAddressStore } from './employee-address.store';
@@ -27,6 +28,19 @@ const addressesFixture: ReadonlyArray<EmployeeAddressModel> = [
   },
 ];
 
+const planFixture: EmployeeAddressPlanModel = {
+  operation: 'ADD',
+  accepted: true,
+  rejection: null,
+  occurrence: { addressNumber: null, startDate: '2026-03-01', endDate: null },
+  correctedOccurrence: null,
+  adjustedOccurrence: null,
+  overlaps: [],
+  gaps: [],
+  stretchCandidates: [],
+  projected: [],
+};
+
 describe('EmployeeAddressStore', () => {
   let store: EmployeeAddressStore;
   let readGatewayMock: {
@@ -34,8 +48,9 @@ describe('EmployeeAddressStore', () => {
   };
   let gatewayMock: {
     createAddress: ReturnType<typeof vi.fn>;
-    updateAddress: ReturnType<typeof vi.fn>;
-    closeAddress: ReturnType<typeof vi.fn>;
+    correctAddress: ReturnType<typeof vi.fn>;
+    deleteAddress: ReturnType<typeof vi.fn>;
+    planAddressChange: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -44,8 +59,9 @@ describe('EmployeeAddressStore', () => {
     };
     gatewayMock = {
       createAddress: vi.fn().mockReturnValue(of(undefined)),
-      updateAddress: vi.fn().mockReturnValue(of(undefined)),
-      closeAddress: vi.fn().mockReturnValue(of(undefined)),
+      correctAddress: vi.fn().mockReturnValue(of(undefined)),
+      deleteAddress: vi.fn().mockReturnValue(of(undefined)),
+      planAddressChange: vi.fn().mockReturnValue(of(planFixture)),
     };
 
     TestBed.configureTestingModule({
@@ -121,6 +137,7 @@ describe('EmployeeAddressStore', () => {
       postalCode: '28001',
       regionCode: 'M',
       startDate: '2026-01-01',
+      endDate: '',
     });
 
     expect(gatewayMock.createAddress).toHaveBeenCalledTimes(1);
@@ -128,36 +145,79 @@ describe('EmployeeAddressStore', () => {
     expect(store.success()).toBe('created');
   });
 
-  it('closes address and forces reload from backend after success', () => {
+  it('corrects address and forces reload from backend after success', () => {
     store.loadAddresses(employeeBusinessKey);
 
-    store.closeAddress(employeeBusinessKey, 1, '2026-01-31');
+    const correction = {
+      street: 'Calle Nueva 20',
+      city: 'Madrid',
+      countryCode: 'ESP',
+      postalCode: '28009',
+      regionCode: 'M',
+      startDate: '2025-01-01',
+      endDate: '',
+    };
+    store.correctAddress(employeeBusinessKey, 1, correction);
 
-    expect(gatewayMock.closeAddress).toHaveBeenCalledWith(employeeBusinessKey, 1, '2026-01-31');
+    expect(gatewayMock.correctAddress).toHaveBeenCalledWith(employeeBusinessKey, 1, correction);
     expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('closed');
+    expect(store.success()).toBe('corrected');
   });
 
-  it('updates address and forces reload from backend after success', () => {
+  it('removes address and forces reload from backend after success', () => {
     store.loadAddresses(employeeBusinessKey);
 
-    store.updateAddress(employeeBusinessKey, 1, {
-      street: 'Calle Nueva 20',
+    store.deleteAddress(employeeBusinessKey, 1);
+
+    expect(gatewayMock.deleteAddress).toHaveBeenCalledWith(employeeBusinessKey, 1);
+    expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledTimes(2);
+    expect(store.success()).toBe('deleted');
+  });
+
+  it('asks the backend for the plan and keeps it until it is cleared', () => {
+    const draft = {
+      operation: 'ADD' as const,
+      addressTypeCode: 'HOME',
+      startDate: '2026-03-01',
+      endDate: null,
+    };
+    store.planChange(employeeBusinessKey, draft);
+
+    expect(gatewayMock.planAddressChange).toHaveBeenCalledWith(employeeBusinessKey, draft);
+    expect(store.plan()).toBe(planFixture);
+    expect(store.planning()).toBe(false);
+
+    store.clearPlan();
+
+    expect(store.plan()).toBeNull();
+  });
+
+  // El 409 de invariante trae las fechas del hueco o del solape: se guardan para contarlo.
+  it('keeps the dates a rejection names alongside its code', () => {
+    gatewayMock.createAddress.mockReturnValue(
+      throwError(() => ({
+        error: {
+          code: 'ADDRESS_COVERAGE_GAP',
+          details: { gaps: [{ startDate: '2026-02-01', endDate: '2026-02-28' }] },
+        },
+      })),
+    );
+
+    store.createAddress(employeeBusinessKey, {
+      addressTypeCode: 'HOME',
+      street: 'Avenida Demo 12',
       city: 'Madrid',
       countryCode: 'ESP',
-      postalCode: '28009',
-      regionCode: 'M',
+      postalCode: '',
+      regionCode: '',
+      startDate: '2026-03-01',
+      endDate: '',
     });
 
-    expect(gatewayMock.updateAddress).toHaveBeenCalledWith(employeeBusinessKey, 1, {
-      street: 'Calle Nueva 20',
-      city: 'Madrid',
-      countryCode: 'ESP',
-      postalCode: '28009',
-      regionCode: 'M',
-    });
-    expect(readGatewayMock.readEmployeeAddressesByBusinessKey).toHaveBeenCalledTimes(2);
-    expect(store.success()).toBe('updated');
+    expect(store.error()).toBe('ADDRESS_COVERAGE_GAP');
+    expect(store.errorConflict()?.gaps).toEqual([
+      { startDate: '2026-02-01', endDate: '2026-02-28' },
+    ]);
   });
 
   it('sets request-failed error when create address fails', () => {
@@ -171,6 +231,7 @@ describe('EmployeeAddressStore', () => {
       postalCode: '',
       regionCode: '',
       startDate: '2026-01-01',
+      endDate: '',
     });
 
     expect(store.error()).toBe('request-failed');
@@ -187,6 +248,7 @@ describe('EmployeeAddressStore', () => {
       postalCode: '28001',
       regionCode: 'M',
       startDate: '2026-01-01',
+      endDate: '',
     });
 
     expect(store.success()).toBe('created');
