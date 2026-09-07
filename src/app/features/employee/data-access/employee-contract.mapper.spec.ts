@@ -11,16 +11,19 @@ import {
 } from './employee-contract.mapper';
 
 describe('employee-contract.mapper', () => {
-  it('maps correct draft to request with unchanged startDate as null', () => {
+  // No mover el inicio se dice mandando el que ya tiene, no callándose: desde el
+  // backend#69 un cuerpo sin startDate es un 400. Este test decía lo contrario,
+  // y esa era exactamente la forma del fallo que se comió tres ediciones.
+  it('carries the start date the contract already has when only the codes change', () => {
     expect(
       mapContractCorrectDraftToRequest({
-        startDate: '',
+        startDate: '2026-01-01',
         endDate: null,
         contractCode: 'temp',
         contractSubtypeCode: 'evt',
       }),
     ).toEqual({
-      startDate: null,
+      startDate: '2026-01-01',
       endDate: null,
       contractCode: 'TEMP',
       contractSubtypeCode: 'EVT',

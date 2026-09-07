@@ -86,8 +86,9 @@ export class EmployeeLaborClassificationReadClient {
         startDate: startDate.trim(),
         updateLaborClassificationRequest: {
           // Las fechas corregidas viajan: la corrección de una clasificación son sus códigos y su
-          // tramo (ADR-057). Dejarlas fuera hacía que cambiar el inicio no cambiara nada.
-          startDate: this.normalizeOptionalValue(request.startDate),
+          // tramo (ADR-057). Dejarlas fuera hacía que cambiar el inicio no cambiara nada, y
+          // desde el backend#69 el inicio es obligatorio: omitirlo es un 400.
+          startDate: request.startDate.trim(),
           endDate: this.normalizeOptionalValue(request.endDate),
           agreementCode: request.agreementCode.trim().toUpperCase(),
           agreementCategoryCode: request.agreementCategoryCode.trim().toUpperCase(),

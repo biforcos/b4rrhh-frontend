@@ -89,8 +89,9 @@ export class EmployeeAddressReadClient {
           postalCode: this.normalizeOptionalValue(request.postalCode),
           regionCode: this.normalizeOptionalValue(request.regionCode),
           // Las fechas corregidas viajan: corregir una dirección son sus datos y su tramo
-          // (ADR-057, decisión 3). Sin ellas el backend deja el tramo como estaba.
-          startDate: this.normalizeOptionalValue(request.startDate),
+          // (ADR-057, decisión 3). Sin ellas el backend dejaba el tramo como estaba; desde el
+          // backend#69 el inicio es obligatorio y omitirlo es un 400.
+          startDate: request.startDate.trim(),
           endDate: this.normalizeOptionalValue(request.endDate),
         },
       })

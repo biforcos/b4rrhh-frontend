@@ -60,7 +60,10 @@ export function mapContractCorrectDraftToRequest(
   source: ContractCorrectDraft,
 ): UpdateContractRequest {
   return {
-    startDate: source.startDate.trim() || null,
+    // El inicio viaja siempre, nunca null: el contrato lo exige desde el
+    // backend#69, y un cuerpo sin fecha ya no significa «déjala como está»,
+    // significa 400. No moverla se dice mandando la que ya tiene.
+    startDate: source.startDate.trim(),
     endDate: trimOptionalDate(source.endDate),
     contractCode: source.contractCode.trim().toUpperCase(),
     contractSubtypeCode: source.contractSubtypeCode.trim().toUpperCase(),

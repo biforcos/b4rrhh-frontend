@@ -1013,64 +1013,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/AddressErrorResponse"
 
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/addresses/{addressNumber}/close:
-    post:
-      operationId: closeAddressByBusinessKey
-      summary: Close employee address by business key
-      deprecated: true
-      description: >-
-        Kept while the current screen still closes an address before adding the
-        next one. To be removed once the screen is migrated: adding an address
-        already closes the one of the same type in force the day before
-        (ADR-057).
-      tags:
-        - Employee Address
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: addressNumber
-          required: true
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CloseAddressRequest"
-      responses:
-        "200":
-          description: Address closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AddressResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Rule system, employee, or address not found
-        "409":
-          description: Address already closed
-
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers:
     post:
       operationId: createWorkCenterByBusinessKey
@@ -1170,71 +1112,6 @@ paths:
                   $ref: "#/components/schemas/EmployeeWorkCenterAssignmentResponse"
         "404":
           description: Rule system or employee not found
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/replace-from-date:
-    post:
-      operationId: replaceWorkCenterFromDateByBusinessKey
-      summary: Replace employee work center assignment from effective date by business key
-      deprecated: true
-      tags:
-        - Employee Work Center
-      description: >-
-        Kept while the workforce loader still calls it (the screen never did:
-        it adds). ADR-057 retires replace-from-date as a model: it is an add
-        (POST) whose end date is the tail of the assignment in force on the
-        effective date. If an assignment covers effectiveDate, it is closed at
-        effectiveDate - 1 and the new one starts at effectiveDate; if none
-        does, the new one is inserted. Starting on the very start date of an
-        existing assignment is no longer a silent replacement: it is rejected
-        as WORK_CENTER_IS_A_CORRECTION, naming the assignment, and the
-        correction is asked for as such (PUT).
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EmployeeReplaceWorkCenterFromDateRequest"
-      responses:
-        "200":
-          description: Work center assignment replaced from effective date
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmployeeWorkCenterAssignmentResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Rule system, employee, or catalog not found
-        "409":
-          description: >-
-            The resulting series would break an invariant (ADR-057):
-            WORK_CENTER_OVERLAP, WORK_CENTER_COVERAGE_GAP,
-            WORK_CENTER_OUTSIDE_PRESENCE, WORK_CENTER_IS_A_CORRECTION or
-            WORK_CENTER_COMPANY_MISMATCH.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/plan:
     post:
@@ -1442,73 +1319,6 @@ paths:
             WORK_CENTER_COVERAGE_GAP: removing it would leave a stretch of the
             presence without a work center; details.gaps names it and
             details.stretchCandidates the neighbours the user could stretch.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmployeeWorkCenterErrorResponse"
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/work-centers/{workCenterAssignmentNumber}/close:
-    post:
-      operationId: closeWorkCenterByBusinessKey
-      summary: Close employee work center assignment by business key
-      deprecated: true
-      description: >-
-        Kept while the work center screen and the termination flow still
-        close an assignment. ADR-057 retires close as an operation: adding an
-        assignment already closes the one in force the day before, and any
-        other end date is a correction (PUT). Judged like a correction:
-        closing the assignment in force while the presence goes on is
-        rejected as WORK_CENTER_COVERAGE_GAP.
-      tags:
-        - Employee Work Center
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: workCenterAssignmentNumber
-          required: true
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EmployeeCloseWorkCenterRequest"
-      responses:
-        "200":
-          description: Work center assignment closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmployeeWorkCenterAssignmentResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Rule system, employee, or work center assignment not found
-        "409":
-          description: >-
-            WORK_CENTER_ALREADY_CLOSED, or the closed period would break an
-            invariant (ADR-057): WORK_CENTER_COVERAGE_GAP (details name the gap
-            it would leave) or WORK_CENTER_OUTSIDE_PRESENCE.
           content:
             application/json:
               schema:
@@ -1794,65 +1604,6 @@ paths:
           description: Invalid request
         "404":
           description: Employee or working time not found
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/working-times/{workingTimeNumber}/close:
-    post:
-      operationId: closeWorkingTimeByBusinessKey
-      summary: Close employee working time by business key
-      deprecated: true
-      description: >-
-        Kept while the current screen still closes a working time before adding
-        the next one. To be removed once frontend#43 migrates the screen:
-        adding a working time already closes the one in force the day before
-        (ADR-057).
-      tags:
-        - Employee Working Time
-      parameters:
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: workingTimeNumber
-          required: true
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CloseWorkingTimeRequest"
-      responses:
-        "200":
-          description: Working time closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WorkingTimeResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Employee or working time not found
-        "409":
-          description: >-
-            Working time is already closed,
-            or the resulting period is outside employee presence history.
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers:
     get:
@@ -2187,150 +1938,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/CostCenterErrorResponse"
 
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/replace-from-date:
-    post:
-      operationId: replaceCostCenterDistributionFromDate
-      summary: Replace the active cost center distribution from an effective date
-      deprecated: true
-      tags:
-        - Employee Cost Center
-      description: |
-        Deprecated (ADR-057): adding a window with POST /distributions already
-        closes the one in force the day before. Kept while the screen and the
-        workforce loader still call it. It is an add from effectiveDate whose
-        end date is the tail of the window in force on that date (open when
-        none is), judged by the same invariants: an effective date on the
-        start date of an existing window is rejected as
-        COST_CENTER_IS_A_CORRECTION and a resulting overlap as
-        COST_CENTER_OVERLAP. A gap it leaves is legal: the series declares
-        optional coverage.
-      parameters:
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplaceCostCenterDistributionFromDateRequest"
-      responses:
-        "200":
-          description: New distribution window created, previous window closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
-        "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-        "404":
-          description: Employee not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-        "409":
-          description: >-
-            The resulting series would break an invariant (ADR-057):
-            COST_CENTER_OVERLAP, COST_CENTER_OUTSIDE_PRESENCE
-            or COST_CENTER_IS_A_CORRECTION.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/cost-centers/distributions/{startDate}/close:
-    post:
-      operationId: closeCostCenterDistribution
-      summary: Close the cost center distribution window identified by startDate
-      deprecated: true
-      tags:
-        - Employee Cost Center
-      description: |
-        Deprecated (ADR-057): adding the next window already closes the one in
-        force, and any other end date is a correction (PUT). Kept while the
-        screen still calls it. Every line of the window takes endDate, and the
-        result is judged by the invariants: closing the window in force while
-        the presence goes on leaves a gap, which is legal here (the series
-        declares optional coverage); an end date past the presence is
-        COST_CENTER_OUTSIDE_PRESENCE.
-      parameters:
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: startDate
-          required: true
-          schema:
-            type: string
-            format: date
-          description: The startDate that identifies the distribution window to close.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CloseCostCenterDistributionRequest"
-      responses:
-        "200":
-          description: Distribution window closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
-        "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-        "404":
-          description: Employee or distribution window not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-        "409":
-          description: The resulting series would break an invariant (COST_CENTER_OUTSIDE_PRESENCE, COST_CENTER_OVERLAP)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CostCenterErrorResponse"
-
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts:
     post:
       operationId: createContractByBusinessKey
@@ -2429,62 +2036,6 @@ paths:
                   $ref: "#/components/schemas/ContractResponse"
         "404":
           description: Employee not found
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts/replace-from-date:
-    post:
-      operationId: replaceContractFromDateByBusinessKey
-      summary: Replace employee contract from effective date by business key
-      deprecated: true
-      description: >-
-        Kept while the contract screen and the workforce loader still call it.
-        ADR-057 retires replace-from-date as a model: it is an add (POST) whose
-        end date is the tail of the contract in force on the effective date.
-        Starting on the very start date of an existing contract is no longer a
-        silent replacement: it is rejected as CONTRACT_IS_A_CORRECTION, naming
-        the contract, and the correction is asked for as such (PUT).
-      tags:
-        - Employee Contract
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplaceContractFromDateRequest"
-      responses:
-        "200":
-          description: Contract replaced from effective date
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContractResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Employee not found
-        "409":
-          description: >-
-            Replacement results in an invalid timeline
-            (overlap, outside presence, incomplete coverage, or impossible transition).
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts/{startDate}:
     get:
@@ -2689,67 +2240,6 @@ paths:
         "404":
           description: Employee or contract not found
 
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/contracts/{startDate}/close:
-    post:
-      operationId: closeContractByBusinessKey
-      summary: Close employee contract by business key
-      deprecated: true
-      description: >-
-        Kept while the contract screen still closes a contract before adding
-        the next one. ADR-057 retires close as an operation: adding a contract
-        already closes the one in force the day before, and any other end date
-        is a correction (PUT). Judged like a correction: closing the contract
-        in force while the presence goes on is rejected as CONTRACT_COVERAGE_GAP.
-      tags:
-        - Employee Contract
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: startDate
-          required: true
-          schema:
-            type: string
-            format: date
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CloseContractRequest"
-      responses:
-        "200":
-          description: Contract closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContractResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Employee or contract not found
-        "409":
-          description: >-
-            Contract is already closed,
-            or closing creates timeline inconsistencies with employee presence.
-
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications:
     post:
       operationId: createLaborClassificationByBusinessKey
@@ -2850,63 +2340,6 @@ paths:
                   $ref: "#/components/schemas/LaborClassificationResponse"
         "404":
           description: Employee not found
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications/replace-from-date:
-    post:
-      operationId: replaceLaborClassificationFromDateByBusinessKey
-      summary: Replace employee labor classification from effective date by business key
-      deprecated: true
-      description: >-
-        Kept while the labor classification screen and the workforce loader
-        still call it. ADR-057 retires replace-from-date as a model: it is an
-        add (POST) whose end date is the tail of the occurrence in force on the
-        effective date. Starting on the very start date of an existing
-        occurrence is no longer a silent replacement: it is rejected as
-        LABOR_CLASSIFICATION_IS_A_CORRECTION, naming the occurrence, and the
-        correction is asked for as such (PUT).
-      tags:
-        - Employee Labor Classification
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplaceLaborClassificationFromDateRequest"
-      responses:
-        "200":
-          description: Labor classification replaced from effective date
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LaborClassificationResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Employee not found
-        "409":
-          description: >-
-            Replacement results in an invalid timeline
-            (overlap, outside presence, incomplete coverage, or impossible transition).
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications/{startDate}:
     get:
@@ -3112,68 +2545,6 @@ paths:
           description: Invalid request
         "404":
           description: Employee or labor classification not found
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/labor-classifications/{startDate}/close:
-    post:
-      operationId: closeLaborClassificationByBusinessKey
-      summary: Close employee labor classification by business key
-      deprecated: true
-      description: >-
-        Kept while the labor classification screen still closes an occurrence
-        before adding the next one. ADR-057 retires close as an operation:
-        adding an occurrence already closes the one in force the day before,
-        and any other end date is a correction (PUT). Judged like a correction:
-        closing the occurrence in force while the presence goes on is rejected
-        as LABOR_CLASSIFICATION_INCOMPLETE_COVERAGE.
-      tags:
-        - Employee Labor Classification
-      parameters:
-        - $ref: "#/components/parameters/AcceptLanguage"
-        - in: path
-          name: ruleSystemCode
-          required: true
-          schema:
-            type: string
-            maxLength: 5
-        - in: path
-          name: employeeTypeCode
-          required: true
-          schema:
-            type: string
-            maxLength: 30
-        - in: path
-          name: employeeNumber
-          required: true
-          schema:
-            type: string
-            maxLength: 15
-        - in: path
-          name: startDate
-          required: true
-          schema:
-            type: string
-            format: date
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CloseLaborClassificationRequest"
-      responses:
-        "200":
-          description: Labor classification closed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LaborClassificationResponse"
-        "400":
-          description: Invalid request
-        "404":
-          description: Employee or labor classification not found
-        "409":
-          description: >-
-            Labor classification is already closed,
-            or closing creates timeline inconsistencies with employee presence.
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/identifiers:
     post:
@@ -8192,15 +7563,6 @@ components:
           type: string
           format: date
           nullable: true
-    CloseAddressRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
     UpdateAddressRequest:
       type: object
       additionalProperties: false
@@ -8208,6 +7570,7 @@ components:
         - street
         - city
         - countryCode
+        - startDate
       properties:
         street:
           type: string
@@ -8230,15 +7593,19 @@ components:
         startDate:
           type: string
           format: date
-          nullable: true
           description: >-
-            The corrected start date. Omit it to leave both dates as they are;
-            when given, endDate is taken as given too (ADR-057, decision 3).
+            The start date the address has after the correction. Required: the
+            correction always says where the address starts, even when it does
+            not move, and repeating the date it already has is how that is
+            said. It used to be optional, and omitting it meant "leave the
+            dates as they are" — which is indistinguishable from a client that
+            forgot to send it, and ate three screens' edits in silence
+            (backend#69).
         endDate:
           type: string
           format: date
           nullable: true
-          description: The corrected end date. Omit it, with startDate given, for an address that stays open.
+          description: The corrected end date. Omit it, or send null, for an address that stays open.
     AddressErrorResponse:
       type: object
       required:
@@ -8496,36 +7863,6 @@ components:
             Corrected optional end date (yyyy-MM-dd). When provided, must be >= startDate and the
             resulting period [startDate, endDate] must be fully contained within an existing employee
             presence period.
-    EmployeeCloseWorkCenterRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
-          description: >-
-            Date on which the assignment ends (yyyy-MM-dd). Must be >= the assignment's startDate.
-            The resulting period [startDate, endDate] must be fully contained within
-            an existing employee presence period.
-    EmployeeReplaceWorkCenterFromDateRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - effectiveDate
-        - workCenterCode
-      properties:
-        effectiveDate:
-          type: string
-          format: date
-          description: >-
-            Effective date (yyyy-MM-dd) from which the new work center assignment applies.
-            If an assignment covers effectiveDate, it is closed at effectiveDate - 1.
-        workCenterCode:
-          type: string
-          maxLength: 30
-          description: Code validated against active WORK_CENTER rule entities for the employee ruleSystemCode.
     EmployeeWorkCenterAssignmentResponse:
       type: object
       required:
@@ -8752,34 +8089,6 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/CostCenterDistributionItemRequest"
-    ReplaceCostCenterDistributionFromDateRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - effectiveDate
-        - items
-      properties:
-        effectiveDate:
-          type: string
-          format: date
-          description: >-
-            The date from which the replacement takes effect.
-            The active window ending at effectiveDate - 1 day is closed.
-        items:
-          type: array
-          minItems: 1
-          items:
-            $ref: "#/components/schemas/CostCenterDistributionItemRequest"
-    CloseCostCenterDistributionRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
-          description: Date on which all lines in the window end (yyyy-MM-dd). Must be >= window startDate.
     CostCenterDistributionItemResponse:
       type: object
       required:
@@ -8857,21 +8166,24 @@ components:
       type: object
       additionalProperties: false
       required:
+        - startDate
         - items
       properties:
         startDate:
           type: string
           format: date
           description: >-
-            The corrected start date. Omit it to keep the dates the window has
-            and correct only its lines.
+            The start date the window has after the correction. Required: the
+            correction always says where the window starts, and correcting
+            only its lines is said by repeating the start date the path
+            already carries. It used to be optional, and omitting it meant
+            "keep the dates" — indistinguishable from a client that forgot to
+            send it (backend#69).
         endDate:
           type: string
           format: date
           nullable: true
-          description: >-
-            The corrected end date, read only when startDate comes. Omit it for
-            a window that stays open.
+          description: The corrected end date. Omit it, or send null, for a window that stays open.
         items:
           type: array
           minItems: 1
@@ -9034,16 +8346,6 @@ components:
           type: number
           format: double
           description: Percentage from > 0 to <= 100. Source of truth for derived persisted hours.
-    CloseWorkingTimeRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
-          description: Date on which the working time period ends (yyyy-MM-dd).
     UpdateWorkingTimeRequest:
       type: object
       additionalProperties: false
@@ -9055,14 +8357,17 @@ components:
           type: string
           format: date
           description: >-
-            Corrected start date (yyyy-MM-dd). No neighbour is adjusted: if the
-            new dates leave a gap or an overlap the correction is rejected and
-            the error names what to stretch.
+            The start date the working time has after the correction
+            (yyyy-MM-dd). Required, like in every temporal series
+            (backend#69): correcting without moving the start is said by
+            repeating the date it already has. No neighbour is adjusted: if
+            the new dates leave a gap or an overlap the correction is rejected
+            and the error names what to stretch.
         endDate:
           type: string
           format: date
           nullable: true
-          description: Corrected end date (yyyy-MM-dd). Omit it to leave the working time open.
+          description: Corrected end date (yyyy-MM-dd). Omit it, or send null, to leave the working time open.
         workingTimePercentage:
           type: number
           format: double
@@ -9263,51 +8568,31 @@ components:
           format: date
           nullable: true
           description: Optional end date (yyyy-MM-dd). Must be greater than or equal to startDate.
-    ReplaceContractFromDateRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - effectiveDate
-        - contractCode
-        - contractSubtypeCode
-      properties:
-        effectiveDate:
-          type: string
-          format: date
-          description: Effective date from which the contract is replaced (yyyy-MM-dd).
-        contractCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          description: Code validated against active CONTRACT rule entities for the employee ruleSystemCode.
-        contractSubtypeCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          description: >-
-            Code validated against active CONTRACT_SUBTYPE rule entities for the employee ruleSystemCode
-            and against the contract-subtype relation for effectiveDate.
     UpdateContractRequest:
       type: object
       additionalProperties: false
       required:
+        - startDate
         - contractCode
         - contractSubtypeCode
       properties:
         startDate:
           type: string
           format: date
-          nullable: true
           description: >-
-            Corrected start date (yyyy-MM-dd). Omit it to keep the path
-            startDate. Nothing else moves (ADR-057): if the new start leaves a
-            gap the predecessor is not stretched, the request is rejected and
-            the error names it as the neighbour to stretch.
+            The start date the contract has after the correction (yyyy-MM-dd).
+            Required: correcting without moving the start is said by repeating
+            the startDate the path already carries. It used to be optional,
+            and omitting it meant "keep the path startDate" — indistinguishable
+            from a client that forgot to send it (backend#69). Nothing else
+            moves (ADR-057): if the new start leaves a gap the predecessor is
+            not stretched, the request is rejected and the error names it as
+            the neighbour to stretch.
         endDate:
           type: string
           format: date
           nullable: true
-          description: Corrected end date (yyyy-MM-dd). Omit it for a contract that stays open.
+          description: Corrected end date (yyyy-MM-dd). Omit it, or send null, for a contract that stays open.
         contractCode:
           type: string
           minLength: 3
@@ -9316,16 +8601,6 @@ components:
           type: string
           minLength: 3
           maxLength: 3
-    CloseContractRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
-          description: Date on which the contract period ends (yyyy-MM-dd).
     ContractResponse:
       type: object
       required:
@@ -9526,65 +8801,37 @@ components:
           format: date
           nullable: true
           description: Optional end date (yyyy-MM-dd). Must be greater than or equal to startDate.
-    ReplaceLaborClassificationFromDateRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - effectiveDate
-        - agreementCode
-        - agreementCategoryCode
-      properties:
-        effectiveDate:
-          type: string
-          format: date
-          description: Effective date from which the labor classification is replaced (yyyy-MM-dd).
-        agreementCode:
-          type: string
-          maxLength: 30
-          description: Code validated against active AGREEMENT rule entities for the employee ruleSystemCode.
-        agreementCategoryCode:
-          type: string
-          maxLength: 30
-          description: >-
-            Code validated against active AGREEMENT_CATEGORY rule entities for the employee ruleSystemCode
-            and against the agreement-category relation for effectiveDate.
     UpdateLaborClassificationRequest:
       type: object
       additionalProperties: false
       required:
+        - startDate
         - agreementCode
         - agreementCategoryCode
       properties:
         startDate:
           type: string
           format: date
-          nullable: true
           description: >-
-            Corrected start date (yyyy-MM-dd). Omit it to keep the path
-            startDate. Nothing else moves (ADR-057): if the new start leaves a
-            gap the predecessor is not stretched, the request is rejected and
-            the error names it as the neighbour to stretch.
+            The start date the labor classification has after the correction
+            (yyyy-MM-dd). Required: correcting without moving the start is
+            said by repeating the startDate the path already carries. It used
+            to be optional, and omitting it meant "keep the path startDate" —
+            indistinguishable from a client that forgot to send it
+            (backend#69). Nothing else moves (ADR-057): if the new start
+            leaves a gap the predecessor is not stretched, the request is
+            rejected and the error names it as the neighbour to stretch.
         endDate:
           type: string
           format: date
           nullable: true
-          description: Corrected end date (yyyy-MM-dd). Omit it for an occurrence that stays open.
+          description: Corrected end date (yyyy-MM-dd). Omit it, or send null, for an occurrence that stays open.
         agreementCode:
           type: string
           maxLength: 30
         agreementCategoryCode:
           type: string
           maxLength: 30
-    CloseLaborClassificationRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - endDate
-      properties:
-        endDate:
-          type: string
-          format: date
-          description: Date on which the labor classification period ends (yyyy-MM-dd).
     LaborClassificationResponse:
       type: object
       required:

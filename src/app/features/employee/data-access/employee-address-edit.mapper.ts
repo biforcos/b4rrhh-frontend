@@ -79,8 +79,10 @@ export function mapAddressCorrectDraftToUpdateAddressRequest(
     postalCode: normalizeOptionalValue(draft.postalCode),
     regionCode: normalizeOptionalValue(draft.regionCode),
     // Las fechas corregidas viajan: corregir una dirección son sus datos y su tramo (ADR-057,
-    // decisión 3). Dejarlas fuera hacía que cambiar el inicio no cambiara nada.
-    startDate: normalizeOptionalValue(draft.startDate),
+    // decisión 3). Dejarlas fuera hacía que cambiar el inicio no cambiara nada. El inicio
+    // además es obligatorio en el contrato desde el backend#69: omitirlo es un 400, no un
+    // «déjala como está».
+    startDate: normalizeRequiredValue(draft.startDate),
     endDate: normalizeOptionalValue(draft.endDate),
   };
 }

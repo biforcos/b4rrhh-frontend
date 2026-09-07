@@ -60,7 +60,10 @@ export function mapLaborClassificationCorrectDraftToRequest(
   source: LaborClassificationCorrectDraft,
 ): UpdateLaborClassificationRequest {
   return {
-    startDate: source.startDate.trim() || null,
+    // El inicio viaja siempre, nunca null: el contrato lo exige desde el
+    // backend#69, y un cuerpo sin fecha ya no significa «déjala como está»,
+    // significa 400. No moverla se dice mandando la que ya tiene.
+    startDate: source.startDate.trim(),
     endDate: trimOptionalDate(source.endDate),
     agreementCode: source.agreementCode.trim().toUpperCase(),
     agreementCategoryCode: source.agreementCategoryCode.trim().toUpperCase(),
