@@ -1,28 +1,26 @@
 <section class="temporal-section" [attr.aria-label]="title()">
-  <header class="temporal-section__header">
-    <div class="temporal-section__heading">
-      <h3 class="temporal-section__title">{{ title() }}</h3>
-      <!-- Solo la que gobierna lleva marca: lo excepcional se ve porque lo normal calla. -->
-      @if (governs()) {
-        <span class="temporal-section__mode temporal-section__mode--governs">gobierna</span>
-      }
-      @if (count() > 0) {
-        <span class="temporal-section__count">
-          {{ count() }} {{ count() === 1 ? 'periodo' : 'periodos' }}
-          @if (activeCount() > 0) {
-            · {{ activeCount() }} en vigor
-          }
-        </span>
-      }
-    </div>
-    @if (addLabel(); as label) {
-      <!-- Añadir es frecuente pero no es a lo que se viene: un enlace discreto, no un botón. -->
-      <button type="button" class="temporal-section__add-btn" (click)="addClicked.emit()">
-        <b4-icon name="anadir" [size]="16" />
-        {{ label }}
-      </button>
+  <app-section-heading
+    [title]="title()"
+    [governs]="governs()"
+    [boxed]="boxed()"
+    [addLabel]="addLabel()"
+    (addClicked)="addClicked.emit()"
+  >
+    <!-- Solo la que gobierna lleva marca: lo excepcional se ve porque lo normal calla. -->
+    @if (governs()) {
+      <span sectionHeadingMeta class="temporal-section__mode temporal-section__mode--governs"
+        >gobierna</span
+      >
     }
-  </header>
+    @if (count() > 0) {
+      <span sectionHeadingMeta class="section-heading__meta">
+        {{ count() }} {{ count() === 1 ? 'periodo' : 'periodos' }}
+        @if (activeCount() > 0) {
+          · {{ activeCount() }} en vigor
+        }
+      </span>
+    }
+  </app-section-heading>
 
   @if (rows().length === 0) {
     <p class="temporal-section__empty">{{ emptyMessage() }}</p>

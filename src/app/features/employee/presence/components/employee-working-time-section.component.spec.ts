@@ -99,7 +99,7 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
   });
 
   it('renders the table with the add action named after what it does', () => {
-    const addButton = fix.nativeElement.querySelector('.temporal-section__add-btn');
+    const addButton = fix.nativeElement.querySelector('.section-heading__add-btn');
     expect(addButton).toBeTruthy();
     expect(addButton.textContent.trim()).toBe('Añadir jornada');
   });
@@ -118,7 +118,7 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
 
   describe('adding a working time', () => {
     it('opens the add modal and asks for the plan of a working time from today, open', () => {
-      fix.nativeElement.querySelector('.temporal-section__add-btn').click();
+      fix.nativeElement.querySelector('.section-heading__add-btn').click();
       fix.detectChanges();
 
       expect(c.modalVisible()).toBe(true);

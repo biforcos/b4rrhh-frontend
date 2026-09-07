@@ -7,7 +7,7 @@ import {
   output,
 } from '@angular/core';
 
-import { B4IconComponent } from '../icon/b4-icon.component';
+import { SectionHeadingComponent } from '../section-heading/section-heading.component';
 
 /**
  * El contenedor de una sección `SLOT` (ADR-010, ADR-016, ADR-051): una lista corta de huecos con
@@ -18,6 +18,10 @@ import { B4IconComponent } from '../icon/b4-icon.component';
  * secciones con el mismo modo se ven iguales; y el estado vacío es contenido de la sección —dice
  * qué falta y cómo añadirlo—, no otra caja dentro (frontend#19, ADR-051 §3).
  *
+ * El rótulo lo pone `app-section-heading`, el mismo que usa el contenedor temporal: quien lee la
+ * ficha no sabe cuál de las dos secciones es una serie, y dos tamaños de título le dirían que hay
+ * una jerarquía que no existe (frontend#51).
+ *
  * Las filas las proyecta la sección con las clases `slot-section__*`, que son el contrato del
  * contenedor. El recuento y si hay un borrador abierto se los dice la sección: el contenedor no
  * mira dentro de lo que proyecta.
@@ -25,7 +29,7 @@ import { B4IconComponent } from '../icon/b4-icon.component';
 @Component({
   selector: 'app-slot-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [B4IconComponent],
+  imports: [SectionHeadingComponent],
   templateUrl: './slot-section.component.html',
   styleUrl: './slot-section.component.scss',
   // Sin encapsulación a propósito (ver el contenedor temporal): las secciones proyectan sus

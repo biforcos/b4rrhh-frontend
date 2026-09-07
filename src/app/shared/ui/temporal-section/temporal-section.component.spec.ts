@@ -22,6 +22,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
       [rows]="rows()"
       title="Test"
       [governs]="governs()"
+      [boxed]="boxed()"
       [addLabel]="addLabel()"
       anchorId="employee-section-test"
       (addClicked)="adds = adds + 1"
@@ -39,6 +40,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
 class Host {
   readonly rows = signal<TestRow[]>([]);
   readonly governs = signal(false);
+  readonly boxed = signal(false);
   readonly addLabel = signal<string | null>('Nuevo período');
   adds = 0;
   editIdx: number | null = null;
@@ -71,7 +73,7 @@ describe('TemporalSectionComponent', () => {
     expect(fix.nativeElement.querySelector('.temporal-section__mode')).toBeNull();
     expect(
       fix.nativeElement
-        .querySelector('.temporal-section__count')
+        .querySelector('.section-heading__meta')
         ?.textContent?.replace(/\s+/g, ' ')
         .trim(),
     ).toBe('2 periodos · 1 en vigor');
@@ -85,7 +87,15 @@ describe('TemporalSectionComponent', () => {
     expect(fix.nativeElement.querySelector('.temporal-section__mode')?.textContent?.trim()).toBe(
       'gobierna',
     );
-    expect(fix.nativeElement.querySelector('.temporal-section-host--governs')).toBeTruthy();
+    expect(fix.nativeElement.querySelector('.section-heading--governs')).toBeTruthy();
+  });
+
+  it('dentro de una caja el rótulo se queda sin filete: separar es cosa de la caja', () => {
+    const { fix, host } = createHost([row()]);
+    expect(fix.nativeElement.querySelector('.section-heading--boxed')).toBeNull();
+    host.boxed.set(true);
+    fix.detectChanges();
+    expect(fix.nativeElement.querySelector('.section-heading--boxed')).toBeTruthy();
   });
 
   it('lo vigente manda: la fila en vigor va marcada y las cerradas apagadas, todas a la vista', () => {
@@ -107,7 +117,7 @@ describe('TemporalSectionComponent', () => {
     const { fix, host } = createHost([row()]);
     host.addLabel.set(null);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelector('.temporal-section__add-btn')).toBeNull();
+    expect(fix.nativeElement.querySelector('.section-heading__add-btn')).toBeNull();
   });
 
   it('las fechas van en formato local: en vigor y cerrado', () => {
@@ -144,7 +154,7 @@ describe('TemporalSectionComponent', () => {
       row(),
       row({ startDate: '2020-01-01', isActive: false, canDelete: true }),
     ]);
-    fix.nativeElement.querySelector('.temporal-section__add-btn').click();
+    fix.nativeElement.querySelector('.section-heading__add-btn').click();
     fix.nativeElement.querySelector('[aria-label^="Editar"]').click();
     fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();
     expect(host.adds).toBe(1);

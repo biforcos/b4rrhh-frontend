@@ -44,7 +44,7 @@ describe('SlotSectionComponent', () => {
     const { fix } = createHost();
     const empty = fix.nativeElement.querySelector('.slot-section__empty');
     expect(empty?.textContent?.trim()).toBe('Sin nada. Añade con «Añadir».');
-    expect(fix.nativeElement.querySelector('.slot-section__count')).toBeNull();
+    expect(fix.nativeElement.querySelector('.section-heading__meta')).toBeNull();
     expect(fix.nativeElement.querySelector('#employee-section-test')).toBeTruthy();
   });
 
@@ -60,16 +60,18 @@ describe('SlotSectionComponent', () => {
     host.count.set(3);
     fix.detectChanges();
     expect(fix.nativeElement.querySelector('.slot-section__empty')).toBeNull();
-    expect(fix.nativeElement.querySelector('.slot-section__count')?.textContent?.trim()).toBe('3');
+    expect(fix.nativeElement.querySelector('.section-heading__meta')?.textContent?.trim()).toBe(
+      '3',
+    );
     expect(fix.nativeElement.textContent).toContain('proyectada');
   });
 
   it('emite añadir, y sin etiqueta no hay acción de añadir', () => {
     const { fix, host } = createHost();
-    fix.nativeElement.querySelector('.slot-section__add-btn').click();
+    fix.nativeElement.querySelector('.section-heading__add-btn').click();
     expect(host.adds).toBe(1);
     host.addLabel.set(null);
     fix.detectChanges();
-    expect(fix.nativeElement.querySelector('.slot-section__add-btn')).toBeNull();
+    expect(fix.nativeElement.querySelector('.section-heading__add-btn')).toBeNull();
   });
 });

@@ -3,6 +3,9 @@
  * la cabecera bastan para separar. Las filas van a hilo, no en cajas; la que se está editando o
  * confirmando se marca con el filo, no con otro contenedor.
  *
+ * El filete, el aire y el título los pone `app-section-heading` (frontend#51): aquí no se copia
+ * ninguno de esos valores.
+ *
  * Sin encapsulación (ver el componente): los selectores llevan el prefijo del contenedor.
  */
 app-slot-section {
@@ -11,62 +14,7 @@ app-slot-section {
 }
 
 .slot-section {
-  padding: 14px 0 6px;
-  border-top: 1px solid var(--border-strong);
-}
-
-.slot-section__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.slot-section__heading {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  min-width: 0;
-}
-
-.slot-section__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.slot-section__count {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-tertiary);
-}
-
-.slot-section__add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 0;
-  padding: 4px 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  border-radius: var(--radius-sm);
-}
-
-.slot-section__add-btn:hover,
-.slot-section__add-btn:focus-visible {
-  color: var(--accent-primary);
-  background: var(--surface-hover);
-}
-
-.slot-section__add-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
+  padding-bottom: 6px;
 }
 
 /* El estado vacío es contenido de la sección, no otra caja (ADR-051 §3). */

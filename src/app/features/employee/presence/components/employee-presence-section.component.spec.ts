@@ -43,7 +43,7 @@ describe('EmployeePresenceSectionComponent', () => {
     expect(
       el.querySelector('.temporal-section__mode')?.textContent?.replace(/\s+/g, ' ').trim(),
     ).toBe('gobierna');
-    expect(el.querySelector('.temporal-section__add-btn')).toBeNull();
+    expect(el.querySelector('.section-heading__add-btn')).toBeNull();
     expect(el.querySelector('#employee-section-presence')).not.toBeNull();
     expect(el.querySelector('.temporal-section__empty')?.textContent).toContain(
       'No hay presencias',

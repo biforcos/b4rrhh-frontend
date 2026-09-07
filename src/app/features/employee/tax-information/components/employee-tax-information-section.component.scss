@@ -2,12 +2,6 @@
   display: block;
 }
 
-/* Esta sección no se apila con otras: va sola dentro de la caja del área de nómina, y el aire de
-   separación lo pone la caja. El filete y el resto de la jerarquía se quedan. */
-.tax-information-section app-temporal-section {
-  margin-top: 0;
-}
-
 .tax-information-section__count-input {
   width: 100%;
   box-sizing: border-box;

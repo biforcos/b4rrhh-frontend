@@ -1,0 +1,22 @@
+<header
+  class="section-heading"
+  [class.section-heading--governs]="governs()"
+  [class.section-heading--boxed]="boxed()"
+>
+  <div class="section-heading__label">
+    <h2 class="section-heading__title" [attr.id]="titleId()">{{ title() }}</h2>
+    <ng-content select="[sectionHeadingMeta]" />
+  </div>
+  @if (addLabel(); as label) {
+    <!-- Añadir es frecuente pero no es a lo que se viene: un enlace discreto, no un botón. -->
+    <button
+      type="button"
+      class="section-heading__add-btn"
+      [disabled]="addDisabled()"
+      (click)="addClicked.emit()"
+    >
+      <b4-icon name="anadir" [size]="16" />
+      {{ label }}
+    </button>
+  }
+</header>

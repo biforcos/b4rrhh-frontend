@@ -89,6 +89,26 @@ Final slot naming:
 - sectionCardActions
 - sectionCardFooter
 
+## app-section-heading
+
+Use it for the label of any section of a record page: the rule that separates it from the one
+above, the title, the figure that sums it up beside it, and the add action.
+
+Does:
+- one treatment for every section, temporal or not: the visual hierarchy belongs to the page, not
+  to the container that implements it (frontend#51)
+- `governs` marks the one section that governs over the others (ADR-051 rule 1)
+- `boxed` for a section that brings its own box: the box does the separating, so the rule and the
+  outer air go away and only the title stays
+
+Does not:
+- know what the section holds, or how it is maintained
+- let anyone copy its values: if the treatment lives in a second file, one of the two will be
+  forgotten the next time it is touched
+
+Final slot naming:
+- sectionHeadingMeta
+
 ## app-page-skeleton
 
 The page plan (ADR-050). Every page lives inside it; nothing else decides widths.

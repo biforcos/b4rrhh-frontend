@@ -1,6 +1,7 @@
 <div class="tax-information-section">
   <app-temporal-section
     title="Información Fiscal (Modelo 145)"
+    [boxed]="true"
     [rows]="rows()"
     emptyMessage="Sin información fiscal registrada. Se aplican valores por defecto (soltero/a, sin cargas, territorio común)."
     (addClicked)="openCreate()"

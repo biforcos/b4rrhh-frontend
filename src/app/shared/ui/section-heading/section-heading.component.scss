@@ -1,0 +1,85 @@
+/*
+ * El rótulo de sección de la ficha (frontend#51). Los valores del tratamiento —el filete, el aire,
+ * el tamaño del título— viven aquí y en ningún otro sitio: si acaban en dos ficheros, la próxima
+ * vez que se toque uno se olvidará el otro.
+ *
+ * Sin encapsulación (ver el componente): los selectores llevan el prefijo del rótulo.
+ */
+app-section-heading {
+  display: block;
+}
+
+/* «Contrato» y «PERÍODO | TIPO | SUBTIPO» son los dos rótulos, y pegados competían: el aire de
+   aquí es lo que hace que el título mande. */
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* El filete va encima del título, no debajo: separa secciones, en vez de separar el título de su
+   propio contenido. El aire entre secciones va con él, porque separan lo mismo. */
+.section-heading:not(.section-heading--boxed) {
+  margin-top: 40px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-default);
+}
+
+/* Lo único que distingue a una sección de otra: que gobierne sobre las demás (ADR-051 §1). */
+.section-heading--governs:not(.section-heading--boxed) {
+  border-top-width: 2px;
+  border-top-color: var(--accent-primary);
+}
+
+.section-heading__label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.section-heading__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* El dato que resume la sección, junto al título: el recuento de periodos, el rango de la línea de
+   vida, el día del que habla «Hoy». Retrocede, como la cabecera de columnas. */
+.section-heading__meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* Añadir: un enlace discreto. La acción principal de la página está arriba, en la identidad. */
+.section-heading__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+}
+
+.section-heading__add-btn:hover,
+.section-heading__add-btn:focus-visible {
+  color: var(--accent-primary);
+  background: var(--surface-hover);
+}
+
+.section-heading__add-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

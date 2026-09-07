@@ -12,6 +12,7 @@ import {
 
 import { formatDisplayDate } from '../../utils/local-date.util';
 import { B4IconComponent } from '../icon/b4-icon.component';
+import { SectionHeadingComponent } from '../section-heading/section-heading.component';
 import { TemporalSectionRow } from './temporal-section-row.model';
 
 /**
@@ -27,6 +28,9 @@ import { TemporalSectionRow } from './temporal-section-row.model';
  * Lo único que distingue a la presencia es la marca de que **gobierna** sobre las demás
  * (ADR-047). No hay marca de «temporal»: si todas la llevaran, no distinguiría ninguna.
  *
+ * El rótulo no es suyo: lo pone `app-section-heading`, porque la jerarquía de títulos es de la
+ * ficha y no de este contenedor (frontend#51).
+ *
  * Las fechas van en formato local. Lo que va en cada columna lo decide la sección con
  * `columnHeaders` y `cellContent`; la regla ADR-051 §4 —el código nunca va solo— la cumple la
  * sección pintando cada valor de catálogo con `app-ui-catalog-label`. Queda
@@ -36,7 +40,7 @@ import { TemporalSectionRow } from './temporal-section-row.model';
 @Component({
   selector: 'app-temporal-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, B4IconComponent],
+  imports: [NgTemplateOutlet, B4IconComponent, SectionHeadingComponent],
   templateUrl: './temporal-section.component.html',
   styleUrl: './temporal-section.component.scss',
   // Sin encapsulación a propósito: las secciones proyectan sus propias celdas y cabeceras con
@@ -45,7 +49,6 @@ import { TemporalSectionRow } from './temporal-section-row.model';
   encapsulation: ViewEncapsulation.None,
   host: {
     '[attr.id]': 'anchorId()',
-    '[class.temporal-section-host--governs]': 'governs()',
   },
 })
 export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSectionRow> {
@@ -56,6 +59,12 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly emptyMessage = input('Sin períodos registrados');
   /** La sección que gobierna sobre las demás: se marca. */
   readonly governs = input(false);
+  /**
+   * La sección no se apila con otras porque va dentro de su propia caja (la de IRPF, en el área de
+   * nómina): el filete y el aire de separación los pone la caja. Se declara aquí y no se parchea
+   * desde la feature (ADR-051).
+   */
+  readonly boxed = input(false);
   /** Id del elemento anfitrión, para las anclas del índice (`employee-section-…`). */
   readonly anchorId = input<string | null>(null);
 
