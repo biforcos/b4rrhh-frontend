@@ -4999,6 +4999,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ConceptOperandResponse'
+        '404':
+          description: |
+            The target concept does not exist in the rule system. A source that does not
+            exist is a 422, not a 404: the concept addressed by the path is the only 404.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollConceptErrorResponse'
+        '422':
+          description: |
+            The request is well formed but the graph cannot take it, and nothing was
+            written. Two cases share this status:
+
+            - a `sourceObjectCode` does not resolve to a concept of the same rule system —
+              `PayrollObject not found: ruleSystemCode=ESP, objectTypeCode=CONCEPT,
+              objectCode=NO_EXISTE`;
+            - an operand crosses from SEGMENT to PERIOD (ADR-058) — `Operand QUANTITY of
+              PERIOD concept ESP/T_PRECIO_DIA (T_PRECIO_DIA) cannot read SEGMENT concept
+              ESP/T_DIAS_PRESENCIA (T_DIAS_PRESENCIA): no operand crosses from SEGMENT to
+              PERIOD (ADR-058); a feed relation may`. The message names the role and both
+              concepts so the client can point at the edge it refused.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollConceptErrorResponse'
 
   /payroll-engine/{ruleSystemCode}/concepts/{conceptCode}/feeds:
     get:
@@ -10337,6 +10362,14 @@ components:
           type: string
           format: date
           nullable: true
+
+    PayrollConceptErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: "PayrollConcept not found: ruleSystemCode=ESP, conceptCode=NO_EXISTE"
 
     UpdateConceptAssignmentRequest:
       type: object
