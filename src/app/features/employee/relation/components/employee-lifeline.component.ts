@@ -13,6 +13,7 @@ import {
 
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
+import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import { formatDisplayDate, parseLocalDate } from '../../../../shared/utils/local-date.util';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeContractModel } from '../../models/employee-contract.model';
@@ -174,7 +175,7 @@ interface RawPeriod {
 @Component({
   selector: 'app-employee-lifeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [B4IconComponent],
+  imports: [B4IconComponent, SectionHeadingComponent],
   templateUrl: './employee-lifeline.component.html',
   styleUrl: './employee-lifeline.component.scss',
 })

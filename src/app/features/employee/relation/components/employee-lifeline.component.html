@@ -1,8 +1,7 @@
 <section class="lifeline" aria-labelledby="lifeline-title">
-  <header class="lifeline__header">
-    <h2 id="lifeline-title" class="lifeline__title">{{ texts.lifelineTitle }}</h2>
+  <app-section-heading [title]="texts.lifelineTitle" titleId="lifeline-title" [boxed]="true">
     @if (hasData()) {
-      <p class="lifeline__range">
+      <p sectionHeadingMeta class="section-heading__meta">
         {{ rangeLabel() }} · {{ stageCount() }}
         {{ stageCount() === 1 ? texts.lifelineStageSingularLabel : texts.lifelineStagePluralLabel }}
         @if (compressedScale()) {
@@ -10,7 +9,7 @@
         }
       </p>
     }
-  </header>
+  </app-section-heading>
 
   @if (loading() && !hasData()) {
     <p class="lifeline__message">{{ texts.lifelineLoadingMessage }}</p>

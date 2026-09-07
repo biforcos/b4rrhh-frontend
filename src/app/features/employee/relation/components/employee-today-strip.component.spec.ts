@@ -121,7 +121,7 @@ describe('EmployeeTodayStripComponent', () => {
 
   it('dice de qué día habla, porque «hoy» solo no basta con histórico', () => {
     const el: HTMLElement = render().nativeElement;
-    expect(el.querySelector('.today__subtitle')?.textContent?.trim()).toMatch(
+    expect(el.querySelector('.section-heading__meta')?.textContent?.trim()).toMatch(
       /^Lo vigente a \d{1,2} de \p{L}+ de \d{4}$/u,
     );
   });

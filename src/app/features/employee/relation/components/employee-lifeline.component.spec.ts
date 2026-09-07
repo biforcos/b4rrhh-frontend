@@ -148,7 +148,7 @@ describe('EmployeeLifelineComponent', () => {
       'Cese',
       'Readmisión',
     ]);
-    expect(one('.lifeline__range')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    expect(one('.section-heading__meta')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
       'oct 2023 — dic 2026 · 2 etapas',
     );
     expect(fixture.nativeElement.textContent).not.toMatch(/started|ended|Contract|Presence/);

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
+import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import {
   currentLocalDate,
   formatDisplayDate,
@@ -46,7 +47,7 @@ const HOURS = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
 @Component({
   selector: 'app-employee-today-strip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [B4IconComponent],
+  imports: [B4IconComponent, SectionHeadingComponent],
   templateUrl: './employee-today-strip.component.html',
   styleUrl: './employee-today-strip.component.scss',
 })

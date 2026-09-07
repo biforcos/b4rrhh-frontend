@@ -16,28 +16,6 @@
   padding: 16px 20px 12px;
 }
 
-.lifeline__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.lifeline__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.lifeline__range {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
-
 /* Aviso: hay tramos aplastados en el mínimo; la escala ya no distingue lo corto. */
 .lifeline__compressed {
   color: var(--warning-text);

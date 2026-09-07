@@ -10,21 +10,6 @@
   padding: 14px 20px 12px;
 }
 
-.today__title {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: 23px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-/* «Hoy» solo es ambiguo en una ficha con histórico: la fecha lo desambigua. */
-.today__subtitle {
-  margin: 2px 0 12px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-
 /* A dos columnas, para que no ocupe media pantalla. */
 .today__grid {
   display: grid;
