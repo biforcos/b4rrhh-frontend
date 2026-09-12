@@ -13,11 +13,11 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 
+import { EmployeeNumberingService } from '../../../core/api/generated/api/employee-numbering.service';
 import {
-  EmployeeNumberingConfigClient,
-  EmployeeNumberingConfig,
+  EmployeeNumberingConfigResponse,
   UpsertEmployeeNumberingConfigRequest,
-} from '../../../core/api/clients/employee-numbering-config.client';
+} from '../../../core/api/generated/model/models';
 
 @Component({
   selector: 'app-employee-numbering-config-card',
@@ -30,9 +30,9 @@ import {
 export class EmployeeNumberingConfigCardComponent implements OnChanges {
   readonly ruleSystemCode = input.required<string>();
 
-  private readonly client = inject(EmployeeNumberingConfigClient);
+  private readonly api = inject(EmployeeNumberingService);
 
-  readonly config = signal<EmployeeNumberingConfig | null>(null);
+  readonly config = signal<EmployeeNumberingConfigResponse | null>(null);
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly notConfigured = signal(false);
@@ -58,7 +58,7 @@ export class EmployeeNumberingConfigCardComponent implements OnChanges {
 
   private load(): void {
     this.loading.set(true);
-    this.client.get(this.ruleSystemCode()).subscribe({
+    this.api.getEmployeeNumberingConfig({ ruleSystemCode: this.ruleSystemCode() }).subscribe({
       next: (cfg) => {
         this.config.set(cfg);
         this.notConfigured.set(false);
@@ -73,7 +73,7 @@ export class EmployeeNumberingConfigCardComponent implements OnChanges {
     });
   }
 
-  private syncDraftFromConfig(cfg: EmployeeNumberingConfig): void {
+  private syncDraftFromConfig(cfg: EmployeeNumberingConfigResponse): void {
     this.draftPrefix.set(cfg.prefix);
     this.draftNumericPartLength.set(cfg.numericPartLength);
     this.draftStep.set(cfg.step);
@@ -88,16 +88,21 @@ export class EmployeeNumberingConfigCardComponent implements OnChanges {
       step: this.draftStep(),
       nextValue: this.draftNextValue(),
     };
-    this.client.upsert(this.ruleSystemCode(), request).subscribe({
-      next: (cfg) => {
-        this.config.set(cfg);
-        this.notConfigured.set(false);
-        this.syncDraftFromConfig(cfg);
-        this.saving.set(false);
-      },
-      error: () => {
-        this.saving.set(false);
-      },
-    });
+    this.api
+      .upsertEmployeeNumberingConfig({
+        ruleSystemCode: this.ruleSystemCode(),
+        upsertEmployeeNumberingConfigRequest: request,
+      })
+      .subscribe({
+        next: (cfg) => {
+          this.config.set(cfg);
+          this.notConfigured.set(false);
+          this.syncDraftFromConfig(cfg);
+          this.saving.set(false);
+        },
+        error: () => {
+          this.saving.set(false);
+        },
+      });
   }
 }
