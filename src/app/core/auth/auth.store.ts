@@ -33,8 +33,21 @@ export class AuthStore {
    */
   private readonly sessionExpiredState = signal(false);
 
+  /**
+   * Si en esta carga de la aplicacion ha llegado a haber una sesion viva (frontend#59).
+   *
+   * Es lo que distingue «todavia no ha entrado nadie» de «habia sesion y ya no la hay», y
+   * es lo unico que el interceptor necesita para saber si una llamada sin token es normal
+   * o es un problema. Antes de que nadie entre no hay sesion que se caiga.
+   *
+   * No se limpia al salir, a proposito: una vez que hubo sesion, cualquier llamada sin
+   * token de esta carga es una credencial que falta, no una peticion publica.
+   */
+  private readonly hasHadSessionState = signal(false);
+
   readonly session = this.sessionState.asReadonly();
   readonly sessionExpired = this.sessionExpiredState.asReadonly();
+  readonly hasHadSession = this.hasHadSessionState.asReadonly();
   readonly token = computed(() => this.sessionState().token);
   readonly subject = computed(() => this.sessionState().subject);
   readonly expiresAt = computed(() => this.sessionState().expiresAt);
@@ -82,7 +95,7 @@ export class AuthStore {
         error: null,
       };
 
-      this.sessionState.set(nextState);
+      this.enterSession(nextState);
       this.persistSession(nextState);
       return true;
     } catch {
@@ -127,7 +140,7 @@ export class AuthStore {
         error: null,
       };
 
-      this.sessionState.set(nextState);
+      this.enterSession(nextState);
       this.persistSession(nextState);
       return true;
     } catch {
@@ -169,6 +182,16 @@ export class AuthStore {
     return session.token;
   }
 
+  /**
+   * El unico sitio por el que se entra en sesion. Que sea uno solo es lo que hace que el
+   * pestillo no pueda quedarse sin echar: una forma nueva de entrar pasa por aqui, o no
+   * entra. Una lista de sitios que acordarse de tocar es justo lo que provoco el #59.
+   */
+  private enterSession(session: AuthSessionState): void {
+    this.sessionState.set(session);
+    this.hasHadSessionState.set(true);
+  }
+
   private restorePersistedSession(): void {
     const storage = this.getStorage();
     if (!storage) {
@@ -199,7 +222,7 @@ export class AuthStore {
         return;
       }
 
-      this.sessionState.set({
+      this.enterSession({
         token,
         subject,
         expiresAt,

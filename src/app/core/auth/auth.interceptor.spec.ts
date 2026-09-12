@@ -42,6 +42,8 @@ describe('authInterceptor', () => {
   afterEach(() => {
     httpTestingController.verify();
     localStorage.clear();
+    // Hay un test que adelanta el reloj: sin esto se lo lleva puesto el siguiente.
+    vi.restoreAllMocks();
   });
 
   it('adds Bearer token to backend requests when a session exists', () => {
@@ -107,9 +109,15 @@ describe('authInterceptor', () => {
       },
     );
 
-    it('no deja salir una llamada a la API cuando la sesion ya ha caducado', () => {
-      persistSession('2000-01-01T00:00:00.000Z');
+    it('no deja salir una llamada a la API cuando la sesion se cae durante la carga', () => {
+      // Valida al arrancar: la sesion llega a existir, que es lo que hace de esto una
+      // sesion caida y no una aplicacion pre-login (frontend#59).
+      persistSession('2099-01-01T00:00:00.000Z');
       const authStore = TestBed.inject(AuthStore);
+      expect(authStore.hasHadSession()).toBe(true);
+
+      // Y se pasa con la pestana abierta, que es el caso del #52: pulsar un boton sin navegar.
+      vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2099-06-01T00:00:00.000Z'));
 
       const observed = vi.fn();
       http.get('/employees').subscribe({ error: observed });
@@ -131,6 +139,40 @@ describe('authInterceptor', () => {
       httpTestingController.expectOne('/demo/counts').flush({}, { status: 401, statusText: 'x' });
 
       expect(authStore.sessionExpired()).toBe(false);
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    /**
+     * El defecto del #59: antes de que nadie entre no hay sesion que se caiga, asi que una
+     * llamada a la API sin token es normal y tiene que salir. Da igual que ruta sea —aqui
+     * una cualquiera que no esta en ninguna lista— porque la lista ya no es el mecanismo.
+     */
+    it('antes de entrar, una llamada a la API sale y no salta al login', () => {
+      const authStore = TestBed.inject(AuthStore);
+      expect(authStore.hasHadSession()).toBe(false);
+
+      const observed = vi.fn();
+      http.get('/api/actuator/health/readiness').subscribe({ next: observed });
+
+      httpTestingController.expectOne('/api/actuator/health/readiness').flush({ status: 'UP' });
+
+      expect(observed).toHaveBeenCalledWith({ status: 'UP' });
+      expect(navigate).not.toHaveBeenCalled();
+      expect(authStore.sessionExpired()).toBe(false);
+    });
+
+    it('una sesion guardada que caduco con la pestana cerrada deja la aplicacion pre-login', () => {
+      persistSession('2000-01-01T00:00:00.000Z');
+      const authStore = TestBed.inject(AuthStore);
+
+      // Hubo sesion, pero no en esta carga: se descarto al restaurarla.
+      expect(authStore.hasHadSession()).toBe(false);
+      // El aviso del #52 se mantiene: al login se llega sabiendo por que.
+      expect(authStore.sessionExpired()).toBe(true);
+
+      http.get('/api/actuator/health/readiness').subscribe();
+      httpTestingController.expectOne('/api/actuator/health/readiness').flush({ status: 'UP' });
+
       expect(navigate).not.toHaveBeenCalled();
     });
   });
