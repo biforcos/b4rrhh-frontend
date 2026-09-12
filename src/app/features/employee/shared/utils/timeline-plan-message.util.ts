@@ -131,6 +131,23 @@ export const WORK_CENTER_PLAN_VOCABULARY: TimelinePlanVocabulary = {
 };
 
 /**
+ * La jornada fue la primera serie que contó su plan por pantalla (`frontend#43`), antes de que
+ * existiera este vocabulario, y hasta el `frontend#58` redactaba lo mismo en un fichero aparte.
+ * Su cobertura es obligatoria: un hueco es un rechazo, no una consecuencia aceptada.
+ */
+export const WORKING_TIME_PLAN_VOCABULARY: TimelinePlanVocabulary = {
+  subject: 'La jornada',
+  previousSubject: 'La jornada anterior',
+  object: 'la jornada',
+  another: 'otra jornada',
+  noOther: 'ninguna otra jornada',
+  indefinite: 'una jornada',
+  overlapErrorCode: 'WORKING_TIME_OVERLAP',
+  gapErrorCode: 'WORKING_TIME_COVERAGE_GAP',
+  isACorrectionErrorCode: 'WORKING_TIME_IS_A_CORRECTION',
+};
+
+/**
  * La única serie del producto con cobertura opcional (`backend#54`): aquí un hueco no impide
  * nada, y el aviso tiene que decirlo con esas palabras. No se copia el de las obligatorias, que
  * dice lo contrario.

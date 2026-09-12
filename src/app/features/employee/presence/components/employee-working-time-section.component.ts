@@ -24,9 +24,10 @@ import {
 } from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
 import {
-  describeWorkingTimeCorrectionSwitchAction,
-  describeWorkingTimePlan,
-} from '../../shared/utils/working-time-plan-message.util';
+  WORKING_TIME_PLAN_VOCABULARY,
+  describeCorrectionSwitchAction,
+  describeTimelinePlan,
+} from '../../shared/utils/timeline-plan-message.util';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 /**
@@ -114,7 +115,7 @@ export class EmployeeWorkingTimeSectionComponent {
 
   protected readonly planNotice = computed(() => {
     const plan = this.plan();
-    return plan ? describeWorkingTimePlan(plan) : null;
+    return plan ? describeTimelinePlan(plan, WORKING_TIME_PLAN_VOCABULARY) : null;
   });
 
   protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
@@ -137,7 +138,7 @@ export class EmployeeWorkingTimeSectionComponent {
     const corrected = plan.correctedOccurrence;
     // Sin número no hay a qué cambiar: la corrección se pide por el número de la jornada.
     if (!corrected || corrected.workingTimeNumber === null) return null;
-    return describeWorkingTimeCorrectionSwitchAction(corrected);
+    return describeCorrectionSwitchAction(corrected, WORKING_TIME_PLAN_VOCABULARY);
   });
 
   protected readonly modalTitle = computed(() => {

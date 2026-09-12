@@ -35,10 +35,10 @@ import {
   CONTRACT_PLAN_VOCABULARY,
   COST_CENTER_PLAN_VOCABULARY,
   LABOR_CLASSIFICATION_PLAN_VOCABULARY,
+  WORKING_TIME_PLAN_VOCABULARY,
   WORK_CENTER_PLAN_VOCABULARY,
   describeTimelineConflict,
 } from '../../shared/utils/timeline-plan-message.util';
-import { describeWorkingTimeConflict } from '../../shared/utils/working-time-plan-message.util';
 import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
 import { EmployeeTodayStripComponent } from '../components/employee-today-strip.component';
 
@@ -329,9 +329,10 @@ export class EmployeeRelationPageComponent {
   private mapWorkingTimeErrorMessage(errorCode: string | null): string | null {
     const t = this.texts;
     // Un rechazo de invariante se cuenta con sus fechas cuando el backend las da (ADR-057).
-    const conflictMessage = describeWorkingTimeConflict(
+    const conflictMessage = describeTimelineConflict(
       errorCode,
       this.workingTimeStore.errorConflict(),
+      WORKING_TIME_PLAN_VOCABULARY,
     );
     if (conflictMessage) return conflictMessage;
     switch (errorCode) {

@@ -4,6 +4,7 @@ import {
   COST_CENTER_PLAN_VOCABULARY,
   LABOR_CLASSIFICATION_PLAN_VOCABULARY,
   TimelinePlan,
+  WORKING_TIME_PLAN_VOCABULARY,
   WORK_CENTER_PLAN_VOCABULARY,
   describeCorrectionSwitchAction,
   describeTimelineConflict,
@@ -80,6 +81,23 @@ describe('describeTimelinePlan', () => {
 
     expect(notice.lines).toEqual([
       'La clasificación anterior, desde el 1 de enero de 2026, se reabrirá hasta el 30 de junio de 2026.',
+    ]);
+  });
+
+  it('says the previous occurrence reopens in force when the removed one was the last', () => {
+    const notice = describeTimelinePlan(
+      plan({
+        operation: 'REMOVE',
+        adjustedOccurrence: {
+          before: { startDate: '2026-03-01', endDate: '2026-03-15' },
+          after: { startDate: '2026-03-01', endDate: null },
+        },
+      }),
+      WORKING_TIME_PLAN_VOCABULARY,
+    );
+
+    expect(notice.lines).toEqual([
+      'La jornada anterior, desde el 1 de marzo de 2026, se reabrirá y quedará en vigor.',
     ]);
   });
 
@@ -239,14 +257,31 @@ describe('describeTimelineConflict', () => {
     );
   });
 
-  it('falls back to the generic text when the error says nothing', () => {
-    expect(describeTimelineConflict('CONTRACT_OVERLAP', null, CONTRACT_PLAN_VOCABULARY)).toBeNull();
+  it('tells a 409 overlap with its dates', () => {
     expect(
       describeTimelineConflict(
-        'CONTRACT_NOT_FOUND',
-        { overlaps: [], gaps: [], stretchCandidates: [], correctedOccurrence: null },
-        CONTRACT_PLAN_VOCABULARY,
+        'WORKING_TIME_OVERLAP',
+        {
+          overlaps: [{ startDate: '2026-03-10', endDate: null }],
+          gaps: [],
+          stretchCandidates: [],
+          correctedOccurrence: null,
+        },
+        WORKING_TIME_PLAN_VOCABULARY,
       ),
+    ).toBe('Se solaparía con otra jornada desde el 10 de marzo de 2026 en adelante.');
+  });
+
+  it('falls back to the generic text when the error says nothing', () => {
+    const empty = { overlaps: [], gaps: [], stretchCandidates: [], correctedOccurrence: null };
+
+    expect(describeTimelineConflict('CONTRACT_OVERLAP', null, CONTRACT_PLAN_VOCABULARY)).toBeNull();
+    // El código es de invariante, pero el 409 no trae las fechas: no hay nada que contar.
+    expect(
+      describeTimelineConflict('CONTRACT_OVERLAP', empty, CONTRACT_PLAN_VOCABULARY),
+    ).toBeNull();
+    expect(
+      describeTimelineConflict('CONTRACT_NOT_FOUND', empty, CONTRACT_PLAN_VOCABULARY),
     ).toBeNull();
   });
 });
