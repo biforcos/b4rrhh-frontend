@@ -56,6 +56,10 @@ export class EmployeeLaborClassificationReadGateway {
             )
             .map((classification) => this.toEmployeeLaborClassificationModel(classification)),
         ),
+        // El backend sirve ascendente; la ficha ordena como las otras tablas de períodos
+        // (frontend#37). Se ordena aquí y no en el store: así lo comprueba el spec que recorre
+        // los cinco gateways, en vez de depender de que alguien llame al ordenador (frontend#39).
+        map((classifications) => this.sortByTimelineRecency(classifications)),
       );
   }
 
@@ -97,7 +101,7 @@ export class EmployeeLaborClassificationReadGateway {
       .pipe(map(() => undefined));
   }
 
-  sortByTimelineRecency(
+  private sortByTimelineRecency(
     classifications: ReadonlyArray<EmployeeLaborClassificationModel>,
   ): ReadonlyArray<EmployeeLaborClassificationModel> {
     return sortByTimelineRecency(classifications, compareAgreementCodes);

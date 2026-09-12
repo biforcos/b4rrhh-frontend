@@ -217,9 +217,7 @@ export class EmployeeLaborClassificationStore {
             return;
           }
 
-          this.laborClassificationsState.set(
-            this.employeeLaborClassificationReadGateway.sortByTimelineRecency(laborClassifications),
-          );
+          this.laborClassificationsState.set(laborClassifications);
           this.loadingState.set(false);
         },
         error: (error) => {

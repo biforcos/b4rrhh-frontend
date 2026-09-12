@@ -208,9 +208,7 @@ export class EmployeeContractStore {
             return;
           }
 
-          this.contractsState.set(
-            this.employeeContractReadGateway.sortByTimelineRecency(contracts),
-          );
+          this.contractsState.set(contracts);
           this.loadingState.set(false);
         },
         error: (error) => {

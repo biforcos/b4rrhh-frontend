@@ -52,7 +52,6 @@ describe('EmployeeLaborClassificationStore', () => {
     createLaborClassification: ReturnType<typeof vi.fn>;
     planLaborClassificationChange: ReturnType<typeof vi.fn>;
     correctLaborClassificationOccurrence: ReturnType<typeof vi.fn>;
-    sortByTimelineRecency: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -63,7 +62,6 @@ describe('EmployeeLaborClassificationStore', () => {
       createLaborClassification: vi.fn().mockReturnValue(of(undefined)),
       planLaborClassificationChange: vi.fn().mockReturnValue(of(acceptedPlan)),
       correctLaborClassificationOccurrence: vi.fn().mockReturnValue(of(undefined)),
-      sortByTimelineRecency: vi.fn().mockImplementation((classifications) => classifications),
     };
 
     TestBed.configureTestingModule({

@@ -52,7 +52,6 @@ describe('EmployeeContractStore', () => {
     createContract: ReturnType<typeof vi.fn>;
     planContractChange: ReturnType<typeof vi.fn>;
     correctContractOccurrence: ReturnType<typeof vi.fn>;
-    sortByTimelineRecency: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -61,7 +60,6 @@ describe('EmployeeContractStore', () => {
       createContract: vi.fn().mockReturnValue(of(undefined)),
       planContractChange: vi.fn().mockReturnValue(of(acceptedPlan)),
       correctContractOccurrence: vi.fn().mockReturnValue(of(undefined)),
-      sortByTimelineRecency: vi.fn().mockImplementation((contracts) => contracts),
     };
 
     TestBed.configureTestingModule({

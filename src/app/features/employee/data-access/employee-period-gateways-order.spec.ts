@@ -25,6 +25,12 @@ import { EmployeeWorkingTimeGateway } from './employee-working-time.gateway';
  * recorre las cinco con los mismos períodos y exige el mismo orden, y además lee el
  * fuente para que un sexto vertical de períodos sin ordenar —o con su propia copia de la
  * regla— falle aquí y no en la ficha.
+ *
+ * Los cinco se leen igual: se pide la lectura al gateway y se mira el orden que sale. Contrato
+ * y clasificación laboral ordenaban en su store y aquí se llamaba al comparador a mano, con lo
+ * que el spec probaba que el ordenador ordena y no que alguien lo llama: borrar la llamada
+ * dejaba la suite en verde (frontend#39). Ahora ordenan en el pipe como los otros tres y esta
+ * misma aserción los cubre.
  */
 
 const employeeKey = {
@@ -88,11 +94,12 @@ describe('period gateways of the employee record', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: EmployeeContractReadClient, useValue: client }],
     });
-    const gateway = TestBed.inject(EmployeeContractReadGateway);
 
-    const contracts = await firstValueFrom(gateway.readEmployeeContractsByBusinessKey(employeeKey));
+    const contracts = await firstValueFrom(
+      TestBed.inject(EmployeeContractReadGateway).readEmployeeContractsByBusinessKey(employeeKey),
+    );
 
-    expect(startDatesOf(gateway.sortByTimelineRecency(contracts))).toEqual(expectedOrder);
+    expect(startDatesOf(contracts)).toEqual(expectedOrder);
   });
 
   it('labor classification orders active first, then by start date descending', async () => {
@@ -113,13 +120,14 @@ describe('period gateways of the employee record', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: EmployeeLaborClassificationReadClient, useValue: client }],
     });
-    const gateway = TestBed.inject(EmployeeLaborClassificationReadGateway);
 
     const classifications = await firstValueFrom(
-      gateway.readEmployeeLaborClassificationsByBusinessKey(employeeKey),
+      TestBed.inject(
+        EmployeeLaborClassificationReadGateway,
+      ).readEmployeeLaborClassificationsByBusinessKey(employeeKey),
     );
 
-    expect(startDatesOf(gateway.sortByTimelineRecency(classifications))).toEqual(expectedOrder);
+    expect(startDatesOf(classifications)).toEqual(expectedOrder);
   });
 
   it('working time orders active first, then by start date descending', async () => {
@@ -184,6 +192,9 @@ describe('period gateways of the employee record', () => {
     };
 
     const gatewayFiles = readdirSync(dataAccessDir).filter((file) => file.endsWith('.gateway.ts'));
+    // Esta detección es una heurística sobre una convención, y conviene saberlo: un vertical que
+    // escriba `isActive: source.active` o que mapee la vigencia en otro sitio no se vería, y el
+    // fallo sería silencioso porque la cuenta de abajo seguiría cuadrando (frontend#39).
     const periodGatewayFiles = gatewayFiles.filter((file) =>
       readFileSync(resolve(dataAccessDir, file), 'utf8').includes('isActive: source.isActive'),
     );
