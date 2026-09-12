@@ -188,64 +188,17 @@
 
       <app-ui-button label="Lanzar" [disabled]="!store.canLaunch()" (pressed)="store.launch()" />
 
+      <p class="ops-page__status-text">
+        El cálculo no se espera aquí: al lanzar se abre la pantalla de la ejecución, que cuenta por
+        dónde va mientras corre.
+      </p>
+
       @if (store.launching()) {
-        <p class="ops-page__status-text">Lanzando run…</p>
+        <p class="ops-page__status-text">Pidiendo la ejecución…</p>
       }
 
       @if (store.launchError()) {
-        <p class="ops-page__error">
-          @if (store.launchError() === 'launch-failed') {
-            No se pudo lanzar el cálculo. Reintenta.
-          }
-          @if (store.launchError() === 'poll-failed') {
-            Error al seguir el estado del run. Recarga la página para ver el resultado.
-          }
-        </p>
-      }
-
-      @if (store.run(); as run) {
-        <div class="ops-page__run-panel">
-          <div class="ops-page__run-header">
-            <span class="ops-page__run-title">Run #{{ run.runId }}</span>
-            <span class="ops-badge" [ngClass]="runStatusSeverity[run.status]">
-              {{ runStatusLabels[run.status] ?? run.status }}
-            </span>
-          </div>
-
-          <div class="ops-page__result-grid">
-            <div class="ops-page__counter">
-              <span class="ops-page__counter-value">{{ run.totalCandidates }}</span>
-              <span class="ops-page__counter-label">Candidatos</span>
-            </div>
-            <div class="ops-page__counter ops-page__counter--info">
-              <span class="ops-page__counter-value">{{ run.totalEligible }}</span>
-              <span class="ops-page__counter-label">Elegibles</span>
-            </div>
-            <div class="ops-page__counter ops-page__counter--success">
-              <span class="ops-page__counter-value">{{ run.totalCalculated }}</span>
-              <span class="ops-page__counter-label">Calculadas</span>
-            </div>
-            <div class="ops-page__counter ops-page__counter--error">
-              <span class="ops-page__counter-value">{{ run.totalErrors }}</span>
-              <span class="ops-page__counter-label">Errores</span>
-            </div>
-            <div class="ops-page__counter">
-              <span class="ops-page__counter-value">{{ run.totalNotValid }}</span>
-              <span class="ops-page__counter-label">No válidas</span>
-            </div>
-          </div>
-
-          <!-- Los contadores dicen cuantas; la ejecucion dice cuales y por que (frontend#61). -->
-          <a class="ops-page__run-link" [routerLink]="['/nomina/operaciones', run.runId]">
-            Ver la ejecución unidad por unidad
-          </a>
-
-          @if (store.isRunActive()) {
-            <div class="ops-page__progress-bar">
-              <div class="ops-page__progress-fill" [style.width.%]="store.runProgress()"></div>
-            </div>
-          }
-        </div>
+        <p class="ops-page__error">No se pudo lanzar el cálculo. Reintenta.</p>
       }
     </div>
   </div>

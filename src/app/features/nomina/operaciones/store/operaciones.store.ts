@@ -1,9 +1,8 @@
-import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { Subscription, interval, switchMap, takeWhile } from 'rxjs';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
-import { CalculationRun, isRunFinished } from '../models/calculation-run.model';
 import { TargetSelectionMode, buildTargetSelectionPayload } from '../models/target-selection.model';
 
 function currentPeriod(): number {
@@ -39,8 +38,9 @@ function movePeriod(period: number, delta: 1 | -1): number {
 }
 
 @Injectable({ providedIn: 'root' })
-export class OperacionesStore implements OnDestroy {
+export class OperacionesStore {
   private readonly gateway = inject(OperacionesGateway);
+  private readonly router = inject(Router);
 
   private readonly ruleSystemCodeState = signal<string>('ESP');
   private readonly periodState = signal<number>(currentPeriod());
@@ -58,9 +58,7 @@ export class OperacionesStore implements OnDestroy {
   private readonly engineCodeState = signal<string>('GRAPH');
   private readonly engineVersionState = signal<string>('1.0');
   private readonly launchingState = signal<boolean>(false);
-  private readonly runState = signal<CalculationRun | null>(null);
   private readonly launchErrorState = signal<string | null>(null);
-  private pollSubscription: Subscription | null = null;
 
   readonly payrollTypeOptions = [
     { value: 'NORMAL' as const, label: 'Normal' },
@@ -81,19 +79,9 @@ export class OperacionesStore implements OnDestroy {
   readonly engineCode = this.engineCodeState.asReadonly();
   readonly engineVersion = this.engineVersionState.asReadonly();
   readonly launching = this.launchingState.asReadonly();
-  readonly run = this.runState.asReadonly();
   readonly launchError = this.launchErrorState.asReadonly();
 
   readonly periodLabel = computed(() => formatPeriod(this.periodState()));
-  readonly isRunActive = computed(() => {
-    const r = this.runState();
-    return r !== null && !isRunFinished(r);
-  });
-  readonly runProgress = computed(() => {
-    const r = this.runState();
-    if (!r || r.totalEligible === 0) return 0;
-    return Math.round(((r.totalCalculated + r.totalErrors) / r.totalEligible) * 100);
-  });
   readonly canInvalidate = computed(
     () =>
       !this.invalidatingState() &&
@@ -175,11 +163,17 @@ export class OperacionesStore implements OnDestroy {
       });
   }
 
+  /**
+   * Pide la ejecucion y lleva a su pantalla.
+   *
+   * El backend acepta el lanzamiento y contesta en milisegundos con la identidad de la ejecucion;
+   * el calculo sigue por su cuenta y puede durar cinco minutos (ADR-060). Asi que aqui no se espera
+   * a nada: en cuanto hay runId, esta pantalla ha terminado su trabajo y quien mira se va a
+   * `/nomina/operaciones/:runId`, que es la que sabe contar lo que pasa mientras pasa (frontend#62).
+   */
   launch(): void {
     if (!this.canLaunch()) return;
-    this.stopPolling();
     this.launchingState.set(true);
-    this.runState.set(null);
     this.launchErrorState.set(null);
     this.gateway
       .launchCalculation({
@@ -198,36 +192,12 @@ export class OperacionesStore implements OnDestroy {
       .subscribe({
         next: (run) => {
           this.launchingState.set(false);
-          this.runState.set(run);
-          if (!isRunFinished(run)) {
-            this.startPolling(run.runId);
-          }
+          void this.router.navigate(['/nomina/operaciones', run.runId]);
         },
         error: () => {
           this.launchingState.set(false);
           this.launchErrorState.set('launch-failed');
         },
       });
-  }
-
-  private startPolling(runId: number): void {
-    this.pollSubscription = interval(3000)
-      .pipe(
-        switchMap(() => this.gateway.getCalculationRun(runId)),
-        takeWhile((run) => !isRunFinished(run), true),
-      )
-      .subscribe({
-        next: (run) => this.runState.set(run),
-        error: () => this.launchErrorState.set('poll-failed'),
-      });
-  }
-
-  private stopPolling(): void {
-    this.pollSubscription?.unsubscribe();
-    this.pollSubscription = null;
-  }
-
-  ngOnDestroy(): void {
-    this.stopPolling();
   }
 }

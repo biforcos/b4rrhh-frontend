@@ -222,9 +222,6 @@
 .ops-page__counter--error {
   background: var(--error-bg);
 }
-.ops-page__counter--info {
-  background: var(--accent-muted);
-}
 
 .ops-page__counter-value {
   font-size: 1rem;
@@ -236,70 +233,6 @@
 .ops-page__counter-label {
   font-size: 0.58rem;
   color: var(--text-tertiary);
-}
-
-.ops-page__run-panel {
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  background: var(--accent-muted);
-  padding: 0.6rem;
-  display: grid;
-  gap: 0.45rem;
-}
-
-.ops-page__run-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-}
-
-.ops-page__run-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-accent);
-}
-
-/* Semantic badges — colors are intentional */
-.ops-badge {
-  border-radius: 10px;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-}
-
-.ops-badge--grey {
-  background: var(--surface-muted);
-  color: var(--text-secondary);
-}
-.ops-badge--yellow {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-.ops-badge--green {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-.ops-badge--orange {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-.ops-badge--red {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.ops-page__progress-bar {
-  background: var(--accent-muted);
-  border-radius: 4px;
-  height: 6px;
-  overflow: hidden;
-}
-
-.ops-page__progress-fill {
-  background: var(--accent-primary);
-  height: 100%;
-  transition: width 0.5s ease;
 }
 
 @media (max-width: 800px) {
@@ -314,17 +247,4 @@
   .ops-page__result-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.ops-page__run-link {
-  justify-self: start;
-  font-size: 0.74rem;
-  color: var(--text-accent);
-  text-decoration: underline;
-}
-
-.ops-page__run-link:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-  border-radius: 0.2rem;
 }
