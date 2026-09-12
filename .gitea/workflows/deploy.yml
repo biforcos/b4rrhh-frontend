@@ -53,6 +53,10 @@ jobs:
           # lint:inline-styles cierra el hueco del primero (#41): tumba el
           # build si un componente trae `styles:` en el .ts, que es donde el
           # candado del color no llega.
+          # lint:orphan-styles es el de las hojas desenchufadas (#21, #28):
+          # tumba el build si un .scss de componente no esta en el styleUrl de
+          # su .ts. Una hoja asi es .scss valido, el componente compila y los
+          # tests pasan; lo unico que no pasa es que llegue a la pantalla.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -72,6 +76,7 @@ jobs:
                    && npm run lint:styles \
                    && npm run lint:icons \
                    && npm run lint:inline-styles \
+                   && npm run lint:orphan-styles \
                    && npm run format:check \
                    && npm run api:generate \
                    && npm test -- --no-watch"

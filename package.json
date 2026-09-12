@@ -12,6 +12,7 @@
     "lint:styles": "stylelint \"src/app/**/*.scss\"",
     "lint:icons": "node ./tools/lint-icons.mjs",
     "lint:inline-styles": "node ./tools/lint-inline-styles.mjs",
+    "lint:orphan-styles": "node ./tools/lint-orphan-styles.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:pull": "node ./tools/openapi/pull-contract.mjs",
