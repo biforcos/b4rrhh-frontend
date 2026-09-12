@@ -75,9 +75,14 @@
       <!-- «Fallida» no afirma la causa: puede ser el calculo, un backend reiniciado o una cola
            llena, y quien lo distingue es el mensaje de abajo (ADR-060). -->
       <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
-        La ejecución no llegó al final: resolvió {{ processedUnits(run) }} de las
-        {{ run.totalCandidates }} unidades que había seleccionado. Lo que calculó se queda; el
-        motivo de la parada está abajo, en los mensajes.
+        @if (run.totalCandidates === 0) {
+          La ejecución no llegó a empezar: murió antes de seleccionar una sola unidad, así que no
+          hay nada calculado ni nada que rehacer. El motivo está abajo, en los mensajes.
+        } @else {
+          La ejecución no llegó al final: resolvió {{ processedUnits(run) }} de las
+          {{ run.totalCandidates }} unidades que había seleccionado. Lo que calculó se queda; el
+          motivo de la parada está abajo, en los mensajes.
+        }
       </p>
     } @else if (store.unitsWithoutPayslip() > 0) {
       <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
@@ -123,6 +128,15 @@
           }
         </div>
       </div>
+
+      <!-- La lista no viaja en cada vuelta del sondeo: son casi mil filas. Mientras la ejecucion
+           corre, lo que se ve es la foto de cuando se abrio la pantalla, y eso se dice. -->
+      @if (store.live()) {
+        <p class="ejecucion-page__note">
+          Esta lista es de cuando se abrió la pantalla. Se completa sola cuando la ejecución
+          termine.
+        </p>
+      }
 
       @if (store.messages().length === 0) {
         <p class="ejecucion-page__note">

@@ -75,6 +75,11 @@ describe('runProcessedUnits y runProgressPercent', () => {
   it('en cola no hay porcentaje: todavia no se sabe cuantas unidades son', () =>
     expect(runProgressPercent({ ...base, status: 'REQUESTED' })).toBeNull());
 
+  it('una fallida que no llego a seleccionar nada tampoco tiene porcentaje', () =>
+    // Es la que rechaza la cola llena (LAUNCH_REJECTED) o la que murio encolada: cero candidatas,
+    // asi que la pantalla no puede contar «resolvio 0 de 0».
+    expect(runProgressPercent({ ...base, status: 'FAILED' })).toBeNull());
+
   it('una corrida terminada esta al cien', () => {
     // La corrida 4 al acabar: 714 calculadas + 165 saltadas = 879 candidatas.
     const finished = {
