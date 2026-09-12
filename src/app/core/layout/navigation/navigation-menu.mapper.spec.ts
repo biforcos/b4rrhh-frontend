@@ -70,7 +70,11 @@ describe('buildMenuGroups', () => {
     ]);
   });
 
-  it('gives a generic entry to an unknown type with extensions, without touching the registry', () => {
+  /**
+   * Declarar una extensión da derecho a entrada, pero no la crea sola: hace falta además que
+   * el frontend tenga adónde llevar (frontend#47). Antes salía apuntando al placeholder.
+   */
+  it('leaves out a type with extensions the frontend has no screen for', () => {
     const groups = buildMenuGroups([
       type('HOLIDAY_CALENDAR', 'ORGANIZATION', [extension('PROFILE')], {
         name: 'Holiday calendar',
@@ -78,10 +82,22 @@ describe('buildMenuGroups', () => {
     ]);
 
     const organization = groups.find((group) => group.code === 'ORGANIZATION');
-    expect(organization?.entries[0]).toMatchObject({
-      label: 'Holiday calendar',
-      link: '/entidades/HOLIDAY_CALENDAR',
-    });
+    // Solo la cola fija: el tipo sigue siendo alcanzable por Catálogos.
+    expect(organization?.entries.map((entry) => entry.label)).toEqual(['Catálogos']);
+  });
+
+  it('never points a menu entry at the entity placeholder', () => {
+    const groups = buildMenuGroups([
+      type('EMPLOYEE_ADDRESS_TYPE', 'ORGANIZATION', [extension('PROFILE')], {
+        name: 'Employee Address Type',
+      }),
+      type('CONTRACT', 'SOCIETY', [extension('PROFILE')], { name: 'Contract' }),
+      type('COMPANY', 'ORGANIZATION', [extension('PROFILE')]),
+    ]);
+
+    const links = groups.flatMap((group) => group.entries.map((entry) => entry.link));
+    expect(links.some((link) => link.startsWith('/entidades/'))).toBe(false);
+    expect(links).toContain('/organizacion/empresas');
   });
 
   it('takes group name and order from the model, not from this file', () => {

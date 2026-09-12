@@ -27,9 +27,21 @@ interface OwnScreenPresentation {
 
 /**
  * Presentación de los tipos con pantalla propia que el frontend ya conoce: ruta, rótulo
- * e icono. Esto NO decide quién sale en el menú — eso lo dicen las extensiones—, solo
- * cómo se pinta el que sale. Un tipo con extensiones que no esté aquí recibe la entrada
- * genérica, no desaparece.
+ * e icono.
+ *
+ * Es además la respuesta a «¿tengo pantalla para esto?» (frontend#47). Un tipo con
+ * extensiones que no esté aquí NO sale en el menú: antes recibía una entrada genérica al
+ * placeholder `/entidades/{code}`, y una entrada de menú que no lleva a ninguna parte es
+ * peor que no tenerla —quien la pulsa se lleva la impresión de que el producto está a
+ * medias justo en la parte que sí está terminada—.
+ *
+ * Esta lista no es una lista de excepciones que haya que acordarse de actualizar: es el
+ * registro de las pantallas que existen. Darle pantalla a un tipo es añadirlo aquí, en el
+ * mismo commit que la crea, así que no puede quedarse desfasada. Mientras tanto el tipo
+ * sigue siendo alcanzable por Catálogos, que los lista todos.
+ *
+ * Quién puede salir en el menú lo siguen diciendo las extensiones (ADR-053 §7); esto solo
+ * añade la condición de que además haya adónde ir.
  */
 const OWN_SCREEN_PRESENTATION: Readonly<Record<string, OwnScreenPresentation>> = {
   COMPANY: {
@@ -130,7 +142,12 @@ export function buildMenuGroups(
       continue;
     }
 
-    const presentation = OWN_SCREEN_PRESENTATION[type.code] ?? genericPresentation(type);
+    const presentation = OWN_SCREEN_PRESENTATION[type.code];
+    if (!presentation) {
+      // Declara extensión pero el frontend aún no tiene su pantalla: a Catálogos, no al menú.
+      continue;
+    }
+
     const group = groups.get(type.group.code);
     if (!group || group.entries.some((entry) => entry.link === presentation.link)) {
       continue;
@@ -163,16 +180,4 @@ export function buildMenuGroups(
       .filter((group) => group.entries.length > 0)
       .sort((a, b) => a.displayOrder - b.displayOrder)
   );
-}
-
-/**
- * La pantalla propia que el modelo promete y el frontend aún no conoce: entrada con el
- * nombre del tipo hacia el placeholder parametrizado. La pantalla de verdad es fase 5.
- */
-function genericPresentation(type: RuleEntityTypeResponse): OwnScreenPresentation {
-  return {
-    label: type.name,
-    icon: 'catalogo',
-    link: `/entidades/${type.code}`,
-  };
 }
