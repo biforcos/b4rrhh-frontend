@@ -1,0 +1,161 @@
+<section class="ejecucion-page">
+  @if (store.loading()) {
+    <p class="ejecucion-page__note">Cargando la ejecución…</p>
+  }
+
+  @if (store.error()) {
+    <p class="ejecucion-page__note ejecucion-page__note--error">
+      No se pudo leer la ejecución #{{ runId }}. Recarga la página o vuelve a operaciones.
+    </p>
+  }
+
+  @if (store.run(); as run) {
+    <header class="ejecucion-page__header">
+      <div class="ejecucion-page__title-row">
+        <h2 class="ejecucion-page__title">Ejecución #{{ run.runId }}</h2>
+        <span class="ejecucion-page__badge" [ngClass]="runStatusSeverity[run.status]">
+          {{ runStatusLabels[run.status] ?? run.status }}
+        </span>
+      </div>
+
+      <dl class="ejecucion-page__facts">
+        <div class="ejecucion-page__fact">
+          <dt>Período</dt>
+          <dd>{{ run.payrollPeriodCode }} · {{ run.payrollTypeCode }}</dd>
+        </div>
+        <div class="ejecucion-page__fact">
+          <dt>Sistema de reglas</dt>
+          <dd>{{ run.ruleSystemCode }}</dd>
+        </div>
+        <div class="ejecucion-page__fact">
+          <dt>Motor</dt>
+          <dd>{{ run.calculationEngineCode }} {{ run.calculationEngineVersion }}</dd>
+        </div>
+        <div class="ejecucion-page__fact">
+          <dt>Solicitada</dt>
+          <dd>{{ run.requestedAt | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+        </div>
+        <div class="ejecucion-page__fact">
+          <dt>Duración</dt>
+          <dd>{{ durationLabel(run) }}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <!-- El estado no es el resumen: «Terminada» dice que la ejecucion acabo, no que hayan
+         cobrado todos. La cuenta sale de los contadores. -->
+    @if (store.unitsWithoutPayslip() > 0) {
+      <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
+        {{ store.unitsWithoutPayslip() }}
+        @if (store.unitsWithoutPayslip() === 1) {
+          unidad de las {{ run.totalCandidates }} seleccionadas no acabó en recibo.
+        } @else {
+          unidades de las {{ run.totalCandidates }} seleccionadas no acabaron en recibo.
+        }
+        Están nombradas abajo, con su motivo.
+      </p>
+    } @else {
+      <p class="ejecucion-page__verdict">
+        Las {{ run.totalCandidates }} unidades seleccionadas acabaron en recibo.
+      </p>
+    }
+
+    <div class="ejecucion-page__counters">
+      @for (counter of counters(); track counter.label) {
+        <div
+          class="ejecucion-page__counter"
+          [class.ejecucion-page__counter--asks]="counter.asksSomething && counter.value > 0"
+        >
+          <span class="ejecucion-page__counter-value">{{ counter.value }}</span>
+          <span class="ejecucion-page__counter-label">{{ counter.label }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="ejecucion-page__messages">
+      <div class="ejecucion-page__messages-header">
+        <h3 class="ejecucion-page__subtitle">
+          Unidades ({{ store.messages().length }} de {{ store.totalMessages() }})
+        </h3>
+        <div class="ejecucion-page__filters" role="group" aria-label="Filtrar unidades">
+          @for (filter of filters; track filter.value) {
+            <app-ui-button
+              [label]="filter.label"
+              size="small"
+              [outlined]="store.filter() !== filter.value"
+              (pressed)="store.setFilter(filter.value)"
+            />
+          }
+        </div>
+      </div>
+
+      @if (store.messages().length === 0) {
+        <p class="ejecucion-page__note">
+          @if (store.filter() === 'ATTENTION') {
+            Ninguna unidad pide nada en esta ejecución.
+          } @else {
+            La ejecución no dejó ningún mensaje.
+          }
+        </p>
+      } @else {
+        <div class="ejecucion-page__table-scroll">
+          <table class="ejecucion-page__table">
+            <!-- Anchos declarados porque la tabla es table-layout: fixed: sin ellos el reparto
+                 automatico ensancha el motivo y la columna de accion se va detras del scroll. -->
+            <colgroup>
+              <col class="ejecucion-page__col--unit" />
+              <col class="ejecucion-page__col--code" />
+              <col class="ejecucion-page__col--severity" />
+              <col class="ejecucion-page__col--reason" />
+              <col class="ejecucion-page__col--when" />
+              <col class="ejecucion-page__col--action" />
+            </colgroup>
+            <caption class="ejecucion-page__table-caption">
+              Cada fila es una unidad de cálculo con lo que le pasó. El literal del código sale del
+              catálogo: mientras no esté, se lee el código y el texto del motor.
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Unidad</th>
+                <th scope="col">Qué pasó</th>
+                <th scope="col">Severidad</th>
+                <th scope="col">Motivo</th>
+                <th scope="col">Cuándo</th>
+                <th scope="col"><span class="ejecucion-page__sr-only">Ir a</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (message of store.messages(); track $index) {
+                <tr [class.ejecucion-page__row--asks]="needsAttention(message)">
+                  <td>
+                    @if (unitLabel(message); as unit) {
+                      {{ unit }}
+                    } @else {
+                      <span class="ejecucion-page__muted">toda la ejecución</span>
+                    }
+                  </td>
+                  <td class="ejecucion-page__code">
+                    <app-ui-catalog-label [name]="null" [code]="message.messageCode" />
+                  </td>
+                  <td>{{ severityLabels[message.severityCode] ?? message.severityCode }}</td>
+                  <td class="ejecucion-page__reason">{{ message.message }}</td>
+                  <td>{{ message.createdAt | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td class="ejecucion-page__row-action">
+                    @if (canOpenUnit(message)) {
+                      <app-ui-button
+                        label="Abrir ficha"
+                        size="small"
+                        [text]="true"
+                        (pressed)="openUnit(message)"
+                      />
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</section>

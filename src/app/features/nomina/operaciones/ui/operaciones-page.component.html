@@ -235,6 +235,11 @@
             </div>
           </div>
 
+          <!-- Los contadores dicen cuantas; la ejecucion dice cuales y por que (frontend#61). -->
+          <a class="ops-page__run-link" [routerLink]="['/nomina/operaciones', run.runId]">
+            Ver la ejecución unidad por unidad
+          </a>
+
           @if (store.isRunActive()) {
             <div class="ops-page__progress-bar">
               <div class="ops-page__progress-fill" [style.width.%]="store.runProgress()"></div>

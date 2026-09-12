@@ -12,6 +12,7 @@ import {
   LaunchPayrollCalculationRequestPayrollTypeCodeEnum,
 } from '../../../../core/api/generated/model/launch-payroll-calculation-request';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
+import { CalculationRunMessage } from '../models/calculation-run-message.model';
 import { CalculationRun } from '../models/calculation-run.model';
 import { TargetSelectionPayload } from '../models/target-selection.model';
 
@@ -43,6 +44,12 @@ export class OperacionesGateway {
     return this.calculationRunApi.getPayrollCalculationRun({ runId }).pipe(map(this.mapRun));
   }
 
+  listCalculationRunMessages(runId: number): Observable<CalculationRunMessage[]> {
+    return this.calculationRunApi
+      .listPayrollCalculationRunMessages({ runId })
+      .pipe(map((r) => (r.items ?? []).map(this.mapMessage)));
+  }
+
   bulkInvalidate(params: {
     ruleSystemCode: string;
     payrollPeriodCode: string;
@@ -71,13 +78,33 @@ export class OperacionesGateway {
     status: r.status,
     ruleSystemCode: r.ruleSystemCode,
     payrollPeriodCode: r.payrollPeriodCode,
+    payrollTypeCode: r.payrollTypeCode ?? '',
+    calculationEngineCode: r.calculationEngineCode ?? '',
+    calculationEngineVersion: r.calculationEngineVersion ?? '',
     totalCandidates: r.totalCandidates ?? 0,
     totalEligible: r.totalEligible ?? 0,
+    totalClaimed: r.totalClaimed ?? 0,
+    totalSkippedNotEligible: r.totalSkippedNotEligible ?? 0,
+    totalSkippedAlreadyClaimed: r.totalSkippedAlreadyClaimed ?? 0,
     totalCalculated: r.totalCalculated ?? 0,
     totalNotValid: r.totalNotValid ?? 0,
     totalErrors: r.totalErrors ?? 0,
     requestedAt: r.requestedAt,
     startedAt: r.startedAt ?? null,
     finishedAt: r.finishedAt ?? null,
+  });
+
+  private mapMessage = (m: any): CalculationRunMessage => ({
+    messageCode: m.messageCode,
+    severityCode: m.severityCode,
+    message: m.message,
+    detailsJson: m.detailsJson ?? null,
+    ruleSystemCode: m.ruleSystemCode ?? null,
+    employeeTypeCode: m.employeeTypeCode ?? null,
+    employeeNumber: m.employeeNumber ?? null,
+    payrollPeriodCode: m.payrollPeriodCode ?? null,
+    payrollTypeCode: m.payrollTypeCode ?? null,
+    presenceNumber: m.presenceNumber ?? null,
+    createdAt: m.createdAt,
   });
 }

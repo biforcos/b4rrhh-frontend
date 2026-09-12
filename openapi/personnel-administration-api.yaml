@@ -4826,6 +4826,40 @@ paths:
               schema:
                 $ref: "#/components/schemas/PayrollErrorResponse"
 
+  /payroll/calculation-runs/{runId}/messages:
+    get:
+      summary: List persisted operational messages for a payroll calculation run
+      description: Returns persisted operational launch messages for the specified payroll calculation run, ordered by createdAt ascending and id ascending.
+      operationId: listPayrollCalculationRunMessages
+      tags:
+        - Payroll Calculation Run
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Persisted payroll calculation run messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollCalculationRunMessagesResponse"
+        "400":
+          description: Invalid run identifier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+        "404":
+          description: Payroll calculation run not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+
   /payroll-engine/{ruleSystemCode}/concepts:
     get:
       tags:
@@ -6368,6 +6402,61 @@ components:
           type: string
           format: date-time
           nullable: true
+
+    PayrollCalculationRunMessagesResponse:
+      type: object
+      required:
+        - runId
+        - items
+      properties:
+        runId:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayrollCalculationRunMessageResponse"
+
+    PayrollCalculationRunMessageResponse:
+      type: object
+      required:
+        - messageCode
+        - severityCode
+        - message
+        - createdAt
+      properties:
+        messageCode:
+          type: string
+        severityCode:
+          type: string
+        message:
+          type: string
+        detailsJson:
+          type: string
+          nullable: true
+          description: JSON payload serialized as string with technical details for diagnostics.
+        ruleSystemCode:
+          type: string
+          nullable: true
+        employeeTypeCode:
+          type: string
+          nullable: true
+        employeeNumber:
+          type: string
+          nullable: true
+        payrollPeriodCode:
+          type: string
+          nullable: true
+        payrollTypeCode:
+          type: string
+          enum: [NORMAL, EXTRA]
+          nullable: true
+        presenceNumber:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
 
     BulkInvalidatePayrollRequest:
       type: object
@@ -10097,6 +10186,14 @@ components:
         calculatedAt:
           type: string
           format: date-time
+        runId:
+          type: integer
+          format: int64
+          nullable: true
+          description: >-
+            Calculation run that produced this payroll. Null means no registered
+            execution produced it, which is the case for the temporary calculate
+            stub and for the ad-hoc recalculation of a single payroll.
         concepts:
           type: array
           items:

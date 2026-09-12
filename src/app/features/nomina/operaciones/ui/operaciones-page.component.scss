@@ -315,3 +315,16 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.ops-page__run-link {
+  justify-self: start;
+  font-size: 0.74rem;
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.ops-page__run-link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 0.2rem;
+}

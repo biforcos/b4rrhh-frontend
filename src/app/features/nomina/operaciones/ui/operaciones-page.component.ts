@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { TargetSelectionMode } from '../models/target-selection.model';
@@ -8,7 +9,7 @@ import { OperacionesStore } from '../store/operaciones.store';
 @Component({
   selector: 'app-operaciones-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButtonComponent, NgClass],
+  imports: [UiButtonComponent, NgClass, RouterLink],
   templateUrl: './operaciones-page.component.html',
   styleUrl: './operaciones-page.component.scss',
 })

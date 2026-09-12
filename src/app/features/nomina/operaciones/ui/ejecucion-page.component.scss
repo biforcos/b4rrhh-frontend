@@ -1,0 +1,274 @@
+.ejecucion-page {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.5rem 0;
+}
+
+.ejecucion-page__note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.ejecucion-page__note--error {
+  color: var(--error-text);
+}
+
+.ejecucion-page__header {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-accent);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ejecucion-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ejecucion-page__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ejecucion-page__subtitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.ejecucion-page__badge {
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.ejecucion-page__badge--grey {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.ejecucion-page__badge--yellow,
+.ejecucion-page__badge--orange {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.ejecucion-page__badge--green {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.ejecucion-page__badge--red {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+.ejecucion-page__facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+.ejecucion-page__fact {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.ejecucion-page__fact dt {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+.ejecucion-page__fact dd {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.ejecucion-page__verdict {
+  margin: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.ejecucion-page__verdict--attention {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.ejecucion-page__counters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.5rem;
+}
+
+.ejecucion-page__counter {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.ejecucion-page__counter--asks {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
+.ejecucion-page__counter-value {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.ejecucion-page__counter--asks .ejecucion-page__counter-value {
+  color: var(--warning-text);
+}
+
+.ejecucion-page__counter-label {
+  font-size: 0.66rem;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+.ejecucion-page__messages {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ejecucion-page__messages-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ejecucion-page__filters {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* La tabla es ancha: se desplaza dentro de su caja y nunca desplaza la pagina. El scroll va en
+   el contenedor y no en la tabla, para no romper el reparto de columnas con un display: block. */
+.ejecucion-page__table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.ejecucion-page__table {
+  width: 100%;
+  min-width: 56rem;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+
+.ejecucion-page__col--unit {
+  width: 18%;
+}
+
+.ejecucion-page__col--code {
+  width: 21%;
+}
+
+.ejecucion-page__col--severity {
+  width: 8%;
+}
+
+.ejecucion-page__col--reason {
+  width: 30%;
+}
+
+.ejecucion-page__col--when {
+  width: 13%;
+}
+
+.ejecucion-page__col--action {
+  width: 10%;
+}
+
+.ejecucion-page__table-caption {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 0.4rem;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.ejecucion-page__table th,
+.ejecucion-page__table td {
+  border-bottom: 1px solid var(--border-default);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.ejecucion-page__table th {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.ejecucion-page__row--asks td {
+  background: var(--warning-bg);
+}
+
+/* El motivo y el codigo son los dos que parten de linea. Van cualificados con la tabla para
+   ganarle en especificidad al nowrap de arriba; sin eso no parten y el texto se monta encima de
+   la columna de al lado. El codigo no tiene espacios, asi que hay que decirle donde romper. */
+.ejecucion-page__table td.ejecucion-page__reason {
+  white-space: normal;
+  color: var(--text-secondary);
+}
+
+.ejecucion-page__table td.ejecucion-page__code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ejecucion-page__row-action {
+  text-align: right;
+}
+
+.ejecucion-page__muted {
+  color: var(--text-tertiary);
+}
+
+.ejecucion-page__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
