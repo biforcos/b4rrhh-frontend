@@ -162,6 +162,15 @@ export class HireEmployeePageComponent {
       }
     });
 
+    // La vigencia se pregunta respecto al dia del alta, no respecto a hoy
+    // (b4rrhh/frontend#32): si cambia la fecha, los desplegables se rehacen.
+    this.form.get('hireDate')?.valueChanges.subscribe(() => {
+      const rs = this.form.get('ruleSystemCode')?.value;
+      if (rs) {
+        this.loadDependentCatalogs(rs);
+      }
+    });
+
     this.form.get('contractTypeCode')?.valueChanges.subscribe((ct: any) => {
       const rs = this.form.get('ruleSystemCode')?.value;
       if (ct && rs) {
@@ -210,22 +219,32 @@ export class HireEmployeePageComponent {
     this.catalogError.set(null);
     this.workCenters.set([]);
     this.form.get('workCenterCode')?.setValue('');
-    (this.catalogService as any).loadPresenceCompanyOptions(ruleSystemCode).subscribe({
-      next: (opts: any) => this.companies.set([...opts]),
-      error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
-    });
-    (this.catalogService as any).loadPresenceEntryReasonOptions(ruleSystemCode).subscribe({
-      next: (opts: any) => this.entryReasons.set([...opts]),
-      error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
-    });
-    (this.catalogService as any).loadContractTypeOptions(ruleSystemCode).subscribe({
+
+    const hireDateValue = this.form.get('hireDate')?.value;
+    const referenceDate = hireDateValue instanceof Date ? formatLocalDate(hireDateValue) : null;
+
+    (this.catalogService as any)
+      .loadPresenceCompanyOptions(ruleSystemCode, referenceDate)
+      .subscribe({
+        next: (opts: any) => this.companies.set([...opts]),
+        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+      });
+    (this.catalogService as any)
+      .loadPresenceEntryReasonOptions(ruleSystemCode, referenceDate)
+      .subscribe({
+        next: (opts: any) => this.entryReasons.set([...opts]),
+        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+      });
+    (this.catalogService as any).loadContractTypeOptions(ruleSystemCode, referenceDate).subscribe({
       next: (opts: any) => this.contractTypes.set([...opts]),
       error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
     });
-    (this.catalogService as any).loadLaborClassificationAgreementOptions(ruleSystemCode).subscribe({
-      next: (opts: any) => this.agreements.set([...opts]),
-      error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
-    });
+    (this.catalogService as any)
+      .loadLaborClassificationAgreementOptions(ruleSystemCode, referenceDate)
+      .subscribe({
+        next: (opts: any) => this.agreements.set([...opts]),
+        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+      });
   }
 
   private loadWorkCentersByCompany(ruleSystemCode: string, companyCode: string) {

@@ -9,6 +9,7 @@ import {
 import { DirectCatalogOptionResponse } from '../../../core/api/generated/model/direct-catalog-option-response';
 import { SlotKeyOption } from '../shared/ui/section/editable-slot-section.model';
 import { getCatalogDisplay } from '../shared/utils/catalog-display.util';
+import { currentLocalDate, formatDisplayDate } from '../../../shared/utils/local-date.util';
 
 const employeeCatalogFields = {
   contactType: { resourceCode: 'employee.contact', fieldCode: 'contactTypeCode' },
@@ -43,22 +44,48 @@ export class EmployeeFieldCatalogService {
     Observable<ReadonlyArray<SlotKeyOption<string>>>
   >();
 
-  loadContactTypeOptions(ruleSystemCode: string): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.contactType);
+  loadContactTypeOptions(
+    ruleSystemCode: string,
+    referenceDate?: string | null,
+  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.contactType,
+      referenceDate,
+    );
   }
 
   loadIdentifierTypeOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.identifierType);
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.identifierType,
+      referenceDate,
+    );
   }
 
-  loadAddressTypeOptions(ruleSystemCode: string): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.addressType);
+  loadAddressTypeOptions(
+    ruleSystemCode: string,
+    referenceDate?: string | null,
+  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.addressType,
+      referenceDate,
+    );
   }
 
-  loadWorkCenterOptions(ruleSystemCode: string): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.workCenter);
+  loadWorkCenterOptions(
+    ruleSystemCode: string,
+    referenceDate?: string | null,
+  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.workCenter,
+      referenceDate,
+    );
   }
 
   loadWorkCenterOptionsByCompany(
@@ -107,44 +134,74 @@ export class EmployeeFieldCatalogService {
 
   loadContractTypeOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.contractType);
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.contractType,
+      referenceDate,
+    );
   }
 
   loadLaborClassificationAgreementOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
     return this.loadDirectOptionsByField(
       ruleSystemCode,
       employeeCatalogFields.laborClassificationAgreement,
+      referenceDate,
     );
   }
 
   loadPresenceCompanyOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.presenceCompany);
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.presenceCompany,
+      referenceDate,
+    );
   }
 
   loadPresenceEntryReasonOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.presenceEntryReason);
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.presenceEntryReason,
+      referenceDate,
+    );
   }
 
   loadPresenceExitReasonOptions(
     ruleSystemCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.presenceExitReason);
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.presenceExitReason,
+      referenceDate,
+    );
   }
 
-  loadCostCenterOptions(ruleSystemCode: string): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(ruleSystemCode, employeeCatalogFields.costCenter);
+  loadCostCenterOptions(
+    ruleSystemCode: string,
+    referenceDate?: string | null,
+  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.costCenter,
+      referenceDate,
+    );
   }
 
   private loadDirectOptionsByField(
     ruleSystemCode: string,
     fieldSpec: CatalogFieldSpec,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
     const normalizedRuleSystemCode = this.normalizeRequiredValue(ruleSystemCode);
     if (!normalizedRuleSystemCode) {
@@ -162,7 +219,11 @@ export class EmployeeFieldCatalogService {
           return throwError(() => new Error(message));
         }
 
-        return this.getDirectOptions(normalizedRuleSystemCode, binding.ruleEntityTypeCode);
+        return this.getDirectOptions(
+          normalizedRuleSystemCode,
+          binding.ruleEntityTypeCode,
+          referenceDate,
+        );
       }),
     );
   }
@@ -190,13 +251,17 @@ export class EmployeeFieldCatalogService {
   private getDirectOptions(
     ruleSystemCode: string,
     ruleEntityTypeCode: string,
+    referenceDate?: string | null,
   ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
     const normalizedRuleEntityTypeCode = this.normalizeRequiredValue(ruleEntityTypeCode);
     if (!normalizedRuleEntityTypeCode) {
       return of([]);
     }
 
-    const cacheKey = `${ruleSystemCode}|${normalizedRuleEntityTypeCode}`;
+    // La fecha entra en la clave: dos períodos distintos ven el mismo catálogo con marcas
+    // distintas, y una sola entrada de caché los mezclaría.
+    const normalizedReferenceDate = referenceDate?.trim() || null;
+    const cacheKey = `${ruleSystemCode}|${normalizedRuleEntityTypeCode}|${normalizedReferenceDate ?? 'hoy'}`;
     const cached = this.optionsByDirectCatalogCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -206,10 +271,11 @@ export class EmployeeFieldCatalogService {
       .getDirectCatalogOptions({
         ruleSystemCode,
         ruleEntityTypeCode: normalizedRuleEntityTypeCode,
+        referenceDate: normalizedReferenceDate ?? undefined,
       })
       .pipe(
         map((response) => response.items ?? []),
-        map((items) => this.mapOptions(items)),
+        map((items) => this.mapOptions(items, normalizedReferenceDate)),
         shareReplay(1),
       );
 
@@ -233,21 +299,60 @@ export class EmployeeFieldCatalogService {
     );
   }
 
+  /**
+   * Las opciones, con su vigencia a la fecha pedida (b4rrhh/backend#32).
+   *
+   * Ya no se filtra por `active`: el backend devuelve el catálogo entero y `active` es
+   * ahora la **marca** de vigencia a esa fecha, no una lista de las que se pueden elegir.
+   * Filtrarlas aquí sería volver a esconder lo que el backend acaba de dejar de esconder.
+   *
+   * Las vigentes van primero y las demás debajo, cada una con su período, que es lo que el
+   * desplegable necesita para agruparlas.
+   */
   private mapOptions(
     items: ReadonlyArray<DirectCatalogOptionResponse>,
+    referenceDate: string | null,
   ): ReadonlyArray<SlotKeyOption<string>> {
     return items
-      .filter((item) => item.active === true)
       .map((item) => {
         const display = getCatalogDisplay(item.name, item.code);
         const label = display.code ? `${display.label} · ${display.code}` : display.label;
+        const effective = item.active === true;
 
         return {
           value: item.code,
           label,
+          effective,
+          note: effective ? null : this.describeValidity(item, referenceDate),
         };
       })
-      .sort((left, right) => left.label.localeCompare(right.label));
+      .sort((left, right) => {
+        if (left.effective !== right.effective) {
+          return left.effective ? -1 : 1;
+        }
+        return left.label.localeCompare(right.label);
+      });
+  }
+
+  /**
+   * Por qué una opción no está vigente: «cerrado el 31/12/2020», «empieza el 01/01/2030».
+   *
+   * Cuál de las dos depende de la fecha, no de qué campo venga: un código con inicio y fin
+   * puede no estar vigente por cualquiera de los dos lados. Sin fecha pedida, hoy.
+   */
+  private describeValidity(
+    item: DirectCatalogOptionResponse,
+    referenceDate: string | null,
+  ): string | null {
+    const reference = referenceDate ?? currentLocalDate();
+
+    if (item.endDate && item.endDate < reference) {
+      return `cerrado el ${formatDisplayDate(item.endDate)}`;
+    }
+    if (item.startDate && item.startDate > reference) {
+      return `empieza el ${formatDisplayDate(item.startDate)}`;
+    }
+    return null;
   }
 
   private normalizeRequiredValue(value: string): string {

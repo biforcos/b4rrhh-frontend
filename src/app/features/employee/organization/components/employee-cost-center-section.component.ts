@@ -188,7 +188,7 @@ export class EmployeeCostCenterSectionComponent {
       const key = this.employeeKey();
       untracked(() => {
         this.costCenterStore.loadCostCenters(key);
-        this.loadCostCenterOptions(key?.ruleSystemCode ?? null);
+        this.loadCostCenterOptions(key?.ruleSystemCode ?? null, this.startDateDraft());
       });
     });
 
@@ -212,6 +212,19 @@ export class EmployeeCostCenterSectionComponent {
     });
   }
 
+  /**
+   * La fecha del periodo que se edita cambia, y con ella la pregunta por la vigencia: el
+   * catalogo se vuelve a pedir para esa fecha (b4rrhh/frontend#32).
+   *
+   * Se hace aqui y no en un effect que siga a startDateDraft a proposito: escribir las
+   * opciones desde un effect que la deteccion de cambios acaba de disparar deja la pantalla
+   * pidiendo otra vuelta, y eso puso flaky al spec de la seccion.
+   */
+  protected updateStartDate(value: string): void {
+    this.startDateDraft.set(value);
+    this.loadCostCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, value);
+  }
+
   protected openAdd(): void {
     this.costCenterStore.clearFeedback();
     this.modalMode.set('add');
@@ -220,6 +233,7 @@ export class EmployeeCostCenterSectionComponent {
     this.startDateDraft.set(currentLocalDate());
     this.endDateDraft.set('');
     this.editorInitialValue.set(null);
+    this.loadCostCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, this.startDateDraft());
     this.modalVisible.set(true);
   }
 
@@ -239,6 +253,7 @@ export class EmployeeCostCenterSectionComponent {
         allocationPercentage: item.allocationPercentage,
       })),
     });
+    this.loadCostCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, this.startDateDraft());
     this.modalVisible.set(true);
   }
 
@@ -308,13 +323,13 @@ export class EmployeeCostCenterSectionComponent {
       : `Desde el ${start}, en vigor`;
   }
 
-  private loadCostCenterOptions(ruleSystemCode: string | null): void {
+  private loadCostCenterOptions(ruleSystemCode: string | null, referenceDate: string): void {
     if (!ruleSystemCode) {
       this.costCenterOptions.set([]);
       return;
     }
     this.fieldCatalogService
-      .loadCostCenterOptions(ruleSystemCode)
+      .loadCostCenterOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.costCenterOptions.set(opts),

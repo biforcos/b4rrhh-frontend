@@ -42,3 +42,11 @@
   color: var(--text-tertiary);
   pointer-events: none;
 }
+
+/* El aviso de vigencia (b4rrhh/frontend#32): dice, no bloquea. */
+.ui-select__notice {
+  margin: 0.28rem 0 0;
+  color: var(--warning-text);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}

@@ -144,8 +144,23 @@ export class RehireEmployeePageComponent {
 
     const ruleSystemCode = key.ruleSystemCode;
 
-    // Load all top-level catalogs for the rule system
-    this.rehireCatalog.loadForRuleSystem(ruleSystemCode);
+    // Load all top-level catalogs for the rule system, con la fecha de reincorporación:
+    // la vigencia de un código se pregunta respecto al día que se está dando de alta, no
+    // respecto a hoy (b4rrhh/frontend#32). Y se vuelve a pedir si esa fecha cambia.
+    const rehireDateOf = (value: unknown): string | null =>
+      value instanceof Date ? formatLocalDate(value) : null;
+
+    this.rehireCatalog.loadForRuleSystem(
+      ruleSystemCode,
+      rehireDateOf(this.form.get('rehireDate')?.value),
+    );
+
+    this.form
+      .get('rehireDate')
+      ?.valueChanges.pipe(takeUntilDestroyed())
+      .subscribe((value: unknown) => {
+        this.rehireCatalog.loadForRuleSystem(ruleSystemCode, rehireDateOf(value));
+      });
 
     // Dependent selectors: wire form changes to catalog loader using takeUntilDestroyed to avoid leaks
     this.form

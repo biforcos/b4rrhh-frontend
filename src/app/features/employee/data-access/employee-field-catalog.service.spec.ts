@@ -80,12 +80,15 @@ describe('EmployeeFieldCatalogService', () => {
           startDate: '2020-01-01',
           endDate: null,
         },
+        // b4rrhh/backend#32: `active` ya no significa «dado de baja» —eso el backend no lo
+        // devuelve nunca— sino «vigente a la fecha pedida». Este es un codigo cerrado en
+        // 2022, que sigue saliendo y sale marcado.
         {
-          code: 'INACTIVE',
-          name: 'No usar',
+          code: 'OLD_FAX',
+          name: 'Fax',
           active: false,
-          startDate: '2020-01-01',
-          endDate: null,
+          startDate: '2000-01-01',
+          endDate: '2022-12-31',
         },
       ],
       COMPANY: [
@@ -217,10 +220,20 @@ describe('EmployeeFieldCatalogService', () => {
       ruleSystemCode: 'PA-ES',
       ruleEntityTypeCode: 'CONTACT_TYPE',
     });
+    // Las vigentes primero y las demas debajo, marcadas y con su periodo: elegir una no
+    // vigente es una decision consciente, no un accidente (b4rrhh/frontend#32).
     expect(result).toEqual([
       {
         value: 'WORK_EMAIL',
         label: 'Correo laboral · WORK_EMAIL',
+        effective: true,
+        note: null,
+      },
+      {
+        value: 'OLD_FAX',
+        label: 'Fax · OLD_FAX',
+        effective: false,
+        note: 'cerrado el 31/12/2022',
       },
     ]);
   });
@@ -314,9 +327,15 @@ describe('EmployeeFieldCatalogService', () => {
       ruleEntityTypeCode: 'EMPLOYEE_PRESENCE_EXIT_REASON',
     });
 
-    expect(companyResult).toEqual([{ value: 'COMP-ES', label: 'Compania Espana · COMP-ES' }]);
-    expect(entryReasonResult).toEqual([{ value: 'HIRE', label: 'Alta inicial · HIRE' }]);
-    expect(exitReasonResult).toEqual([{ value: 'END', label: 'Fin de relacion · END' }]);
+    expect(companyResult).toEqual([
+      { value: 'COMP-ES', label: 'Compania Espana · COMP-ES', effective: true, note: null },
+    ]);
+    expect(entryReasonResult).toEqual([
+      { value: 'HIRE', label: 'Alta inicial · HIRE', effective: true, note: null },
+    ]);
+    expect(exitReasonResult).toEqual([
+      { value: 'END', label: 'Fin de relacion · END', effective: true, note: null },
+    ]);
   });
 
   it('does not mix presence catalog options between fields', () => {
@@ -331,8 +350,12 @@ describe('EmployeeFieldCatalogService', () => {
       entryReasonResult = options;
     });
 
-    expect(companyResult).toEqual([{ value: 'COMP-ES', label: 'Compania Espana · COMP-ES' }]);
-    expect(entryReasonResult).toEqual([{ value: 'HIRE', label: 'Alta inicial · HIRE' }]);
+    expect(companyResult).toEqual([
+      { value: 'COMP-ES', label: 'Compania Espana · COMP-ES', effective: true, note: null },
+    ]);
+    expect(entryReasonResult).toEqual([
+      { value: 'HIRE', label: 'Alta inicial · HIRE', effective: true, note: null },
+    ]);
   });
 
   it('returns empty options for one presence field without affecting the others', () => {
@@ -399,8 +422,12 @@ describe('EmployeeFieldCatalogService', () => {
       exitReasonResult = options;
     });
 
-    expect(companyResult).toEqual([{ value: 'COMP-ES', label: 'Compania Espana · COMP-ES' }]);
-    expect(entryReasonResult).toEqual([{ value: 'HIRE', label: 'Alta inicial · HIRE' }]);
+    expect(companyResult).toEqual([
+      { value: 'COMP-ES', label: 'Compania Espana · COMP-ES', effective: true, note: null },
+    ]);
+    expect(entryReasonResult).toEqual([
+      { value: 'HIRE', label: 'Alta inicial · HIRE', effective: true, note: null },
+    ]);
     expect(exitReasonResult).toEqual([]);
   });
 
@@ -418,7 +445,9 @@ describe('EmployeeFieldCatalogService', () => {
       ruleSystemCode: 'PA-ES',
       ruleEntityTypeCode: 'WORK_CENTER',
     });
-    expect(result).toEqual([{ value: 'MADRID-01', label: 'Madrid Centro · MADRID-01' }]);
+    expect(result).toEqual([
+      { value: 'MADRID-01', label: 'Madrid Centro · MADRID-01', effective: true, note: null },
+    ]);
   });
 
   it('loads work center options filtered by company for hire workflows', () => {
@@ -449,7 +478,9 @@ describe('EmployeeFieldCatalogService', () => {
       ruleSystemCode: 'PA-ES',
       ruleEntityTypeCode: 'AGREEMENT',
     });
-    expect(result).toEqual([{ value: 'AGR-TECH', label: 'Convenio tecnico · AGR-TECH' }]);
+    expect(result).toEqual([
+      { value: 'AGR-TECH', label: 'Convenio tecnico · AGR-TECH', effective: true, note: null },
+    ]);
   });
 
   it('loads DIRECT options for employee.contract contractTypeCode', () => {
@@ -466,6 +497,8 @@ describe('EmployeeFieldCatalogService', () => {
       ruleSystemCode: 'PA-ES',
       ruleEntityTypeCode: 'CONTRACT',
     });
-    expect(result).toEqual([{ value: 'PERM', label: 'Indefinido · PERM' }]);
+    expect(result).toEqual([
+      { value: 'PERM', label: 'Indefinido · PERM', effective: true, note: null },
+    ]);
   });
 });

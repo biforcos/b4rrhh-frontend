@@ -222,7 +222,7 @@ export class EmployeeAddressSectionComponent {
       const key = this.employeeKey();
       untracked(() => {
         this.addressStore.loadAddresses(key);
-        this.loadCatalogOptions(key?.ruleSystemCode ?? null);
+        this.loadCatalogOptions(key?.ruleSystemCode ?? null, this.draft().startDate);
         this.closeModal();
       });
     });
@@ -265,6 +265,7 @@ export class EmployeeAddressSectionComponent {
     this.editingNumber.set(null);
     this.editingPeriod.set(null);
     this.draft.set(createEmptyAddressDraft());
+    this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, this.draft().startDate);
     this.modalVisible.set(true);
   }
 
@@ -285,6 +286,7 @@ export class EmployeeAddressSectionComponent {
       startDate: address.startDate,
       endDate: address.endDate ?? '',
     });
+    this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, this.draft().startDate);
     this.modalVisible.set(true);
   }
 
@@ -345,6 +347,12 @@ export class EmployeeAddressSectionComponent {
 
   protected updateDraft(field: keyof AddressCreateDraft, value: string | null): void {
     this.draft.update((draft) => ({ ...draft, [field]: value ?? '' }));
+
+    // La vigencia de un tipo de dirección se pregunta respecto al día en que empieza el
+    // período que se edita (b4rrhh/frontend#32), así que al cambiarlo se vuelve a pedir.
+    if (field === 'startDate') {
+      this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, value ?? '');
+    }
   }
 
   private addressAt(index: number): EmployeeAddressModel | null {
@@ -368,7 +376,7 @@ export class EmployeeAddressSectionComponent {
     return byStart !== 0 ? byStart : left.addressNumber - right.addressNumber;
   }
 
-  private loadCatalogOptions(ruleSystemCode: string | null): void {
+  private loadCatalogOptions(ruleSystemCode: string | null, referenceDate: string): void {
     const normalized = ruleSystemCode?.trim() ?? '';
     if (!normalized) {
       this.catalogRequestId += 1;
@@ -380,7 +388,7 @@ export class EmployeeAddressSectionComponent {
     const requestId = ++this.catalogRequestId;
     this.catalogLoading.set(true);
     this.fieldCatalogService
-      .loadAddressTypeOptions(normalized)
+      .loadAddressTypeOptions(normalized, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (options) => {

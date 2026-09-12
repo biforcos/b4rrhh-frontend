@@ -43,7 +43,7 @@
     <app-ui-date-input
       [ariaLabel]="texts.workCenterSectionStartDateLabel"
       [value]="startDateDraft()"
-      (valueChanged)="startDateDraft.set($event)"
+      (valueChanged)="updateStartDate($event)"
     />
     <app-ui-date-input
       [ariaLabel]="texts.workCenterSectionEndDateLabel"

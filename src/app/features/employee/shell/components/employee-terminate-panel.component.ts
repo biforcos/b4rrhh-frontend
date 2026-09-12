@@ -9,6 +9,7 @@ import {
   signal,
   isDevMode,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -154,9 +155,19 @@ export class EmployeeTerminatePanelComponent {
   readonly errorMsg = signal<string | null>(null);
   readonly terminationResult = signal<TerminateEmployeeResponse | null>(null);
 
+  /** La fecha del cese, como señal, para que el catálogo se rehaga cuando cambie. */
+  private readonly terminationDateSignal = signal('');
+
   constructor() {
+    this.form.controls.terminationDate.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((value) => this.terminationDateSignal.set(value ?? ''));
+
     effect(() => {
       const key = this.employeeKey();
+      // La vigencia de un motivo de salida se pregunta respecto al día del cese, no
+      // respecto a hoy (b4rrhh/frontend#32).
+      const referenceDate = this.terminationDateSignal() || null;
       if (!key) {
         // Panel opened without a valid employee key – reproducible error in dev
         if (isDevMode()) {
@@ -186,7 +197,7 @@ export class EmployeeTerminatePanelComponent {
 
       this.optionsLoading.set(true);
 
-      const sub = this.fieldCatalog.loadPresenceExitReasonOptions(rs).subscribe({
+      const sub = this.fieldCatalog.loadPresenceExitReasonOptions(rs, referenceDate).subscribe({
         next: (opts) => {
           this.options.set(opts);
           this.optionsLoading.set(false);

@@ -54,7 +54,7 @@
   <app-ui-date-input
     [ariaLabel]="texts.laborClassificationSectionStartDateAriaLabel"
     [value]="startDateDraft()"
-    (valueChanged)="startDateDraft.set($event)"
+    (valueChanged)="updateStartDate($event)"
   />
   <app-ui-date-input
     [ariaLabel]="texts.laborClassificationSectionEndDateAriaLabel"

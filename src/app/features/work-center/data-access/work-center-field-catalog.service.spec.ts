@@ -47,12 +47,14 @@ describe('WorkCenterFieldCatalogService', () => {
               startDate: '2020-01-01',
               endDate: null,
             },
+            // b4rrhh/backend#32: `active` ya no es «dado de baja» —eso el backend no lo
+            // devuelve nunca— sino «vigente hoy». Este esta cerrado desde 2022.
             {
               code: 'LEGACY',
-              name: 'No usar',
+              name: 'Fax',
               active: false,
-              startDate: '2020-01-01',
-              endDate: null,
+              startDate: '2000-01-01',
+              endDate: '2022-12-31',
             },
           ],
         }),
@@ -83,8 +85,9 @@ describe('WorkCenterFieldCatalogService', () => {
       ruleEntityTypeCode: 'CONTACT_TYPE',
     });
     expect(result).toEqual([
-      { value: 'EMAIL', label: 'Correo · EMAIL' },
-      { value: 'PHONE', label: 'Telefono · PHONE' },
+      { value: 'EMAIL', label: 'Correo · EMAIL', effective: true, note: null },
+      { value: 'PHONE', label: 'Telefono · PHONE', effective: true, note: null },
+      { value: 'LEGACY', label: 'Fax · LEGACY', effective: false, note: 'cerrado el 31/12/2022' },
     ]);
   });
 
@@ -104,8 +107,9 @@ describe('WorkCenterFieldCatalogService', () => {
       ruleEntityTypeCode: 'CONTACT_TYPE',
     });
     expect(result).toEqual([
-      { value: 'EMAIL', label: 'Correo · EMAIL' },
-      { value: 'PHONE', label: 'Telefono · PHONE' },
+      { value: 'EMAIL', label: 'Correo · EMAIL', effective: true, note: null },
+      { value: 'PHONE', label: 'Telefono · PHONE', effective: true, note: null },
+      { value: 'LEGACY', label: 'Fax · LEGACY', effective: false, note: 'cerrado el 31/12/2022' },
     ]);
   });
 

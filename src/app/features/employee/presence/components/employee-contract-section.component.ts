@@ -181,7 +181,7 @@ export class EmployeeContractSectionComponent {
       const key = this.employeeBusinessKey();
       untracked(() => {
         this.contractStore.loadContractsByBusinessKey(key);
-        this.loadContractTypeOptions(key?.ruleSystemCode ?? null);
+        this.loadContractTypeOptions(key?.ruleSystemCode ?? null, this.startDateDraft());
       });
     });
 
@@ -205,6 +205,19 @@ export class EmployeeContractSectionComponent {
     });
   }
 
+  /**
+   * La fecha del periodo que se edita cambia, y con ella la pregunta por la vigencia: el
+   * catalogo se vuelve a pedir para esa fecha (b4rrhh/frontend#32).
+   *
+   * Se hace aqui y no en un effect que siga a startDateDraft a proposito: escribir las
+   * opciones desde un effect que la deteccion de cambios acaba de disparar deja la pantalla
+   * pidiendo otra vuelta, y eso puso flaky al spec de la seccion.
+   */
+  protected updateStartDate(value: string): void {
+    this.startDateDraft.set(value);
+    this.loadContractTypeOptions(this.employeeBusinessKey()?.ruleSystemCode ?? null, value);
+  }
+
   protected openAdd(): void {
     this.contractStore.clearFeedback();
     this.modalMode.set('add');
@@ -215,6 +228,10 @@ export class EmployeeContractSectionComponent {
     this.contractCodeDraft.set('');
     this.contractSubtypeCodeDraft.set('');
     this.subtypeOptionsState.set([]);
+    this.loadContractTypeOptions(
+      this.employeeBusinessKey()?.ruleSystemCode ?? null,
+      this.startDateDraft(),
+    );
     this.modalVisible.set(true);
   }
 
@@ -230,6 +247,10 @@ export class EmployeeContractSectionComponent {
     this.contractCodeDraft.set(row.contractCode);
     this.contractSubtypeCodeDraft.set(row.contractSubtypeCode ?? '');
     this.loadSubtypeOptions(row.contractCode, row.startDate);
+    this.loadContractTypeOptions(
+      this.employeeBusinessKey()?.ruleSystemCode ?? null,
+      this.startDateDraft(),
+    );
     this.modalVisible.set(true);
   }
 
@@ -290,14 +311,14 @@ export class EmployeeContractSectionComponent {
       : `Desde el ${start}, en vigor`;
   }
 
-  private loadContractTypeOptions(ruleSystemCode: string | null): void {
+  private loadContractTypeOptions(ruleSystemCode: string | null, referenceDate: string): void {
     if (!ruleSystemCode) {
       this.contractTypeOptionsState.set([]);
       return;
     }
     const id = ++this.contractTypeRequestId;
     this.fieldCatalogService
-      .loadContractTypeOptions(ruleSystemCode)
+      .loadContractTypeOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => {

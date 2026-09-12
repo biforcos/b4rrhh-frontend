@@ -188,7 +188,7 @@ export class EmployeeLaborClassificationSectionComponent {
       const key = this.employeeBusinessKey();
       untracked(() => {
         this.classificationStore.loadLaborClassificationsByBusinessKey(key);
-        this.loadAgreementOptions(key?.ruleSystemCode ?? null);
+        this.loadAgreementOptions(key?.ruleSystemCode ?? null, this.startDateDraft());
       });
     });
 
@@ -212,6 +212,20 @@ export class EmployeeLaborClassificationSectionComponent {
     });
   }
 
+  /**
+   * La fecha del periodo que se edita cambia, y con ella la pregunta por la vigencia: el
+   * catalogo se vuelve a pedir para esa fecha (b4rrhh/frontend#32). Las categorias del
+   * convenio ya se pedian asi desde su propio endpoint.
+   */
+  protected updateStartDate(value: string): void {
+    this.startDateDraft.set(value);
+    this.loadAgreementOptions(this.employeeBusinessKey()?.ruleSystemCode ?? null, value);
+    const agreementCode = this.agreementCodeDraft();
+    if (agreementCode) {
+      this.loadCategoryOptions(agreementCode, value || null);
+    }
+  }
+
   protected openAdd(): void {
     this.classificationStore.clearFeedback();
     this.modalMode.set('add');
@@ -222,6 +236,10 @@ export class EmployeeLaborClassificationSectionComponent {
     this.agreementCodeDraft.set('');
     this.agreementCategoryCodeDraft.set('');
     this.categoryOptionsState.set([]);
+    this.loadAgreementOptions(
+      this.employeeBusinessKey()?.ruleSystemCode ?? null,
+      this.startDateDraft(),
+    );
     this.modalVisible.set(true);
   }
 
@@ -237,6 +255,10 @@ export class EmployeeLaborClassificationSectionComponent {
     this.agreementCodeDraft.set(row.agreementCode);
     this.agreementCategoryCodeDraft.set(row.agreementCategoryCode ?? '');
     this.loadCategoryOptions(row.agreementCode, row.startDate);
+    this.loadAgreementOptions(
+      this.employeeBusinessKey()?.ruleSystemCode ?? null,
+      this.startDateDraft(),
+    );
     this.modalVisible.set(true);
   }
 
@@ -297,14 +319,14 @@ export class EmployeeLaborClassificationSectionComponent {
       : `Desde el ${start}, en vigor`;
   }
 
-  private loadAgreementOptions(ruleSystemCode: string | null): void {
+  private loadAgreementOptions(ruleSystemCode: string | null, referenceDate: string): void {
     if (!ruleSystemCode) {
       this.agreementOptionsState.set([]);
       return;
     }
     const id = ++this.agreementRequestId;
     this.fieldCatalogService
-      .loadLaborClassificationAgreementOptions(ruleSystemCode)
+      .loadLaborClassificationAgreementOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => {

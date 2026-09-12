@@ -9,6 +9,7 @@ import {
 import { DirectCatalogOptionResponse } from '../../../core/api/generated/model/direct-catalog-option-response';
 import { SlotKeyOption } from '../../employee/shared/ui/section/editable-slot-section.model';
 import { getCatalogDisplay } from '../../employee/shared/utils/catalog-display.util';
+import { currentLocalDate, formatDisplayDate } from '../../../shared/utils/local-date.util';
 
 const WORK_CENTER_CONTACT_RESOURCE_CODE = 'work_center.contact';
 const CONTACT_TYPE_RULE_ENTITY_TYPE_CODE = 'CONTACT_TYPE';
@@ -141,19 +142,44 @@ export class WorkCenterFieldCatalogService {
     );
   }
 
+  /**
+   * Ya no se filtra por `active` (b4rrhh/backend#32): lo dado de baja el backend no lo
+   * devuelve nunca, y `active` es ahora la marca de vigencia a la fecha —aquí, hoy—. Las
+   * vigentes primero y las demás debajo, marcadas y con su período.
+   */
   private mapOptions(
     items: ReadonlyArray<DirectCatalogOptionResponse>,
   ): ReadonlyArray<SlotKeyOption<string>> {
+    const today = currentLocalDate();
+
     return items
-      .filter((item) => item.active === true)
       .map((item) => {
         const display = getCatalogDisplay(item.name, item.code);
+        const effective = item.active === true;
+
         return {
           value: item.code,
           label: display.code ? `${display.label} · ${display.code}` : display.label,
+          effective,
+          note: effective ? null : this.describeValidity(item, today),
         };
       })
-      .sort((left, right) => left.label.localeCompare(right.label));
+      .sort((left, right) => {
+        if (left.effective !== right.effective) {
+          return left.effective ? -1 : 1;
+        }
+        return left.label.localeCompare(right.label);
+      });
+  }
+
+  private describeValidity(item: DirectCatalogOptionResponse, reference: string): string | null {
+    if (item.endDate && item.endDate < reference) {
+      return `cerrado el ${formatDisplayDate(item.endDate)}`;
+    }
+    if (item.startDate && item.startDate > reference) {
+      return `empieza el ${formatDisplayDate(item.startDate)}`;
+    }
+    return null;
   }
 
   private normalizeRequiredValue(value: string): string {

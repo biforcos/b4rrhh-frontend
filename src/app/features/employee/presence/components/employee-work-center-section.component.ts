@@ -172,7 +172,7 @@ export class EmployeeWorkCenterSectionComponent {
       const key = this.employeeKey();
       untracked(() => {
         this.workCenterStore.loadWorkCenters(key);
-        this.loadWorkCenterOptions(key?.ruleSystemCode ?? null);
+        this.loadWorkCenterOptions(key?.ruleSystemCode ?? null, this.startDateDraft());
       });
     });
 
@@ -196,6 +196,19 @@ export class EmployeeWorkCenterSectionComponent {
     });
   }
 
+  /**
+   * La fecha del periodo que se edita cambia, y con ella la pregunta por la vigencia: el
+   * catalogo se vuelve a pedir para esa fecha (b4rrhh/frontend#32).
+   *
+   * Se hace aqui y no en un effect que siga a startDateDraft a proposito: escribir las
+   * opciones desde un effect que la deteccion de cambios acaba de disparar deja la pantalla
+   * pidiendo otra vuelta, y eso puso flaky al spec de la seccion.
+   */
+  protected updateStartDate(value: string): void {
+    this.startDateDraft.set(value);
+    this.loadWorkCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, value);
+  }
+
   protected openAdd(): void {
     this.workCenterStore.clearFeedback();
     this.modalMode.set('add');
@@ -204,6 +217,7 @@ export class EmployeeWorkCenterSectionComponent {
     this.startDateDraft.set(currentLocalDate());
     this.endDateDraft.set('');
     this.workCenterCodeDraft.set('');
+    this.loadWorkCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, this.startDateDraft());
     this.modalVisible.set(true);
   }
 
@@ -217,6 +231,7 @@ export class EmployeeWorkCenterSectionComponent {
     this.workCenterCodeDraft.set(row.workCenterCode);
     this.startDateDraft.set(row.startDate);
     this.endDateDraft.set(row.endDate ?? '');
+    this.loadWorkCenterOptions(this.employeeKey()?.ruleSystemCode ?? null, this.startDateDraft());
     this.modalVisible.set(true);
   }
 
@@ -281,13 +296,13 @@ export class EmployeeWorkCenterSectionComponent {
       : `Desde el ${start}, en vigor`;
   }
 
-  private loadWorkCenterOptions(ruleSystemCode: string | null): void {
+  private loadWorkCenterOptions(ruleSystemCode: string | null, referenceDate: string): void {
     if (!ruleSystemCode) {
       this.workCenterOptions.set([]);
       return;
     }
     this.fieldCatalogService
-      .loadWorkCenterOptions(ruleSystemCode)
+      .loadWorkCenterOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.workCenterOptions.set(opts),

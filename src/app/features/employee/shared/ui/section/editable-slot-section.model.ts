@@ -16,6 +16,17 @@ export interface SlotDraft<KeyType = string> {
 export interface SlotKeyOption<KeyType = string> {
   value: KeyType;
   label: string;
+  /**
+   * Si el código está vigente a la fecha del período que se edita (b4rrhh/backend#32).
+   *
+   * Ausente significa «no se preguntó por ninguna fecha», que es lo que pasa en las listas
+   * que no salen del catálogo. Las no vigentes **se ofrecen igual**: elegir una es un caso
+   * legítimo y frecuente —la corrección administrativa—, y esconderlas obligaría a un modo
+   * especial que el usuario tendría que saber que existe.
+   */
+  effective?: boolean;
+  /** Por qué no está vigente, para decirlo en la opción: «cerrado el 31/12/2020». */
+  note?: string | null;
 }
 
 export interface SlotEditSubmission<KeyType = string> {

@@ -32,7 +32,11 @@ export class EmployeeRehireCatalogService {
   private pendingRequests = 0;
   private lastRuleSystemCode: string | null = null;
 
-  loadForRuleSystem(ruleSystemCode: string): void {
+  /**
+   * @param referenceDate la fecha de reincorporación: es respecto a ella, y no respecto a
+   *   hoy, como tiene sentido preguntar por la vigencia de un código (b4rrhh/frontend#32).
+   */
+  loadForRuleSystem(ruleSystemCode: string, referenceDate?: string | null): void {
     if (!ruleSystemCode || ruleSystemCode.trim().length === 0) {
       this.error.set('Invalid rule system code');
       return;
@@ -42,11 +46,11 @@ export class EmployeeRehireCatalogService {
     this.error.set(null);
 
     this.workCenters.set([]);
-    this.loadCompanies(ruleSystemCode);
-    this.loadEntryReasons(ruleSystemCode);
-    this.loadContractTypes(ruleSystemCode);
-    this.loadAgreements(ruleSystemCode);
-    this.loadCostCenterOptions(ruleSystemCode);
+    this.loadCompanies(ruleSystemCode, referenceDate);
+    this.loadEntryReasons(ruleSystemCode, referenceDate);
+    this.loadContractTypes(ruleSystemCode, referenceDate);
+    this.loadAgreements(ruleSystemCode, referenceDate);
+    this.loadCostCenterOptions(ruleSystemCode, referenceDate);
   }
 
   private startRequest(): void {
@@ -81,10 +85,10 @@ export class EmployeeRehireCatalogService {
     this.workCenters.set([]);
   }
 
-  private loadCompanies(ruleSystemCode: string): void {
+  private loadCompanies(ruleSystemCode: string, referenceDate?: string | null): void {
     this.startRequest();
     this.fieldCatalog
-      .loadPresenceCompanyOptions(ruleSystemCode)
+      .loadPresenceCompanyOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.companies.set([...opts]),
@@ -93,10 +97,10 @@ export class EmployeeRehireCatalogService {
       });
   }
 
-  private loadEntryReasons(ruleSystemCode: string): void {
+  private loadEntryReasons(ruleSystemCode: string, referenceDate?: string | null): void {
     this.startRequest();
     this.fieldCatalog
-      .loadPresenceEntryReasonOptions(ruleSystemCode)
+      .loadPresenceEntryReasonOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.entryReasons.set([...opts]),
@@ -105,10 +109,10 @@ export class EmployeeRehireCatalogService {
       });
   }
 
-  private loadContractTypes(ruleSystemCode: string): void {
+  private loadContractTypes(ruleSystemCode: string, referenceDate?: string | null): void {
     this.startRequest();
     this.fieldCatalog
-      .loadContractTypeOptions(ruleSystemCode)
+      .loadContractTypeOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.contractTypes.set([...opts]),
@@ -140,10 +144,10 @@ export class EmployeeRehireCatalogService {
       });
   }
 
-  private loadAgreements(ruleSystemCode: string): void {
+  private loadAgreements(ruleSystemCode: string, referenceDate?: string | null): void {
     this.startRequest();
     this.fieldCatalog
-      .loadLaborClassificationAgreementOptions(ruleSystemCode)
+      .loadLaborClassificationAgreementOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.agreements.set([...opts]),
@@ -175,10 +179,10 @@ export class EmployeeRehireCatalogService {
       });
   }
 
-  private loadCostCenterOptions(ruleSystemCode: string): void {
+  private loadCostCenterOptions(ruleSystemCode: string, referenceDate?: string | null): void {
     this.startRequest();
     this.fieldCatalog
-      .loadCostCenterOptions(ruleSystemCode)
+      .loadCostCenterOptions(ruleSystemCode, referenceDate)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.costCenterOptions.set([...opts]),
