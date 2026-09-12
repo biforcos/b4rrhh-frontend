@@ -18,9 +18,6 @@ const wc = (overrides: Partial<EmployeeWorkCenterModel> = {}): EmployeeWorkCente
   startDate: '2024-01-01',
   endDate: null,
   isActive: true,
-  canDelete: false,
-  startsAtPresenceStart: false,
-  deleteForbiddenReason: null,
   ...overrides,
 });
 

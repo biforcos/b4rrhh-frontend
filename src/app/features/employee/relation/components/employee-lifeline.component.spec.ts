@@ -71,9 +71,6 @@ const WORK_CENTERS: EmployeeWorkCenterModel[] = [
     startDate: '2023-10-02',
     endDate: '2023-12-01',
     isActive: false,
-    canDelete: false,
-    startsAtPresenceStart: true,
-    deleteForbiddenReason: null,
   },
   {
     workCenterAssignmentNumber: 2,
@@ -82,9 +79,6 @@ const WORK_CENTERS: EmployeeWorkCenterModel[] = [
     startDate: '2023-12-02',
     endDate: '2023-12-05',
     isActive: false,
-    canDelete: false,
-    startsAtPresenceStart: false,
-    deleteForbiddenReason: null,
   },
   {
     workCenterAssignmentNumber: 3,
@@ -93,9 +87,6 @@ const WORK_CENTERS: EmployeeWorkCenterModel[] = [
     startDate: '2024-03-11',
     endDate: null,
     isActive: true,
-    canDelete: false,
-    startsAtPresenceStart: true,
-    deleteForbiddenReason: null,
   },
 ];
 

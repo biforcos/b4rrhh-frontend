@@ -5,7 +5,4 @@ export interface EmployeeWorkCenterModel {
   startDate: string;
   endDate: string | null;
   isActive: boolean;
-  canDelete: boolean;
-  startsAtPresenceStart: boolean;
-  deleteForbiddenReason: 'starts-at-presence-start' | null;
 }

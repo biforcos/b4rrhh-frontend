@@ -132,9 +132,6 @@ export class EmployeeWorkCenterGateway {
       startDate: source.startDate,
       endDate: source.endDate,
       isActive: source.isActive,
-      canDelete: source.canDelete,
-      startsAtPresenceStart: source.startsAtPresenceStart,
-      deleteForbiddenReason: source.deleteForbiddenReason,
     };
   }
 }

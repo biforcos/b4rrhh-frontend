@@ -19,9 +19,6 @@ const workCentersFixture: ReadonlyArray<EmployeeWorkCenterModel> = [
     startDate: '2025-01-01',
     endDate: null,
     isActive: true,
-    canDelete: true,
-    startsAtPresenceStart: false,
-    deleteForbiddenReason: null,
   },
   {
     workCenterAssignmentNumber: 9,
@@ -29,9 +26,6 @@ const workCentersFixture: ReadonlyArray<EmployeeWorkCenterModel> = [
     startDate: '2024-01-01',
     endDate: '2024-12-31',
     isActive: false,
-    canDelete: true,
-    startsAtPresenceStart: false,
-    deleteForbiddenReason: null,
   },
 ];
 

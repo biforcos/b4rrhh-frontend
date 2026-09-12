@@ -12,22 +12,23 @@ import {
 } from '../generated/model/models';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
 
-export interface EmployeeWorkCenterApiModel {
-  workCenterAssignmentNumber: number;
-  workCenterCode: string;
+/**
+ * Lo que el contrato declara, con los dos campos que este cliente normaliza.
+ *
+ * Se deriva del tipo generado a proposito y no se vuelve a escribir a mano
+ * (frontend#54): un tipo escrito a mano que declara todo opcional no es un
+ * contrato, es una sugerencia, y por ahi se colaron tres campos que el backend
+ * no manda nunca. Derivandolo, un campo nuevo del contrato aparece aqui solo y
+ * uno que el contrato no declara no compila.
+ */
+export type EmployeeWorkCenterApiModel = Omit<
+  EmployeeWorkCenterAssignmentResponse,
+  'workCenterName' | 'endDate'
+> & {
+  /** Normalizados: lo que venga en blanco entra como null. */
   workCenterName: string | null;
-  startDate: string;
   endDate: string | null;
-  canDelete?: boolean;
-  startsAtPresenceStart?: boolean;
-  deleteForbiddenReason?: string | null;
-}
-
-interface WorkCenterResponseWithDeleteCapabilities extends EmployeeWorkCenterAssignmentResponse {
-  canDelete?: boolean;
-  startsAtPresenceStart?: boolean;
-  deleteForbiddenReason?: string | null;
-}
+};
 
 @Injectable({
   providedIn: 'root',
@@ -149,17 +150,10 @@ export class EmployeeWorkCenterReadClient {
   private toEmployeeWorkCenterApiModel(
     source: EmployeeWorkCenterAssignmentResponse,
   ): EmployeeWorkCenterApiModel {
-    const extended = source as WorkCenterResponseWithDeleteCapabilities;
-
     return {
-      workCenterAssignmentNumber: source.workCenterAssignmentNumber,
-      workCenterCode: source.workCenterCode,
+      ...source,
       workCenterName: this.normalizeOptionalValue(source.workCenterName),
-      startDate: source.startDate,
       endDate: source.endDate ?? null,
-      canDelete: extended.canDelete,
-      startsAtPresenceStart: extended.startsAtPresenceStart,
-      deleteForbiddenReason: extended.deleteForbiddenReason ?? null,
     };
   }
 }
