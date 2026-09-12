@@ -4781,7 +4781,13 @@ paths:
 
   /payroll/calculation-runs/launch:
     post:
-      summary: Launch a payroll calculation run
+      summary: Accept a payroll calculation run and return its identity without waiting
+      description: >
+        Returns as soon as the calculation run has been persisted, with status REQUESTED. The
+        calculation runs outside the request; progress is read from GET /payroll/calculation-runs/{runId}
+        and its messages. Runs execute one at a time: a second launch waits in REQUESTED. A launch that
+        does not fit in the queue is persisted as FAILED with a LAUNCH_REJECTED message rather than
+        dropped. Request validation stays synchronous, so a malformed launch answers 400 and leaves no run.
       operationId: launchPayrollCalculation
       tags:
         - Payroll Calculation Run
@@ -4792,8 +4798,8 @@ paths:
             schema:
               $ref: "#/components/schemas/LaunchPayrollCalculationRequest"
       responses:
-        "201":
-          description: Calculation run created
+        "202":
+          description: Calculation run accepted
           content:
             application/json:
               schema:
@@ -6394,6 +6400,10 @@ components:
         requestedAt:
           type: string
           format: date-time
+        requestedBy:
+          type: string
+          nullable: true
+          description: Subject that requested the run, taken from the authenticated token. Null for in-process launches, which have nobody behind them.
         startedAt:
           type: string
           format: date-time
