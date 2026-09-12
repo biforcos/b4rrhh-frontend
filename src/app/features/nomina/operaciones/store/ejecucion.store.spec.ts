@@ -35,6 +35,7 @@ function message(
 ): CalculationRunMessage {
   return {
     messageCode,
+    messageCodeName: null,
     severityCode,
     message: `mensaje de ${employeeNumber}`,
     detailsJson: null,

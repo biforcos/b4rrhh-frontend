@@ -9,6 +9,7 @@ import type { CalculationRunMessage } from './calculation-run-message.model';
 
 const executed: CalculationRunMessage = {
   messageCode: 'UNIT_ELIGIBLE_REAL_EXECUTED',
+  messageCodeName: 'Calculada',
   severityCode: 'INFO',
   message: 'Eligible real execution completed for payroll unit',
   detailsJson: null,
@@ -25,6 +26,7 @@ const executed: CalculationRunMessage = {
 const skipped: CalculationRunMessage = {
   ...executed,
   messageCode: 'UNIT_ELIGIBLE_REAL_SKIPPED_MISSING_INPUT',
+  messageCodeName: 'Sin calcular: faltaban datos',
   severityCode: 'WARNING',
   message:
     'Eligible real execution skipped: agreementCode is required but missing in launcher context',

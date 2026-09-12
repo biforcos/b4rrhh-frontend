@@ -184,7 +184,10 @@
                     }
                   </td>
                   <td class="ejecucion-page__code">
-                    <app-ui-catalog-label [name]="null" [code]="message.messageCode" />
+                    <app-ui-catalog-label
+                      [name]="message.messageCodeName"
+                      [code]="message.messageCode"
+                    />
                   </td>
                   <td>{{ severityLabels[message.severityCode] ?? message.severityCode }}</td>
                   <td class="ejecucion-page__reason">{{ message.message }}</td>

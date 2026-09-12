@@ -96,6 +96,7 @@ export class OperacionesGateway {
 
   private mapMessage = (m: any): CalculationRunMessage => ({
     messageCode: m.messageCode,
+    messageCodeName: m.messageCodeName ?? null,
     severityCode: m.severityCode,
     message: m.message,
     detailsJson: m.detailsJson ?? null,

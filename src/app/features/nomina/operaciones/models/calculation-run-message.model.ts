@@ -13,6 +13,14 @@ import { EmployeeRouteSection } from '../../../employee/routing/employee-route-b
  */
 export interface CalculationRunMessage {
   messageCode: string;
+  /**
+   * El literal del código, resuelto del catálogo por el backend (b4rrhh/backend#81).
+   *
+   * Nulo si el código no está sembrado, y entonces la celda pinta el código desnudo. Aquí no
+   * se rellena con un diccionario a mano: eso se desincroniza el día uno y es justo lo que el
+   * `b4rrhh/backend#16` existe para evitar.
+   */
+  messageCodeName: string | null;
   severityCode: string;
   message: string;
   detailsJson: string | null;
