@@ -345,6 +345,17 @@
   color: var(--text-secondary);
 }
 
+/* La sesion caducada no es culpa de quien entra: se cuenta en tono informativo, no de error. */
+.formulario__aviso {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--info-border);
+  border-radius: var(--radius-sm);
+  background: var(--info-bg);
+  font-size: 0.88rem;
+  color: var(--info-text);
+}
+
 .formulario__error {
   margin: 0;
   padding: 0.7rem 0.8rem;

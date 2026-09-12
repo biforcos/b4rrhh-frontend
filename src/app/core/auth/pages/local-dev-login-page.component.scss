@@ -51,6 +51,17 @@
   letter-spacing: 0.06em;
 }
 
+/* La sesion caducada no es culpa de quien entra: se cuenta en tono informativo, no de error. */
+.local-dev-login__aviso {
+  margin: 0;
+  color: var(--info-text);
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.88rem;
+}
+
 .local-dev-login__error {
   margin: 0;
   color: var(--error-text);

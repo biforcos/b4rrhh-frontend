@@ -160,6 +160,10 @@
         </label>
         <p class="formulario__pista">{{ texts.demoPasswordHint }}</p>
 
+        @if (auth.sessionExpired()) {
+          <p class="formulario__aviso" role="status">{{ texts.authSessionExpiredMessage }}</p>
+        }
+
         @if (auth.error()) {
           <p class="formulario__error" role="alert">{{ auth.error() }}</p>
         }

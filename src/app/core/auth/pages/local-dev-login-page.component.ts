@@ -35,6 +35,12 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
             <strong>{{ exampleSubjects }}</strong>
           </p>
 
+          @if (auth.sessionExpired()) {
+            <p class="local-dev-login__aviso" role="status">
+              {{ texts.authSessionExpiredMessage }}
+            </p>
+          }
+
           @if (auth.error()) {
             <p class="local-dev-login__error" role="alert">{{ auth.error() }}</p>
           }

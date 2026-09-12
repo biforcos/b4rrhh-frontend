@@ -14,6 +14,8 @@ export const appTexts = {
   authLoginSubmittingAction: 'Entrando...',
   authLoginErrorMessage: 'No se pudo obtener un token local. Revisa el subject o el backend local.',
   authLoginInvalidSubjectMessage: 'El subject es obligatorio.',
+  /** Por que estas de vuelta en el login sin haber pulsado salir (frontend#52). */
+  authSessionExpiredMessage: 'La sesión ha caducado. Vuelve a entrar y sigues donde lo dejaste.',
 
   // --- Demo publica ---
   demoLoginTitle: 'B4RRHH · demo',

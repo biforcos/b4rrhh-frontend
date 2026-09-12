@@ -26,7 +26,15 @@ export class AuthStore {
 
   private readonly sessionState = signal<AuthSessionState>(initialAuthSessionState);
 
+  /**
+   * Si la ultima sesion se cayo por caducidad, y no porque alguien pulsara salir
+   * (frontend#52). Lo unico que distingue las dos cosas de cara a quien llega al login:
+   * sin esto, la aplicacion te deja fuera sin decir por que.
+   */
+  private readonly sessionExpiredState = signal(false);
+
   readonly session = this.sessionState.asReadonly();
+  readonly sessionExpired = this.sessionExpiredState.asReadonly();
   readonly token = computed(() => this.sessionState().token);
   readonly subject = computed(() => this.sessionState().subject);
   readonly expiresAt = computed(() => this.sessionState().expiresAt);
@@ -51,6 +59,9 @@ export class AuthStore {
       return false;
     }
 
+    // Al intentar entrar, el aviso de caducidad ha cumplido: lo que se lea a partir de
+    // aqui es el resultado de este intento, no el de la sesion anterior.
+    this.sessionExpiredState.set(false);
     this.sessionState.update((state) => ({ ...state, loading: true, error: null }));
 
     try {
@@ -99,6 +110,9 @@ export class AuthStore {
       return false;
     }
 
+    // Al intentar entrar, el aviso de caducidad ha cumplido: lo que se lea a partir de
+    // aqui es el resultado de este intento, no el de la sesion anterior.
+    this.sessionExpiredState.set(false);
     this.sessionState.update((state) => ({ ...state, loading: true, error: null }));
 
     try {
@@ -130,6 +144,17 @@ export class AuthStore {
   logout(): void {
     this.clearPersistedSession();
     this.sessionState.set(initialAuthSessionState);
+    this.sessionExpiredState.set(false);
+  }
+
+  /**
+   * Cierra la sesion por caducidad y deja constancia de que fue eso (frontend#52).
+   * La llama el interceptor cuando el servidor contesta 401 o 403 —que es la autoridad—
+   * y tambien `getAccessToken` cuando el reloj local ya la da por vencida.
+   */
+  expireSession(): void {
+    this.logout();
+    this.sessionExpiredState.set(true);
   }
 
   getAccessToken(): string | null {
@@ -138,7 +163,7 @@ export class AuthStore {
       return null;
     }
     if (this.isExpired(session.expiresAt)) {
-      this.logout();
+      this.expireSession();
       return null;
     }
     return session.token;
@@ -161,8 +186,16 @@ export class AuthStore {
       const subject = typeof parsed.subject === 'string' ? parsed.subject : null;
       const expiresAt = typeof parsed.expiresAt === 'string' ? parsed.expiresAt : null;
 
-      if (!token || !subject || this.isExpired(expiresAt)) {
+      if (!token || !subject) {
         this.clearPersistedSession();
+        return;
+      }
+
+      // Volver despues de comer y recargar tambien es llegar por caducidad: habia sesion
+      // guardada y se ha pasado. Antes se tiraba en silencio y el login no decia nada.
+      if (this.isExpired(expiresAt)) {
+        this.clearPersistedSession();
+        this.sessionExpiredState.set(true);
         return;
       }
 
