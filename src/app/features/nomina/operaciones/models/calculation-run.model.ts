@@ -33,6 +33,17 @@ export function isRunFinished(run: CalculationRun): boolean {
 }
 
 /**
+ * Aceptada y esperando su turno.
+ *
+ * El backend sirve las ejecuciones de una en una (ADR-060 §2): si hay otra corriendo, esta se
+ * queda en REQUESTED y sin `startedAt` hasta que le toque. No es que esté arrancando: es que no
+ * ha arrancado (frontend#62).
+ */
+export function isRunQueued(run: CalculationRun): boolean {
+  return run.status === 'REQUESTED';
+}
+
+/**
  * Las unidades que la ejecucion selecciono y no acabaron en recibo.
  *
  * Se cuenta con los contadores y no con el `status`: «COMPLETED» significa que la ejecucion
@@ -46,6 +57,32 @@ export function unitsWithoutPayslip(run: CalculationRun): number {
     run.totalNotValid +
     run.totalErrors
   );
+}
+
+/**
+ * Las unidades que la ejecucion ya ha resuelto, de una manera o de otra.
+ *
+ * Cuando termina, esto iguala a `totalCandidates`: cada candidata acaba calculada, no válida, con
+ * error o saltada por alguna de las dos razones.
+ */
+export function runProcessedUnits(run: CalculationRun): number {
+  return run.totalCalculated + unitsWithoutPayslip(run);
+}
+
+/**
+ * Por donde va la ejecucion, en tanto por ciento; null mientras no se sepa cuantas unidades son.
+ *
+ * El denominador es `totalCandidates` **porque es el unico que no se mueve**: se fija cuando la
+ * ejecucion expande las unidades y no cambia ya. `totalEligible` no sirve —sube unidad por unidad
+ * igual que `totalCalculated`, asi que el cociente entre los dos vale casi 1 desde el primer
+ * segundo y la barra aparece llena con el trabajo sin empezar (frontend#62).
+ *
+ * Mientras la ejecucion esta en cola, `totalCandidates` es cero: todavia no ha mirado a nadie, y
+ * entonces no hay porcentaje que dar.
+ */
+export function runProgressPercent(run: CalculationRun): number | null {
+  if (run.totalCandidates === 0) return null;
+  return Math.min(100, Math.round((runProcessedUnits(run) / run.totalCandidates) * 100));
 }
 
 /** Cuanto duro la ejecucion, en milisegundos; null mientras no haya terminado. */

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRunFinished, runDurationMs, unitsWithoutPayslip } from './calculation-run.model';
+import {
+  isRunFinished,
+  isRunQueued,
+  runDurationMs,
+  runProcessedUnits,
+  runProgressPercent,
+  unitsWithoutPayslip,
+} from './calculation-run.model';
 import type { CalculationRun } from './calculation-run.model';
 
 const base: CalculationRun = {
@@ -35,6 +42,67 @@ describe('isRunFinished', () => {
     expect(isRunFinished({ ...base, status: 'RUNNING' })).toBe(false));
   it('returns false for REQUESTED', () =>
     expect(isRunFinished({ ...base, status: 'REQUESTED' })).toBe(false));
+});
+
+describe('isRunQueued', () => {
+  it('REQUESTED es esperar turno, no arrancar', () =>
+    expect(isRunQueued({ ...base, status: 'REQUESTED' })).toBe(true));
+  it('RUNNING ya no espera a nadie', () =>
+    expect(isRunQueued({ ...base, status: 'RUNNING' })).toBe(false));
+  it('una terminada no esta en cola', () =>
+    expect(isRunQueued({ ...base, status: 'COMPLETED' })).toBe(false));
+});
+
+describe('runProcessedUnits y runProgressPercent', () => {
+  // La corrida 4 de la prueba del backend#75, a mitad: 879 candidatas, 165 saltadas por tener ya
+  // recibo de la corrida que murio, 11 calculadas.
+  const midway = {
+    ...base,
+    status: 'RUNNING' as const,
+    totalCandidates: 879,
+    totalEligible: 12,
+    totalCalculated: 11,
+    totalSkippedNotEligible: 165,
+  };
+
+  it('cuenta todo lo resuelto, calculado o no', () => expect(runProcessedUnits(midway)).toBe(176));
+
+  it('el avance se mide sobre las candidatas, que son las que no se mueven', () => {
+    // Sobre totalEligible saldria 11/12, o sea 92% con el trabajo casi sin empezar.
+    expect(runProgressPercent(midway)).toBe(20);
+  });
+
+  it('en cola no hay porcentaje: todavia no se sabe cuantas unidades son', () =>
+    expect(runProgressPercent({ ...base, status: 'REQUESTED' })).toBeNull());
+
+  it('una corrida terminada esta al cien', () => {
+    // La corrida 4 al acabar: 714 calculadas + 165 saltadas = 879 candidatas.
+    const finished = {
+      ...base,
+      status: 'COMPLETED' as const,
+      totalCandidates: 879,
+      totalCalculated: 714,
+      totalSkippedNotEligible: 165,
+    };
+
+    expect(runProcessedUnits(finished)).toBe(879);
+    expect(runProgressPercent(finished)).toBe(100);
+  });
+
+  it('una fallida a medias no llega al cien, y eso es lo que hay que ver', () => {
+    // La corrida 3: matada a los 165 recibos de 879 candidatas.
+    const failed = {
+      ...base,
+      status: 'FAILED' as const,
+      totalCandidates: 879,
+      totalCalculated: 165,
+    };
+
+    expect(runProgressPercent(failed)).toBe(19);
+    // Y sus unidades sin recibo son cero, que es justo por lo que la pantalla no puede leer el
+    // final de una ejecucion fallida con ese contador (frontend#62).
+    expect(unitsWithoutPayslip(failed)).toBe(0);
+  });
 });
 
 describe('unitsWithoutPayslip', () => {

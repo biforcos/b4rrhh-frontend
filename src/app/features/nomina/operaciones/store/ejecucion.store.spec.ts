@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { CalculationRunMessage } from '../models/calculation-run-message.model';
 import { CalculationRun } from '../models/calculation-run.model';
-import { EjecucionStore } from './ejecucion.store';
+import { EJECUCION_POLL_TICK, EjecucionStore } from './ejecucion.store';
 
 // La ejecucion 1 de la corrida del deploy#3, recortada: COMPLETED con dos unidades saltadas.
 const RUN: CalculationRun = {
@@ -56,6 +56,7 @@ const MESSAGES: CalculationRunMessage[] = [
 
 describe('EjecucionStore', () => {
   let store: EjecucionStore;
+  let tick: Subject<void>;
   let gatewayMock: {
     getCalculationRun: ReturnType<typeof vi.fn>;
     listCalculationRunMessages: ReturnType<typeof vi.fn>;
@@ -66,9 +67,16 @@ describe('EjecucionStore', () => {
       getCalculationRun: vi.fn().mockReturnValue(of(RUN)),
       listCalculationRunMessages: vi.fn().mockReturnValue(of(MESSAGES)),
     };
+    // El pulso del sondeo lo da el test, no el reloj: asi cada vuelta es una linea y no hay
+    // temporizador que se escape al spec siguiente.
+    tick = new Subject<void>();
 
     TestBed.configureTestingModule({
-      providers: [EjecucionStore, { provide: OperacionesGateway, useValue: gatewayMock }],
+      providers: [
+        EjecucionStore,
+        { provide: OperacionesGateway, useValue: gatewayMock },
+        { provide: EJECUCION_POLL_TICK, useValue: tick },
+      ],
     });
 
     store = TestBed.inject(EjecucionStore);
@@ -104,6 +112,75 @@ describe('EjecucionStore', () => {
 
     expect(store.messages().map((m) => m.employeeNumber)).toEqual(['EMP000298', 'EMP000921']);
     expect(store.totalMessages()).toBe(3);
+  });
+
+  it('una ejecucion terminada no se sondea', () => {
+    store.load(1);
+    tick.next();
+    tick.next();
+
+    // Una sola lectura: la de la carga. COMPLETED no se vuelve a preguntar.
+    expect(gatewayMock.getCalculationRun).toHaveBeenCalledTimes(1);
+    expect(store.live()).toBe(false);
+  });
+
+  it('sigue la ejecucion mientras corre y para en cuanto termina', () => {
+    const running = { ...RUN, status: 'RUNNING' as const, totalCalculated: 100, finishedAt: null };
+    const advanced = { ...running, totalCalculated: 400 };
+    gatewayMock.getCalculationRun
+      .mockReturnValueOnce(of(running))
+      .mockReturnValueOnce(of(advanced))
+      .mockReturnValue(of(RUN));
+
+    store.load(1);
+
+    expect(store.live()).toBe(true);
+    expect(store.progressPercent()).toBe(12);
+
+    tick.next();
+
+    expect(store.run()?.totalCalculated).toBe(400);
+    expect(store.progressPercent()).toBe(46);
+
+    tick.next();
+
+    expect(store.run()?.status).toBe('COMPLETED');
+    expect(store.live()).toBe(false);
+    // Los mensajes se recargan una vez, al terminar: no viajan en cada vuelta del sondeo.
+    expect(gatewayMock.listCalculationRunMessages).toHaveBeenCalledTimes(2);
+
+    const lecturas = gatewayMock.getCalculationRun.mock.calls.length;
+    tick.next();
+    tick.next();
+
+    expect(gatewayMock.getCalculationRun).toHaveBeenCalledTimes(lecturas);
+  });
+
+  it('salir de la pantalla corta el sondeo', () => {
+    gatewayMock.getCalculationRun.mockReturnValue(
+      of({ ...RUN, status: 'RUNNING' as const, finishedAt: null }),
+    );
+
+    store.load(1);
+    const lecturas = gatewayMock.getCalculationRun.mock.calls.length;
+
+    store.ngOnDestroy();
+    tick.next();
+
+    expect(gatewayMock.getCalculationRun).toHaveBeenCalledTimes(lecturas);
+  });
+
+  it('volver a cargar no deja dos sondeos encima del mismo hueco', () => {
+    gatewayMock.getCalculationRun.mockReturnValue(
+      of({ ...RUN, status: 'RUNNING' as const, finishedAt: null }),
+    );
+
+    store.load(1);
+    store.load(1);
+    const lecturas = gatewayMock.getCalculationRun.mock.calls.length;
+    tick.next();
+
+    expect(gatewayMock.getCalculationRun).toHaveBeenCalledTimes(lecturas + 1);
   });
 
   it('marca el error y no se queda cargando si falla cualquiera de las dos peticiones', () => {

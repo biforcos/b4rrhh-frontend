@@ -42,9 +42,44 @@
       </dl>
     </header>
 
-    <!-- El estado no es el resumen: «Terminada» dice que la ejecucion acabo, no que hayan
-         cobrado todos. La cuenta sale de los contadores. -->
-    @if (store.unitsWithoutPayslip() > 0) {
+    <!-- Mientras la ejecucion corre no hay veredicto que dar: lo que hay es por donde va. El
+         veredicto llega cuando termina, y solo si llego al final. -->
+    @if (!isFinished(run)) {
+      <div class="ejecucion-page__live">
+        @if (isQueued(run)) {
+          <p class="ejecucion-page__verdict">
+            Aceptada y esperando su turno. Las ejecuciones se sirven de una en una: esta empieza
+            cuando termine la que tenga delante.
+          </p>
+        } @else {
+          <p class="ejecucion-page__verdict">
+            {{ processedUnits(run) }} de {{ run.totalCandidates }} unidades resueltas. La pantalla
+            se actualiza sola.
+          </p>
+        }
+
+        @if (store.progressPercent(); as percent) {
+          <div
+            class="ejecucion-page__progress"
+            role="progressbar"
+            [attr.aria-valuenow]="percent"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [attr.aria-label]="'Avance de la ejecución ' + run.runId"
+          >
+            <div class="ejecucion-page__progress-fill" [style.width.%]="percent"></div>
+          </div>
+        }
+      </div>
+    } @else if (hasFailed(run)) {
+      <!-- «Fallida» no afirma la causa: puede ser el calculo, un backend reiniciado o una cola
+           llena, y quien lo distingue es el mensaje de abajo (ADR-060). -->
+      <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
+        La ejecución no llegó al final: resolvió {{ processedUnits(run) }} de las
+        {{ run.totalCandidates }} unidades que había seleccionado. Lo que calculó se queda; el
+        motivo de la parada está abajo, en los mensajes.
+      </p>
+    } @else if (store.unitsWithoutPayslip() > 0) {
       <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
         {{ store.unitsWithoutPayslip() }}
         @if (store.unitsWithoutPayslip() === 1) {

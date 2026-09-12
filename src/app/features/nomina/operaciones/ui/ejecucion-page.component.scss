@@ -114,6 +114,25 @@
   color: var(--warning-text);
 }
 
+.ejecucion-page__live {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ejecucion-page__progress {
+  background: var(--accent-muted);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.ejecucion-page__progress-fill {
+  background: var(--accent-primary);
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
 .ejecucion-page__counters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));

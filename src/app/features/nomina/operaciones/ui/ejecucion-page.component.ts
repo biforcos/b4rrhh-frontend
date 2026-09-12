@@ -11,7 +11,13 @@ import {
   messageNeedsAttention,
   messageUnit,
 } from '../models/calculation-run-message.model';
-import { CalculationRun, runDurationMs } from '../models/calculation-run.model';
+import {
+  CalculationRun,
+  isRunFinished,
+  isRunQueued,
+  runDurationMs,
+  runProcessedUnits,
+} from '../models/calculation-run.model';
 import { EjecucionMessageFilter, EjecucionStore } from '../store/ejecucion.store';
 
 interface CounterView {
@@ -28,6 +34,9 @@ interface CounterView {
  * Los ocho contadores salen todos, y los cuatro que cuentan unidades sin recibo se destacan
  * cuando no son cero, porque son los que piden algo. El `status` se pinta, pero no decide: la
  * cuenta de lo que quedó sin hacer sale de los contadores, no de él.
+ *
+ * La pantalla está viva: es donde se cae al lanzar, así que mientras la ejecución corre los
+ * contadores y la barra avanzan solos y el sondeo para cuando el estado es final (frontend#62).
  *
  * Los literales de los códigos de mensaje **no se escriben aquí**. El catálogo no los tiene, así
  * que `app-ui-catalog-label` pinta el código solo, que es lo que hace cuando no hay literal
@@ -55,8 +64,15 @@ export class EjecucionPageComponent {
    */
   protected readonly runId = this.route.snapshot.paramMap.get('runId') ?? '';
 
+  /**
+   * «En cola» y no «Solicitada»: el backend sirve las ejecuciones de una en una, así que REQUESTED
+   * quiere decir que está esperando su turno y no que esté arrancando (ADR-060 §2).
+   *
+   * «Fallida» no dice por qué. No puede: puede ser un error del cálculo, un backend reiniciado o
+   * una cola llena, y eso lo distingue el mensaje, que está unas líneas más abajo en esta pantalla.
+   */
   protected readonly runStatusLabels: Record<string, string | undefined> = {
-    REQUESTED: 'Solicitada',
+    REQUESTED: 'En cola',
     RUNNING: 'En curso…',
     COMPLETED: 'Terminada',
     COMPLETED_WITH_ERRORS: 'Terminada con errores',
@@ -114,6 +130,22 @@ export class EjecucionPageComponent {
       { label: 'Con error', value: run.totalErrors, asksSomething: true },
     ];
   });
+
+  protected isQueued(run: CalculationRun): boolean {
+    return isRunQueued(run);
+  }
+
+  protected isFinished(run: CalculationRun): boolean {
+    return isRunFinished(run);
+  }
+
+  protected hasFailed(run: CalculationRun): boolean {
+    return run.status === 'FAILED';
+  }
+
+  protected processedUnits(run: CalculationRun): number {
+    return runProcessedUnits(run);
+  }
 
   protected durationLabel(run: CalculationRun): string {
     const elapsed = runDurationMs(run);
