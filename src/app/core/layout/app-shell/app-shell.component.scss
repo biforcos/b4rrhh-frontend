@@ -10,13 +10,26 @@
 }
 
 /* ─── SIDEBAR ─── */
+/*
+ * El armazón es marco, no contenido: quien se desplaza es el documento y la barra se queda
+ * (frontend#53). `sticky` la ancla sin sacarla del flujo —conserva su hueco en la rejilla, que es
+ * lo que `fixed` obligaría a reservar a mano— y `align-self: start` impide que la rejilla la
+ * estire, porque sin margen sobrante no hay dónde pegarse.
+ *
+ * El `overflow-y` baja a la navegación: en la columna entera desplazaba también la marca y el pie,
+ * que es lo contrario de lo que se pide. Los dos extremos se quedan y lo que se desplaza —por
+ * dentro, cuando las veinte entradas no caben— es el menú. Es el mismo patrón que el hueco
+ * contextual del esqueleto ya usaba.
+ */
 .app-shell__sidebar {
   display: flex;
   flex-direction: column;
   background: var(--surface-panel);
   border-right: 1px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  align-self: start;
   height: 100dvh;
-  overflow-y: auto;
 }
 
 /* Brand */
@@ -118,11 +131,15 @@
 }
 
 /* Nav */
+/* El único que se desplaza de la barra. `min-height: 0` porque un elemento flex no baja de su
+   contenido por defecto, y sin eso el menú empuja al pie fuera de la ventana en vez de recortarse. */
 .app-shell__nav {
   display: flex;
   flex-direction: column;
   padding: 8px 8px 0;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .app-shell__nav-group-label {
@@ -240,10 +257,11 @@
 }
 
 /* ─── MAIN ─── */
+/* Sin `overflow-y`: `min-height` no acota, así que nunca hubo nada que desplazar aquí dentro y la
+   declaración sólo hacía creer que sí. El documento es quien se desplaza. */
 .app-shell__main {
   background: var(--surface-app);
   min-height: 100dvh;
-  overflow-y: auto;
 }
 
 @media (max-width: 820px) {
@@ -256,6 +274,11 @@
     position: static;
     border-right: 0;
     border-bottom: 1px solid var(--border-default);
+  }
+
+  /* Apilado no hay alto que repartir: el menú se despliega entero y desplaza el documento. */
+  .app-shell__nav {
+    overflow-y: visible;
   }
 
   .app-shell__main {

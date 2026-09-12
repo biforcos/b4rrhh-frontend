@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -39,6 +40,12 @@ export const PAGE_SKELETON_STORAGE_PREFIX = 'b4rrhh.page-skeleton';
  * encima de la medida, se abre —el sitio que sobra vale más con algo al lado que vacío—; si la
  * deja por debajo, se pliega. Se mide una vez, tras el primer render, y no al cambiar el tamaño
  * de la ventana: mover el panel bajo los pies de quien está leyendo es peor que dejarlo donde está.
+ *
+ * Sobre el alto: el armazón es marco, no contenido. La franja de identidad se ancla arriba y las
+ * dos columnas laterales por debajo de ella, encadenadas (frontend#53). Su alto no puede ir escrito
+ * —crece con el contenido—, así que se mide y se publica en `--page-identity`, que es lo único que
+ * el .scss necesita saber. Esto sí se sigue midiendo: aquí no se mueve nada bajo los pies de
+ * nadie, sólo se recoloca lo que ya estaba pegado.
  */
 @Component({
   selector: 'app-page-skeleton',
@@ -72,7 +79,9 @@ export class PageSkeletonComponent {
   readonly contextualForcedOpen = input(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
+  private readonly identity = viewChild.required<ElementRef<HTMLElement>>('identity');
 
   private readonly railCollapsedState = signal(false);
   private readonly contextualOpenState = signal(false);
@@ -100,7 +109,27 @@ export class PageSkeletonComponent {
 
     // Hace falta el DOM para medir: tras el primer render, y solo esa vez. No se escucha
     // `resize` a propósito (ADR-050 §2).
-    afterNextRender(() => this.contextualFitsState.set(this.contextualFits()));
+    afterNextRender(() => {
+      this.contextualFitsState.set(this.contextualFits());
+      this.watchIdentityHeight();
+    });
+  }
+
+  /**
+   * Publica el alto de la franja de identidad en `--page-identity`. Se vigila porque la franja
+   * crece —una miga larga que parte, un aviso— y lo que va anclado debajo tiene que bajar con
+   * ella; escribir un número aquí sería dejar dos sitios que han de decir lo mismo.
+   */
+  private watchIdentityHeight(): void {
+    const element = this.identity().nativeElement;
+    const publish = () =>
+      this.host.nativeElement.style.setProperty('--page-identity', `${element.offsetHeight}px`);
+    publish();
+    // Sin `ResizeObserver` (jsdom) el valor inicial ya sirve: el .scss tiene su `0px` por defecto.
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(publish);
+    observer.observe(element);
+    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 
   /**

@@ -5,6 +5,9 @@
  *                      disponible. Una tabla de 2.500 px es ilegible porque el ojo pierde la fila.
  *   --page-contextual  ancho del hueco contextual abierto.
  *   --page-rail        ancho del raíl; el contenido proyectado puede ser más estrecho.
+ *   --page-identity    alto de la franja de identidad, publicado por el componente al medirla.
+ *                      Los dos huecos laterales se anclan por debajo de ella y no puede ir escrito:
+ *                      la franja crece con su contenido (frontend#53).
  */
 :host {
   display: block;
@@ -13,6 +16,7 @@
   --page-contextual: 24rem;
   --page-rail: 260px;
   --page-gutter: 24px;
+  --page-identity: 0px;
 }
 
 .page-skeleton {
@@ -22,10 +26,15 @@
 }
 
 /* ─── identidad ─── */
+/* Anclada: quién se está mirando no desaparece al bajar por la ficha (frontend#53). Es la primera
+   de la cadena, así que pega al borde de la ventana; las dos columnas pegan por debajo de ella. */
 .page-skeleton__identity {
   flex-shrink: 0;
   background: var(--surface-panel);
   border-bottom: 1px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  z-index: 3;
 }
 
 .page-skeleton__identity:empty {
@@ -40,11 +49,21 @@
   align-items: stretch;
 }
 
-/* raíl */
+/*
+ * raíl. Anclado bajo la franja de identidad: el índice y el botón de plegar se alcanzan a
+ * cualquier altura (frontend#53). `align-self: flex-start` porque el cuerpo es un flex con
+ * `align-items: stretch` y una caja estirada no tiene margen donde pegarse.
+ */
 .page-skeleton__rail {
-  position: relative;
+  position: sticky;
+  top: var(--page-identity);
+  align-self: flex-start;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
   flex: 0 0 auto;
   max-width: var(--page-rail);
+  max-height: calc(100dvh - var(--page-identity));
   background: var(--surface-panel);
   border-right: 1px solid var(--border-default);
   /* Sin transición a propósito: con `transition: max-width`, Chrome deja el raíl a medio plegar. */
@@ -60,8 +79,18 @@
   border-right: 0;
 }
 
+/*
+ * El recorte y el desplazamiento van aquí, nunca en el raíl: el botón de plegar va `absolute` sobre
+ * la costura y cualquier `overflow` en el raíl lo recorta —y sin botón no hay forma de volver—.
+ * Vale para el plegado, y desde que el raíl se ancla, también para el índice que no cabe.
+ */
 .page-skeleton__rail-content {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* El raíl es una columna de ancho fijo: a lo ancho no se desplaza nunca. Sin esto, `overflow-y`
+     vuelve automático el eje contrario y el borde del índice —un píxel— saca una barra. */
+  overflow-x: hidden;
 }
 
 .page-skeleton__rail--collapsed .page-skeleton__rail-content {
@@ -171,8 +200,8 @@
   overflow-y: auto;
   padding: 0 16px 16px;
   position: sticky;
-  top: 0;
-  max-height: 100dvh;
+  top: var(--page-identity);
+  max-height: calc(100dvh - var(--page-identity));
 }
 
 /* ─── ancho ─── */
@@ -190,9 +219,12 @@
     flex-direction: column;
   }
 
+  /* Apilado no hay columnas que anclar: el raíl vuelve al flujo, como el contextual. */
   .page-skeleton__rail,
   .page-skeleton__rail--collapsed {
+    position: static;
     max-width: none;
+    max-height: none;
     border-right: 0;
     border-bottom: 1px solid var(--border-default);
   }
