@@ -13,6 +13,10 @@ const workingTimeFunctionalErrorCodes = [
   'WORKING_TIME_OUTSIDE_PRESENCE',
   'WORKING_TIME_NUMBER_CONFLICT',
   'WORKING_TIME_ALREADY_CLOSED',
+  // El alta que empieza el mismo dia que otra jornada no es un alta: es su correccion, y el
+  // backend lo dice nombrandola (backend#58). Sin este codigo aqui, el 409 caia en
+  // `request-failed` y el aviso no sabia que decir justo cuando el backend lo explicaba.
+  'WORKING_TIME_IS_A_CORRECTION',
 ] as const;
 
 export type EmployeeWorkingTimeFunctionalErrorCode =
@@ -44,6 +48,7 @@ export function mapEmployeeWorkingTimeConflict(error: unknown): EmployeeWorkingT
     overlaps: readPeriods(details?.['overlaps']),
     gaps: readPeriods(details?.['gaps']),
     stretchCandidates: readOccurrences(details?.['stretchCandidates']),
+    correctedOccurrence: readOccurrence(details?.['correctedOccurrence']),
   };
 }
 
@@ -85,6 +90,11 @@ function readOccurrences(value: unknown): ReadonlyArray<WorkingTimePlanOccurrenc
     startDate: occurrence['startDate'],
     endDate: typeof occurrence['endDate'] === 'string' ? occurrence['endDate'] : null,
   }));
+}
+
+/** Una sola ocurrencia: la jornada que el 409 nombra como la que habria que corregir. */
+function readOccurrence(value: unknown): WorkingTimePlanOccurrence | null {
+  return isPeriod(value) ? readOccurrences([value])[0] : null;
 }
 
 function isPeriod(value: unknown): value is Record<string, unknown> & { startDate: string } {

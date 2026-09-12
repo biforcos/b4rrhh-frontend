@@ -21,7 +21,8 @@
 </app-temporal-section>
 
 <!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué se cierra o se reabre, o
-     el hueco o solape con fechas que impide confirmar. -->
+     el hueco o solape con fechas que impide confirmar. Cuando el rechazo es una corrección, el
+     aviso trae también la salida. -->
 <app-period-modal
   [title]="modalTitle()"
   [subtitle]="modalSubtitle()"
@@ -31,9 +32,11 @@
   [submitLabel]="submitLabel()"
   [note]="noteLines()"
   [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
   (visibleChange)="modalVisible.set($event)"
   (submitted)="submit()"
   (cancelled)="closeModal()"
+  (noteActionClicked)="switchToCorrection()"
 >
   @if (modalMode() !== 'remove') {
     <app-ui-date-input

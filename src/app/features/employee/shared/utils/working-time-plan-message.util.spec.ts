@@ -11,6 +11,7 @@ const basePlan: EmployeeWorkingTimePlanModel = {
   accepted: true,
   rejection: null,
   occurrence: { workingTimeNumber: null, startDate: '2026-03-16', endDate: null },
+  correctedOccurrence: null,
   adjustedOccurrence: null,
   overlaps: [],
   gaps: [],
@@ -133,6 +134,7 @@ describe('describeWorkingTimeConflict', () => {
         stretchCandidates: [
           { workingTimeNumber: 1, startDate: '2026-03-01', endDate: '2026-03-02' },
         ],
+        correctedOccurrence: null,
       }),
     ).toBe(
       'Quedaría un hueco del 3 al 7 de marzo de 2026. Antes se puede alargar la jornada del 1 al 2 de marzo de 2026.',
@@ -145,12 +147,13 @@ describe('describeWorkingTimeConflict', () => {
         overlaps: [{ startDate: '2026-03-10', endDate: null }],
         gaps: [],
         stretchCandidates: [],
+        correctedOccurrence: null,
       }),
     ).toBe('Se solaparía con otra jornada desde el 10 de marzo de 2026 en adelante.');
   });
 
   it('leaves the generic text to the screen when there are no dates or the code is another', () => {
-    const empty = { overlaps: [], gaps: [], stretchCandidates: [] };
+    const empty = { overlaps: [], gaps: [], stretchCandidates: [], correctedOccurrence: null };
     expect(describeWorkingTimeConflict('WORKING_TIME_OVERLAP', empty)).toBeNull();
     expect(describeWorkingTimeConflict('WORKING_TIME_COVERAGE_GAP', null)).toBeNull();
     expect(

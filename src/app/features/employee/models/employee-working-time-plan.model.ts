@@ -34,6 +34,11 @@ export interface EmployeeWorkingTimePlanModel {
   accepted: boolean;
   rejection: WorkingTimePlanRejection | null;
   occurrence: WorkingTimePlanOccurrence;
+  /**
+   * En una corrección, la jornada tal y como está hoy: la que `occurrence` sustituye. Es lo que
+   * nombra un `IS_A_CORRECTION`, y con lo que la pantalla ofrece pasar a corregirla.
+   */
+  correctedOccurrence: WorkingTimePlanOccurrence | null;
   adjustedOccurrence: WorkingTimePlanAdjustment | null;
   overlaps: ReadonlyArray<WorkingTimeDatePeriod>;
   gaps: ReadonlyArray<WorkingTimeDatePeriod>;
@@ -46,4 +51,6 @@ export interface EmployeeWorkingTimeConflictModel {
   overlaps: ReadonlyArray<WorkingTimeDatePeriod>;
   gaps: ReadonlyArray<WorkingTimeDatePeriod>;
   stretchCandidates: ReadonlyArray<WorkingTimePlanOccurrence>;
+  /** La jornada que el alta rechazada corregiría, cuando el 409 es `IS_A_CORRECTION`. */
+  correctedOccurrence: WorkingTimePlanOccurrence | null;
 }

@@ -55,6 +55,7 @@ describe('mapEmployeeWorkingTimeErrorCode', () => {
           { workingTimeNumber: 1, startDate: '2026-03-01', endDate: '2026-03-02' },
           { workingTimeNumber: 3, startDate: '2026-03-08', endDate: null },
         ],
+        correctedOccurrence: null,
       });
     });
 
@@ -70,6 +71,7 @@ describe('mapEmployeeWorkingTimeErrorCode', () => {
         overlaps: [{ startDate: '2026-03-10', endDate: null }],
         gaps: [],
         stretchCandidates: [],
+        correctedOccurrence: null,
       });
     });
 
@@ -78,11 +80,13 @@ describe('mapEmployeeWorkingTimeErrorCode', () => {
         overlaps: [],
         gaps: [],
         stretchCandidates: [],
+        correctedOccurrence: null,
       });
       expect(mapEmployeeWorkingTimeConflict(null)).toEqual({
         overlaps: [],
         gaps: [],
         stretchCandidates: [],
+        correctedOccurrence: null,
       });
     });
   });

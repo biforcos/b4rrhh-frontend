@@ -53,6 +53,7 @@ const acceptedPlan = (
   accepted: true,
   rejection: null,
   occurrence: { workingTimeNumber: null, startDate: '2026-03-16', endDate: null },
+  correctedOccurrence: null,
   adjustedOccurrence: null,
   overlaps: [],
   gaps: [],
@@ -72,17 +73,19 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
   let c: {
     modalVisible: () => boolean;
     modalMode: () => 'add' | 'correct' | 'remove';
-    startDateDraft: { set: (value: string) => void };
-    endDateDraft: { set: (value: string) => void };
-    percentageDraft: { set: (value: number) => void };
+    startDateDraft: { (): string; set: (value: string) => void };
+    endDateDraft: { (): string; set: (value: string) => void };
+    percentageDraft: { (): number; set: (value: number) => void };
     noteLines: () => ReadonlyArray<string>;
     noteTone: () => string;
+    correctionOffer: () => string | null;
     isSubmitEnabled: () => boolean;
     submitLabel: () => string;
     modalTitle: () => string;
     openAdd: () => void;
     openCorrect: (index: number) => void;
     openRemove: (index: number) => void;
+    switchToCorrection: () => void;
     submit: () => void;
   };
 
@@ -223,6 +226,71 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
       c.submit();
 
       expect(store.createWorkingTime).not.toHaveBeenCalled();
+    });
+
+    /**
+     * El alta que empieza el mismo día que otra jornada no es un alta (backend#58): el backend
+     * la rechaza nombrando la que corregiría. La pantalla lo cuenta y ofrece el camino; la
+     * regla no se replica aquí, solo se relata.
+     */
+    describe('un alta que en realidad es una corrección (frontend#46)', () => {
+      const planIsACorrection = () =>
+        acceptedPlan({
+          accepted: false,
+          rejection: 'IS_A_CORRECTION',
+          correctedOccurrence: {
+            workingTimeNumber: 7,
+            startDate: '2026-03-01',
+            endDate: '2026-03-15',
+          },
+        });
+
+      it('explains that it corrects the working time it names, and does not let it be confirmed', () => {
+        c.openAdd();
+        c.startDateDraft.set('2026-03-01');
+        fix.detectChanges();
+        store.planState.set(planIsACorrection());
+        fix.detectChanges();
+
+        expect(c.noteLines()).toEqual([
+          'Ya hay una jornada del 1 al 15 de marzo de 2026: esto no es un alta, sino una corrección suya.',
+        ]);
+        expect(c.noteTone()).toBe('error');
+        expect(c.isSubmitEnabled()).toBe(false);
+        expect(c.correctionOffer()).toBe('Corregir la jornada desde el 1 de marzo de 2026');
+      });
+
+      it('switches to correcting that one without retyping the dates', () => {
+        c.openAdd();
+        c.startDateDraft.set('2026-03-01');
+        c.endDateDraft.set('2026-03-20');
+        c.percentageDraft.set(60);
+        fix.detectChanges();
+        store.planState.set(planIsACorrection());
+        fix.detectChanges();
+
+        c.switchToCorrection();
+        fix.detectChanges();
+
+        expect(c.modalMode()).toBe('correct');
+        // Lo tecleado se queda: el gesto es seguir, no volver a empezar.
+        expect(c.startDateDraft()).toBe('2026-03-01');
+        expect(c.endDateDraft()).toBe('2026-03-20');
+        expect(c.percentageDraft()).toBe(60);
+
+        store.planState.set(acceptedPlan({ operation: 'CORRECT' }));
+        fix.detectChanges();
+        c.submit();
+
+        // Y va a la jornada que el backend nombró, por su número: no se ha convertido sola,
+        // la ha confirmado el usuario.
+        expect(store.updateWorkingTime).toHaveBeenCalledWith(employeeKey, 7, {
+          startDate: '2026-03-01',
+          endDate: '2026-03-20',
+          workingTimePercentage: 60,
+        });
+        expect(store.createWorkingTime).not.toHaveBeenCalled();
+      });
     });
 
     it('cannot be confirmed while the plan is still being calculated', () => {

@@ -40,6 +40,7 @@ const acceptedPlan: EmployeeWorkingTimePlanModel = {
   accepted: true,
   rejection: null,
   occurrence: { workingTimeNumber: null, startDate: '2026-04-01', endDate: null },
+  correctedOccurrence: null,
   adjustedOccurrence: {
     workingTimeNumber: 2,
     before: { startDate: '2026-01-01', endDate: null },
@@ -168,6 +169,7 @@ describe('EmployeeWorkingTimeStore', () => {
       overlaps: [],
       gaps: [{ startDate: '2026-03-03', endDate: '2026-03-07' }],
       stretchCandidates: [{ workingTimeNumber: 1, startDate: '2026-03-01', endDate: '2026-03-02' }],
+      correctedOccurrence: null,
     });
 
     store.clearFeedback();

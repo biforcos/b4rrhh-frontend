@@ -63,7 +63,34 @@ export function describeWorkingTimeConflict(
     return describeOverlaps(conflict.overlaps).join(' ');
   }
 
+  if (errorCode === 'WORKING_TIME_IS_A_CORRECTION' && conflict.correctedOccurrence) {
+    return describeIsACorrection(conflict.correctedOccurrence);
+  }
+
   return null;
+}
+
+/**
+ * No es un alta: es la corrección de la jornada que el backend nombra. Se cuenta con sus fechas
+ * para que quien lee sepa cuál es sin ir a buscarla en la tabla.
+ */
+function describeIsACorrection(correctedOccurrence: WorkingTimePlanOccurrence): string {
+  const period = formatLongDisplayDateRange(
+    correctedOccurrence.startDate,
+    correctedOccurrence.endDate,
+  );
+  return `Ya hay una jornada ${period}: esto no es un alta, sino una corrección suya.`;
+}
+
+/**
+ * El camino que se ofrece tras un `IS_A_CORRECTION`: corregir la jornada que el backend nombra,
+ * sin volver a teclear lo que ya está escrito. Es la comodidad que `EXACT_START` daba
+ * adivinando, dada aquí preguntando.
+ */
+export function describeWorkingTimeCorrectionSwitchAction(
+  correctedOccurrence: WorkingTimePlanOccurrence,
+): string {
+  return `Corregir la jornada desde el ${formatLongDisplayDate(correctedOccurrence.startDate)}`;
 }
 
 function describeAdjustment(
@@ -98,6 +125,10 @@ function describeRejection(plan: EmployeeWorkingTimePlanModel): ReadonlyArray<st
       return describeOverlaps(plan.overlaps);
     case 'GAP_NOT_ALLOWED':
       return [...describeGaps(plan.gaps), ...describeStretchCandidates(plan.stretchCandidates)];
+    case 'IS_A_CORRECTION':
+      return plan.correctedOccurrence
+        ? [describeIsACorrection(plan.correctedOccurrence)]
+        : ['Ya hay una jornada que empieza ese día: sería una corrección suya.'];
     default:
       return ['El cambio no se puede aplicar.'];
   }

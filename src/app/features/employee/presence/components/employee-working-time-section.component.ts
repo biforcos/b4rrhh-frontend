@@ -23,7 +23,10 @@ import {
   PeriodModalNoteTone,
 } from '../../shared/ui/period-modal/period-modal.component';
 import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/temporal-section-row.model';
-import { describeWorkingTimePlan } from '../../shared/utils/working-time-plan-message.util';
+import {
+  describeWorkingTimeCorrectionSwitchAction,
+  describeWorkingTimePlan,
+} from '../../shared/utils/working-time-plan-message.util';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 /**
@@ -123,6 +126,20 @@ export class EmployeeWorkingTimeSectionComponent {
     () => this.planNotice()?.tone ?? 'info',
   );
 
+  /**
+   * El alta que empieza el mismo día que una jornada existente es su corrección, y el backend lo
+   * dice nombrándola (backend#58). Se ofrece pasar a corregirla sin volver a teclear las fechas:
+   * sin esto, el rechazo deja al usuario cerrando el modal para buscar la fila a mano.
+   */
+  protected readonly correctionOffer = computed<string | null>(() => {
+    const plan = this.plan();
+    if (!plan || plan.rejection !== 'IS_A_CORRECTION') return null;
+    const corrected = plan.correctedOccurrence;
+    // Sin número no hay a qué cambiar: la corrección se pide por el número de la jornada.
+    if (!corrected || corrected.workingTimeNumber === null) return null;
+    return describeWorkingTimeCorrectionSwitchAction(corrected);
+  });
+
   protected readonly modalTitle = computed(() => {
     const t = this.texts;
     if (this.modalMode() === 'add') return t.workingTimeSectionAddTitle;
@@ -206,6 +223,18 @@ export class EmployeeWorkingTimeSectionComponent {
     this.modalVisible.set(true);
   }
 
+  /**
+   * Del rechazo al camino: se corrige la jornada que el backend nombra, con lo ya escrito. Lo
+   * confirma el usuario —no se convierte sola— y las fechas y el porcentaje tecleados se quedan.
+   */
+  protected switchToCorrection(): void {
+    const corrected = this.plan()?.correctedOccurrence;
+    if (!corrected || corrected.workingTimeNumber === null) return;
+    this.modalMode.set('correct');
+    this.editingNumber.set(corrected.workingTimeNumber);
+    this.editingPeriod.set(this.describeDates(corrected.startDate, corrected.endDate));
+  }
+
   protected submit(): void {
     const key = this.employeeBusinessKey();
     const workingTimeNumber = this.editingNumber();
@@ -236,9 +265,14 @@ export class EmployeeWorkingTimeSectionComponent {
   }
 
   private describePeriod(row: WorkingTimePeriodRow): string {
-    const start = formatDisplayDate(row.startDate);
-    return row.endDate
-      ? `Del ${start} al ${formatDisplayDate(row.endDate)} · ${row.workingTimePercentage} %`
-      : `Desde el ${start}, en vigor · ${row.workingTimePercentage} %`;
+    return `${this.describeDates(row.startDate, row.endDate)} · ${row.workingTimePercentage} %`;
+  }
+
+  /** Solo fechas: del plan viene la jornada nombrada, y de ella no se sabe el porcentaje. */
+  private describeDates(startDate: string, endDate: string | null): string {
+    const start = formatDisplayDate(startDate);
+    return endDate
+      ? `Del ${start} al ${formatDisplayDate(endDate)}`
+      : `Desde el ${start}, en vigor`;
   }
 }

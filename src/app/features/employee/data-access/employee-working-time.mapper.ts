@@ -89,6 +89,9 @@ export function mapWorkingTimePlanResponseToModel(
     accepted: source.accepted,
     rejection: source.rejection ? toPlanRejection(source.rejection) : null,
     occurrence: toPlanOccurrence(source.occurrence),
+    correctedOccurrence: source.correctedOccurrence
+      ? toPlanOccurrence(source.correctedOccurrence)
+      : null,
     adjustedOccurrence: source.adjustedOccurrence
       ? {
           workingTimeNumber: source.adjustedOccurrence.workingTimeNumber,

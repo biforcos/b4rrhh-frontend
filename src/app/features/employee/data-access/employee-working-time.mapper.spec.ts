@@ -104,6 +104,7 @@ describe('employee-working-time.mapper', () => {
         accepted: true,
         rejection: null,
         occurrence: { workingTimeNumber: null, startDate: '2026-03-16', endDate: null },
+        correctedOccurrence: null,
         adjustedOccurrence: {
           workingTimeNumber: 1,
           before: { startDate: '2026-03-01', endDate: null },
