@@ -10241,6 +10241,50 @@ components:
           type: string
         workCenterName:
           type: string
+        statusReasonCode:
+          type: string
+          nullable: true
+          description: Why the result is in its current status. Null when nothing forced it.
+        calculationEngineCode:
+          type: string
+          nullable: true
+          description: Engine that produced this payroll, as the run recorded it.
+        calculationEngineVersion:
+          type: string
+          nullable: true
+        warnings:
+          type: array
+          description: >-
+            Functional warnings attached to this payroll result. They are not the
+            operational messages of the run: those are read from
+            GET /payroll/calculation-runs/{runId}/messages.
+          items:
+            $ref: '#/components/schemas/PayrollWarningResponse'
+
+    PayrollWarningResponse:
+      type: object
+      description: >-
+        Functional payroll warning attached to a payroll result. Distinct from
+        launch/run operational messages.
+      required:
+        - warningCode
+        - severityCode
+        - message
+      properties:
+        warningCode:
+          type: string
+          maxLength: 50
+        severityCode:
+          type: string
+          maxLength: 20
+          description: Intended severities are INFO, WARNING, and ERROR.
+        message:
+          type: string
+          maxLength: 500
+        detailsJson:
+          type: string
+          nullable: true
+
     PayrollContextSnapshotResponse:
       type: object
       properties:
