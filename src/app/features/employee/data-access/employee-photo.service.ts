@@ -50,7 +50,6 @@ export class EmployeePhotoService {
 
   private toApiModel(source: EmployeeResponse): EmployeeReadApiModel {
     return {
-      id: source.id!,
       ruleSystemCode: source.ruleSystemCode!,
       employeeTypeCode: source.employeeTypeCode!,
       employeeNumber: source.employeeNumber!,

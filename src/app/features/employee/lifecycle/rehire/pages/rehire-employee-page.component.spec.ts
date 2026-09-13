@@ -53,7 +53,6 @@ class MockEmployeeRehireCatalogService {
 
 class MockEmployeeDetailStore {
   readonly selectedEmployeeDetail = signal({
-    id: 1,
     ruleSystemCode: 'ESP',
     employeeTypeCode: 'EMP',
     employeeNumber: 'E001',

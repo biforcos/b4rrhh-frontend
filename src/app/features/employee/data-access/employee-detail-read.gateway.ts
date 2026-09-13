@@ -31,7 +31,6 @@ export class EmployeeDetailReadGateway {
 
   private toEmployeeDetailModel(source: EmployeeDetailReadModel): EmployeeDetailModel {
     return {
-      id: source.id,
       ruleSystemCode: source.ruleSystemCode,
       employeeTypeCode: source.employeeTypeCode,
       employeeNumber: source.employeeNumber,

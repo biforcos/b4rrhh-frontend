@@ -13,7 +13,6 @@ const employeeBusinessKey = {
 } as const;
 
 const employeeDetailFixture: EmployeeDetailModel = {
-  id: 123,
   ruleSystemCode: employeeBusinessKey.ruleSystemCode,
   employeeTypeCode: employeeBusinessKey.employeeTypeCode,
   employeeNumber: employeeBusinessKey.employeeNumber,

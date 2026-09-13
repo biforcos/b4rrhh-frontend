@@ -17,8 +17,6 @@ export interface EmployeeBusinessKeyApiQuery {
 }
 
 export interface EmployeeReadApiModel {
-  /** @deprecated Identificador tecnico. La identidad publica es la business key (ADR-004). */
-  id?: number;
   ruleSystemCode: string;
   employeeTypeCode: string;
   employeeNumber: string;
@@ -148,7 +146,6 @@ export class EmployeeReadClient {
 
   private toEmployeeReadApiModel(source: EmployeeResponse): EmployeeReadApiModel {
     return {
-      id: source.id,
       ruleSystemCode: source.ruleSystemCode,
       employeeTypeCode: source.employeeTypeCode,
       employeeNumber: source.employeeNumber,

@@ -11,7 +11,6 @@ import { EmployeeIdentityBarComponent } from './employee-identity-bar.component'
 const KEY = { ruleSystemCode: 'ESP', employeeTypeCode: 'INTERNAL', employeeNumber: 'EMP000003' };
 const EMPLOYEE: EmployeeDetailModel = {
   ...KEY,
-  id: 3,
   firstName: 'Elena',
   lastName1: 'Serrano',
   lastName2: 'Ibáñez',
