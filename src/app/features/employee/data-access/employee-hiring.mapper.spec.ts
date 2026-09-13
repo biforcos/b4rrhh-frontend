@@ -59,7 +59,6 @@ describe('employee-hiring.mapper', () => {
       initialWorkCenter: {
         startDate: '2026-03-23',
         workCenterCode: 'WC1',
-        workCenterName: 'Madrid Centro',
       },
       costCenter: undefined,
       initialContract: {
@@ -125,7 +124,6 @@ describe('employee-hiring.mapper', () => {
       initialWorkCenter: {
         startDate: '2026-03-23',
         workCenterCode: 'WC1',
-        workCenterName: 'Madrid Centro',
       },
       costCenter: undefined,
       initialContract: {
@@ -138,7 +136,9 @@ describe('employee-hiring.mapper', () => {
         agreementCode: 'AGR',
         agreementCategoryCode: 'CAT',
       },
-    } as HireEmployeeResponse;
+      // El bloque de jornada es obligatorio en el contrato; este caso simula justo
+      // a un backend que no lo manda, asi que el doble casting es deliberado.
+    } as unknown as HireEmployeeResponse;
 
     const result = mapResponseToResult(response);
 

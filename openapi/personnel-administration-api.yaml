@@ -6686,6 +6686,11 @@ components:
           $ref: "#/components/schemas/HiredPresenceResponse"
         initialWorkCenter:
           type: object
+          description: >-
+            What the hire just created, not the employee's card: the code, not
+            the label. The name is resolved by the work center vertical's own
+            read endpoints, which is where the language of the response reaches
+            the resolver (ADR-052 §4; backend#36).
           required:
             - startDate
             - workCenterCode
@@ -6695,9 +6700,6 @@ components:
               format: date
             workCenterCode:
               type: string
-            workCenterName:
-              type: string
-              nullable: true
         costCenter:
           $ref: "#/components/schemas/CostCenterDistributionWindowResponse"
         initialContract:
@@ -7331,7 +7333,6 @@ components:
     EmployeeResponse:
       type: object
       required:
-        - id
         - ruleSystemCode
         - employeeTypeCode
         - employeeNumber
@@ -7343,6 +7344,11 @@ components:
         id:
           type: integer
           format: int64
+          deprecated: true
+          description: >-
+            Identificador tecnico de persistencia. No forma parte de la identidad publica del
+            empleado, que es (ruleSystemCode, employeeTypeCode, employeeNumber) segun ADR-004.
+            Se mantiene temporalmente por compatibilidad y se retirara.
         ruleSystemCode:
           type: string
         employeeTypeCode:
