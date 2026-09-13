@@ -16,8 +16,17 @@ export interface CalculationRun {
   totalCandidates: number;
   totalEligible: number;
   totalClaimed: number;
+  /**
+   * Saltadas porque ya tenían recibo. Esperable al relanzar y **no pide nada de nadie**.
+   *
+   * Hasta `b4rrhh/backend#85` este contador sumaba además las que no se pudieron calcular por
+   * falta de datos, que es la lectura contraria: una es «todo normal, ya estaba hecho» y la otra
+   * es «hay datos que faltan, que alguien mire». Ahora ésas van en `totalSkippedMissingInput`.
+   */
   totalSkippedNotEligible: number;
   totalSkippedAlreadyClaimed: number;
+  /** Eran elegibles y faltaban datos. Siempre pide que alguien mire (`b4rrhh/backend#85`). */
+  totalSkippedMissingInput: number;
   totalCalculated: number;
   totalNotValid: number;
   totalErrors: number;
@@ -54,6 +63,7 @@ export function unitsWithoutPayslip(run: CalculationRun): number {
   return (
     run.totalSkippedNotEligible +
     run.totalSkippedAlreadyClaimed +
+    run.totalSkippedMissingInput +
     run.totalNotValid +
     run.totalErrors
   );
@@ -63,7 +73,9 @@ export function unitsWithoutPayslip(run: CalculationRun): number {
  * Las unidades que la ejecucion ya ha resuelto, de una manera o de otra.
  *
  * Cuando termina, esto iguala a `totalCandidates`: cada candidata acaba calculada, no válida, con
- * error o saltada por alguna de las dos razones.
+ * error o saltada por alguna de las TRES razones. Son tres desde `b4rrhh/backend#85`, y este
+ * sumando tiene que llevarlas todas: si se queda una fuera, la barra de progreso nunca llega al
+ * final y el recuento de las que no cobraron miente por debajo.
  */
 export function runProcessedUnits(run: CalculationRun): number {
   return run.totalCalculated + unitsWithoutPayslip(run);

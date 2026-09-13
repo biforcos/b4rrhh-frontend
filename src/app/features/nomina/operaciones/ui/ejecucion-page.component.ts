@@ -28,11 +28,12 @@ interface CounterView {
 }
 
 /**
- * Una ejecución de nómina de cerca: qué se pidió, cuándo, cuánto tardó, sus ocho contadores y
+ * Una ejecución de nómina de cerca: qué se pidió, cuándo, cuánto tardó, sus nueve contadores y
  * sus mensajes por unidad (frontend#61).
  *
- * Los ocho contadores salen todos, y los cuatro que cuentan unidades sin recibo se destacan
- * cuando no son cero, porque son los que piden algo. El `status` se pinta, pero no decide: la
+ * Los nueve contadores salen todos, y los que piden algo se destacan cuando no son cero. «Ya
+ * tenían recibo» no es uno de ellos: una unidad que no hacía falta recalcular no pide nada
+ * (b4rrhh/backend#85). El `status` se pinta, pero no decide: la
  * cuenta de lo que quedó sin hacer sale de los contadores, no de él.
  *
  * La pantalla está viva: es donde se cae al lanzar, así que mientras la ejecución corre los
@@ -116,9 +117,21 @@ export class EjecucionPageComponent {
       { label: 'Elegibles', value: run.totalEligible, asksSomething: false },
       { label: 'Tomadas', value: run.totalClaimed, asksSomething: false },
       { label: 'Calculadas', value: run.totalCalculated, asksSomething: false },
+      // Los dos literales son los del catálogo de mensajes (b4rrhh/backend#81), no unos nuevos:
+      // la celda y el mensaje de la unidad tienen que decir lo mismo.
+      //
+      // «Ya tenían recibo» NO pide nada de nadie —es lo esperable al relanzar— y por eso no se
+      // destaca. Hasta b4rrhh/backend#85 esta celda decía «Saltadas por falta de datos» sobre un
+      // contador que sumaba las dos cosas: relanzabas sin invalidar y la pantalla decía que 873
+      // unidades les faltaban datos cuando lo que pasaba es que ya estaban hechas.
       {
-        label: 'Saltadas por falta de datos',
+        label: 'Ya tenían recibo',
         value: run.totalSkippedNotEligible,
+        asksSomething: false,
+      },
+      {
+        label: 'Sin calcular: faltaban datos',
+        value: run.totalSkippedMissingInput,
         asksSomething: true,
       },
       {

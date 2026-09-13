@@ -23,6 +23,7 @@ const base: CalculationRun = {
   totalClaimed: 0,
   totalSkippedNotEligible: 0,
   totalSkippedAlreadyClaimed: 0,
+  totalSkippedMissingInput: 0,
   totalCalculated: 0,
   totalNotValid: 0,
   totalErrors: 0,
@@ -111,25 +112,33 @@ describe('runProcessedUnits y runProgressPercent', () => {
 });
 
 describe('unitsWithoutPayslip', () => {
-  it('cuenta las cuatro clases de unidad que no acaba en recibo', () =>
+  it('cuenta las cinco clases de unidad que no acaba en recibo', () =>
     expect(
       unitsWithoutPayslip({
         ...base,
         totalSkippedNotEligible: 2,
         totalSkippedAlreadyClaimed: 1,
+        totalSkippedMissingInput: 5,
         totalNotValid: 3,
         totalErrors: 4,
       }),
-    ).toBe(10));
+    ).toBe(15));
+
+  // La clase nueva tiene que estar dentro de la suma. Si se queda fuera, la barra no llega al
+  // final y el recuento de las que no cobraron miente por debajo (b4rrhh/backend#85).
+  it('cuenta las que se quedaron sin calcular por falta de datos', () =>
+    expect(unitsWithoutPayslip({ ...base, totalSkippedMissingInput: 2 })).toBe(2));
 
   it('no mira el estado: COMPLETED con unidades saltadas no es cero', () => {
-    // La corrida del deploy#3: status COMPLETED, 873 candidatas, 871 calculadas, 2 saltadas.
+    // La corrida del deploy#3, como queda tras repartir los contadores del
+    // b4rrhh/backend#85: status COMPLETED, 873 candidatas, 871 calculadas, y las 2 saltadas son
+    // «faltaban datos», no «ya tenian recibo». Comprobado en la base.
     const run = {
       ...base,
       status: 'COMPLETED' as const,
       totalCandidates: 873,
       totalCalculated: 871,
-      totalSkippedNotEligible: 2,
+      totalSkippedMissingInput: 2,
     };
 
     expect(isRunFinished(run)).toBe(true);

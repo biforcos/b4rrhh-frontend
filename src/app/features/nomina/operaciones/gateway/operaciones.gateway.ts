@@ -86,6 +86,7 @@ export class OperacionesGateway {
     totalClaimed: r.totalClaimed ?? 0,
     totalSkippedNotEligible: r.totalSkippedNotEligible ?? 0,
     totalSkippedAlreadyClaimed: r.totalSkippedAlreadyClaimed ?? 0,
+    totalSkippedMissingInput: r.totalSkippedMissingInput ?? 0,
     totalCalculated: r.totalCalculated ?? 0,
     totalNotValid: r.totalNotValid ?? 0,
     totalErrors: r.totalErrors ?? 0,

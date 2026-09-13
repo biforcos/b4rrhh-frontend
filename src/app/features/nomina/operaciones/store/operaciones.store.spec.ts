@@ -20,6 +20,7 @@ const ACCEPTED: CalculationRun = {
   totalEligible: 0,
   totalClaimed: 0,
   totalSkippedNotEligible: 0,
+  totalSkippedMissingInput: 0,
   totalSkippedAlreadyClaimed: 0,
   totalCalculated: 0,
   totalNotValid: 0,

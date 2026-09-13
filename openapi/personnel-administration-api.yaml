@@ -6569,6 +6569,7 @@ components:
         - totalClaimed
         - totalSkippedNotEligible
         - totalSkippedAlreadyClaimed
+        - totalSkippedMissingInput
         - totalCalculated
         - totalNotValid
         - totalErrors
@@ -6598,15 +6599,28 @@ components:
           type: integer
           format: int32
         totalEligible:
+          description: >-
+            Accumulator, not a total: it rises for every unit that passes the eligibility filter,
+            and it includes the ones later skipped for missing input or ending in error. The
+            denominator of any percentage is totalCandidates.
           type: integer
           format: int32
         totalClaimed:
           type: integer
           format: int32
         totalSkippedNotEligible:
+          description: >-
+            Skipped because an immutable payroll already existed. Expected on a relaunch; asks
+            nothing of anybody. Not counted in totalEligible.
           type: integer
           format: int32
         totalSkippedAlreadyClaimed:
+          type: integer
+          format: int32
+        totalSkippedMissingInput:
+          description: >-
+            Eligible and could not be calculated because input was missing. Always asks someone
+            to look. Counted in totalEligible and in totalClaimed.
           type: integer
           format: int32
         totalCalculated:
