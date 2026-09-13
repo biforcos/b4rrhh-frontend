@@ -3107,6 +3107,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RuleEntityResponse"
+        "400":
+          description: |
+            The rule system or the rule entity type does not exist, the business key is already
+            taken, or the type declares required extensions and is therefore maintained by its
+            own endpoint (backend#88). In that last case the message names the collection to use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityErrorResponse"
     get:
       operationId: listRuleEntities
       summary: List or retrieve rule entities by business filters
@@ -6455,6 +6464,14 @@ components:
         name:
           type: string
           description: The base literal that is being served meanwhile.
+
+    RuleEntityErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
 
     RuleEntityTranslationErrorResponse:
       type: object
