@@ -1,7 +1,8 @@
 import { EmployeeReadApiModel } from '../clients/employee-read.client';
 
 export interface EmployeeDetailReadModel {
-  id: number;
+  /** @deprecated Identificador tecnico. La identidad publica es la business key (ADR-004). */
+  id?: number;
   ruleSystemCode: string;
   employeeTypeCode: string;
   employeeNumber: string;
