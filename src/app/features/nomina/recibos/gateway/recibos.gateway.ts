@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
-import {
-  PayrollResponse,
-  PayrollResponseStatusEnum,
-} from '../../../../core/api/generated/model/payroll-response';
+import { PayrollResponse } from '../../../../core/api/generated/model/payroll-response';
+// El estado del recibo dejo de estar escrito a mano dentro de PayrollResponse y pasa a
+// referenciar el enum comun del contrato: son los mismos cuatro valores en una sola
+// definicion, que es lo que backend#80 vino a dejar.
+import { PayrollStatus } from '../../../../core/api/generated/model/payroll-status';
 import { RecibosClient } from '../client/recibos.client';
 import {
   mapPayrollSummaryResponseToModel,
@@ -74,14 +75,11 @@ export class RecibosGateway {
   }
 }
 
-const PAYROLL_RESPONSE_STATUS_MAP: Record<
-  PayrollResponseStatusEnum,
-  PayrollSummaryModel['status']
-> = {
-  [PayrollResponseStatusEnum.NotValid]: 'NOT_VALID',
-  [PayrollResponseStatusEnum.Calculated]: 'CALCULATED',
-  [PayrollResponseStatusEnum.ExplicitValidated]: 'EXPLICIT_VALIDATED',
-  [PayrollResponseStatusEnum.Definitive]: 'DEFINITIVE',
+const PAYROLL_RESPONSE_STATUS_MAP: Record<PayrollStatus, PayrollSummaryModel['status']> = {
+  [PayrollStatus.NotValid]: 'NOT_VALID',
+  [PayrollStatus.Calculated]: 'CALCULATED',
+  [PayrollStatus.ExplicitValidated]: 'EXPLICIT_VALIDATED',
+  [PayrollStatus.Definitive]: 'DEFINITIVE',
 };
 
 function payrollResponseToSummary(r: PayrollResponse): PayrollSummaryModel {

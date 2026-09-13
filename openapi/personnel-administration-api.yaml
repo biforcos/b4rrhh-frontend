@@ -4696,6 +4696,114 @@ paths:
               schema:
                 $ref: "#/components/schemas/PayrollErrorResponse"
 
+  /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/finalize:
+    post:
+      tags:
+        - Payroll
+      operationId: finalizePayroll
+      summary: Finalize payroll and make it definitive
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: employeeTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: employeeNumber
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: payrollPeriodCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: payrollTypeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [NORMAL, EXTRA]
+        - name: presenceNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payroll finalized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+        '404':
+          description: Payroll not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+        '409':
+          description: Payroll cannot be finalized from its current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+
+  /payrolls/calculate:
+    post:
+      tags:
+        - Payroll
+      operationId: calculatePayroll
+      summary: Temporary stub endpoint to materialize a payroll result
+      description: >-
+        Temporary pipeline-validation stub endpoint. This endpoint is not the final payroll
+        engine API and is only used to materialize payroll results during the pre-launch
+        phase. Clients currently provide concepts and context snapshots explicitly so the
+        payroll vertical can be exercised end-to-end before launch orchestration, fake
+        calculator generation, and the real calculation engine are introduced.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculatePayrollRequest'
+      responses:
+        '201':
+          description: Payroll calculated and created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+        '404':
+          description: Employee presence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+        '409':
+          description: Payroll recalculation is not allowed for the current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollErrorResponse'
+
   /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/recalculate:
     post:
       summary: Recalculate a payroll (only allowed from NOT_VALID)
@@ -4757,8 +4865,15 @@ paths:
 
   /payrolls/invalidate-bulk:
     post:
-      summary: Bulk invalidate payrolls
+      summary: Bulk invalidation workflow for payroll results
       operationId: bulkInvalidatePayroll
+      description: >-
+        Synchronous bulk invalidation workflow. Resolves a target employee population, expands to
+        presence-based candidate units, and invalidates all existing CALCULATED payrolls for those
+        units. Protected payrolls (EXPLICIT_VALIDATED or DEFINITIVE) are skipped and counted
+        separately. Already NOT_VALID payrolls are also skipped without error. targetSelection
+        semantics mirror those of the payroll launch endpoint. totalCandidates represents expanded
+        presence-based units, not the raw number of target employees.
       tags:
         - Payroll
       requestBody:
@@ -4782,12 +4897,26 @@ paths:
   /payroll/calculation-runs/launch:
     post:
       summary: Accept a payroll calculation run and return its identity without waiting
-      description: >
-        Returns as soon as the calculation run has been persisted, with status REQUESTED. The
-        calculation runs outside the request; progress is read from GET /payroll/calculation-runs/{runId}
-        and its messages. Runs execute one at a time: a second launch waits in REQUESTED. A launch that
-        does not fit in the queue is persisted as FAILED with a LAUNCH_REJECTED message rather than
-        dropped. Request validation stays synchronous, so a malformed launch answers 400 and leaves no run.
+      description: >-
+        Accepts a payroll launch workflow for an explicit target selection and returns as soon as
+        the calculation run has been persisted, with status REQUESTED. The calculation itself runs
+        outside the request: calculating a full workforce takes minutes, and no client or
+        intermediary survives that wait. Progress is read from GET /payroll/calculation-
+        runs/{runId}, whose counters advance while the run is RUNNING, and from GET
+        /payroll/calculation-runs/{runId}/messages. Runs are executed one at a time: a second
+        launch stays in REQUESTED, queued and observable, until the one in flight finishes. If the
+        queue is full the run is persisted as FAILED with a LAUNCH_REJECTED message instead of
+        being silently dropped, so the response always carries the run identity and its real
+        status. Request validation is still synchronous: a malformed launch answers 400 and leaves
+        no run. This V1 contract supports SINGLE_EMPLOYEE, EMPLOYEE_LIST, and
+        ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD, and requires payrollPeriodCode in YYYYMM format so
+        the backend can resolve relevant employee presences by month overlap. For
+        ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD, target employees are resolved from the backend as
+        all employees with at least one overlapping presence in the payroll month. totalCandidates
+        represents expanded presence-based calculation units that overlap at least one day of the
+        payroll month, not the raw number of requested or resolved employees. This endpoint
+        coordinates launch execution and persists a calculation run; it is not the final payroll
+        engine API.
       operationId: launchPayrollCalculation
       tags:
         - Payroll Calculation Run
@@ -4799,7 +4928,9 @@ paths:
               $ref: "#/components/schemas/LaunchPayrollCalculationRequest"
       responses:
         "202":
-          description: Calculation run accepted
+          description: >-
+            Calculation run accepted. The run is persisted and its counters are
+            observable while it executes.
           content:
             application/json:
               schema:
@@ -6356,16 +6487,24 @@ components:
 
     PayrollLaunchTargetSelectionRequest:
       type: object
+      description: >-
+        Target selection payload. employee is required only for SINGLE_EMPLOYEE. employees is
+        required only for EMPLOYEE_LIST. For ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD both employee
+        and employees must be null.
       required:
         - selectionType
       properties:
         selectionType:
           $ref: "#/components/schemas/PayrollLaunchTargetSelectionType"
         employee:
+          description: >-
+            Required when selectionType is SINGLE_EMPLOYEE.
           nullable: true
           allOf:
             - $ref: "#/components/schemas/PayrollLaunchEmployeeTargetRequest"
         employees:
+          description: >-
+            Required when selectionType is EMPLOYEE_LIST.
           type: array
           nullable: true
           items:
@@ -6384,6 +6523,9 @@ components:
         ruleSystemCode:
           type: string
         payrollPeriodCode:
+          description: >-
+            V1 launch requires YYYYMM format to resolve relevant employee presences by monthly
+            overlap.
           type: string
         payrollTypeCode:
           type: string
@@ -6420,6 +6562,7 @@ components:
           format: int64
         status:
           type: string
+          enum: [REQUESTED, RUNNING, COMPLETED, COMPLETED_WITH_ERRORS, FAILED]
         ruleSystemCode:
           type: string
         payrollPeriodCode:
@@ -6432,21 +6575,32 @@ components:
         calculationEngineVersion:
           type: string
         totalCandidates:
+          description: >-
+            Expanded candidate calculation units after presence overlap resolution for the payroll
+            month.
           type: integer
+          format: int32
         totalEligible:
           type: integer
+          format: int32
         totalClaimed:
           type: integer
+          format: int32
         totalSkippedNotEligible:
           type: integer
+          format: int32
         totalSkippedAlreadyClaimed:
           type: integer
+          format: int32
         totalCalculated:
           type: integer
+          format: int32
         totalNotValid:
           type: integer
+          format: int32
         totalErrors:
           type: integer
+          format: int32
         requestedAt:
           type: string
           format: date-time
@@ -6520,6 +6674,7 @@ components:
           nullable: true
         presenceNumber:
           type: integer
+          format: int32
           nullable: true
         createdAt:
           type: string
@@ -6527,6 +6682,10 @@ components:
 
     BulkInvalidatePayrollRequest:
       type: object
+      description: >-
+        Request for bulk payroll invalidation workflow. targetSelection semantics mirror those of
+        the payroll launch endpoint. For ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD, both employee and
+        employees must be null.
       required:
         - ruleSystemCode
         - payrollPeriodCode
@@ -6537,17 +6696,25 @@ components:
         ruleSystemCode:
           type: string
         payrollPeriodCode:
+          description: >-
+            Must be in YYYYMM format. Used to resolve presence overlaps for the payroll month.
           type: string
         payrollTypeCode:
           type: string
           enum: [NORMAL, EXTRA]
         statusReasonCode:
+          description: >-
+            Reason code applied to all invalidated payrolls.
           type: string
         targetSelection:
           $ref: "#/components/schemas/PayrollLaunchTargetSelectionRequest"
 
     BulkInvalidatePayrollResponse:
       type: object
+      description: >-
+        Summary of a completed bulk invalidation workflow. totalCandidates counts presence-based
+        expanded units, not raw target employees. totalFound counts payroll rows actually found
+        for those units. Skipped counters explain everything that was not invalidated.
       required:
         - ruleSystemCode
         - payrollPeriodCode
@@ -6568,18 +6735,38 @@ components:
           type: string
           enum: [NORMAL, EXTRA]
         totalCandidates:
+          description: >-
+            Total presence-based candidate units expanded from the target population.
           type: integer
+          format: int32
         totalFound:
+          description: >-
+            Payroll rows found in persistence for the candidate units.
           type: integer
+          format: int32
         totalInvalidated:
+          description: >-
+            Payrolls successfully transitioned from CALCULATED to NOT_VALID.
           type: integer
+          format: int32
         totalSkippedAlreadyNotValid:
+          description: >-
+            Payrolls already in NOT_VALID status, skipped without error.
           type: integer
+          format: int32
         totalSkippedProtected:
+          description: >-
+            Payrolls in EXPLICIT_VALIDATED or DEFINITIVE status, protected from bulk invalidation.
           type: integer
+          format: int32
         totalSkippedNotFound:
+          description: >-
+            Candidate units for which no payroll row was found in persistence.
           type: integer
+          format: int32
         statusReasonCode:
+          description: >-
+            Status reason code applied to all invalidated payrolls.
           type: string
 
     HireEmployeeRequest:
@@ -10219,6 +10406,150 @@ components:
         endDate:
           type: string
           format: date
+    CalculatePayrollRequest:
+      type: object
+      description: >-
+        Temporary stub request used to materialize a payroll result during the pre-launch
+        phase. This schema is intentionally transitional and will be replaced when the real
+        payroll engine input contract is defined.
+      required:
+        - ruleSystemCode
+        - employeeTypeCode
+        - employeeNumber
+        - payrollPeriodCode
+        - payrollTypeCode
+        - presenceNumber
+        - status
+        - calculatedAt
+        - calculationEngineCode
+        - calculationEngineVersion
+        - concepts
+        - contextSnapshots
+      properties:
+        ruleSystemCode:
+          type: string
+          maxLength: 5
+        employeeTypeCode:
+          type: string
+          maxLength: 30
+        employeeNumber:
+          type: string
+          maxLength: 15
+        payrollPeriodCode:
+          type: string
+          maxLength: 30
+        payrollTypeCode:
+          type: string
+          enum: [NORMAL, EXTRA]
+          maxLength: 30
+        presenceNumber:
+          type: integer
+          format: int32
+          minimum: 1
+        status:
+          allOf:
+            - $ref: '#/components/schemas/PayrollStatus'
+          description: >-
+            Initial implementation only accepts CALCULATED or NOT_VALID for calculation
+            output.
+        statusReasonCode:
+          type: string
+          maxLength: 50
+          nullable: true
+        calculatedAt:
+          type: string
+          format: date-time
+        calculationEngineCode:
+          type: string
+          maxLength: 50
+        calculationEngineVersion:
+          type: string
+          maxLength: 50
+        concepts:
+          type: array
+          description: >-
+            Temporary stub-provided payroll concepts. In the final calculation flow these
+            lines are expected to be produced by the payroll engine rather than sent as a
+            stable public API payload.
+          items:
+            $ref: '#/components/schemas/PayrollConceptRequest'
+        contextSnapshots:
+          type: array
+          description: >-
+            Temporary stub-provided context snapshots used to persist supporting payroll
+            context during pipeline validation. This is not the final public engine input
+            shape.
+          items:
+            $ref: '#/components/schemas/PayrollContextSnapshotRequest'
+
+    PayrollConceptRequest:
+      type: object
+      required:
+        - lineNumber
+        - conceptCode
+        - conceptLabel
+        - amount
+        - conceptNatureCode
+        - displayOrder
+      properties:
+        lineNumber:
+          type: integer
+          format: int32
+          minimum: 1
+        conceptCode:
+          type: string
+          maxLength: 30
+        conceptLabel:
+          type: string
+          maxLength: 200
+        amount:
+          type: number
+          format: double
+        quantity:
+          type: number
+          format: double
+          nullable: true
+        rate:
+          type: number
+          format: double
+          nullable: true
+        conceptNatureCode:
+          type: string
+          maxLength: 30
+        originPeriodCode:
+          type: string
+          maxLength: 30
+          nullable: true
+        displayOrder:
+          type: integer
+          format: int32
+          minimum: 1
+
+    PayrollContextSnapshotRequest:
+      type: object
+      required:
+        - snapshotTypeCode
+        - sourceVerticalCode
+        - sourceBusinessKeyJson
+        - snapshotPayloadJson
+      properties:
+        snapshotTypeCode:
+          type: string
+          maxLength: 30
+        sourceVerticalCode:
+          type: string
+          maxLength: 30
+        sourceBusinessKeyJson:
+          type: string
+          description: JSON serialized business key of the source context.
+        snapshotPayloadJson:
+          type: string
+          description: JSON serialized snapshot payload.
+
+    PayrollStatus:
+      type: string
+      enum: [NOT_VALID, CALCULATED, EXPLICIT_VALIDATED, DEFINITIVE]
+
     PayrollResponse:
       type: object
       required:
@@ -10245,9 +10576,9 @@ components:
           enum: [NORMAL, EXTRA]
         presenceNumber:
           type: integer
+          format: int32
         status:
-          type: string
-          enum: [NOT_VALID, CALCULATED, EXPLICIT_VALIDATED, DEFINITIVE]
+          $ref: '#/components/schemas/PayrollStatus'
         calculatedAt:
           type: string
           format: date-time
@@ -10289,11 +10620,9 @@ components:
           description: Why the result is in its current status. Null when nothing forced it.
         calculationEngineCode:
           type: string
-          nullable: true
           description: Engine that produced this payroll, as the run recorded it.
         calculationEngineVersion:
           type: string
-          nullable: true
         warnings:
           type: array
           description: >-
