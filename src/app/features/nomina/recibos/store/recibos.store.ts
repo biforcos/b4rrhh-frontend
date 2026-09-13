@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
@@ -12,6 +12,7 @@ import {
   PayrollAgreementProfileModel,
 } from '../models/payroll-summary.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
+import { arePayrollBusinessKeysEqual } from '../routing/payroll-route-key.util';
 
 export type RecibosErrorCode = 'request-failed' | 'not-found' | 'transition-failed';
 
@@ -24,6 +25,15 @@ export class RecibosStore {
   private readonly listErrorState = signal<RecibosErrorCode | null>(null);
 
   private readonly selectedKeyState = signal<PayrollBusinessKey | null>(null);
+  /**
+   * El recibo abierto, tal y como lo devolvió el backend.
+   *
+   * No se deduce de la lista: hasta el `frontend#64` el detalle era un `computed` que buscaba la
+   * clave dentro de `payrollsState`, y eso ataba abrir un recibo a haber buscado antes. Con
+   * dirección propia, pegar una URL en el navegador es una aplicación recién cargada y una lista
+   * vacía — y el recibo tiene que salir igual.
+   */
+  private readonly selectedPayrollState = signal<PayrollSummaryModel | null>(null);
   private readonly conceptsState = signal<ReadonlyArray<PayrollConceptModel>>([]);
   private readonly companyProfileState = signal<PayrollCompanyProfileModel | null>(null);
   private readonly employeeProfileState = signal<PayrollEmployeeProfileModel | null>(null);
@@ -43,6 +53,7 @@ export class RecibosStore {
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
   readonly selectedKey = this.selectedKeyState.asReadonly();
+  readonly selectedPayroll = this.selectedPayrollState.asReadonly();
   readonly concepts = this.conceptsState.asReadonly();
   readonly companyProfile = this.companyProfileState.asReadonly();
   readonly employeeProfile = this.employeeProfileState.asReadonly();
@@ -56,22 +67,6 @@ export class RecibosStore {
   readonly conceptsError = this.conceptsErrorState.asReadonly();
   readonly transitioning = this.transitioningState.asReadonly();
   readonly transitionError = this.transitionErrorState.asReadonly();
-
-  readonly selectedPayroll = computed(() => {
-    const key = this.selectedKeyState();
-    if (!key) return null;
-    return (
-      this.payrollsState().find(
-        (p) =>
-          p.ruleSystemCode === key.ruleSystemCode &&
-          p.employeeTypeCode === key.employeeTypeCode &&
-          p.employeeNumber === key.employeeNumber &&
-          p.payrollPeriodCode === key.payrollPeriodCode &&
-          p.payrollTypeCode === key.payrollTypeCode &&
-          p.presenceNumber === key.presenceNumber,
-      ) ?? null
-    );
-  });
 
   search(filters: RecibosFilters): void {
     this.listLoadingState.set(true);
@@ -93,9 +88,25 @@ export class RecibosStore {
   }
 
   selectPayroll(key: PayrollBusinessKey): void {
+    // Al cambiar de recibo se suelta el anterior: lo que se enseña mientras carga es «cargando»
+    // y no la cabecera del recibo de antes con los conceptos del nuevo debajo. Al recalcular el
+    // mismo, en cambio, la cabecera se queda y sólo parpadea el folio.
+    if (!arePayrollBusinessKeysEqual(this.selectedKeyState(), key)) {
+      this.selectedPayrollState.set(null);
+    }
     this.selectedKeyState.set(key);
     this.transitionErrorState.set(null);
     this.loadConcepts(key);
+  }
+
+  /** La dirección sin recibo: la pantalla vuelve a «elige uno de la lista». */
+  clearSelection(): void {
+    this.selectedKeyState.set(null);
+    this.selectedPayrollState.set(null);
+    this.conceptsState.set([]);
+    this.conceptsLoadingState.set(false);
+    this.conceptsErrorState.set(null);
+    this.transitionErrorState.set(null);
   }
 
   invalidate(key: PayrollBusinessKey): void {
@@ -177,6 +188,7 @@ export class RecibosStore {
       .pipe(take(1))
       .subscribe({
         next: (detail) => {
+          this.selectedPayrollState.set(detail.summary);
           this.conceptsState.set(detail.concepts);
           this.companyProfileState.set(detail.companyProfile);
           this.employeeProfileState.set(detail.employeeProfile);
@@ -188,26 +200,22 @@ export class RecibosStore {
           this.workCenterNameState.set(detail.workCenterName);
           this.conceptsLoadingState.set(false);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.conceptsLoadingState.set(false);
-          this.conceptsErrorState.set('request-failed');
+          // Un 404 no es un fallo de red: es una dirección que no nombra ningún recibo, y la
+          // pantalla tiene que decir eso y no quedarse en blanco (`frontend#64`, criterio 4).
+          this.conceptsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
   }
 
   private updatePayrollInList(updated: PayrollSummaryModel): void {
     this.payrollsState.update((list) =>
-      list.map((p) =>
-        p.ruleSystemCode === updated.ruleSystemCode &&
-        p.employeeTypeCode === updated.employeeTypeCode &&
-        p.employeeNumber === updated.employeeNumber &&
-        p.payrollPeriodCode === updated.payrollPeriodCode &&
-        p.payrollTypeCode === updated.payrollTypeCode &&
-        p.presenceNumber === updated.presenceNumber
-          ? updated
-          : p,
-      ),
+      list.map((p) => (arePayrollBusinessKeysEqual(p, updated) ? updated : p)),
     );
+    if (arePayrollBusinessKeysEqual(this.selectedKeyState(), updated)) {
+      this.selectedPayrollState.set(updated);
+    }
   }
 
   private mapTransitionError(err: HttpErrorResponse): string {

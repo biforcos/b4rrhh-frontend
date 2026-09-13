@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
+import { readPayrollBusinessKeyFromParamMap } from '../routing/payroll-route-key.util';
 import { RecibosFolioComponent } from './recibos-folio.component';
 import { RecibosValorizacionPanelComponent } from './recibos-valorizacion-panel.component';
 
@@ -89,6 +92,23 @@ const STATUS_LABELS: Record<string, string> = {
           (close)="drawerOpen.set(false)"
         />
       }
+    } @else if (store.conceptsLoading()) {
+      <div class="no-selection">Cargando el recibo…</div>
+    } @else if (store.conceptsError() === 'not-found') {
+      <div class="no-selection">
+        <p class="no-selection-title">No hay ningún recibo en esta dirección.</p>
+        <p>{{ addressLabel() }}</p>
+      </div>
+    } @else if (store.conceptsError()) {
+      <div class="no-selection">No se ha podido cargar el recibo. Inténtalo de nuevo.</div>
+    } @else if (badAddress()) {
+      <div class="no-selection">
+        <p class="no-selection-title">Esta dirección no es la de ningún recibo.</p>
+        <p>
+          El tipo de nómina tiene que ser <code>NORMAL</code> o <code>EXTRA</code>, y el número de
+          presencia un entero positivo.
+        </p>
+      </div>
     } @else {
       <div class="no-selection">Selecciona una nómina de la lista para ver el detalle.</div>
     }
@@ -97,12 +117,40 @@ const STATUS_LABELS: Record<string, string> = {
 })
 export class RecibosDetailComponent {
   protected readonly store = inject(RecibosStore);
+  private readonly route = inject(ActivatedRoute);
+
   readonly drawerOpen = signal(false);
+  /** La URL nombra un recibo imposible: el tipo o el número de presencia no valen. */
+  protected readonly badAddress = signal(false);
+  protected readonly addressLabel = signal('');
 
   constructor() {
     effect(() => {
       this.store.selectedKey();
       this.drawerOpen.set(false);
+    });
+
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((paramMap) => {
+      if (paramMap.keys.length === 0) {
+        this.badAddress.set(false);
+        this.addressLabel.set('');
+        this.store.clearSelection();
+        return;
+      }
+
+      const key = readPayrollBusinessKeyFromParamMap(paramMap);
+      if (!key) {
+        this.badAddress.set(true);
+        this.addressLabel.set('');
+        this.store.clearSelection();
+        return;
+      }
+
+      this.badAddress.set(false);
+      this.addressLabel.set(
+        `${key.employeeNumber} · ${key.payrollPeriodCode} · ${key.payrollTypeCode} · presencia ${key.presenceNumber}`,
+      );
+      this.store.selectPayroll(key);
     });
   }
 

@@ -129,4 +129,19 @@
   color: var(--text-tertiary);
   font-size: 13px;
   padding: 20px 0;
+
+  p {
+    margin: 0 0 6px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+}
+
+/* Una dirección que no lleva a ningún recibo se dice, no se deja en blanco (frontend#64). */
+.no-selection-title {
+  color: var(--text-secondary);
+  font-weight: 600;
 }

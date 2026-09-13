@@ -78,11 +78,15 @@ select:focus-visible {
   flex: 1;
 }
 
+/* Desde frontend#64 la fila es un <a>: se le quita el aspecto de enlace, no el ser enlace. */
 .payroll-row {
+  display: block;
   padding: 12px 18px;
   border-bottom: 1px solid var(--border-subtle);
   border-left: 3px solid transparent;
   cursor: pointer;
+  color: inherit;
+  text-decoration: none;
 }
 
 .payroll-row:hover {

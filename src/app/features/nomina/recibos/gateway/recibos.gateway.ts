@@ -25,6 +25,14 @@ import {
 import { RecibosFilters } from '../models/recibos-filters.model';
 
 export interface PayrollDetailModel {
+  /**
+   * El recibo en sí: clave, estado y fecha de cálculo.
+   *
+   * Va aquí y no se busca en la lista porque **una dirección tiene que poder abrirse sin lista**
+   * (`frontend#64`): la misma respuesta que trae los conceptos trae ya lo que la cabecera y los
+   * botones necesitan, así que no hace falta una segunda llamada ni haber buscado antes.
+   */
+  summary: PayrollSummaryModel;
   concepts: ReadonlyArray<PayrollConceptModel>;
   companyProfile: PayrollCompanyProfileModel | null;
   employeeProfile: PayrollEmployeeProfileModel | null;
@@ -56,6 +64,7 @@ export class RecibosGateway {
   getDetail(key: PayrollBusinessKey): Observable<PayrollDetailModel> {
     return this.client.getByBusinessKey(key).pipe(
       map((response) => ({
+        summary: payrollResponseToSummary(response),
         concepts: (response.concepts ?? [])
           .map(mapPayrollConceptResponseToModel)
           .sort((a, b) => a.displayOrder - b.displayOrder),

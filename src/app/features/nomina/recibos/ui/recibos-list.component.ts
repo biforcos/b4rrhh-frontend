@@ -1,9 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { PayrollSummaryModel } from '../models/payroll-summary.model';
+import {
+  arePayrollBusinessKeysEqual,
+  buildPayrollDetailRouteCommands,
+} from '../routing/payroll-route-key.util';
 
 const STATUS_LABELS: Record<string, string> = {
   CALCULATED: 'CALCULADA',
@@ -16,7 +21,7 @@ const STATUS_LABELS: Record<string, string> = {
   selector: 'app-recibos-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="list-panel">
       <div class="filters">
@@ -53,7 +58,15 @@ const STATUS_LABELS: Record<string, string> = {
 
       <div class="results">
         @for (payroll of store.payrolls(); track trackPayroll(payroll)) {
-          <div class="payroll-row" [class.selected]="isSelected(payroll)" (click)="select(payroll)">
+          <!--
+            Enlace y no click: un recibo tiene dirección propia (frontend#64), y una fila que
+            navega por código no se puede abrir en otra pestaña ni copiar.
+          -->
+          <a
+            class="payroll-row"
+            [class.selected]="isSelected(payroll)"
+            [routerLink]="routeCommands(payroll)"
+          >
             <div class="row-top">
               <span class="employee-number" [class.bold]="isSelected(payroll)">{{
                 payroll.employeeNumber
@@ -63,9 +76,10 @@ const STATUS_LABELS: Record<string, string> = {
               }}</span>
             </div>
             <div class="row-sub">
-              {{ payroll.payrollPeriodCode }} · {{ payroll.payrollTypeCode }}
+              {{ payroll.payrollPeriodCode }} · {{ payroll.payrollTypeCode }} · presencia
+              {{ payroll.presenceNumber }}
             </div>
-          </div>
+          </a>
         }
         @if (store.listLoading()) {
           <div class="list-msg">Buscando...</div>
@@ -96,20 +110,12 @@ export class RecibosListComponent {
     this.store.search(this.filters());
   }
 
-  select(payroll: PayrollSummaryModel): void {
-    this.store.selectPayroll(payroll);
+  routeCommands(payroll: PayrollSummaryModel): ReadonlyArray<string | number> {
+    return buildPayrollDetailRouteCommands(payroll);
   }
 
   isSelected(payroll: PayrollSummaryModel): boolean {
-    const key = this.store.selectedKey();
-    return (
-      key?.ruleSystemCode === payroll.ruleSystemCode &&
-      key?.employeeTypeCode === payroll.employeeTypeCode &&
-      key?.employeeNumber === payroll.employeeNumber &&
-      key?.payrollPeriodCode === payroll.payrollPeriodCode &&
-      key?.payrollTypeCode === payroll.payrollTypeCode &&
-      key?.presenceNumber === payroll.presenceNumber
-    );
+    return arePayrollBusinessKeysEqual(this.store.selectedKey(), payroll);
   }
 
   statusLabel(status: string): string {

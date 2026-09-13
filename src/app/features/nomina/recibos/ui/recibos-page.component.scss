@@ -4,3 +4,8 @@
   overflow: hidden;
   font-size: 13px;
 }
+
+/* El detalle entra como hermano del outlet, no dentro: el ancla no debe ocupar sitio en el flex. */
+router-outlet {
+  display: none;
+}
