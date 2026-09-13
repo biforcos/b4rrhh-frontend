@@ -21,6 +21,10 @@ env:
   IMAGEN: b4rrhh-web
   SERVIDOR: 192.168.1.151
   NODE: node-${{ github.sha }}
+  # El contrato de main del backend, leido por la API de Gitea. Mismo host y
+  # mismo puerto que el registry de arriba: el runner ya habla con el en cada
+  # build, asi que la parte de red no cuesta nada (b4rrhh/workspace#4).
+  CONTRATO: http://192.168.1.104:3000/api/v1/repos/b4rrhh/backend/raw/openapi/personnel-administration-api.yaml?ref=main
 
 jobs:
   deploy:
@@ -62,12 +66,20 @@ jobs:
           # antes de api:generate: el cliente generado no se formatea (esta
           # en .gitignore y Prettier lo respeta), asi que no hace falta
           # tenerlo para comprobarlo.
+          # api:check es el candado del contrato atrasado
+          # (b4rrhh/workspace#4): pide a Gitea el contrato de main del backend
+          # y tumba el build si el versionado aqui no es ese. Va ANTES de
+          # api:generate a proposito: generar de una copia vieja sale verde y
+          # el verde es lo que nadie revisa. El token es de lectura sobre el
+          # repositorio del contrato y nada mas.
           docker create \
             --name "${{ env.NODE }}" \
             --cpus 5 \
             -m 4g \
             -e CI=true \
             -e TZ=Europe/Madrid \
+            -e CONTRACT_URL="${{ env.CONTRATO }}" \
+            -e CONTRACT_TOKEN="${{ secrets.CONTRACT_TOKEN }}" \
             -v b4rrhh-npm:/root/.npm \
             -w /app \
             node:22-alpine \
@@ -78,6 +90,7 @@ jobs:
                    && npm run lint:inline-styles \
                    && npm run lint:orphan-styles \
                    && npm run format:check \
+                   && npm run api:check \
                    && npm run api:generate \
                    && npm test -- --no-watch"
 

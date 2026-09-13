@@ -15,6 +15,7 @@
     "lint:orphan-styles": "node ./tools/lint-orphan-styles.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
+    "api:check": "node ./tools/openapi/check-contract.mjs",
     "api:pull": "node ./tools/openapi/pull-contract.mjs",
     "api:generate": "node ./tools/openapi/generate-client.mjs",
     "api:refresh": "npm run api:pull && npm run api:generate",
