@@ -57,6 +57,7 @@ import { EmployeeDetailHeaderComponent } from '../components/employee-detail-hea
 import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-skeleton.component';
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
+import { seniorityDateFromPresences } from '../../utils/seniority-date.util';
 
 @Component({
   selector: 'app-employee-detail-page',
@@ -146,12 +147,14 @@ export class EmployeeDetailPageComponent {
 
   protected readonly activePresence = computed(() => this.resolveActivePresence(this.presences()));
 
-  protected readonly headerHireDate = computed(() => {
-    const presences = this.presences();
-    if (presences.length === 0) return null;
-    const earliest = [...presences].sort((l, r) => l.startDate.localeCompare(r.startDate))[0];
-    return earliest?.startDate ?? null;
-  });
+  /**
+   * La antigüedad, que la barra de identidad enseña como duración contada hasta hoy.
+   *
+   * La regla vive en `seniorityDateFromPresences` y no aquí desde el `b4rrhh/backend#91`: el
+   * recibo enseña esa misma fecha, y una regla escrita en línea en una pantalla no se puede
+   * comparar con la de la otra.
+   */
+  protected readonly headerHireDate = computed(() => seniorityDateFromPresences(this.presences()));
 
   protected readonly headerEmail = computed(() =>
     this.findPreferredContactValue(this.contacts(), 'email'),

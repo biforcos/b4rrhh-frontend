@@ -74,6 +74,7 @@ const STATUS_LABELS: Record<string, string> = {
             [agreementProfile]="store.agreementProfile()"
             [presenceStartDate]="store.presenceStartDate()"
             [presenceEndDate]="store.presenceEndDate()"
+            [seniorityDate]="store.seniorityDate()"
             [workCenterCode]="store.workCenterCode()"
             [workCenterName]="store.workCenterName()"
           />

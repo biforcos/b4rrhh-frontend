@@ -31,6 +31,14 @@ export interface PayrollDetailModel {
   agreementProfile: PayrollAgreementProfileModel | null;
   presenceStartDate: string | null;
   presenceEndDate: string | null;
+  /**
+   * La antigüedad del empleado, como fecha (`b4rrhh/backend#91`).
+   *
+   * No es `presenceStartDate`: para un readmitido son dos fechas distintas, y ésta es la del
+   * primer alta, que es la que la ficha enseña. Nula en los recibos calculados antes de que la
+   * foto la llevara, y **esa nulidad significa «no se sabe»**: no se sustituye por la de al lado.
+   */
+  seniorityDate: string | null;
   workCenterCode: string | null;
   workCenterName: string | null;
 }
@@ -56,6 +64,7 @@ export class RecibosGateway {
         agreementProfile: mapAgreementProfileResponseToModel(response.agreementProfile),
         presenceStartDate: response.presenceStartDate ?? null,
         presenceEndDate: response.presenceEndDate ?? null,
+        seniorityDate: response.seniorityDate ?? null,
         workCenterCode: response.workCenterCode ?? null,
         workCenterName: response.workCenterName ?? null,
       })),

@@ -30,6 +30,7 @@ export class RecibosStore {
   private readonly agreementProfileState = signal<PayrollAgreementProfileModel | null>(null);
   private readonly presenceStartDateState = signal<string | null>(null);
   private readonly presenceEndDateState = signal<string | null>(null);
+  private readonly seniorityDateState = signal<string | null>(null);
   private readonly workCenterCodeState = signal<string | null>(null);
   private readonly workCenterNameState = signal<string | null>(null);
   private readonly conceptsLoadingState = signal(false);
@@ -48,6 +49,7 @@ export class RecibosStore {
   readonly agreementProfile = this.agreementProfileState.asReadonly();
   readonly presenceStartDate = this.presenceStartDateState.asReadonly();
   readonly presenceEndDate = this.presenceEndDateState.asReadonly();
+  readonly seniorityDate = this.seniorityDateState.asReadonly();
   readonly workCenterCode = this.workCenterCodeState.asReadonly();
   readonly workCenterName = this.workCenterNameState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
@@ -165,6 +167,7 @@ export class RecibosStore {
     this.agreementProfileState.set(null);
     this.presenceStartDateState.set(null);
     this.presenceEndDateState.set(null);
+    this.seniorityDateState.set(null);
     this.workCenterCodeState.set(null);
     this.workCenterNameState.set(null);
     this.conceptsErrorState.set(null);
@@ -180,6 +183,7 @@ export class RecibosStore {
           this.agreementProfileState.set(detail.agreementProfile);
           this.presenceStartDateState.set(detail.presenceStartDate);
           this.presenceEndDateState.set(detail.presenceEndDate);
+          this.seniorityDateState.set(detail.seniorityDate);
           this.workCenterCodeState.set(detail.workCenterCode);
           this.workCenterNameState.set(detail.workCenterName);
           this.conceptsLoadingState.set(false);

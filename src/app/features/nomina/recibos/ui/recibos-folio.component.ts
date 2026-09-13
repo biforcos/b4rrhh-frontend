@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import {
   PayrollCompanyProfileModel,
@@ -83,7 +84,7 @@ const MONTH_NAMES_ES = [
           </div>
           <div class="labor-cell">
             <span class="labor-label">Antigüedad</span>
-            <span class="labor-value">—</span>
+            <span class="labor-value">{{ seniorityLabel }}</span>
           </div>
           <div class="labor-cell labor-cell-period">
             <span class="labor-label">Matrícula</span>
@@ -167,6 +168,14 @@ export class RecibosFolioComponent {
   @Input() presenceEndDate: string | null = null;
   @Input() workCenterCode: string | null = null;
   @Input() workCenterName: string | null = null;
+  /**
+   * La antigüedad del empleado, como fecha (`b4rrhh/backend#91`).
+   *
+   * Nula en los recibos calculados antes de que la foto la llevara, y entonces la celda enseña
+   * el mismo `—` que sus vecinas cuando no saben: «no se sabe» y «no tiene» se ven igual, pero
+   * ninguna de las dos es un número inventado.
+   */
+  @Input() seniorityDate: string | null = null;
 
   get periodLabel(): string {
     const code = this.payrollPeriodCode;
@@ -198,6 +207,18 @@ export class RecibosFolioComponent {
 
   get workCenterLabel(): string {
     return this.workCenterName ?? this.workCenterCode ?? '—';
+  }
+
+  /**
+   * La antigüedad se enseña como **fecha**, que es lo que es: un punto de partida.
+   *
+   * La ficha enseña la duración —«2 años y 9 meses»— porque cuenta hasta hoy y eso es lo que
+   * tiene sentido delante de una persona. Un recibo de abril no puede contar hasta hoy sin
+   * envejecer solo cada mes que pasa, así que enseña el origen y no la cuenta. Las dos salen de
+   * la misma fecha, que es lo que tienen que decir igual (`b4rrhh/backend#91`).
+   */
+  get seniorityLabel(): string {
+    return this.seniorityDate ? formatDisplayDate(this.seniorityDate) : '—';
   }
 
   get companyCityLine(): string {
