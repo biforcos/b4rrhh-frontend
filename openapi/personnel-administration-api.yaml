@@ -4601,6 +4601,79 @@ paths:
               schema:
                 $ref: "#/components/schemas/PayrollErrorResponse"
 
+  /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/steps:
+    get:
+      tags: [Payroll]
+      operationId: listPayrollCalculationSteps
+      summary: Calculation steps the engine took to produce this payroll, in execution order
+      description: >-
+        The steps behind a payslip, in the order the engine executed them. This is the
+        explanation, not the document: it carries every concept the engine evaluated,
+        including the BASE and TECHNICAL ones that never reach the payslip.
+
+        Items are ordered by executionOrder and that order is the whole point of this
+        endpoint. Reordering by payslipOrderCode, by functional nature or by concept code
+        destroys what it serves: the amount list ordered for print already exists and it is
+        the payroll itself.
+
+        The row identity is executionOrder, never conceptCode. A SEGMENT scoped concept is
+        evaluated once per segment, so an employee whose working time changes mid-month
+        carries concept 101 twice, with two segments and two rates. Any client that indexes
+        or groups by conceptCode shows one and silently drops the other.
+
+        payslipOrderCode is null when that step did not reach the payslip. It is served so a
+        client can mark the payslip lines without crossing two lists or guessing from the
+        functional nature.
+
+        An existing payroll with no steps at all answers 200 with an empty array, and that is
+        a real and frequent case: every payroll calculated before the payroll_calculation_step
+        table existed has none, and old payrolls without steps will always exist. An empty
+        array means "this payroll was calculated before the engine stored its steps", never
+        "this payroll has no concepts", and it is never filled in by deriving steps from the
+        payslip lines.
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeTypeCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeNumber
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollPeriodCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollTypeCode
+          in: path
+          required: true
+          schema: { type: string, enum: [NORMAL, EXTRA] }
+        - name: presenceNumber
+          in: path
+          required: true
+          schema: { type: integer, format: int32 }
+      responses:
+        "200":
+          description: >-
+            Calculation steps in execution order. An empty array means the payroll exists and
+            was calculated before the engine stored its steps.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayrollCalculationStepResponse"
+        "404":
+          description: Payroll not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+
   /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/invalidate:
     post:
       tags: [Payroll]
@@ -10756,6 +10829,65 @@ components:
       properties:
         statusReasonCode:
           type: string
+    PayrollCalculationStepResponse:
+      type: object
+      description: >-
+        One evaluation the engine performed while calculating a payroll. Identified by
+        executionOrder within the payroll, never by conceptCode: the same concept can appear
+        more than once when it is evaluated per segment.
+      properties:
+        executionOrder:
+          type: integer
+          format: int32
+          description: >-
+            Position of this step in the engine execution plan, starting at 1. This is the row
+            identity and the sort key of the response.
+        conceptCode:
+          type: string
+          description: >-
+            Engine concept code. Not unique within the response: a SEGMENT scoped concept
+            appears once per segment.
+        conceptMnemonic:
+          type: string
+        calculationType:
+          type: string
+          description: DIRECT_AMOUNT, RATE_BY_QUANTITY, PERCENTAGE, AGGREGATE, LEAST, GREATEST, ENGINE_PROVIDED or EMPLOYEE_INPUT
+        functionalNature:
+          type: string
+          description: EARNING, DEDUCTION, BASE, TECHNICAL, INFORMATIONAL, TOTAL_EARNING, TOTAL_DEDUCTION or NET_PAY
+        executionScope:
+          type: string
+          description: >-
+            PERIOD when the step covers the whole period, and then it carries no segment dates.
+            Any other scope always carries both. The scope is explicit and must not be inferred
+            from the dates being absent.
+        segmentStartDate:
+          type: string
+          format: date
+          nullable: true
+        segmentEndDate:
+          type: string
+          format: date
+          nullable: true
+        amount:
+          type: number
+          format: double
+        quantity:
+          type: number
+          format: double
+          nullable: true
+        rate:
+          type: number
+          format: double
+          nullable: true
+        payslipOrderCode:
+          type: string
+          nullable: true
+          description: >-
+            Payslip print order of this concept, or null when this step never reached the
+            payslip. Steps include bases and technical values, so the amount column must not be
+            summed: the totals are the payroll totals and only come from the payslip lines.
+
     PayrollConceptResponse:
       type: object
       required:
