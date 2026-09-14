@@ -10835,6 +10835,14 @@ components:
         One evaluation the engine performed while calculating a payroll. Identified by
         executionOrder within the payroll, never by conceptCode: the same concept can appear
         more than once when it is evaluated per segment.
+      required:
+        - executionOrder
+        - conceptCode
+        - conceptMnemonic
+        - calculationType
+        - functionalNature
+        - executionScope
+        - amount
       properties:
         executionOrder:
           type: integer

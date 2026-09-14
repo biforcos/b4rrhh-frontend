@@ -1,4 +1,5 @@
 import { PayrollSummaryResponse } from '../../../../core/api/generated/model/payroll-summary-response';
+import { PayrollCalculationStepResponse } from '../../../../core/api/generated/model/payroll-calculation-step-response';
 import { PayrollConceptResponse } from '../../../../core/api/generated/model/payroll-concept-response';
 import { PayrollCompanyProfileResponse } from '../../../../core/api/generated/model/payroll-company-profile-response';
 import { PayrollEmployeeProfileResponse } from '../../../../core/api/generated/model/payroll-employee-profile-response';
@@ -9,6 +10,7 @@ import {
   PayrollEmployeeProfileModel,
   PayrollAgreementProfileModel,
 } from '../models/payroll-summary.model';
+import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 
 export function mapPayrollSummaryResponseToModel(
@@ -78,5 +80,32 @@ export function mapAgreementProfileResponseToModel(
     shortName: response.shortName ?? null,
     annualHours: response.annualHours ?? null,
     agreementCategoryCode: response.agreementCategoryCode ?? null,
+  };
+}
+
+/**
+ * Un paso del cálculo, tal cual lo sirve el contrato (`b4rrhh/backend#97`).
+ *
+ * Sin reordenar y sin agrupar: lo que llega ya viene en orden de ejecución, que es lo único que
+ * estos pasos aportan sobre el recibo. Los siete campos que el contrato declara obligatorios se
+ * copian tal cual; los cinco que pueden faltar —las dos fechas de segmento, la cantidad, la
+ * tarifa y el orden de folio— pasan a `null`, y ese `null` significa algo en cada caso.
+ */
+export function mapPayrollCalculationStepResponseToModel(
+  response: PayrollCalculationStepResponse,
+): PayrollCalculationStepModel {
+  return {
+    executionOrder: response.executionOrder,
+    conceptCode: response.conceptCode,
+    conceptMnemonic: response.conceptMnemonic,
+    calculationType: response.calculationType,
+    functionalNature: response.functionalNature,
+    executionScope: response.executionScope,
+    segmentStartDate: response.segmentStartDate ?? null,
+    segmentEndDate: response.segmentEndDate ?? null,
+    amount: response.amount,
+    quantity: response.quantity ?? null,
+    rate: response.rate ?? null,
+    payslipOrderCode: response.payslipOrderCode ?? null,
   };
 }

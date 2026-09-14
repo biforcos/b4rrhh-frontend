@@ -4,6 +4,7 @@ import { take } from 'rxjs';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
+import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import {
   PayrollSummaryModel,
@@ -46,6 +47,23 @@ export class RecibosStore {
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
 
+  /**
+   * Los pasos del cálculo, que se piden aparte y sólo cuando alguien pregunta.
+   *
+   * No vienen con el recibo: son 35 o 39 filas por recibo que viajarían en cada apertura de ficha
+   * para que casi nadie las mire, y la pestaña «Cálculo» de la Valorización es un cajón que se
+   * abre a demanda (`b4rrhh/backend#97`).
+   *
+   * **La lista vacía es un estado con significado, no la ausencia de uno.** `stepsLoadedKey` es lo
+   * que separa «todavía no los he pedido» de «los pedí y no hay ninguno», que es lo que la
+   * pantalla tiene que poder decir con palabras: ese recibo se calculó antes de que el motor
+   * guardara sus pasos.
+   */
+  private readonly stepsState = signal<ReadonlyArray<PayrollCalculationStepModel>>([]);
+  private readonly stepsLoadingState = signal(false);
+  private readonly stepsErrorState = signal<RecibosErrorCode | null>(null);
+  private readonly stepsLoadedKeyState = signal<PayrollBusinessKey | null>(null);
+
   private readonly transitioningState = signal(false);
   private readonly transitionErrorState = signal<string | null>(null);
 
@@ -65,6 +83,10 @@ export class RecibosStore {
   readonly workCenterName = this.workCenterNameState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
   readonly conceptsError = this.conceptsErrorState.asReadonly();
+  readonly steps = this.stepsState.asReadonly();
+  readonly stepsLoading = this.stepsLoadingState.asReadonly();
+  readonly stepsError = this.stepsErrorState.asReadonly();
+  readonly stepsLoaded = this.stepsLoadedKeyState.asReadonly();
   readonly transitioning = this.transitioningState.asReadonly();
   readonly transitionError = this.transitionErrorState.asReadonly();
 
@@ -107,6 +129,40 @@ export class RecibosStore {
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
     this.transitionErrorState.set(null);
+    this.forgetCalculationSteps();
+  }
+
+  /**
+   * Trae los pasos de este recibo, y sólo la primera vez que se piden.
+   *
+   * Se llama cuando alguien abre la pestaña «Cálculo», no al abrir el cajón: quien sólo mira el
+   * recibo no paga las 35 filas. Si ya están pedidos para esta misma clave no se vuelven a pedir;
+   * lo que los tira es cambiar de recibo o recalcularlo, que son los dos casos en los que dejan
+   * de ser los de nadie.
+   */
+  loadCalculationSteps(key: PayrollBusinessKey): void {
+    if (arePayrollBusinessKeysEqual(this.stepsLoadedKeyState(), key)) return;
+    if (this.stepsLoadingState()) return;
+
+    this.stepsLoadingState.set(true);
+    this.stepsErrorState.set(null);
+
+    this.gateway
+      .getCalculationSteps(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (steps) => {
+          this.stepsState.set(steps);
+          this.stepsLoadedKeyState.set(key);
+          this.stepsLoadingState.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.stepsLoadingState.set(false);
+          // Aqui un 404 es el recibo que no existe, no unos pasos que falten: un recibo que si
+          // existe y no tiene ninguno responde 200 con lista vacia.
+          this.stepsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
+        },
+      });
   }
 
   invalidate(key: PayrollBusinessKey): void {
@@ -161,6 +217,8 @@ export class RecibosStore {
         next: (updated) => {
           this.updatePayrollInList(updated);
           this.transitioningState.set(false);
+          // Un recalculo hace un recibo NUEVO, con sus pasos. Los de antes eran de otro recibo:
+          // loadConcepts los olvida, y la pestana de Calculo volvera a pedirlos cuando se abra.
           this.loadConcepts(key);
         },
         error: (err: HttpErrorResponse) => {
@@ -182,6 +240,7 @@ export class RecibosStore {
     this.workCenterCodeState.set(null);
     this.workCenterNameState.set(null);
     this.conceptsErrorState.set(null);
+    this.forgetCalculationSteps();
 
     this.gateway
       .getDetail(key)
@@ -207,6 +266,14 @@ export class RecibosStore {
           this.conceptsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
+  }
+
+  /** Los pasos dejan de ser los de nadie: ni cargados, ni vacios «de verdad», ni en error. */
+  private forgetCalculationSteps(): void {
+    this.stepsState.set([]);
+    this.stepsLoadedKeyState.set(null);
+    this.stepsLoadingState.set(false);
+    this.stepsErrorState.set(null);
   }
 
   private updatePayrollInList(updated: PayrollSummaryModel): void {

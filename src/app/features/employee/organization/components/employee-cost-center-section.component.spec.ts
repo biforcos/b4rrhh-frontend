@@ -99,6 +99,16 @@ describe('EmployeeCostCenterSectionComponent', () => {
     expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(2);
   });
 
+  /*
+   * El margen de 15 s no es por lo que hace el test —tres llamadas sincronas y una
+   * comprobacion— sino por lo que cuesta compilar el componente la primera vez. En
+   * solitario el fichero entero tarda 2,4 s; con la suite completa repartida entre
+   * trabajadores, la CPU esta saturada y este `detectChanges` se pasaba de los 5 s por
+   * defecto sin que nada estuviera mal. Salto al anadir la pestana de Calculo
+   * (`frontend#65`), que no lo toca: lo unico que hizo fue mover la balanza.
+   *
+   * Si vuelve a caerse con este margen, ya no es la carga y hay que mirarlo.
+   */
   it('names the window by the day it starts when planning an add', () => {
     const c = fix.componentInstance as any;
     c.openAdd();
@@ -111,7 +121,7 @@ describe('EmployeeCostCenterSectionComponent', () => {
       startDate: '2025-01-01',
       endDate: null,
     });
-  });
+  }, 15000);
 
   /**
    * `backend#54`: la de centro de coste es la única serie de cobertura opcional del producto.

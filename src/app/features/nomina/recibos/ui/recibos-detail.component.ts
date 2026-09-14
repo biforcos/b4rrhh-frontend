@@ -88,7 +88,12 @@ const STATUS_LABELS: Record<string, string> = {
         <app-recibos-valorizacion-panel
           [concepts]="store.concepts()"
           [loading]="store.conceptsLoading()"
+          [steps]="store.steps()"
+          [stepsLoading]="store.stepsLoading()"
+          [stepsError]="store.stepsError() !== null"
+          [stepsLoaded]="store.stepsLoaded() !== null"
           [payrollKey]="payroll.employeeNumber + ' · Período ' + payroll.payrollPeriodCode"
+          (stepsRequested)="loadCalculationSteps()"
           (close)="drawerOpen.set(false)"
         />
       }
@@ -171,5 +176,16 @@ export class RecibosDetailComponent {
   recalculate(): void {
     const key = this.store.selectedKey();
     if (key) this.store.recalculate(key);
+  }
+
+  /**
+   * Los pasos se piden cuando alguien abre la pestaña «Cálculo», no al abrir el cajón.
+   *
+   * Son 35 o 39 filas por recibo y la mayoría de quien abre la Valorización viene a mirar las
+   * líneas. El store no los vuelve a pedir si ya los tiene para esta misma clave.
+   */
+  loadCalculationSteps(): void {
+    const key = this.store.selectedKey();
+    if (key) this.store.loadCalculationSteps(key);
   }
 }

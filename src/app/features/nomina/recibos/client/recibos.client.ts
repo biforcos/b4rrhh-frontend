@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { PayrollService } from '../../../../core/api/generated/api/payroll.service';
 import { PayrollSummaryResponse } from '../../../../core/api/generated/model/payroll-summary-response';
 import { PayrollResponse } from '../../../../core/api/generated/model/payroll-response';
+import { PayrollCalculationStepResponse } from '../../../../core/api/generated/model/payroll-calculation-step-response';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
 
@@ -21,6 +22,18 @@ export class RecibosClient {
 
   getByBusinessKey(key: PayrollBusinessKey): Observable<PayrollResponse> {
     return this.api.getPayrollByBusinessKey({
+      ruleSystemCode: key.ruleSystemCode,
+      employeeTypeCode: key.employeeTypeCode,
+      employeeNumber: key.employeeNumber,
+      payrollPeriodCode: key.payrollPeriodCode,
+      payrollTypeCode: key.payrollTypeCode,
+      presenceNumber: key.presenceNumber,
+    });
+  }
+
+  /** Los pasos con los que el motor calculo este recibo, en orden de ejecucion. */
+  listCalculationSteps(key: PayrollBusinessKey): Observable<Array<PayrollCalculationStepResponse>> {
+    return this.api.listPayrollCalculationSteps({
       ruleSystemCode: key.ruleSystemCode,
       employeeTypeCode: key.employeeTypeCode,
       employeeNumber: key.employeeNumber,

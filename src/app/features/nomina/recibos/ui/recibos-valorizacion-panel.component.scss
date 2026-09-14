@@ -258,3 +258,129 @@
 .col-num-cell.col-amount {
   font-weight: 500;
 }
+
+/*
+ * Las dos vistas de la Valorizacion (frontend#65). El recibo es el documento y el
+ * calculo es la explicacion: dos ordenes incompatibles, dos pestanas.
+ */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 9px 12px;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab-active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.col-order {
+  width: 34px;
+  text-align: right !important;
+}
+
+.col-order-cell {
+  padding: 6px 8px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+.col-folio {
+  width: 46px;
+  text-align: right !important;
+}
+
+.col-folio-cell {
+  padding: 6px 8px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+/*
+ * Los pasos que llegaron al folio se marcan por payslip_order_code, no por su
+ * naturaleza ni cruzando con la otra lista: el contrato trae el campo para esto.
+ */
+.step-on-payslip .col-folio-cell {
+  color: var(--text-primary);
+}
+
+.step-on-payslip .col-label-cell {
+  font-weight: 500;
+}
+
+.step-meta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  margin-top: 1px;
+}
+
+.steps-note {
+  margin: 0;
+  padding: 10px 18px 16px;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/*
+ * El vacio con motivo. Un panel vacio y mudo es indistinguible de «no hay nada que
+ * explicar», y ese es el defecto que este issue quita.
+ */
+.empty-with-reason {
+  padding: 22px 18px;
+}
+
+.empty-title {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.empty-body {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.empty-note {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.drawer-wide {
+  width: 760px;
+  max-width: 100vw;
+}

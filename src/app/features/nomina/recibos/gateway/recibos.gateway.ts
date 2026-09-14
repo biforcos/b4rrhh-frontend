@@ -9,12 +9,14 @@ import { PayrollStatus } from '../../../../core/api/generated/model/payroll-stat
 import { RecibosClient } from '../client/recibos.client';
 import {
   mapPayrollSummaryResponseToModel,
+  mapPayrollCalculationStepResponseToModel,
   mapPayrollConceptResponseToModel,
   mapCompanyProfileResponseToModel,
   mapEmployeeProfileResponseToModel,
   mapAgreementProfileResponseToModel,
 } from '../mapper/recibos.mapper';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
+import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import {
   PayrollSummaryModel,
@@ -78,6 +80,22 @@ export class RecibosGateway {
         workCenterName: response.workCenterName ?? null,
       })),
     );
+  }
+
+  /**
+   * Los pasos del cálculo, en el orden en que el backend los sirve.
+   *
+   * **Sin `sort`, a diferencia de `getDetail`.** Las líneas del recibo sí se ordenan aquí por
+   * `displayOrder`, porque el recibo es una lista ordenada para imprimir. Los pasos ya vienen en
+   * orden de ejecución desde el `order by` del backend, y ordenarlos otra vez por cualquier cosa
+   * —el folio, la naturaleza, el código— destruiría lo único que aportan (`b4rrhh/backend#97`).
+   */
+  getCalculationSteps(
+    key: PayrollBusinessKey,
+  ): Observable<ReadonlyArray<PayrollCalculationStepModel>> {
+    return this.client
+      .listCalculationSteps(key)
+      .pipe(map((steps) => steps.map(mapPayrollCalculationStepResponseToModel)));
   }
 
   invalidate(key: PayrollBusinessKey): Observable<PayrollSummaryModel> {
