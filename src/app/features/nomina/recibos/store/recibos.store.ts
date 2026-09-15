@@ -356,6 +356,12 @@ export class RecibosStore {
   private mapTransitionError(err: HttpErrorResponse): string {
     if (err.status === 409)
       return err.error?.message ?? 'Transición no permitida en el estado actual.';
+    // Un cálculo que no se puede hacer: la petición está bien y lo que falla es la
+    // reglamentación de detrás. El backend lo dice desde `backend#100`, y decirlo es el punto:
+    // el paso 7 del camino es tocar una regla y recalcular, así que éste es el fallo que más
+    // se va a ver, y «Error al cambiar el estado» no ayuda a nadie a arreglarlo.
+    if (err.status === 422)
+      return err.error?.message ?? 'El cálculo falló por la reglamentación configurada.';
     if (err.status === 404) return 'Nómina no encontrada.';
     return 'Error al cambiar el estado. Inténtalo de nuevo.';
   }
