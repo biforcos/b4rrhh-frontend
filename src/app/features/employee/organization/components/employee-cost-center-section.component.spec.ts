@@ -101,11 +101,26 @@ describe('EmployeeCostCenterSectionComponent', () => {
 
   /*
    * El margen de 15 s no es por lo que hace el test —tres llamadas sincronas y una
-   * comprobacion— sino por lo que cuesta compilar el componente la primera vez. En
-   * solitario el fichero entero tarda 2,4 s; con la suite completa repartida entre
-   * trabajadores, la CPU esta saturada y este `detectChanges` se pasaba de los 5 s por
-   * defecto sin que nada estuviera mal. Salto al anadir la pestana de Calculo
-   * (`frontend#65`), que no lo toca: lo unico que hizo fue mover la balanza.
+   * comprobacion— sino por lo que cuesta pintar el modal la primera vez.
+   *
+   * Decia «compilar» y era falso. Medido tramo a tramo (`frontend#57`, 15/09):
+   *
+   *   configure + compileComponents          2 ms
+   *   createComponent                       62 ms
+   *   primer detectChanges (la seccion)     21 ms
+   *   openAdd()                              0 ms
+   *   detectChanges que pinta el modal     272 ms   <<< aqui
+   *   detectChanges otra vez                 0 ms
+   *
+   * Compilar cuesta 2 ms. Lo caro es el primer pintado del `PeriodModalComponent`, que
+   * arrastra el DialogModule de PrimeNG, y solo la MITAD de eso es de una sola vez: un
+   * segundo fixture pinta el mismo modal en 131 ms. La otra mitad la paga cada fixture y
+   * no se puede mover a ningun sitio.
+   *
+   * Y este fichero no tiene nada de particular: es uno de NUEVE que hacen lo mismo —los
+   * siete componentes de seccion que comparten ese modal, mas alta y readmision—, todos
+   * entre 2.667 y 3.523 ms con la CPU saturada contra los 5.000 por defecto. Este lleva el
+   * margen porque fue el que se cayo, no porque sea el peor.
    *
    * Si vuelve a caerse con este margen, ya no es la carga y hay que mirarlo.
    */
