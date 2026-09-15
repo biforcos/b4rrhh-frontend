@@ -61,6 +61,12 @@ jobs:
           # tumba el build si un .scss de componente no esta en el styleUrl de
           # su .ts. Una hoja asi es .scss valido, el componente compila y los
           # tests pasan; lo unico que no pasa es que llegue a la pantalla.
+          # lint:own-cards es el de las cajas propias (#21): tumba el build si
+          # una regla fuera de shared/ui vuelve a declarar el chrome de una
+          # tarjeta -fondo, esquina y sombra-. Lleva congeladas las once que la
+          # migracion del #13 aun no ha alcanzado, y esa lista solo puede
+          # encoger: si una se migra y nadie la borra de la lista, tambien
+          # tumba el build.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -89,6 +95,7 @@ jobs:
                    && npm run lint:icons \
                    && npm run lint:inline-styles \
                    && npm run lint:orphan-styles \
+                   && npm run lint:own-cards \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
