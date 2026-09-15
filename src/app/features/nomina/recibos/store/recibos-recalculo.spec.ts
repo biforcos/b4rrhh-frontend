@@ -48,6 +48,26 @@ describe('Recalcular un recibo en un gesto', () => {
         }),
     );
 
+  /**
+   * El otro `409`, que no se parece al de arriba: la unidad la está calculando otra ejecución de
+   * nómina ahora mismo (`b4rrhh/backend#101`). Llega con `code`, y el `message` viene en inglés y
+   * con la clave de negocio dentro — correcto para un cliente, impresentable en una pantalla.
+   */
+  const error409Cogida = () =>
+    throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 409,
+          error: {
+            code: 'UNIT_ALREADY_CLAIMED',
+            message:
+              'Payroll calculation unit is already claimed by another calculation run. Business' +
+              ' key ESP/INTERNAL/EMP000001/202609/NORMAL/2 is being calculated right now; try' +
+              ' again in a moment',
+          },
+        }),
+    );
+
   beforeEach(() => {
     llamadas = [];
     invalidateDevuelve = () => of(recibo('NOT_VALID'));
@@ -150,6 +170,49 @@ describe('Recalcular un recibo en un gesto', () => {
       store.recalculateFrom(KEY, 'CALCULATED');
 
       expect(store.transitioning()).toBe(false);
+    });
+  });
+
+  describe('cuando otra ejecución tiene cogida la unidad', () => {
+    /**
+     * El paso 7 del camino es tocar una regla y recalcular, y la nómina de la plantilla se lanza
+     * en la misma demo. Que coincidan es cosa de tiempo, y lo que el visitante tiene que leer no
+     * es un fallo: es un «ahora no». La diferencia la marca el `code`, no el texto.
+     */
+    it('dice que se está calculando y que se reintente, no que haya fallado nada', () => {
+      recalculateDevuelve = error409Cogida;
+
+      store.recalculateFrom(KEY, 'NOT_VALID');
+
+      const error = store.transitionError() ?? '';
+      expect(error).toContain('calculando ahora mismo');
+      expect(error).toContain('Recalcular');
+      expect(error).not.toContain('falló');
+    });
+
+    /** Y nunca el inglés del backend, que lleva la clave de negocio dentro. */
+    it('no enseña el mensaje del backend', () => {
+      recalculateDevuelve = error409Cogida;
+
+      store.recalculateFrom(KEY, 'NOT_VALID');
+
+      expect(store.transitionError()).not.toContain('Payroll calculation unit');
+    });
+
+    /**
+     * Y si veníamos de CALCULATED, el recibo **sí** se ha quedado inválido —lo invalidamos
+     * nosotros— pero no porque el cálculo fallara. Decir «el cálculo falló» aquí manda a alguien a
+     * mirar una reglamentación que está perfecta.
+     */
+    it('viniendo de CALCULADA, dice que quedó inválido sin acusar al cálculo', () => {
+      recalculateDevuelve = error409Cogida;
+
+      store.recalculateFrom(KEY, 'CALCULATED');
+
+      const error = store.transitionError() ?? '';
+      expect(error).toContain('INVÁLIDO');
+      expect(error).toContain('se lo llevó antes');
+      expect(error).not.toContain('el cálculo falló');
     });
   });
 

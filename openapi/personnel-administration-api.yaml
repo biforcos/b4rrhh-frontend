@@ -4895,7 +4895,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/PayrollErrorResponse"
         "409":
-          description: Payroll is not in NOT_VALID status
+          description: >-
+            The recalculation cannot start. Either the payroll is not in NOT_VALID status, in
+            which case the body carries only message, or the calculation unit is claimed by
+            another calculation run right now, in which case code is UNIT_ALREADY_CLAIMED and
+            details carry the business key. The two are not the same to a caller: the first will
+            not change by waiting, the second is the losing side of first-come-first-served and
+            is worth retrying in a moment. Recalculation takes the same calculation_claim
+            reservation the bulk launch takes and never queues behind it.
           content:
             application/json:
               schema:

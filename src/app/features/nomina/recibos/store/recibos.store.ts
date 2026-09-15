@@ -17,6 +17,17 @@ import { arePayrollBusinessKeysEqual } from '../routing/payroll-route-key.util';
 
 export type RecibosErrorCode = 'request-failed' | 'not-found' | 'transition-failed';
 
+/**
+ * El código con el que el backend dice que esa unidad la está calculando otro ahora mismo
+ * (`b4rrhh/backend#101`). Es el mismo que la ejecución masiva escribe en el mensaje de la unidad,
+ * así que las dos puertas nombran el suceso igual.
+ */
+const UNIDAD_COGIDA = 'UNIT_ALREADY_CLAIMED';
+
+function esUnidadCogida(err: HttpErrorResponse): boolean {
+  return err.status === 409 && err.error?.code === UNIDAD_COGIDA;
+}
+
 @Injectable({ providedIn: 'root' })
 export class RecibosStore {
   private readonly gateway = inject(RecibosGateway);
@@ -308,12 +319,7 @@ export class RecibosStore {
         },
         error: (err: HttpErrorResponse) => {
           this.transitioningState.set(false);
-          this.transitionErrorState.set(
-            invalidatedHere
-              ? 'El recibo se ha quedado INVÁLIDO: se invalidó para recalcularlo y el cálculo ' +
-                  `falló. ${this.mapTransitionError(err)} Puedes volver a intentarlo con «Recalcular».`
-              : this.mapTransitionError(err),
-          );
+          this.transitionErrorState.set(this.mapRecalculationError(err, invalidatedHere));
           // Y se recarga, para que la pantalla enseñe el estado de verdad y no el de antes.
           this.loadConcepts(key);
         },
@@ -377,6 +383,31 @@ export class RecibosStore {
     if (arePayrollBusinessKeysEqual(this.selectedKeyState(), updated)) {
       this.selectedPayrollState.set(updated);
     }
+  }
+
+  /**
+   * Por qué no se pudo recalcular, en palabras.
+   *
+   * Hay dos motivos y no se parecen en nada, aunque los dos lleguen con un `409`. Que el recibo no
+   * esté inválido no cambia por esperar; que la unidad la esté calculando otro **sí** —se suelta en
+   * cuanto termina—, así que la frase tiene que invitar a reintentar en vez de mandar a nadie a
+   * mirar la reglamentación (`b4rrhh/backend#101`).
+   *
+   * Lo que distingue los dos es el `code` del cuerpo, no el texto: el `message` del backend viene en
+   * inglés y con la clave de negocio dentro, que es correcto para un cliente y no para una pantalla.
+   */
+  private mapRecalculationError(err: HttpErrorResponse, invalidatedHere: boolean): string {
+    if (esUnidadCogida(err))
+      return invalidatedHere
+        ? 'El recibo se ha quedado INVÁLIDO: se invalidó para recalcularlo y otra ejecución de ' +
+            'nómina se lo llevó antes. Espera un momento y vuelve a intentarlo con «Recalcular».'
+        : 'Ese recibo lo está calculando ahora mismo otra ejecución de nómina. Espera un momento ' +
+            'y vuelve a intentarlo con «Recalcular».';
+
+    return invalidatedHere
+      ? 'El recibo se ha quedado INVÁLIDO: se invalidó para recalcularlo y el cálculo ' +
+          `falló. ${this.mapTransitionError(err)} Puedes volver a intentarlo con «Recalcular».`
+      : this.mapTransitionError(err);
   }
 
   private mapTransitionError(err: HttpErrorResponse): string {
