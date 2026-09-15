@@ -24,6 +24,9 @@ RUN npm run build
 FROM nginx:alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Las tres cabeceras de seguridad, en su propio fichero porque el nginx.conf las
+# incluye cuatro veces: una por cada bloque con `add_header` propio (frontend#67).
+COPY nginx-security-headers.conf /etc/nginx/b4rrhh-security-headers.conf
 # El builder @angular/build:application deja el resultado en browser/.
 COPY --from=build /app/dist/b4rrhh-frontend/browser /usr/share/nginx/html
 

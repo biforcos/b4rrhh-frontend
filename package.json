@@ -13,6 +13,7 @@
     "lint:icons": "node ./tools/lint-icons.mjs",
     "lint:inline-styles": "node ./tools/lint-inline-styles.mjs",
     "lint:orphan-styles": "node ./tools/lint-orphan-styles.mjs",
+    "lint:nginx": "node ./tools/lint-nginx-headers.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",
