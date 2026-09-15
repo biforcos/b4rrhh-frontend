@@ -123,6 +123,28 @@ describe('EmployeeCostCenterSectionComponent', () => {
    * margen porque fue el que se cayo, no porque sea el peor.
    *
    * Si vuelve a caerse con este margen, ya no es la carga y hay que mirarlo.
+   *
+   * ── Se intento quitarlo y NO se pudo (15/09, tarde) ────────────────────────
+   *
+   * La sospecha era que el margen no protegia nada, porque se puso sobre una de
+   * las nueve y no sobre la peor. Medido con la suite entera y ocho quemadores
+   * de CPU, tres pasadas por brazo:
+   *
+   *   sin margen (5.000 por defecto)   este fichero cayo 3 de 3
+   *   con margen (15.000)              este fichero cayo 0 de 3
+   *
+   * Y no es que la maquina fuera mas suave en el segundo brazo: en dos de esas
+   * tres pasadas cayeron 5 y 6 ficheros OTROS, o sea que la carga seguia ahi.
+   * Esa es la comparacion que vale —si cae ESTE fichero mientras caen otros en
+   * los dos brazos— porque no depende de cuanto tardase la pasada entera.
+   *
+   * Asi que el margen se queda, y ahora con la medida al lado en vez de con la
+   * anecdota de que «fue el que se cayo».
+   *
+   * Lo que la medida NO dice: que la suite aguante. Con esa carga caen entre 5
+   * y 10 ficheros de los 111 en los dos brazos, y son la cohorte de las nueve.
+   * Este margen salva a su spec, no a la suite. Poner otros ocho margenes seria
+   * justo lo que el frontend#57 prohibe: subir el limite y cerrar.
    */
   it('names the window by the day it starts when planning an add', () => {
     const c = fix.componentInstance as any;
