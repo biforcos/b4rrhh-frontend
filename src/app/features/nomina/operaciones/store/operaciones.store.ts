@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
+import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { TargetSelectionMode, buildTargetSelectionPayload } from '../models/target-selection.model';
 
@@ -55,6 +56,19 @@ export class OperacionesStore {
   private readonly invalidateResultState = signal<BulkInvalidateResult | null>(null);
   private readonly invalidateErrorState = signal<string | null>(null);
 
+  private readonly finalizingState = signal<boolean>(false);
+  private readonly finalizeResultState = signal<BulkFinalizeResult | null>(null);
+  private readonly finalizeErrorState = signal<string | null>(null);
+  /**
+   * Si el cierre está a la espera de que alguien lo confirme.
+   *
+   * Los otros dos verbos no lo piden y éste sí, porque no se deshace: invalidar una tanda se
+   * arregla recalculándola, y un cierre no se abre —lo que venga después es otro recibo
+   * (`b4rrhh/backend#102`)—. No es un diálogo del navegador: el botón cambia de sitio y de texto,
+   * que es lo que impide cerrar el mes con el clic que iba a otra cosa.
+   */
+  private readonly finalizeArmedState = signal<boolean>(false);
+
   private readonly engineCodeState = signal<string>('GRAPH');
   private readonly engineVersionState = signal<string>('1.0');
   private readonly launchingState = signal<boolean>(false);
@@ -76,6 +90,10 @@ export class OperacionesStore {
   readonly invalidating = this.invalidatingState.asReadonly();
   readonly invalidateResult = this.invalidateResultState.asReadonly();
   readonly invalidateError = this.invalidateErrorState.asReadonly();
+  readonly finalizing = this.finalizingState.asReadonly();
+  readonly finalizeResult = this.finalizeResultState.asReadonly();
+  readonly finalizeError = this.finalizeErrorState.asReadonly();
+  readonly finalizeArmed = this.finalizeArmedState.asReadonly();
   readonly engineCode = this.engineCodeState.asReadonly();
   readonly engineVersion = this.engineVersionState.asReadonly();
   readonly launching = this.launchingState.asReadonly();
@@ -86,6 +104,15 @@ export class OperacionesStore {
     () =>
       !this.invalidatingState() &&
       !this.launchingState() &&
+      !this.finalizingState() &&
+      this.ruleSystemCodeState().trim().length > 0 &&
+      this.payrollTypeCodeState().trim().length > 0,
+  );
+  readonly canFinalize = computed(
+    () =>
+      !this.invalidatingState() &&
+      !this.launchingState() &&
+      !this.finalizingState() &&
       this.ruleSystemCodeState().trim().length > 0 &&
       this.payrollTypeCodeState().trim().length > 0,
   );
@@ -93,6 +120,7 @@ export class OperacionesStore {
     () =>
       !this.invalidatingState() &&
       !this.launchingState() &&
+      !this.finalizingState() &&
       this.ruleSystemCodeState().trim().length > 0 &&
       this.payrollTypeCodeState().trim().length > 0 &&
       this.engineCodeState().trim().length > 0 &&
@@ -101,21 +129,27 @@ export class OperacionesStore {
 
   setRuleSystemCode(v: string): void {
     this.ruleSystemCodeState.set(v);
+    this.disarmFinalize();
   }
   setPayrollTypeCode(v: 'NORMAL' | 'EXTRA'): void {
     this.payrollTypeCodeState.set(v);
+    this.disarmFinalize();
   }
   setTargetMode(v: TargetSelectionMode): void {
     this.targetModeState.set(v);
+    this.disarmFinalize();
   }
   setEmployeeListText(v: string): void {
     this.employeeListTextState.set(v);
+    this.disarmFinalize();
   }
   setSingleEmployeeType(v: string): void {
     this.singleEmployeeTypeState.set(v);
+    this.disarmFinalize();
   }
   setSingleEmployeeNumber(v: string): void {
     this.singleEmployeeNumberState.set(v);
+    this.disarmFinalize();
   }
   setStatusReasonCode(v: string): void {
     this.statusReasonCodeState.set(v);
@@ -128,9 +162,11 @@ export class OperacionesStore {
   }
   prevPeriod(): void {
     this.periodState.update((p) => movePeriod(p, -1));
+    this.disarmFinalize();
   }
   nextPeriod(): void {
     this.periodState.update((p) => movePeriod(p, 1));
+    this.disarmFinalize();
   }
 
   invalidate(): void {
@@ -159,6 +195,56 @@ export class OperacionesStore {
         error: () => {
           this.invalidatingState.set(false);
           this.invalidateErrorState.set('request-failed');
+        },
+      });
+  }
+
+  /**
+   * El tercer verbo del periodo: cerrar en masa (`b4rrhh/backend#102`).
+   *
+   * No cierra un periodo —no hay ninguna entidad periodo que cerrar—: aplica a muchos recibos el
+   * mismo verbo que la pantalla del recibo aplica a uno. Por eso usa el mismo selector de objetivo
+   * que los otros dos y no tiene ningún campo propio.
+   *
+   * Dos clics, y el primero no cierra nada: es irreversible y es el único de los tres que lo es.
+   */
+  armFinalize(): void {
+    if (!this.canFinalize()) return;
+    this.finalizeResultState.set(null);
+    this.finalizeErrorState.set(null);
+    this.finalizeArmedState.set(true);
+  }
+
+  disarmFinalize(): void {
+    this.finalizeArmedState.set(false);
+  }
+
+  finalize(): void {
+    if (!this.canFinalize() || !this.finalizeArmedState()) return;
+    this.finalizeArmedState.set(false);
+    this.finalizingState.set(true);
+    this.finalizeResultState.set(null);
+    this.finalizeErrorState.set(null);
+    this.gateway
+      .bulkFinalize({
+        ruleSystemCode: this.ruleSystemCodeState(),
+        payrollPeriodCode: String(this.periodState()),
+        payrollTypeCode: this.payrollTypeCodeState(),
+        targetSelection: buildTargetSelectionPayload(
+          this.targetModeState(),
+          this.employeeListTextState(),
+          this.singleEmployeeTypeState(),
+          this.singleEmployeeNumberState(),
+        ),
+      })
+      .subscribe({
+        next: (result) => {
+          this.finalizingState.set(false);
+          this.finalizeResultState.set(result);
+        },
+        error: () => {
+          this.finalizingState.set(false);
+          this.finalizeErrorState.set('request-failed');
         },
       });
   }

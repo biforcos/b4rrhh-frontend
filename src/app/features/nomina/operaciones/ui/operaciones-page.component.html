@@ -201,5 +201,79 @@
         <p class="ops-page__error">No se pudo lanzar el cálculo. Reintenta.</p>
       }
     </div>
+
+    <!-- Panel cerrar -->
+    <div class="ops-page__panel ops-page__panel--finalize">
+      <h2 class="ops-page__panel-title ops-page__panel-title--finalize">Cerrar el período</h2>
+
+      <p class="ops-page__status-text">
+        Cerrar dice que estas nóminas ya no se tocan, y no se deshace: lo que venga después es otro
+        recibo. Los recibos inválidos no se cierran y se cuentan aparte.
+      </p>
+
+      @if (!store.finalizeArmed()) {
+        <app-ui-button
+          label="Cerrar"
+          severity="contrast"
+          [disabled]="!store.canFinalize()"
+          (pressed)="store.armFinalize()"
+        />
+      } @else {
+        <div class="ops-page__confirm">
+          <p class="ops-page__confirm-text">
+            Se van a cerrar los recibos de {{ store.periodLabel() }} y no se podrán reabrir.
+          </p>
+          <div class="ops-page__confirm-actions">
+            <app-ui-button
+              label="Sí, cerrar el período"
+              severity="contrast"
+              [disabled]="!store.canFinalize()"
+              (pressed)="store.finalize()"
+            />
+            <app-ui-button
+              label="Cancelar"
+              severity="secondary"
+              [text]="true"
+              (pressed)="store.disarmFinalize()"
+            />
+          </div>
+        </div>
+      }
+
+      @if (store.finalizing()) {
+        <p class="ops-page__status-text">Procesando…</p>
+      }
+
+      @if (store.finalizeError()) {
+        <p class="ops-page__error">No se pudo procesar el cierre. Reintenta.</p>
+      }
+
+      @if (store.finalizeResult(); as result) {
+        <div class="ops-page__result-grid">
+          <div class="ops-page__counter">
+            <span class="ops-page__counter-value">{{ result.totalCandidates }}</span>
+            <span class="ops-page__counter-label">Candidatos</span>
+          </div>
+          <div class="ops-page__counter ops-page__counter--success">
+            <span class="ops-page__counter-value">{{ result.totalFinalized }}</span>
+            <span class="ops-page__counter-label">Cerradas</span>
+          </div>
+          <div class="ops-page__counter ops-page__counter--warn">
+            <span class="ops-page__counter-value">{{ result.totalSkippedAlreadyDefinitive }}</span>
+            <span class="ops-page__counter-label">Ya cerradas</span>
+          </div>
+          <div class="ops-page__counter ops-page__counter--warn">
+            <span class="ops-page__counter-value">{{
+              result.totalSkippedNotEligibleByStatus
+            }}</span>
+            <span class="ops-page__counter-label">No aptas por su estado</span>
+          </div>
+          <div class="ops-page__counter ops-page__counter--error">
+            <span class="ops-page__counter-value">{{ result.totalSkippedNotFound }}</span>
+            <span class="ops-page__counter-label">No encontradas</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </section>

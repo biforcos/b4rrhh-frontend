@@ -4952,6 +4952,43 @@ paths:
         "404":
           description: Rule system or payroll type not found
 
+  /payrolls/finalize-bulk:
+    post:
+      summary: Bulk close workflow for payroll results
+      operationId: bulkFinalizePayroll
+      description: >-
+        Synchronous bulk close workflow, the third period verb next to the bulk invalidation and
+        the calculation launch. It does NOT close a period: there is no period entity to close.
+        Closing is applying to many payrolls the same verb POST /payrolls/.../finalize applies to
+        one, so it resolves a target employee population, expands to presence-based candidate
+        units, and transitions to DEFINITIVE every payroll that is CALCULATED or
+        EXPLICIT_VALIDATED. NOT_VALID payrolls are counted apart in totalSkippedNotEligibleByStatus
+        and are not errors: NOT_VALID to DEFINITIVE does not exist, because there is nothing to
+        protect in an invalid payroll. Closing is irreversible and nothing reopens it; what comes
+        afterwards is another payroll. Closing does not forbid calculating in the period either: a
+        later hire produces a payroll that was never closed. targetSelection semantics mirror those
+        of the payroll launch endpoint. totalCandidates represents expanded presence-based units,
+        not the raw number of target employees.
+      tags:
+        - Payroll
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkFinalizePayrollRequest"
+      responses:
+        "200":
+          description: Bulk close completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkFinalizePayrollResponse"
+        "400":
+          description: Invalid request parameters
+        "404":
+          description: Rule system or payroll type not found
+
   /payroll/calculation-runs/launch:
     post:
       summary: Accept a payroll calculation run and return its identity without waiting
@@ -6853,6 +6890,95 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    BulkFinalizePayrollRequest:
+      type: object
+      description: >-
+        Request for the bulk close workflow. targetSelection semantics mirror those of the payroll
+        launch endpoint. For ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD, both employee and employees
+        must be null. There is no statusReasonCode: closing does not give a reason, it keeps the
+        one the payroll already had. Invalidation does ask for one, because invalidating is a
+        decision about something that was fine.
+      required:
+        - ruleSystemCode
+        - payrollPeriodCode
+        - payrollTypeCode
+        - targetSelection
+      properties:
+        ruleSystemCode:
+          type: string
+        payrollPeriodCode:
+          description: >-
+            Must be in YYYYMM format. Used to resolve presence overlaps for the payroll month.
+          type: string
+        payrollTypeCode:
+          type: string
+          enum: [NORMAL, EXTRA]
+        targetSelection:
+          $ref: "#/components/schemas/PayrollLaunchTargetSelectionRequest"
+
+    BulkFinalizePayrollResponse:
+      type: object
+      description: >-
+        Summary of a completed bulk close workflow. The counters are the deliverable, not
+        decoration: NOT_VALID to DEFINITIVE does not exist, so closing 873 payrolls will close the
+        calculated and validated ones and leave the rest out, and a counter that says which and why
+        shows the state machine instead of explaining it. That is why nothing is lumped into a
+        generic "failed": nothing failed. The partition is totalCandidates = totalFinalized +
+        totalSkippedAlreadyDefinitive + totalSkippedNotEligibleByStatus + totalSkippedNotFound;
+        totalFound is a stage, not a bucket, and adding it to the rest counts twice.
+      required:
+        - ruleSystemCode
+        - payrollPeriodCode
+        - payrollTypeCode
+        - totalCandidates
+        - totalFound
+        - totalFinalized
+        - totalSkippedAlreadyDefinitive
+        - totalSkippedNotEligibleByStatus
+        - totalSkippedNotFound
+      properties:
+        ruleSystemCode:
+          type: string
+        payrollPeriodCode:
+          type: string
+        payrollTypeCode:
+          type: string
+          enum: [NORMAL, EXTRA]
+        totalCandidates:
+          description: >-
+            Total presence-based candidate units expanded from the target population.
+          type: integer
+          format: int32
+        totalFound:
+          description: >-
+            Payroll rows found in persistence for the candidate units.
+          type: integer
+          format: int32
+        totalFinalized:
+          description: >-
+            Payrolls transitioned to DEFINITIVE here, from CALCULATED or from EXPLICIT_VALIDATED.
+          type: integer
+          format: int32
+        totalSkippedAlreadyDefinitive:
+          description: >-
+            Payrolls already DEFINITIVE, skipped without error. Expected when a period is closed
+            again.
+          type: integer
+          format: int32
+        totalSkippedNotEligibleByStatus:
+          description: >-
+            Payrolls whose status does not admit closing, which today is exactly NOT_VALID. This is
+            the counter that shows the state machine, and it is deliberately separate from
+            everything else.
+          type: integer
+          format: int32
+        totalSkippedNotFound:
+          description: >-
+            Candidate units with no payroll row: never calculated, or calculated for another
+            payroll type.
+          type: integer
+          format: int32
 
     BulkInvalidatePayrollRequest:
       type: object

@@ -4,6 +4,10 @@ import { Observable, map } from 'rxjs';
 import { PayrollCalculationRunService } from '../../../../core/api/generated/api/payroll-calculation-run.service';
 import { PayrollService } from '../../../../core/api/generated/api/payroll.service';
 import {
+  BulkFinalizePayrollRequest,
+  BulkFinalizePayrollRequestPayrollTypeCodeEnum,
+} from '../../../../core/api/generated/model/bulk-finalize-payroll-request';
+import {
   BulkInvalidatePayrollRequest,
   BulkInvalidatePayrollRequestPayrollTypeCodeEnum,
 } from '../../../../core/api/generated/model/bulk-invalidate-payroll-request';
@@ -11,6 +15,7 @@ import {
   LaunchPayrollCalculationRequest,
   LaunchPayrollCalculationRequestPayrollTypeCodeEnum,
 } from '../../../../core/api/generated/model/launch-payroll-calculation-request';
+import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { CalculationRunMessage } from '../models/calculation-run-message.model';
 import { CalculationRun } from '../models/calculation-run.model';
@@ -68,6 +73,33 @@ export class OperacionesGateway {
         totalInvalidated: r.totalInvalidated ?? 0,
         totalSkippedAlreadyNotValid: r.totalSkippedAlreadyNotValid ?? 0,
         totalSkippedProtected: r.totalSkippedProtected ?? 0,
+        totalSkippedNotFound: r.totalSkippedNotFound ?? 0,
+      })),
+    );
+  }
+
+  /**
+   * El tercer verbo del periodo (`b4rrhh/backend#102`). No lleva `statusReasonCode` y la ausencia es
+   * del contrato: cerrar no da un motivo, conserva el que el recibo tuviera. Invalidar sí lo pide,
+   * porque invalidar es una decisión sobre algo que estaba bien.
+   */
+  bulkFinalize(params: {
+    ruleSystemCode: string;
+    payrollPeriodCode: string;
+    payrollTypeCode: PayrollTypeCode;
+    targetSelection: TargetSelectionPayload;
+  }): Observable<BulkFinalizeResult> {
+    const request = {
+      ...params,
+      payrollTypeCode: params.payrollTypeCode as BulkFinalizePayrollRequestPayrollTypeCodeEnum,
+    } as BulkFinalizePayrollRequest;
+    return this.payrollApi.bulkFinalizePayroll({ bulkFinalizePayrollRequest: request }).pipe(
+      map((r) => ({
+        totalCandidates: r.totalCandidates ?? 0,
+        totalFound: r.totalFound ?? 0,
+        totalFinalized: r.totalFinalized ?? 0,
+        totalSkippedAlreadyDefinitive: r.totalSkippedAlreadyDefinitive ?? 0,
+        totalSkippedNotEligibleByStatus: r.totalSkippedNotEligibleByStatus ?? 0,
         totalSkippedNotFound: r.totalSkippedNotFound ?? 0,
       })),
     );
