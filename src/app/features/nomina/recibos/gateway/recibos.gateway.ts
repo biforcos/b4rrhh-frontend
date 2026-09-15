@@ -121,6 +121,10 @@ export class RecibosGateway {
     return this.client.validate(key).pipe(map(payrollResponseToSummary));
   }
 
+  finalize(key: PayrollBusinessKey): Observable<PayrollSummaryModel> {
+    return this.client.finalize(key).pipe(map(payrollResponseToSummary));
+  }
+
   recalculate(key: PayrollBusinessKey): Observable<PayrollSummaryModel> {
     return this.client.recalculate(key).pipe(map(payrollResponseToSummary));
   }

@@ -66,6 +66,24 @@ export class RecibosClient {
     });
   }
 
+  /**
+   * Cerrar el recibo: el acto humano del ADR-059, y el único que no se deshace.
+   *
+   * La operación estaba servida desde marzo y no la llamaba nadie (`backend#90`). El motor decía
+   * si un recibo era válido y las personas no podían decir que estuviera cerrado, que es la mitad
+   * que da nombre al ADR.
+   */
+  finalize(key: PayrollBusinessKey): Observable<PayrollResponse> {
+    return this.api.finalizePayroll({
+      ruleSystemCode: key.ruleSystemCode,
+      employeeTypeCode: key.employeeTypeCode,
+      employeeNumber: key.employeeNumber,
+      payrollPeriodCode: key.payrollPeriodCode,
+      payrollTypeCode: key.payrollTypeCode,
+      presenceNumber: key.presenceNumber,
+    });
+  }
+
   recalculate(key: PayrollBusinessKey): Observable<PayrollResponse> {
     return this.api.recalculatePayroll({
       ruleSystemCode: key.ruleSystemCode,

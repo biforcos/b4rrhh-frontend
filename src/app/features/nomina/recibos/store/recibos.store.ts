@@ -241,6 +241,32 @@ export class RecibosStore {
    * este paso, así que el error de ese caso no es el genérico: nombra lo que ha pasado y dice que
    * se puede reintentar.
    */
+  /**
+   * Cerrar el recibo. Es el único de los cuatro que no tiene vuelta: un `DEFINITIVE` no se
+   * invalida y no se recalcula, y eso es lo que hace segura la sustitución sin histórico del
+   * ADR-059. Por eso se pide confirmación y por eso se cierra de uno en uno: un cierre en masa es
+   * una decisión grande detrás de un clic, y no la pidió nadie (`b4rrhh/backend#90`).
+   */
+  finalize(key: PayrollBusinessKey): void {
+    if (this.transitioningState()) return;
+    this.transitioningState.set(true);
+    this.transitionErrorState.set(null);
+
+    this.gateway
+      .finalize(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (updated) => {
+          this.updatePayrollInList(updated);
+          this.transitioningState.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.transitioningState.set(false);
+          this.transitionErrorState.set(this.mapTransitionError(err));
+        },
+      });
+  }
+
   recalculateFrom(key: PayrollBusinessKey, status: PayrollSummaryModel['status']): void {
     if (this.transitioningState()) return;
     this.transitioningState.set(true);

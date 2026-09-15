@@ -92,6 +92,27 @@ const STATUS_LABELS: Record<string, string> = {
               Validar
             </button>
           }
+          <!--
+            «Cerrar» es la mitad humana del ADR-059 —«el motor decide si un recibo es válido; las
+            personas deciden si está cerrado»— y no se alcanzaba desde ninguna pantalla: la
+            operación estaba servida desde marzo sin un solo llamante (b4rrhh/backend#90).
+
+            Se ofrece desde CALCULADA y desde VALIDADA, que es lo que el dominio admite, y de uno
+            en uno. No hay cierre en masa: invalidar se deshace y cerrar no, así que la simetría
+            con «Invalidar en masa» sería un mal motivo para 873 cierres detrás de un clic.
+
+            Y pide confirmación, que es lo que ninguna de las otras tres hace, porque ninguna de
+            las otras tres es irreversible.
+          -->
+          @if (payroll.status === 'CALCULATED' || payroll.status === 'EXPLICIT_VALIDATED') {
+            <button
+              class="btn btn-cerrar"
+              [disabled]="store.transitioning()"
+              (click)="askToFinalize()"
+            >
+              Cerrar
+            </button>
+          }
           @if (!store.conceptsLoading()) {
             <button class="btn btn-valorizacion" (click)="drawerOpen.set(true)">
               ⊞ Valorización
@@ -99,6 +120,34 @@ const STATUS_LABELS: Record<string, string> = {
           }
         </div>
       </div>
+
+      @if (finalizeAsked()) {
+        <div class="confirm-close" role="alertdialog" aria-labelledby="confirm-close-title">
+          <p id="confirm-close-title" class="confirm-close-title">
+            Cerrar el recibo de {{ payroll.employeeNumber }}
+          </p>
+          <p class="confirm-close-body">
+            Un recibo cerrado no se puede invalidar ni recalcular. Es lo que hace que cerrarlo
+            signifique algo, y es lo que no tiene vuelta.
+          </p>
+          <div class="confirm-close-buttons">
+            <button
+              class="btn btn-cerrar"
+              [disabled]="store.transitioning()"
+              (click)="confirmFinalize()"
+            >
+              {{ store.transitioning() ? 'Cerrando…' : 'Sí, cerrar' }}
+            </button>
+            <button
+              class="btn"
+              [disabled]="store.transitioning()"
+              (click)="finalizeAsked.set(false)"
+            >
+              No cerrar
+            </button>
+          </div>
+        </div>
+      }
 
       @if (store.transitionError(); as error) {
         <div
@@ -243,6 +292,9 @@ export class RecibosDetailComponent {
    * lo que distingue a este caso es que **lo provocamos nosotros** al invalidar para recalcular, y
    * merece verse más que un error de trámite.
    */
+  /** Si se está preguntando por el cierre. Un `confirm()` del navegador no se puede probar. */
+  protected readonly finalizeAsked = signal(false);
+
   quedoInvalido(error: string): boolean {
     return error.includes('INVÁLIDO');
   }
@@ -261,6 +313,16 @@ export class RecibosDetailComponent {
     const key = this.store.selectedKey();
     const payroll = this.store.selectedPayroll();
     if (key && payroll) this.store.recalculateFrom(key, payroll.status);
+  }
+
+  askToFinalize(): void {
+    this.finalizeAsked.set(true);
+  }
+
+  confirmFinalize(): void {
+    const key = this.store.selectedKey();
+    this.finalizeAsked.set(false);
+    if (key) this.store.finalize(key);
   }
 
   /**

@@ -4842,50 +4842,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PayrollErrorResponse'
 
-  /payrolls/calculate:
-    post:
-      tags:
-        - Payroll
-      operationId: calculatePayroll
-      summary: Temporary stub endpoint to materialize a payroll result
-      description: >-
-        Temporary pipeline-validation stub endpoint. This endpoint is not the final payroll
-        engine API and is only used to materialize payroll results during the pre-launch
-        phase. Clients currently provide concepts and context snapshots explicitly so the
-        payroll vertical can be exercised end-to-end before launch orchestration, fake
-        calculator generation, and the real calculation engine are introduced.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CalculatePayrollRequest'
-      responses:
-        '201':
-          description: Payroll calculated and created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollResponse'
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollErrorResponse'
-        '404':
-          description: Employee presence not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollErrorResponse'
-        '409':
-          description: Payroll recalculation is not allowed for the current status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollErrorResponse'
-
   /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/recalculate:
     post:
       summary: Recalculate a payroll (only allowed from NOT_VALID)
@@ -10617,146 +10573,6 @@ components:
         endDate:
           type: string
           format: date
-    CalculatePayrollRequest:
-      type: object
-      description: >-
-        Temporary stub request used to materialize a payroll result during the pre-launch
-        phase. This schema is intentionally transitional and will be replaced when the real
-        payroll engine input contract is defined.
-      required:
-        - ruleSystemCode
-        - employeeTypeCode
-        - employeeNumber
-        - payrollPeriodCode
-        - payrollTypeCode
-        - presenceNumber
-        - status
-        - calculatedAt
-        - calculationEngineCode
-        - calculationEngineVersion
-        - concepts
-        - contextSnapshots
-      properties:
-        ruleSystemCode:
-          type: string
-          maxLength: 5
-        employeeTypeCode:
-          type: string
-          maxLength: 30
-        employeeNumber:
-          type: string
-          maxLength: 15
-        payrollPeriodCode:
-          type: string
-          maxLength: 30
-        payrollTypeCode:
-          type: string
-          enum: [NORMAL, EXTRA]
-          maxLength: 30
-        presenceNumber:
-          type: integer
-          format: int32
-          minimum: 1
-        status:
-          allOf:
-            - $ref: '#/components/schemas/PayrollStatus'
-          description: >-
-            Initial implementation only accepts CALCULATED or NOT_VALID for calculation
-            output.
-        statusReasonCode:
-          type: string
-          maxLength: 50
-          nullable: true
-        calculatedAt:
-          type: string
-          format: date-time
-        calculationEngineCode:
-          type: string
-          maxLength: 50
-        calculationEngineVersion:
-          type: string
-          maxLength: 50
-        concepts:
-          type: array
-          description: >-
-            Temporary stub-provided payroll concepts. In the final calculation flow these
-            lines are expected to be produced by the payroll engine rather than sent as a
-            stable public API payload.
-          items:
-            $ref: '#/components/schemas/PayrollConceptRequest'
-        contextSnapshots:
-          type: array
-          description: >-
-            Temporary stub-provided context snapshots used to persist supporting payroll
-            context during pipeline validation. This is not the final public engine input
-            shape.
-          items:
-            $ref: '#/components/schemas/PayrollContextSnapshotRequest'
-
-    PayrollConceptRequest:
-      type: object
-      required:
-        - lineNumber
-        - conceptCode
-        - conceptLabel
-        - amount
-        - conceptNatureCode
-        - displayOrder
-      properties:
-        lineNumber:
-          type: integer
-          format: int32
-          minimum: 1
-        conceptCode:
-          type: string
-          maxLength: 30
-        conceptLabel:
-          type: string
-          maxLength: 200
-        amount:
-          type: number
-          format: double
-        quantity:
-          type: number
-          format: double
-          nullable: true
-        rate:
-          type: number
-          format: double
-          nullable: true
-        conceptNatureCode:
-          type: string
-          maxLength: 30
-        originPeriodCode:
-          type: string
-          maxLength: 30
-          nullable: true
-        displayOrder:
-          type: integer
-          format: int32
-          minimum: 1
-
-    PayrollContextSnapshotRequest:
-      type: object
-      required:
-        - snapshotTypeCode
-        - sourceVerticalCode
-        - sourceBusinessKeyJson
-        - snapshotPayloadJson
-      properties:
-        snapshotTypeCode:
-          type: string
-          maxLength: 30
-        sourceVerticalCode:
-          type: string
-          maxLength: 30
-        sourceBusinessKeyJson:
-          type: string
-          description: JSON serialized business key of the source context.
-        snapshotPayloadJson:
-          type: string
-          description: JSON serialized snapshot payload.
-
     PayrollStatus:
       type: string
       enum: [NOT_VALID, CALCULATED, EXPLICIT_VALIDATED, DEFINITIVE]
@@ -10798,9 +10614,11 @@ components:
           format: int64
           nullable: true
           description: >-
-            Calculation run that produced this payroll. Null means no registered
-            execution produced it, which is the case for the temporary calculate
-            stub and for the ad-hoc recalculation of a single payroll.
+            Calculation run that produced this payroll. Null means no registered execution
+            produced it. Nothing served today produces such a payroll: the ad-hoc recalculation
+            opens a run of its own since b4rrhh/backend#99, and the temporary calculate stub was
+            retired in b4rrhh/backend#90. It stays nullable for the rows written before those two,
+            and a client must still handle null.
         concepts:
           type: array
           items:
