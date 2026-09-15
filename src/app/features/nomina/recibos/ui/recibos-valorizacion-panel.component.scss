@@ -384,3 +384,37 @@
   width: 760px;
   max-width: 100vw;
 }
+
+/*
+ * El marco del grafo dentro del cajon.
+ *
+ * Se esconde con display:none y NO se desmonta: desmontarlo volveria a descargar el bundle del
+ * disenador cada vez que se cambia de pestana.
+ */
+.grafo-host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.grafo-hidden {
+  display: none;
+}
+
+/*
+ * El paso senalado por el enlace de vuelta desde el grafo.
+ *
+ * En el mes partido un nodo son DOS filas, y las dos se senalan.
+ */
+.step-row {
+  cursor: pointer;
+}
+
+.step-row:hover {
+  background: var(--surface-hover);
+}
+
+.step-highlighted {
+  background: var(--surface-accent);
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}

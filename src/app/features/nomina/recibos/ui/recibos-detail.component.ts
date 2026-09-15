@@ -93,6 +93,7 @@ const STATUS_LABELS: Record<string, string> = {
           [stepsError]="store.stepsError() !== null"
           [stepsLoaded]="store.stepsLoaded() !== null"
           [payrollKey]="payroll.employeeNumber + ' · Período ' + payroll.payrollPeriodCode"
+          [payrollAddress]="store.selectedKey()"
           (stepsRequested)="loadCalculationSteps()"
           (close)="drawerOpen.set(false)"
         />

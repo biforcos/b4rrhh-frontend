@@ -1,0 +1,80 @@
+/*
+ * El marco del grafo. Ocupa todo lo que le deja el cajon: un grafo de 35 nodos en una rendija
+ * no explica nada, y la pestana existe justo para que se vea de un vistazo.
+ */
+.grafo-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.grafo-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--surface-app);
+}
+
+/*
+ * El cartel de los estados del marco, ENCIMA del iframe y no en su lugar.
+ *
+ * Encima porque el iframe no se desmonta al taparlo: desmontarlo volveria a descargar el bundle
+ * del disenador en cada reintento, y con el la espera que este issue mide.
+ */
+.frame-notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  background: var(--surface-panel);
+}
+
+.notice-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notice-body {
+  margin: 0;
+  max-width: 420px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.notice-note {
+  margin: 0;
+  max-width: 420px;
+  color: var(--text-soft);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.frame-notice code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-primary);
+}
+
+.notice-retry {
+  margin-top: 6px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.notice-retry:hover {
+  background: var(--surface-hover);
+}
