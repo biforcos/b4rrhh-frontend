@@ -6302,6 +6302,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/AbsenceErrorResponse'
 
+  /payroll-engine/{ruleSystemCode}/binding-roles:
+    post:
+      operationId: createPayrollBindingRole
+      summary: Create a binding role - a table slot, which is not a table
+      description: >-
+        Creates a payroll object of type TABLE whose code the engine uses as a binding role: it
+        resolves it through payroll_object_binding to the table that actually holds the values.
+        It is a slot, and a slot is not a table (ADR-063).
+        This used to be POST /payroll-engine/{ruleSystemCode}/tables, sharing a path with the GET
+        that lists tables, and the two looked like the obvious pair without being one: what this
+        creates cannot appear in that GET until something else, elsewhere, binds a table with rows
+        to it. Sharing the path was what manufactured that illusion, and the contract is read by two
+        clients that do not read it twice (backend#98).
+        What it creates is a row of the object catalogue, which is why it now lives next to it and
+        not under tables. A freshly created binding role does nothing until a concept feeds from it
+        and an agreement-level binding ties it to a real table.
+      tags: [PayrollEngine]
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBindingRoleRequest"
+      responses:
+        "201":
+          description: Binding role created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BindingRoleResponse"
+        "409":
+          description: That binding role already exists in this rule system
+
   /payroll-engine/{ruleSystemCode}/tables:
     get:
       operationId: listPayrollTables
@@ -6338,32 +6377,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PayrollTableSummaryResponse"
-    post:
-      operationId: createPayrollTable
-      summary: Create a new salary table
-      tags: [PayrollEngine]
-      parameters:
-        - name: ruleSystemCode
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreatePayrollTableRequest"
-      responses:
-        "201":
-          description: Table created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PayrollTableResponse"
-        "409":
-          description: Table already exists
-
   /payroll-engine/{ruleSystemCode}/tables/{tableCode}/rows:
     get:
       operationId: listTableRows
@@ -11256,20 +11269,24 @@ components:
         details:
           type: object
 
-    CreatePayrollTableRequest:
+    CreateBindingRoleRequest:
       type: object
-      required: [objectCode]
+      required: [bindingRoleCode]
       properties:
-        objectCode:
+        bindingRoleCode:
           type: string
-          example: "SB_99002405012025"
+          description: >-
+            The role name the engine resolves through payroll_object_binding. It is not the code of
+            a table of amounts - the example of the old field said otherwise and that was the whole
+            confusion (backend#98).
+          example: "P03_DAILY_AMOUNT_TABLE"
 
-    PayrollTableResponse:
+    BindingRoleResponse:
       type: object
       properties:
         ruleSystemCode:
           type: string
-        objectCode:
+        bindingRoleCode:
           type: string
 
     PayrollTableSummaryResponse:
