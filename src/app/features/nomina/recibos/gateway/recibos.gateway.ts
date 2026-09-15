@@ -35,6 +35,20 @@ export interface PayrollDetailModel {
    * botones necesitan, así que no hace falta una segunda llamada ni haber buscado antes.
    */
   summary: PayrollSummaryModel;
+
+  /**
+   * La ejecución que produjo este recibo, o `null` si no la produjo ninguna registrada.
+   *
+   * Va aquí y **no en `PayrollSummaryModel`**, que es el modelo que comparten la lista y el
+   * detalle: la lista se sirve de `PayrollSummaryResponse`, que no trae `runId`. Meterlo en el
+   * modelo común obligaría al mapa de la lista a poner `null`, y entonces «no lo sé» y «no hay
+   * ninguna» serían el mismo valor — que es justo la diferencia que esta pantalla tiene que decir
+   * (`frontend#69`).
+   *
+   * Nulo es un caso real y no un hueco: el contrato lo dice para el cálculo provisional y para el
+   * recálculo suelto de un recibo, que es el que ofrece «Recalcular».
+   */
+  runId: number | null;
   concepts: ReadonlyArray<PayrollConceptModel>;
   companyProfile: PayrollCompanyProfileModel | null;
   employeeProfile: PayrollEmployeeProfileModel | null;
@@ -67,6 +81,7 @@ export class RecibosGateway {
     return this.client.getByBusinessKey(key).pipe(
       map((response) => ({
         summary: payrollResponseToSummary(response),
+        runId: response.runId ?? null,
         concepts: (response.concepts ?? [])
           .map(mapPayrollConceptResponseToModel)
           .sort((a, b) => a.displayOrder - b.displayOrder),

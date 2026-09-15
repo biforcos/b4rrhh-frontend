@@ -55,6 +55,15 @@ export class RecibosStore {
   private readonly seniorityDateState = signal<string | null>(null);
   private readonly workCenterCodeState = signal<string | null>(null);
   private readonly workCenterNameState = signal<string | null>(null);
+
+  /**
+   * La ejecución que produjo el recibo abierto, o `null` si no fue ninguna registrada.
+   *
+   * Es dato del detalle y no del resumen: la lista no lo trae. Y se pone a `null` al empezar cada
+   * carga como todos los demás, que es lo que impide que el recibo nuevo enseñe la ejecución del
+   * anterior mientras llega el suyo — pasa justo al recalcular, donde el `runId` desaparece.
+   */
+  private readonly runIdState = signal<number | null>(null);
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
 
@@ -93,6 +102,7 @@ export class RecibosStore {
   readonly seniorityDate = this.seniorityDateState.asReadonly();
   readonly workCenterCode = this.workCenterCodeState.asReadonly();
   readonly workCenterName = this.workCenterNameState.asReadonly();
+  readonly runId = this.runIdState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
   readonly conceptsError = this.conceptsErrorState.asReadonly();
   readonly steps = this.stepsState.asReadonly();
@@ -139,6 +149,7 @@ export class RecibosStore {
     this.selectedKeyState.set(null);
     this.selectedPayrollState.set(null);
     this.conceptsState.set([]);
+    this.runIdState.set(null);
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
     this.transitionErrorState.set(null);
@@ -252,6 +263,7 @@ export class RecibosStore {
     this.seniorityDateState.set(null);
     this.workCenterCodeState.set(null);
     this.workCenterNameState.set(null);
+    this.runIdState.set(null);
     this.conceptsErrorState.set(null);
     this.forgetCalculationSteps();
 
@@ -270,6 +282,7 @@ export class RecibosStore {
           this.seniorityDateState.set(detail.seniorityDate);
           this.workCenterCodeState.set(detail.workCenterCode);
           this.workCenterNameState.set(detail.workCenterName);
+          this.runIdState.set(detail.runId);
           this.conceptsLoadingState.set(false);
         },
         error: (err: HttpErrorResponse) => {

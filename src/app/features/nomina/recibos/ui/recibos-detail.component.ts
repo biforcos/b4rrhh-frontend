@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
 import { readPayrollBusinessKeyFromParamMap } from '../routing/payroll-route-key.util';
 import { RecibosFolioComponent } from './recibos-folio.component';
@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
   selector: 'app-recibos-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RecibosFolioComponent, RecibosValorizacionPanelComponent],
+  imports: [CommonModule, RouterLink, RecibosFolioComponent, RecibosValorizacionPanelComponent],
   template: `
     @if (store.selectedPayroll(); as payroll) {
       <div class="action-bar">
@@ -28,6 +28,33 @@ const STATUS_LABELS: Record<string, string> = {
           >
           <span class="status-badge" [class]="'badge-' + payroll.status.toLowerCase()">
             {{ statusLabel(payroll.status) }}
+          </span>
+
+          <!--
+            Cuando se calculo y de que ejecucion salio (frontend#69). Los dos datos llevaban
+            persistidos desde la V53 y la V124 sin que nadie los pintara.
+
+            La fecha importa mas de lo que parece en cuanto existe «Recalcular»: es lo unico que
+            le dice a quien pulsa que su clic hizo algo.
+          -->
+          <span class="calc-info">
+            <span class="calc-when"
+              >Calculada el {{ calculatedAtLabel(payroll.calculatedAt) }}</span
+            >
+            @if (store.runId(); as runId) {
+              <span class="calc-sep">·</span>
+              <a class="calc-run" [routerLink]="['/nomina/operaciones', runId]"
+                >Ejecución {{ runId }}</a
+              >
+            } @else {
+              <!--
+                Nulo no es un hueco: el contrato dice que es lo que pasa con el calculo
+                provisional y con el recalculo suelto de un recibo. Se dice con palabras en vez
+                de dejar el sitio vacio o pintar un enlace que no lleva a ninguna parte.
+              -->
+              <span class="calc-sep">·</span>
+              <span class="calc-run-none" [title]="noRunTitle">sin ejecución registrada</span>
+            }
           </span>
         </div>
         <div class="action-bar-buttons">
@@ -162,6 +189,32 @@ export class RecibosDetailComponent {
 
   statusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
+  }
+
+  protected readonly noRunTitle =
+    'Ninguna ejecución registrada produjo este recibo: es lo que pasa cuando se recalcula ' +
+    'un recibo suelto.';
+
+  /**
+   * La fecha de cálculo en castellano, no el ISO crudo que llega del backend.
+   *
+   * Se corta la zona si viene, porque `calculated_at` se guarda sin ella y `new Date` de un ISO
+   * sin zona lo interpreta como local — que es lo que queremos aquí: la hora del servidor es la
+   * hora de quien mira.
+   */
+  calculatedAtLabel(calculatedAt: string): string {
+    const fecha = new Date(calculatedAt);
+    if (Number.isNaN(fecha.getTime())) return calculatedAt;
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+      .format(fecha)
+      .replace(',', ' a las');
   }
 
   invalidate(): void {
