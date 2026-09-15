@@ -48,9 +48,11 @@ const STATUS_LABELS: Record<string, string> = {
               >
             } @else {
               <!--
-                Nulo no es un hueco: el contrato dice que es lo que pasa con el calculo
-                provisional y con el recalculo suelto de un recibo. Se dice con palabras en vez
-                de dejar el sitio vacio o pintar un enlace que no lleva a ninguna parte.
+                Nulo no es un hueco: se dice con palabras en vez de dejar el sitio vacio o pintar
+                un enlace que no lleva a ninguna parte. Desde b4rrhh/backend#99 el recalculo
+                suelto ya abre su ejecucion, asi que aqui solo caen los recibos del calculo
+                provisional; cuando ese endpoint se retire (b4rrhh/backend#90), esta rama deja
+                de tener quien la pise y se quita entonces, no antes.
               -->
               <span class="calc-sep">·</span>
               <span class="calc-run-none" [title]="noRunTitle">sin ejecución registrada</span>
@@ -209,8 +211,8 @@ export class RecibosDetailComponent {
   }
 
   protected readonly noRunTitle =
-    'Ninguna ejecución registrada produjo este recibo: es lo que pasa cuando se recalcula ' +
-    'un recibo suelto.';
+    'Ninguna ejecución registrada produjo este recibo: es lo que pasa con los recibos del ' +
+    'cálculo provisional, anteriores a que el recálculo abriera su propia ejecución.';
 
   /**
    * La fecha de cálculo en castellano, no el ISO crudo que llega del backend.

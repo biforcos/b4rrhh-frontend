@@ -105,9 +105,10 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
     });
 
     /**
-     * El caso del criterio 3, y el que se va a ver en cuanto exista «Recalcular»: recalcular un
-     * recibo suelto no registra ejecución, así que este `null` no es raro — es el estado normal
-     * del recibo que alguien acaba de recalcular desde la pantalla.
+     * Este `null` ya no es el estado normal de nada que se pueda provocar desde la pantalla: desde
+     * `b4rrhh/backend#99` recalcular abre su propia ejecución, así que sólo quedan los recibos del
+     * cálculo provisional. La rama se queda hasta que ese endpoint se retire (`b4rrhh/backend#90`),
+     * porque mientras exista puede producirlos.
      */
     it('un recibo sin ejecución lo dice, y no deja un enlace roto', () => {
       const host = render(null);
@@ -121,7 +122,7 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
     it('y explica por qué no la tiene, sin acusar al recibo de estar mal', () => {
       const titulo = render(null).querySelector('.calc-run-none')?.getAttribute('title') ?? '';
 
-      expect(titulo).toContain('se recalcula');
+      expect(titulo).toContain('cálculo provisional');
       expect(titulo).not.toContain('error');
     });
 
