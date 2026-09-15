@@ -36,7 +36,15 @@ describe('BackendAvailabilityStore (a través del interceptor)', () => {
         provideHttpClientTesting(),
         { provide: BASE_PATH, useValue: '/api' },
         { provide: LocalDevAuthGateway, useValue: { issueToken: vi.fn() } },
-        { provide: Router, useValue: { url: '/', navigate } },
+        {
+          provide: Router,
+          useValue: {
+            url: '/',
+            navigate,
+            getCurrentNavigation: () => null,
+            serializeUrl: (url: unknown) => String(url),
+          },
+        },
       ],
     });
 

@@ -115,9 +115,44 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
  * que le faltaba era que alguien le avisara cuando no hay navegacion de por medio.
  */
 function redirectToLogin(router: Router): void {
-  const currentUrl = router.url;
-  if (currentUrl.startsWith('/login')) {
+  const destination = whereTheUserWasGoing(router);
+  if (destination.startsWith('/login')) {
     return;
   }
-  void router.navigate(['/login'], { queryParams: { redirectTo: currentUrl } });
+  void router.navigate(['/login'], { queryParams: { redirectTo: destination } });
+}
+
+/**
+ * A donde iba quien perdio la sesion, que no siempre es `router.url` (frontend#60).
+ *
+ * Un 401 no espera a que ninguna navegacion termine, y el router actualiza su `url` **al terminar**
+ * la navegacion, no al empezarla (`urlUpdateStrategy` por omision es `deferred`). O sea que
+ * mientras una navegacion corre, `router.url` es la ruta **anterior**: el `redirectTo` salia con
+ * la pagina de la que venias y volver a entrar te dejaba alli, no donde ibas. La promesa del
+ * `frontend#52` era literal —«vuelve a entrar y sigues donde lo dejaste»— y se cumplia a medias.
+ *
+ * <b>La ventana es estrecha y en local no se abre.</b> Con el backend al lado, cada navegacion
+ * termina antes de que vuelva ninguna respuesta, asi que `router.url` ya es el destino cuando el
+ * 401 llega; se intento provocar de cuatro formas —carga entera de la ficha, clic en el menu, clic
+ * en una fila de la lista con la sesion recien caducada— y en las cuatro el `redirectTo` salia bien
+ * incluso sin esto (`frontend#60`). Lo que sostiene este codigo no es aquella medida sino el
+ * mecanismo: si la respuesta llega dentro de la ventana, el destino bueno es el de la navegacion en
+ * curso y no el de la anterior. Lo pinan los tests, que si pueden poner el router en ese instante.
+ *
+ * `getCurrentNavigation()` devuelve la navegacion en curso, y su destino es el bueno mientras la
+ * hay. `finalUrl` es el destino ya resuelto —con sus redirecciones aplicadas— y no existe todavia
+ * en las primeras fases, asi que detras va `extractedUrl`, que es la URL tal como se pidio.
+ * Cuando no hay navegacion ninguna —pulsar un boton sin cambiar de ruta, que es el caso para el
+ * que el `frontend#52` existia— no hay nada que preguntar y manda `router.url`, como antes.
+ *
+ * Lo que NO se hace, y el `frontend#60` lo proponia: dejar que el `authGuard` componga el
+ * `redirectTo` y que el interceptor solo cierre la sesion. Es mas limpio y no funciona aqui: en el
+ * caso de la ficha el guard ya se ejecuto y dejo pasar —habia token cuando le toco—, asi que nadie
+ * lo volveria a llamar y la navegacion terminaria pintando una ficha a la que no llega un solo
+ * dato. Eso es exactamente el sintoma que el `frontend#52` vino a quitar.
+ */
+function whereTheUserWasGoing(router: Router): string {
+  const navigation = router.getCurrentNavigation();
+  const destination = navigation?.finalUrl ?? navigation?.extractedUrl;
+  return destination ? router.serializeUrl(destination) : router.url;
 }

@@ -21,17 +21,37 @@ describe('authInterceptor', () => {
   let http: HttpClient;
   let httpTestingController: HttpTestingController;
   let navigate: ReturnType<typeof vi.fn>;
+  /**
+   * La navegacion en curso, o `null` si no hay ninguna — que es lo que `getCurrentNavigation()`
+   * devuelve de verdad. Es lo unico que distingue los dos casos del `frontend#60`: caducar
+   * mientras entras en una ficha, y caducar pulsando un boton sin moverte.
+   */
+  let currentNavigation: { finalUrl?: unknown; extractedUrl?: unknown } | null;
+  /** Donde esta el router ahora. Getter en el doble, porque `Router.url` es de solo lectura. */
+  let currentUrl: string;
 
   beforeEach(() => {
     localStorage.clear();
     navigate = vi.fn();
+    currentNavigation = null;
+    currentUrl = '/empleados/ESP/INTERNAL/EMP000001';
 
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         { provide: LocalDevAuthGateway, useValue: { issueToken: vi.fn() } },
-        { provide: Router, useValue: { url: '/empleados/ESP/INTERNAL/EMP000001', navigate } },
+        {
+          provide: Router,
+          useValue: {
+            get url() {
+              return currentUrl;
+            },
+            navigate,
+            getCurrentNavigation: () => currentNavigation,
+            serializeUrl: (url: unknown) => String(url),
+          },
+        },
       ],
     });
 
@@ -130,6 +150,88 @@ describe('authInterceptor', () => {
       expect(navigate).toHaveBeenCalledWith(['/login'], {
         queryParams: { redirectTo: '/empleados/ESP/INTERNAL/EMP000001' },
       });
+    });
+
+    /**
+     * El `frontend#60`, criterio 1: caducar **entrando** en una ficha.
+     *
+     * El armazon pide sus datos en cuanto arranca la navegacion, antes de que el router haya
+     * llegado a ninguna parte, asi que `router.url` todavia es la ruta anterior —aqui `/inicio`—.
+     * Con el `redirectTo` sacado de ahi, volver a entrar te dejaba en inicio y no en la ficha que
+     * estabas abriendo, que es justo lo contrario de lo que el `frontend#52` prometia.
+     */
+    it('caducar entrando en una ficha manda al login con la ficha, no con la ruta anterior', () => {
+      currentUrl = '/inicio';
+      currentNavigation = { finalUrl: '/empleados/ESP/INTERNAL/EMP000001' };
+
+      persistSession('2099-01-01T00:00:00.000Z');
+      TestBed.inject(AuthStore);
+
+      http.get('/employees/ESP/INTERNAL/EMP000001').subscribe({ error: () => undefined });
+      httpTestingController
+        .expectOne('/employees/ESP/INTERNAL/EMP000001')
+        .flush({}, { status: 401, statusText: 'Unauthorized' });
+
+      expect(navigate).toHaveBeenCalledWith(['/login'], {
+        queryParams: { redirectTo: '/empleados/ESP/INTERNAL/EMP000001' },
+      });
+    });
+
+    /**
+     * Y el destino se coge ya resuelto cuando lo hay. En las primeras fases de una navegacion
+     * `finalUrl` todavia no existe —las redirecciones no se han aplicado— y entonces vale la URL
+     * tal como se pidio: el caso en el que solo hay `extractedUrl` tiene que seguir dando destino
+     * y no caerse a `router.url`.
+     */
+    it('y sirve el destino aunque la navegacion aun no lo haya resuelto', () => {
+      currentUrl = '/inicio';
+      currentNavigation = { extractedUrl: '/empleados/ESP/INTERNAL/EMP000002' };
+
+      persistSession('2099-01-01T00:00:00.000Z');
+      TestBed.inject(AuthStore);
+
+      http.get('/employees').subscribe({ error: () => undefined });
+      httpTestingController.expectOne('/employees').flush({}, { status: 401, statusText: 'x' });
+
+      expect(navigate).toHaveBeenCalledWith(['/login'], {
+        queryParams: { redirectTo: '/empleados/ESP/INTERNAL/EMP000002' },
+      });
+    });
+
+    /**
+     * El `frontend#60`, criterio 2: caducar **sin** navegar. Es el caso para el que el
+     * `frontend#52` existia —pulsar un boton estando quieto— y tiene que seguir igual: sin
+     * navegacion en curso no hay nada que preguntar y manda `router.url`.
+     *
+     * Va aparte del de arriba a proposito. Un solo test con los dos casos no distinguiria entre
+     * «lee el destino de la navegacion» y «lee `router.url` siempre» si los dos valen lo mismo.
+     */
+    it('caducar sin navegar sigue mandando al login con la ruta donde estabas', () => {
+      currentNavigation = null;
+
+      persistSession('2099-01-01T00:00:00.000Z');
+      TestBed.inject(AuthStore);
+
+      http.get('/employees').subscribe({ error: () => undefined });
+      httpTestingController.expectOne('/employees').flush({}, { status: 401, statusText: 'x' });
+
+      expect(navigate).toHaveBeenCalledWith(['/login'], {
+        queryParams: { redirectTo: '/empleados/ESP/INTERNAL/EMP000001' },
+      });
+    });
+
+    /** Y si lo que se estaba abriendo era el propio login, no se navega otra vez. */
+    it('no salta al login si la navegacion en curso ya iba al login', () => {
+      currentUrl = '/empleados/ESP/INTERNAL/EMP000001';
+      currentNavigation = { finalUrl: '/login?redirectTo=%2Finicio' };
+
+      persistSession('2099-01-01T00:00:00.000Z');
+      TestBed.inject(AuthStore);
+
+      http.get('/employees').subscribe({ error: () => undefined });
+      httpTestingController.expectOne('/employees').flush({}, { status: 401, statusText: 'x' });
+
+      expect(navigate).not.toHaveBeenCalled();
     });
 
     it('deja pasar las rutas publicas sin sesion y no las toma por caducidad', () => {
