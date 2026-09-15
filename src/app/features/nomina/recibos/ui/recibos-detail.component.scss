@@ -90,13 +90,20 @@
   cursor: not-allowed;
 }
 
-.btn-validar {
+/*
+ * «Recalcular» es la accion principal del recibo (frontend#70), asi que es la unica rellena.
+ *
+ * Antes lo era «Validar», y la jerarquia decia lo contrario de lo que el camino necesita: la
+ * accion que el visitante va a usar en la demo es recalcular, no validar. Dos botones rellenos no
+ * son dos acciones principales: son ninguna.
+ */
+.btn-recalcular {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: var(--text-inverse);
 }
 
-.btn-validar:hover:not(:disabled) {
+.btn-recalcular:hover:not(:disabled) {
   background: var(--accent-primary-hover);
   border-color: var(--accent-primary-hover);
 }
@@ -108,6 +115,15 @@
 
 .btn-invalidar:hover:not(:disabled) {
   background: var(--error-bg);
+}
+
+/*
+ * El recibo que se quedo invalido porque el calculo fallo despues de invalidar. Es el caso que
+ * el paso 3 existe para no esconder, asi que se marca mas que un error de tramite.
+ */
+.transition-error--stranded {
+  border-width: 2px;
+  font-weight: 500;
 }
 
 .transition-error {

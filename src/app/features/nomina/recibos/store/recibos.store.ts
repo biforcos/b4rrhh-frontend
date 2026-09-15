@@ -229,11 +229,45 @@ export class RecibosStore {
       });
   }
 
-  recalculate(key: PayrollBusinessKey): void {
+  /**
+   * «Recalcular», en un gesto y venga el recibo de donde venga (`frontend#70`).
+   *
+   * Desde `NOT_VALID` es una llamada. Desde `CALCULATED` son **dos** —invalidar y luego calcular—,
+   * porque el backend sólo recalcula lo que está inválido (ADR-059). Eso es lo que antes tenía que
+   * hacer a mano quien miraba, y entre los dos clics el recibo se quedaba roto.
+   *
+   * Juntarlas aquí no las hace atómicas, y por eso importa el fallo: **si la segunda falla, el
+   * recibo se queda inválido** y ese estado lo provocamos nosotros. Decirlo es el punto entero de
+   * este paso, así que el error de ese caso no es el genérico: nombra lo que ha pasado y dice que
+   * se puede reintentar.
+   */
+  recalculateFrom(key: PayrollBusinessKey, status: PayrollSummaryModel['status']): void {
     if (this.transitioningState()) return;
     this.transitioningState.set(true);
     this.transitionErrorState.set(null);
 
+    if (status === 'NOT_VALID') {
+      this.runRecalculation(key, false);
+      return;
+    }
+
+    this.gateway
+      .invalidate(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (updated) => {
+          this.updatePayrollInList(updated);
+          this.runRecalculation(key, true);
+        },
+        error: (err: HttpErrorResponse) => {
+          // Falló al invalidar: el recibo sigue como estaba, así que basta el mensaje de siempre.
+          this.transitioningState.set(false);
+          this.transitionErrorState.set(this.mapTransitionError(err));
+        },
+      });
+  }
+
+  private runRecalculation(key: PayrollBusinessKey, invalidatedHere: boolean): void {
     this.gateway
       .recalculate(key)
       .pipe(take(1))
@@ -243,11 +277,19 @@ export class RecibosStore {
           this.transitioningState.set(false);
           // Un recalculo hace un recibo NUEVO, con sus pasos. Los de antes eran de otro recibo:
           // loadConcepts los olvida, y la pestana de Calculo volvera a pedirlos cuando se abra.
+          // Ademas es lo que trae la marca de tiempo nueva y el runId, que ahora es nulo (#69).
           this.loadConcepts(key);
         },
         error: (err: HttpErrorResponse) => {
           this.transitioningState.set(false);
-          this.transitionErrorState.set(this.mapTransitionError(err));
+          this.transitionErrorState.set(
+            invalidatedHere
+              ? 'El recibo se ha quedado INVÁLIDO: se invalidó para recalcularlo y el cálculo ' +
+                  `falló. ${this.mapTransitionError(err)} Puedes volver a intentarlo con «Recalcular».`
+              : this.mapTransitionError(err),
+          );
+          // Y se recarga, para que la pantalla enseñe el estado de verdad y no el de antes.
+          this.loadConcepts(key);
         },
       });
   }

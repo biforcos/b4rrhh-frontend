@@ -58,7 +58,27 @@ const STATUS_LABELS: Record<string, string> = {
           </span>
         </div>
         <div class="action-bar-buttons">
+          <!--
+            «Recalcular» es la accion principal del recibo y se ofrece desde los dos estados
+            (frontend#70). Desde CALCULADA son dos llamadas por dentro —invalidar y calcular—,
+            pero un solo gesto por fuera: antes habia que invalidar a mano y entre los dos clics
+            el recibo se quedaba roto delante de quien miraba.
+          -->
+          @if (payroll.status === 'CALCULATED' || payroll.status === 'NOT_VALID') {
+            <button
+              class="btn btn-recalcular"
+              [disabled]="store.transitioning()"
+              (click)="recalculate()"
+            >
+              {{ store.transitioning() ? 'Recalculando…' : 'Recalcular' }}
+            </button>
+          }
           @if (payroll.status === 'CALCULATED') {
+            <!--
+              «Invalidar» se queda, y como secundaria. No es un resto: invalidar y dejarlo
+              invalidado es un acto legitimo del ADR-059, con su MANUAL_INVALIDATION. Lo que
+              cambia es cual de las dos se ofrece primero.
+            -->
             <button
               class="btn btn-invalidar"
               [disabled]="store.transitioning()"
@@ -70,15 +90,6 @@ const STATUS_LABELS: Record<string, string> = {
               Validar
             </button>
           }
-          @if (payroll.status === 'NOT_VALID') {
-            <button
-              class="btn btn-recalcular"
-              [disabled]="store.transitioning()"
-              (click)="recalculate()"
-            >
-              Recalcular
-            </button>
-          }
           @if (!store.conceptsLoading()) {
             <button class="btn btn-valorizacion" (click)="drawerOpen.set(true)">
               ⊞ Valorización
@@ -87,8 +98,14 @@ const STATUS_LABELS: Record<string, string> = {
         </div>
       </div>
 
-      @if (store.transitionError()) {
-        <div class="transition-error">{{ store.transitionError() }}</div>
+      @if (store.transitionError(); as error) {
+        <div
+          class="transition-error"
+          [class.transition-error--stranded]="quedoInvalido(error)"
+          role="alert"
+        >
+          {{ error }}
+        </div>
       }
 
       <div class="folio-wrapper">
@@ -217,6 +234,17 @@ export class RecibosDetailComponent {
       .replace(',', ' a las');
   }
 
+  /**
+   * Si el mensaje es el del recibo que se quedó inválido por el camino.
+   *
+   * Se mira el texto y no un código porque el store lo compone con el motivo que da el backend;
+   * lo que distingue a este caso es que **lo provocamos nosotros** al invalidar para recalcular, y
+   * merece verse más que un error de trámite.
+   */
+  quedoInvalido(error: string): boolean {
+    return error.includes('INVÁLIDO');
+  }
+
   invalidate(): void {
     const key = this.store.selectedKey();
     if (key) this.store.invalidate(key);
@@ -229,7 +257,8 @@ export class RecibosDetailComponent {
 
   recalculate(): void {
     const key = this.store.selectedKey();
-    if (key) this.store.recalculate(key);
+    const payroll = this.store.selectedPayroll();
+    if (key && payroll) this.store.recalculateFrom(key, payroll.status);
   }
 
   /**
