@@ -186,6 +186,29 @@ npm start
 
 The dev server runs on `http://localhost:4200`. API calls are proxied to the backend via [proxy.conf.json](proxy.conf.json) — no CORS configuration needed during development.
 
+### The designer, and why it is proxied too
+
+The Valorización drawer embeds the [designer](../b4rrhh_designer) in a frame, at `/designer/` **of
+the same origin** (`frontend#66`). Same origin is not a convenience: it is what makes the frame
+share `localStorage` — and with it the session — and what lets the two views talk with
+`postMessage` without crossing a boundary. In the demo that path is served by the backoffice's
+nginx, which proxies `/designer/` to the designer's own container ([nginx.conf](nginx.conf)).
+
+There is no nginx in front of `ng serve`, so `proxy.conf.json` mirrors that one rule: `/designer`
+goes to the designer's Vite dev server on `localhost:5173`. Without it the path falls through to
+Angular's SPA fallback, which answers `index.html` with a `200` — the frame renders the backoffice
+inside the backoffice instead of failing, which is the confusing way for this to break.
+
+So the drawer's third tab needs **two** dev servers:
+
+```bash
+cd ../b4rrhh_designer && npm run dev   # 5173, base /designer/
+cd ../b4rrhh_frontend  && npm start    # 4200, proxies /api and /designer
+```
+
+Open the backoffice on 4200 — never the designer on 5173 directly, or the frame is cross-origin and
+nothing works.
+
 ### Build and Tests
 
 ```bash
