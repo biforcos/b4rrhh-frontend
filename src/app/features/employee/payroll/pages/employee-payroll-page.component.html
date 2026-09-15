@@ -10,5 +10,29 @@
     <section class="employee-area__module">
       <app-employee-payroll-input-section [employeeKey]="activeEmployeeKey()" />
     </section>
+
+    <!--
+      El salto a sus recibos (frontend#68). Es un enlace y no una pantalla: desde el frontend#64
+      el recibo tiene direccion, y la lista de Nominas ya sabe filtrar por empleado.
+
+      Lleva a la lista filtrada y no «a su recibo»: un empleado no tiene uno, tiene el de cada
+      periodo y puede tener varias presencias. Elegir por el visitante obligaria a decidir cual es
+      «el ultimo» con varias presencias abiertas, y esa decision no la tiene esta pantalla.
+    -->
+    @if (activeEmployeeKey(); as employeeKey) {
+      <section class="employee-area__module">
+        <div class="receipts-link">
+          <h3 class="receipts-link__title">{{ texts.payrollReceiptsTitle }}</h3>
+          <p class="receipts-link__body">{{ texts.payrollReceiptsBody }}</p>
+          <a
+            class="receipts-link__action"
+            [routerLink]="receiptsRouteCommands"
+            [queryParams]="{ employeeNumber: employeeKey.employeeNumber }"
+          >
+            {{ texts.payrollReceiptsLink }}
+          </a>
+        </div>
+      </section>
+    }
   </div>
 </section>

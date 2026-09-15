@@ -17,3 +17,41 @@
   background: var(--surface-hover);
   padding: 0.5rem 0.56rem;
 }
+
+/*
+ * El salto a sus recibos (frontend#68). Un enlace con su porque al lado: sin la frase, «Ver sus
+ * recibos» no dice si lleva a los suyos o a todos.
+ */
+.receipts-link {
+  padding: 14px 16px;
+}
+
+.receipts-link__title {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.receipts-link__body {
+  margin: 0 0 10px;
+  color: var(--text-soft);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.receipts-link__action {
+  display: inline-block;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.receipts-link__action:hover {
+  background: var(--surface-hover);
+}

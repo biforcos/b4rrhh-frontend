@@ -150,6 +150,11 @@ export const employeeTexts = {
   costCenterSectionNotFoundMessage:
     'No se encontró la distribución seleccionada para este empleado.',
   payrollAreaLabel: 'Nómina',
+  // --- El salto a sus recibos (frontend#68) ---
+  payrollReceiptsTitle: 'Recibos de nómina',
+  payrollReceiptsBody:
+    'Los recibos que se le han calculado, en la pantalla de Nóminas y ya filtrados por él.',
+  payrollReceiptsLink: 'Ver sus recibos',
   // --- Acciones de página (en la identidad, ADR-050 §1) ---
   pageActionsAriaLabel: 'Acciones de la ficha',
   // --- La barra de identidad (frontend#24) ---

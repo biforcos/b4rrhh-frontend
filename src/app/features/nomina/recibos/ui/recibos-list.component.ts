@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { PayrollSummaryModel } from '../models/payroll-summary.model';
@@ -83,9 +84,24 @@ const STATUS_LABELS: Record<string, string> = {
         }
         @if (store.listLoading()) {
           <div class="list-msg">Buscando...</div>
-        }
-        @if (store.listError()) {
+        } @else if (store.listError()) {
           <div class="list-msg error">Error al cargar las nóminas.</div>
+        } @else if (sinResultados()) {
+          <!--
+            Vacio con motivo. Se llega aqui desde la ficha de un empleado con el filtro ya
+            puesto (frontend#68), y entonces la lista vacia ES la respuesta: hay que decir de
+            quien se esta hablando, o es indistinguible de «todavia no has buscado».
+          -->
+          <div class="list-empty">
+            @if (empleadoBuscado(); as numero) {
+              <p class="list-empty__title">{{ numero }} no tiene ningún recibo.</p>
+              <p class="list-empty__body">
+                No es que no se encuentre: es que no se le ha calculado ninguna nómina todavía.
+              </p>
+            } @else {
+              <p class="list-empty__title">Ningún recibo con estos filtros.</p>
+            }
+          </div>
         }
       </div>
 
@@ -96,11 +112,44 @@ const STATUS_LABELS: Record<string, string> = {
 })
 export class RecibosListComponent {
   protected readonly store = inject(RecibosStore);
+  private readonly route = inject(ActivatedRoute);
+
   protected readonly filters = signal<RecibosFilters>({
     payrollPeriodCode: '',
     employeeNumber: '',
     status: '',
   });
+
+  /** La búsqueda ya volvió y no trajo nada. No es lo mismo que no haber buscado aún. */
+  protected readonly sinResultados = computed(
+    () => this.store.searchedFilters() !== null && this.store.payrolls().length === 0,
+  );
+
+  /** El empleado por el que se buscó, si la búsqueda que volvió vacía era la de un empleado. */
+  protected readonly empleadoBuscado = computed(
+    () => this.store.searchedFilters()?.employeeNumber || null,
+  );
+
+  constructor() {
+    /*
+     * El número de empleado puede venir en la dirección, y entonces se busca solo.
+     *
+     * Es lo que convierte el salto desde la ficha en un enlace y no en una pantalla nueva
+     * (`frontend#68`): la lista ya sabía filtrar por empleado, lo que no sabía era que se lo
+     * pidieran desde fuera. Va en `queryParams` y no en la ruta porque es un filtro, no una
+     * dirección: `/nomina/recibos` sigue siendo la misma pantalla.
+     *
+     * Se suscribe y no se lee una vez porque se puede llegar aquí dos veces seguidas con dos
+     * empleados distintos sin que el componente se destruya en medio.
+     */
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const employeeNumber = params.get('employeeNumber')?.trim() ?? '';
+      if (!employeeNumber) return;
+
+      this.filters.set({ payrollPeriodCode: '', employeeNumber, status: '' });
+      this.search();
+    });
+  }
 
   patchFilter<K extends keyof RecibosFilters>(key: K, value: RecibosFilters[K]): void {
     this.filters.update((f) => ({ ...f, [key]: value }));

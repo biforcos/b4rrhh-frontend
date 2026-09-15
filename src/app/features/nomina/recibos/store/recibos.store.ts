@@ -25,6 +25,17 @@ export class RecibosStore {
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<RecibosErrorCode | null>(null);
 
+  /**
+   * Con qué filtros volvió la última búsqueda, o `null` si todavía no ha vuelto ninguna.
+   *
+   * Es la misma distinción que `stepsLoadedKey` hace con los pasos, y por el mismo motivo: sin
+   * ella, «aún no he buscado» y «busqué y no hay nada» son la misma lista vacía. Desde el
+   * `frontend#68` se puede llegar aquí con el filtro ya puesto por un enlace, y entonces la lista
+   * vacía **es la respuesta** —ese empleado no tiene recibos— y hay que poder decirlo con esas
+   * palabras, y con su número dentro.
+   */
+  private readonly searchedFiltersState = signal<RecibosFilters | null>(null);
+
   private readonly selectedKeyState = signal<PayrollBusinessKey | null>(null);
   /**
    * El recibo abierto, tal y como lo devolvió el backend.
@@ -70,6 +81,7 @@ export class RecibosStore {
   readonly payrolls = this.payrollsState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
+  readonly searchedFilters = this.searchedFiltersState.asReadonly();
   readonly selectedKey = this.selectedKeyState.asReadonly();
   readonly selectedPayroll = this.selectedPayrollState.asReadonly();
   readonly concepts = this.conceptsState.asReadonly();
@@ -100,6 +112,7 @@ export class RecibosStore {
       .subscribe({
         next: (payrolls) => {
           this.payrollsState.set(payrolls);
+          this.searchedFiltersState.set(filters);
           this.listLoadingState.set(false);
         },
         error: () => {
