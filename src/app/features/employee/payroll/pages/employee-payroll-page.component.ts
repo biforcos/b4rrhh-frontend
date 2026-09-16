@@ -9,6 +9,7 @@ import { readEmployeeBusinessKeyFromParamMap } from '../../routing/employee-rout
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
 import { EmployeeTaxInformationSectionComponent } from '../../tax-information/components/employee-tax-information-section.component';
 import { payrollRouteBaseSegment } from '../../../nomina/recibos/routing/payroll-route-key.util';
+import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 
 @Component({
   selector: 'app-employee-payroll-page',
@@ -16,6 +17,7 @@ import { payrollRouteBaseSegment } from '../../../nomina/recibos/routing/payroll
   imports: [
     EmployeePayrollInputSectionComponent,
     EmployeeTaxInformationSectionComponent,
+    SectionHeadingComponent,
     RouterLink,
   ],
   templateUrl: './employee-payroll-page.component.html',

@@ -1,4 +1,10 @@
-<section class="journey-timeline" aria-labelledby="journey-title">
+<!--
+  Sin rótulo propio (`frontend#56`). El título del Historial lo pinta el hueco contextual del
+  esqueleto —`contextualTitle` en la ficha—, así que este `<h2>` repetía la misma palabra dos veces
+  en pantalla. La sección no necesita `aria-labelledby`: vive dentro del `<aside>` que el esqueleto
+  ya rotula con esa palabra.
+-->
+<section class="journey-timeline">
   <header>
     <button
       type="button"
@@ -9,7 +15,6 @@
       (click)="toggle()"
     >
       <span class="journey-timeline__headline">
-        <h2 id="journey-title" class="journey-timeline__title">{{ texts.timelineTitle }}</h2>
         <p class="journey-timeline__summary">{{ collapsedSummary() }}</p>
       </span>
       <span class="journey-timeline__chevron" aria-hidden="true">{{

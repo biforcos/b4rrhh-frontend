@@ -20,7 +20,7 @@ import {
 import { EmployeePayrollInputStore } from '../../data-access/employee-payroll-input.store';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
-import { EmployeeSectionShellComponent } from '../../shared/ui/section/employee-section-shell.component';
+import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import { SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 
@@ -71,7 +71,7 @@ interface InputRow {
 @Component({
   selector: 'app-employee-payroll-input-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmployeeSectionShellComponent, UiButtonComponent, SelectModule, FormsModule],
+  imports: [SectionHeadingComponent, UiButtonComponent, SelectModule, FormsModule],
   templateUrl: './employee-payroll-input-section.component.html',
   styleUrl: './employee-payroll-input-section.component.scss',
 })

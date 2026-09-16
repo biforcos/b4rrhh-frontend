@@ -4,34 +4,26 @@
   margin-top: 0.14rem;
 }
 
+/*
+ * Sin `gap`: el aire entre secciones lo pone el filete de `app-section-heading`, que es de donde
+ * sale también en la relación. Un `gap` aquí lo sumaría al suyo y esta página se separaría más que
+ * las demás por una razón que nadie podría deducir (`frontend#56`).
+ */
 .employee-area__modules {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.56rem;
-}
-
-.employee-area__module {
-  align-self: start;
-  border: 1px solid var(--border-default);
-  border-radius: 0.62rem;
-  background: var(--surface-hover);
-  padding: 0.5rem 0.56rem;
 }
 
 /*
  * El salto a sus recibos (frontend#68). Un enlace con su porque al lado: sin la frase, «Ver sus
  * recibos» no dice si lleva a los suyos o a todos.
+ *
+ * Es una sección más de la página y lleva su rótulo, aunque su contenido sea un puntero y no algo
+ * que se mantenga: en el sumario de la página está al lado de las otras dos, y darle un título más
+ * pequeño anunciaría un nivel que no tiene (`frontend#56`).
  */
 .receipts-link {
-  padding: 14px 16px;
-}
-
-.receipts-link__title {
-  margin: 0 0 4px;
-  font-family: var(--font-heading);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 600;
+  padding-bottom: 6px;
 }
 
 .receipts-link__body {

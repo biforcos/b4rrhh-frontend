@@ -41,6 +41,11 @@
 // tres. Las once son contenedores de verdad —revisadas una a una— y son las
 // mismas once que el comentario del 13/09 contaba vivas. Cero falsos positivos.
 //
+// El 16/09 pasaron a NUEVE: dos vivian en `employee-page.component.scss`, la
+// pagina que no enrutaba nadie y que el `frontend#56` retiro. Se fueron por el
+// camino bueno —el candado fallo pidiendo que se borraran de la lista— y no por
+// una migracion; el aviso funciono en la direccion que casi nunca se prueba.
+//
 // ─── El radio circular no es una esquina de tarjeta ─────────────────────────
 //
 // `border-radius: 50%` o `999px` es un circulo o una pastilla: un avatar, un
@@ -50,12 +55,12 @@
 //
 // ─── La lista de supervivientes solo puede encoger ──────────────────────────
 //
-// Las once cajas que quedan estan escritas abajo. El candado va al pipeline
+// Las cajas que quedan estan escritas abajo. El candado va al pipeline
 // HOY, en verde, porque su trabajo no es la deuda vieja: es que no entre la
 // doce. Sin esto, «dentro de dos meses seran 25» y esta conversacion se
 // repite, que es literalmente lo que el issue dice.
 //
-// Y la lista se comprueba en las dos direcciones: si una de las once deja de
+// Y la lista se comprueba en las dos direcciones: si una de ellas deja de
 // pintar su caja, el candado FALLA pidiendo que se borre de la lista. Una lista
 // de excepciones que nadie limpia deja de ser una deuda reconocida y pasa a ser
 // un agujero, que es como se colo el `.pi` suelto en el candado de iconos.
@@ -77,7 +82,7 @@ const EXCLUDED_DIRS = new Set(['generated']);
 const CASA_DE_LAS_PIEZAS = 'src/app/shared/ui/';
 
 /**
- * Las once cajas que la migracion del #13 todavia no ha llevado a shared/ui.
+ * Las cajas que la migracion del #13 todavia no ha llevado a shared/ui.
  * Congeladas el 15/09/2026. Esta lista SOLO puede encoger: cada una que se
  * migre se borra de aqui, y el candado avisa si te olvidas de borrarla.
  *
@@ -94,8 +99,6 @@ const SUPERVIVIENTES = new Set([
   'src/app/core/layout/pages/app-home-page.component.scss::.home-page',
   'src/app/core/layout/pages/section-placeholder-page.component.scss::.placeholder-page',
   'src/app/features/employee/organization/components/employee-cost-center-window-display.component.scss::.window-display',
-  'src/app/features/employee/shell/pages/employee-page.component.scss::.employee-main__sections',
-  'src/app/features/employee/shell/pages/employee-page.component.scss::.employee-timeline__panel',
   'src/app/features/employee/shell/pages/employee-shell-page.component.scss::.employee-directory__table-wrapper',
   'src/app/rulesystem/catalog/ui/catalog-page.component.scss::.catalog-page__panel',
   'src/app/rulesystem/rule-system/ui/rule-system-detail-page.component.scss::.rule-system-detail-page',

@@ -3,13 +3,17 @@
   class="employee-area"
   [attr.aria-label]="texts.payrollAreaLabel"
 >
+  <!--
+    Los bloques de esta página son secciones, no cajas (`frontend#56`). La caja la lleva lo que
+    manda —el bloque «Hoy» de la relación—, y aquí no hay ninguno: son contenido mantenido con su
+    historia, así que van con rótulo, filete y aire, como las de la relación. Antes cada uno venía
+    envuelto en `employee-area__module`, una caja declarada por la propia feature, y dentro había
+    otra: card en «Entradas de nómina» y `boxed` en «Información Fiscal». Caja dentro de caja es
+    justo lo que el ADR-051 §3 dice que no se haga.
+  -->
   <div class="employee-area__modules">
-    <section class="employee-area__module">
-      <app-employee-tax-information-section [employeeKey]="activeEmployeeKey()" />
-    </section>
-    <section class="employee-area__module">
-      <app-employee-payroll-input-section [employeeKey]="activeEmployeeKey()" />
-    </section>
+    <app-employee-tax-information-section [employeeKey]="activeEmployeeKey()" />
+    <app-employee-payroll-input-section [employeeKey]="activeEmployeeKey()" />
 
     <!--
       El salto a sus recibos (frontend#68). Es un enlace y no una pantalla: desde el frontend#64
@@ -20,18 +24,16 @@
       «el ultimo» con varias presencias abiertas, y esa decision no la tiene esta pantalla.
     -->
     @if (activeEmployeeKey(); as employeeKey) {
-      <section class="employee-area__module">
-        <div class="receipts-link">
-          <h3 class="receipts-link__title">{{ texts.payrollReceiptsTitle }}</h3>
-          <p class="receipts-link__body">{{ texts.payrollReceiptsBody }}</p>
-          <a
-            class="receipts-link__action"
-            [routerLink]="receiptsRouteCommands"
-            [queryParams]="{ employeeNumber: employeeKey.employeeNumber }"
-          >
-            {{ texts.payrollReceiptsLink }}
-          </a>
-        </div>
+      <section class="receipts-link" [attr.aria-label]="texts.payrollReceiptsTitle">
+        <app-section-heading [title]="texts.payrollReceiptsTitle" />
+        <p class="receipts-link__body">{{ texts.payrollReceiptsBody }}</p>
+        <a
+          class="receipts-link__action"
+          [routerLink]="receiptsRouteCommands"
+          [queryParams]="{ employeeNumber: employeeKey.employeeNumber }"
+        >
+          {{ texts.payrollReceiptsLink }}
+        </a>
       </section>
     }
   </div>

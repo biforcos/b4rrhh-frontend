@@ -1,10 +1,15 @@
-<app-employee-section-shell
-  [title]="texts.payrollInputsSectionTitle"
-  [subtitle]="texts.payrollInputsSectionSubtitle"
-  [state]="sectionState()"
->
-  <div sectionCardActions class="employee-payroll-input-section__header-actions">
-    <div class="employee-payroll-input-section__period-nav">
+<section class="employee-payroll-input-section" [attr.aria-label]="texts.payrollInputsSectionTitle">
+  <!--
+    Rótulo de sección y no cabecera de card (`frontend#56`). El período va en la ranura del dato
+    que resume la sección, que es exactamente lo que es: de qué mes habla lo de debajo.
+  -->
+  <app-section-heading
+    [title]="texts.payrollInputsSectionTitle"
+    [addLabel]="texts.payrollInputsAddAction"
+    [addDisabled]="sectionState().busy || creating()"
+    (addClicked)="startCreate()"
+  >
+    <div sectionHeadingMeta class="employee-payroll-input-section__period-nav">
       <button
         type="button"
         class="employee-payroll-input-section__period-btn"
@@ -25,15 +30,11 @@
         &#8250;
       </button>
     </div>
+  </app-section-heading>
 
-    <app-ui-button
-      type="button"
-      size="small"
-      [label]="texts.payrollInputsAddAction"
-      [disabled]="sectionState().busy || creating()"
-      (pressed)="startCreate()"
-    />
-  </div>
+  <p class="employee-payroll-input-section__subtitle">
+    {{ texts.payrollInputsSectionSubtitle }}
+  </p>
 
   <div class="employee-payroll-input-section__body">
     @if (creating()) {
@@ -189,4 +190,10 @@
       <p class="employee-payroll-input-section__empty">{{ texts.payrollInputsEmptyMessage }}</p>
     }
   </div>
-</app-employee-section-shell>
+
+  @if (sectionState().busy) {
+    <p class="employee-payroll-input-section__status" role="status" aria-live="polite">
+      Procesando cambios...
+    </p>
+  }
+</section>
