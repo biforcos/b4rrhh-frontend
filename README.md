@@ -1,8 +1,18 @@
-# B4RRHH — HR Management Backoffice
+# B4RRHH — backoffice
 
-**B4RRHH** is a full-featured HR management backoffice built with Angular 21. It covers the complete employee lifecycle — from hire to termination — alongside payroll management, organizational structure, and a configurable rule-system engine for business rules.
+**B4RRHH is a personnel administration system and a configurable payroll engine.**
+Employment history is temporal by construction — the domain itself refuses overlaps and
+gaps instead of hoping the database will catch them — and payroll is computed from a
+dependency graph that is configuration rather than code, so any amount on a payslip can be
+opened all the way down to the step that produced it.
 
-The frontend communicates with a [Spring Boot backend](../b4rrhh_backend) via a contract-first OpenAPI integration: the API contract is owned by the backend and the client is generated automatically.
+This repository is the backoffice: the screens where people, their history, the
+organisation and the calculated payslips are looked at and changed. Everything else — the
+other repositories and the documents they share — starts at **`b4rrhh/workspace`**, which
+is [`../README.md`](../README.md) once it is laid out beside this one.
+
+It has no domain of its own. Every rule lives in the [backend](../b4rrhh_backend), and this
+repository talks to it through one generated client — see *The contract* below.
 
 ---
 
@@ -10,45 +20,43 @@ The frontend communicates with a [Spring Boot backend](../b4rrhh_backend) via a 
 
 | Layer | Technology |
 |---|---|
-| Framework | Angular 21.2 (standalone components, control-flow syntax) |
-| Language | TypeScript 5.9 |
-| Reactivity | Angular Signals + RxJS 7.8 |
-| UI library | PrimeNG 21.1 with custom theme |
+| Framework | Angular — standalone components, control-flow syntax |
+| Language | TypeScript |
+| Reactivity | Angular Signals, with RxJS at the transport edge |
+| UI library | PrimeNG, with a custom theme |
 | Testing | Vitest |
 | API client | OpenAPI Generator (`typescript-angular`) |
 | Build | Angular CLI + Vite |
 
+Exact versions are in [`package.json`](package.json), which is the only place they cannot
+go stale.
+
 ---
 
-## Features
+## What is in it
 
-### Employee Management
-Complete employee lifecycle management with a tabbed detail view per employee:
+**People.** An employee opens into a tabbed detail view: the overview, contact details,
+the presence with everything anchored to it — contracts, labor classification, work
+centres, working time — the organisational assignments, identifier documents, payroll
+inputs, and the lifecycle workflows.
 
-- **Overview** — status summary, active presence, contract highlights
-- **Contact** — contact details (phone, email, etc.)
-- **Presence** — work center assignments, contracts, labor classification, and working-time segments
-- **Organization** — cost center distribution and organizational assignments
-- **Identity** — identifier documents
-- **Payroll** — payroll inputs and concept assignments
-- **Lifecycle** — hire and re-hire workflows with period and catalog selection
+The tabs are not CRUD forms with a common shell. Each section declares how it is
+maintained — a slot that is replaced, a timeline that can only be appended to and closed,
+a workflow, or read-only — and the button names the real action instead of saying *Edit*
+at everything (ADR-010, ADR-016).
 
-### Organizational Structure
-- Company profiles with addresses and contacts
-- Work centers with history and contact information
-- Cost center management
+**The organisation.** Companies with their addresses and contacts, work centres with their
+history, cost centres.
 
-### Rule System Engine
-A configuration layer for business rules that drives catalog behavior across the application:
+**The rule system.** The catalogue that drives behaviour everywhere else: rule systems,
+entity types and entities, catalogue bindings and options, agreement category profiles.
 
-- Rule system definitions (CRUD)
-- Rule entity types and instances
-- Catalog bindings and options
-- Agreement category profiles (convenios / categorías)
+**Payroll.** The payslip viewer, and the runs that produced them. Opening an amount leads
+to where it came from — and from there, to the [designer](../b4rrhh_designer), which draws
+the graph that calculated it.
 
-### Payroll
-- Payroll receipts viewer
-- Payroll operation tracking
+Feedback is a system-level capability: a section publishes its outcome to the global
+message service and never renders its own success or error banner (ADR-022, ADR-023).
 
 ---
 
@@ -73,29 +81,12 @@ Component  →  Store  →  Gateway  →  Client (generated)
 
 Each feature is lazy-loaded and self-contained under its own route subtree.
 
-### Reactive State with Signals
+### Reactive state with signals
 
-Stores expose readonly signals for granular reactivity:
-
-```typescript
-// EmployeeAddressStore
-private readonly addressesState = signal<ReadonlyArray<EmployeeAddressModel>>([]);
-readonly addresses = this.addressesState.asReadonly();
-```
-
-Derived state is expressed with `computed()`:
-
-```typescript
-// EmployeeOverviewPageComponent
-protected readonly loading = computed(
-  () => this.loadingDetail() || this.loadingPresences() || this.loadingContracts(),
-);
-protected readonly activePresence = computed(
-  () => this.resolveActivePresence(this.presences()),
-);
-```
-
-All components use `ChangeDetectionStrategy.OnPush` for performance.
+A store keeps its state in writable signals and exposes them read-only; anything derived is
+a `computed()`, so a page waiting on three requests asks one question instead of juggling
+three flags. Components are `OnPush` throughout — which is less an optimisation than a
+consequence: with signals there is nothing left for Angular to guess.
 
 ### Backend Availability Guard
 
@@ -107,9 +98,10 @@ Stores track request IDs internally and discard stale responses, preventing race
 
 ---
 
-## API Client Generation
+## The contract
 
-The source of truth for the OpenAPI contract lives in the backend repository. This repository versions a snapshot of it in `openapi/`; the generated client is derived from that snapshot and never committed.
+The backend owns the API contract. This repository versions a snapshot of it in `openapi/`,
+and the client is generated from that snapshot — never written, never versioned.
 
 ```
 b4rrhh_backend/openapi/personnel-administration-api.yaml  ← source of truth
@@ -129,9 +121,29 @@ The two verbs are different things:
 | `npm run api:pull` | Only to bring a **new** contract from a sibling `b4rrhh_backend` checkout. Its result — a modified `openapi/*.yaml` — is a change to review and commit. |
 | `npm run api:refresh` | `api:pull` + `api:generate` in one step, for the same case as `api:pull`. |
 
-The generated client is not committed: it is derived code, ignored by git and regenerated on every build.
-
 Custom adapters in `core/api/clients/` and transformation logic in `core/api/mappers/` wrap the generated client — insulating the app from breaking changes in the generated layer.
+
+### What stops the snapshot going stale
+
+The chain is *backend contract → versioned snapshot → generated client*, and refreshing the
+snapshot is a manual step that happens in another repository and depends on someone
+remembering. Nobody remembers every time, and a stale snapshot is worse than a broken one:
+the build goes green against a contract that no longer exists.
+
+Two things hold it:
+
+- **`npm run api:check`** fails the build when the snapshot in `openapi/` is not the
+  contract on the backend's `main`. It runs in the pipeline, and locally it reads the
+  sibling `../b4rrhh_backend` checkout instead of asking anyone for a token. Its failure
+  message names the exact command that fixes it — a red that someone else caused and that
+  does not say what to do gets learnt away, and a guardrail people ignore stops protecting
+  precisely when it matters.
+- **The generated client is derived code**, ignored by git and rebuilt on every build and
+  every start. Unlike the snapshot, it cannot quietly be old.
+
+The [designer](../b4rrhh_designer) consumes the same contract but does version its
+generated types, so it carries a second lock this repository does not need — and a third
+one for the paths the code actually calls.
 
 ---
 
