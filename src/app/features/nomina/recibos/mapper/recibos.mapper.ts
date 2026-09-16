@@ -41,6 +41,9 @@ export function mapPayrollConceptResponseToModel(
     conceptNatureCode: response.conceptNatureCode,
     originPeriodCode: response.originPeriodCode ?? null,
     displayOrder: response.displayOrder,
+    // El contrato lo declara obligatorio desde el backend#103, pero un recibo servido por un
+    // backend anterior no lo trae: uno es lo mismo que «no funde nada».
+    mergedStepCount: response.mergedStepCount ?? 1,
   };
 }
 
@@ -107,5 +110,6 @@ export function mapPayrollCalculationStepResponseToModel(
     quantity: response.quantity ?? null,
     rate: response.rate ?? null,
     payslipOrderCode: response.payslipOrderCode ?? null,
+    payslipLineNumber: response.payslipLineNumber ?? null,
   };
 }

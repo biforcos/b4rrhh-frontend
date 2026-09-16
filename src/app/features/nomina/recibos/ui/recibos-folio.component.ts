@@ -111,7 +111,26 @@ const MONTH_NAMES_ES = [
             <tr>
               <td>{{ concept.originPeriodCode ?? '—' }}</td>
               <td>{{ concept.conceptCode }}</td>
-              <td>{{ concept.conceptLabel }}</td>
+              <td>
+                {{ concept.conceptLabel }}
+                <!--
+                  La marca de fusión (b4rrhh/backend#103). Sólo aparece cuando la línea viene de
+                  más de un paso: una marca que saliera en todas no marcaría nada. Dice cuántos
+                  tramos suma, porque el número es la mitad del aviso — «2 tramos» invita a mirar
+                  la pestaña Cálculo, un asterisco no.
+                -->
+                @if (concept.mergedStepCount > 1) {
+                  <span
+                    class="concept-merged"
+                    [attr.title]="
+                      'Esta línea suma ' +
+                      concept.mergedStepCount +
+                      ' tramos calculados al mismo precio. La pestaña Cálculo los enseña por separado.'
+                    "
+                    >{{ concept.mergedStepCount }} tramos</span
+                  >
+                }
+              </td>
               <td class="text-right">
                 {{ concept.quantity != null ? formatNum(concept.quantity) : '—' }}
               </td>

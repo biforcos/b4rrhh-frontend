@@ -35,4 +35,14 @@ export interface PayrollCalculationStepModel {
    * naturaleza ni un cruce con la lista de conceptos.
    */
   payslipOrderCode: string | null;
+  /**
+   * En qué línea del folio quedó este paso, o `null` si no llegó al folio (`b4rrhh/backend#103`).
+   *
+   * **Dos pasos con el mismo número son los que esa línea funde.** Es lo que permite decir por qué
+   * un concepto sale dos veces aquí y una sola en el recibo: mismo precio, y el folio los suma.
+   *
+   * Es `null` exactamente cuando `payslipOrderCode` lo es, salvo en los recibos calculados antes
+   * del `backend#103`, que se quedan sin él hasta que se recalculen.
+   */
+  payslipLineNumber: number | null;
 }

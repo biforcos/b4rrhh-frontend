@@ -245,7 +245,29 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
                     <td class="col-num-cell col-amount" [class]="natureClass(s.functionalNature)">
                       {{ fmt(s.amount) }}
                     </td>
-                    <td class="col-folio-cell">{{ s.payslipOrderCode ?? '—' }}</td>
+                    <td class="col-folio-cell">
+                      {{ s.payslipOrderCode ?? '—' }}
+                      <!--
+                        Por qué este paso es dos (b4rrhh/backend#103). Cuando varios pasos van a
+                        la MISMA línea del folio, la línea los suma y esta pestaña los enseña por
+                        separado: sin esto, las dos pantallas discrepan en el número de filas y
+                        nadie sabe por qué. Se dice sólo cuando hay fusión — si cada paso va a su
+                        línea, no hay nada que explicar.
+                      -->
+                      @if (mergedWith(s); as cuantos) {
+                        <span
+                          class="step-merged"
+                          [attr.title]="
+                            'Este paso y ' +
+                            (cuantos - 1) +
+                            ' más van a la misma línea del recibo (la ' +
+                            s.payslipLineNumber +
+                            '), porque comparten precio. El folio los suma en una sola fila.'
+                          "
+                          >línea {{ s.payslipLineNumber }} · {{ cuantos }} tramos</span
+                        >
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -460,6 +482,24 @@ export class RecibosValorizacionPanelComponent {
    * Se lee de `executionScope` y no de que las fechas vengan nulas: el backend lo sirve como campo
    * propio justo para que aquí no se deduzca un hecho de la ausencia de otro.
    */
+  /**
+   * Con cuántos pasos comparte línea del folio éste, o `null` si no la comparte con ninguno.
+   *
+   * Devolver `null` en vez de `1` es lo que hace que la plantilla no pinte nada en el caso normal:
+   * un paso que va a su propia línea no tiene nada que explicar, y una marca que saliera siempre no
+   * marcaría nada (`b4rrhh/backend#103`).
+   *
+   * Se cuenta sobre `payslipLineNumber` y no comparando tarifas: la agrupación la decidió el
+   * backend al fusionar, y repetirla aquí sería tener la regla en dos sitios.
+   */
+  mergedWith(step: PayrollCalculationStepModel): number | null {
+    if (step.payslipLineNumber === null) return null;
+    const cuantos = this._steps().filter(
+      (otro) => otro.payslipLineNumber === step.payslipLineNumber,
+    ).length;
+    return cuantos > 1 ? cuantos : null;
+  }
+
   scopeLabel(step: PayrollCalculationStepModel): string {
     if (step.executionScope === PERIOD_SCOPE) return 'Período';
     if (step.segmentStartDate === null || step.segmentEndDate === null) return 'Segmento';

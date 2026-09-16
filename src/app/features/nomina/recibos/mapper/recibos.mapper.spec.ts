@@ -44,6 +44,7 @@ describe('recibos.mapper', () => {
         conceptNatureCode: 'EARNING',
         originPeriodCode: '202604',
         displayOrder: 10,
+        mergedStepCount: 1,
       };
 
       const model = mapPayrollConceptResponseToModel(response);
@@ -65,6 +66,7 @@ describe('recibos.mapper', () => {
         conceptNatureCode: 'EARNING',
         originPeriodCode: '202604',
         displayOrder: 10,
+        mergedStepCount: 1,
       };
 
       const model = mapPayrollConceptResponseToModel(response);

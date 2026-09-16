@@ -236,3 +236,21 @@
 .col-deduction {
   width: 15%;
 }
+
+/*
+ * La marca de fusión (`b4rrhh/backend#103`): esta línea suma varios tramos calculados al mismo
+ * precio. Va pegada al concepto y en tono secundario — es una nota al pie, no un aviso: la línea
+ * no está mal, sólo cuenta menos de lo que pasó.
+ */
+.concept-merged {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  white-space: nowrap;
+  cursor: help;
+}

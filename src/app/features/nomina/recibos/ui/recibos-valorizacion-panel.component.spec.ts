@@ -13,6 +13,7 @@ function makeConcept(code: string, label: string, nature = 'EARNING'): PayrollCo
     conceptNatureCode: nature,
     originPeriodCode: null,
     displayOrder: 1,
+    mergedStepCount: 1,
   };
 }
 

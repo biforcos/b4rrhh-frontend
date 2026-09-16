@@ -287,6 +287,7 @@ describe('El enlace entre «Cálculo» y «Grafo»', () => {
       quantity: null,
       rate: null,
       payslipOrderCode: null,
+      payslipLineNumber: null,
       ...overrides,
     };
   }

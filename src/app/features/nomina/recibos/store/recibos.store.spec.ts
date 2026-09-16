@@ -33,6 +33,7 @@ const MOCK_CONCEPT: PayrollConceptModel = {
   conceptNatureCode: 'EARNING',
   originPeriodCode: '202604',
   displayOrder: 10,
+  mergedStepCount: 1,
 };
 
 function detailWith(

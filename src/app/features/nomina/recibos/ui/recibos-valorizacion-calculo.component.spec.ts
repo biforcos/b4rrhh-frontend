@@ -228,6 +228,8 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
       quantity: null,
       rate: null,
       payslipOrderCode: null,
+      // El caso normal desde el backend#103: un paso que no se imprime no tiene linea.
+      payslipLineNumber: null,
       ...overrides,
     };
   }
@@ -242,6 +244,8 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
     conceptNatureCode: 'EARNING',
     originPeriodCode: '202609',
     displayOrder: i + 1,
+    // Ninguna funde nada: es el caso que no ensena marca (backend#103).
+    mergedStepCount: 1,
   }));
 
   function render(inputs: {

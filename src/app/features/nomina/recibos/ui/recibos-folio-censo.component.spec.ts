@@ -135,6 +135,7 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
       conceptNatureCode,
       originPeriodCode: '202609',
       displayOrder: 1,
+      mergedStepCount: 1,
     };
   }
 
