@@ -131,13 +131,24 @@ function redirectToLogin(router: Router): void {
  * la pagina de la que venias y volver a entrar te dejaba alli, no donde ibas. La promesa del
  * `frontend#52` era literal —«vuelve a entrar y sigues donde lo dejaste»— y se cumplia a medias.
  *
- * <b>La ventana es estrecha y en local no se abre.</b> Con el backend al lado, cada navegacion
- * termina antes de que vuelva ninguna respuesta, asi que `router.url` ya es el destino cuando el
- * 401 llega; se intento provocar de cuatro formas —carga entera de la ficha, clic en el menu, clic
- * en una fila de la lista con la sesion recien caducada— y en las cuatro el `redirectTo` salia bien
- * incluso sin esto (`frontend#60`). Lo que sostiene este codigo no es aquella medida sino el
- * mecanismo: si la respuesta llega dentro de la ventana, el destino bueno es el de la navegacion en
- * curso y no el de la anterior. Lo pinan los tests, que si pueden poner el router en ese instante.
+ * <b>La ventana no se ha conseguido abrir, y se midio con la receta del issue.</b> Token de
+ * desarrollo de un minuto, entrar, y caducar dentro de la ruta profunda: el `redirectTo` sale
+ * correcto. Y con el arreglo sustituido por `router.url` —marcado con un prefijo para demostrar que
+ * el sabotaje estaba vivo— sale <b>igual de correcto</b>: cuando el interceptor corre, `router.url`
+ * ya es el destino, tambien en una navegacion interna. La navegacion termina antes de que salga la
+ * peticion, no al reves.
+ *
+ * Y hay una razon de fondo por la que el `catchError` de abajo casi no puede ser quien dispare esto
+ * al caducar: `NimbusJwtDecoder` valida el `exp` con <b>60 segundos de holgura</b> por omision, asi
+ * que el backend acepta el token hasta un minuto despues de su caducidad —medido: 200 con el token
+ * 27 s vencido—, mientras que `getAccessToken` lo da por muerto en cuanto pasa `expiresAt`. El
+ * reloj del cliente llega siempre antes que el 401 del servidor, asi que el camino real es la rama
+ * de arriba, la del token ausente, y no la del error. El 401 del servidor queda para el 403 y para
+ * la pestana que estuvo dormida mas de un minuto.
+ *
+ * Lo que sostiene este codigo no es una observacion del defecto —no la hay— sino el mecanismo: si
+ * una respuesta llegara dentro de la ventana, el destino bueno es el de la navegacion en curso y no
+ * el de la anterior. Lo pinan los tests, que si pueden poner al router en ese instante.
  *
  * `getCurrentNavigation()` devuelve la navegacion en curso, y su destino es el bueno mientras la
  * hay. `finalUrl` es el destino ya resuelto —con sus redirecciones aplicadas— y no existe todavia
