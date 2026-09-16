@@ -234,7 +234,7 @@ Cada fase es independiente y deployable.
 
 Los mockups de referencia están en:
 ```
-b4rrhh_frontend/.superpowers/brainstorm/1503-1777225522/content/
+docs/superpowers/mockups/2026-04-26-labor-management-redesign/
   labor-approach.html       — comparativa de los 3 enfoques de tabla
   journey-style.html        — comparativa de los 3 estilos de journey
   laborales-fullpage.html   — mockup completo aprobado de la pestaña Laborales

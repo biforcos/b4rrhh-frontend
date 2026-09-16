@@ -45,7 +45,15 @@ Thumbs.db
 
 # OpenAPI Generated
 /src/app/core/api/generated/*
-.superpowers/.worktrees/
+
+# Maquetas sueltas de una herramienta de brainstorming, con sus ficheros de PID
+# dentro. Se commitearon sin querer y se las lleva quien clone. Las tres que un
+# documento citaba estan en docs/superpowers/mockups/.
+.superpowers/
+
+# Volcado de la documentacion de PrimeNG para Copilot (2 MB). No lo lee el
+# build ni lo referencia ninguna instruccion: si hace falta, se regenera.
+/.github/instructions/llms-full.txt
 
 # Git worktrees
 .worktrees/
