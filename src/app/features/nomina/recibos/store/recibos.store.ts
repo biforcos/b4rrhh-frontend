@@ -3,6 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
+import { lineasQueSeMovieron } from './lineas-movidas.util';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
@@ -86,6 +87,26 @@ export class RecibosStore {
    * y recalcular lo mueve por delante del cambio. No hay estado que mantener aquí.
    */
   private readonly rulesChangedState = signal(false);
+
+  /**
+   * Qué líneas del recibo se movieron en el último recálculo (`b4rrhh/frontend#71`).
+   *
+   * Vacío es «no se movió ninguna», y eso **es información**: recalcular sin haber tocado nada deja
+   * las líneas quietas y mueve la hora, que es enseñar que el motor es determinista.
+   *
+   * Es lo único que obliga a tocar algo que ya existía: para poder comparar hay que no tirar el
+   * recibo anterior hasta haber hecho el diff, y el recálculo lo sustituye.
+   */
+  private readonly lineasMovidasState = signal<ReadonlySet<number>>(new Set());
+
+  /**
+   * Cuántos recálculos ha habido en esta visita.
+   *
+   * Es el disparo del resalte, y por eso es un contador y no un booleano: **la animación va atada
+   * al gesto, no a los datos**. Si se disparase cuando llegan los datos, se animaría al abrir
+   * cualquier recibo y mentiría el 95 % de las veces que apareciera.
+   */
+  private readonly recalculoSeqState = signal(0);
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
 
@@ -126,6 +147,8 @@ export class RecibosStore {
   readonly workCenterName = this.workCenterNameState.asReadonly();
   readonly runId = this.runIdState.asReadonly();
   readonly rulesChanged = this.rulesChangedState.asReadonly();
+  readonly lineasMovidas = this.lineasMovidasState.asReadonly();
+  readonly recalculoSeq = this.recalculoSeqState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
   readonly conceptsError = this.conceptsErrorState.asReadonly();
   readonly steps = this.stepsState.asReadonly();
@@ -174,6 +197,7 @@ export class RecibosStore {
     this.conceptsState.set([]);
     this.runIdState.set(null);
     this.rulesChangedState.set(false);
+    this.lineasMovidasState.set(new Set());
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
     this.transitionErrorState.set(null);
@@ -325,10 +349,13 @@ export class RecibosStore {
         next: (updated) => {
           this.updatePayrollInList(updated);
           this.transitioningState.set(false);
+          // El recibo de antes, cogido AQUI y no dentro de loadConcepts: alli lo primero que se
+          // hace es vaciarlo. Es lo unico que este resalte toca de lo que ya existia (#71).
+          const antes = this.conceptsState();
           // Un recalculo hace un recibo NUEVO, con sus pasos. Los de antes eran de otro recibo:
           // loadConcepts los olvida, y la pestana de Calculo volvera a pedirlos cuando se abra.
           // Ademas es lo que trae la marca de tiempo nueva y el runId, que ahora es nulo (#69).
-          this.loadConcepts(key);
+          this.loadConcepts(key, antes);
         },
         error: (err: HttpErrorResponse) => {
           this.transitioningState.set(false);
@@ -339,7 +366,15 @@ export class RecibosStore {
       });
   }
 
-  private loadConcepts(key: PayrollBusinessKey): void {
+  /**
+   * @param recalculadoDesde el recibo que había antes, y sólo cuando esta carga viene de un
+   *        recálculo que ha salido bien. Nulo en todas las demás —abrir un recibo, recargar tras un
+   *        fallo—, y ese nulo es lo que hace que abrir un recibo no anime nada ({@code #71}).
+   */
+  private loadConcepts(
+    key: PayrollBusinessKey,
+    recalculadoDesde: ReadonlyArray<PayrollConceptModel> | null = null,
+  ): void {
     this.conceptsLoadingState.set(true);
     this.conceptsState.set([]);
     this.companyProfileState.set(null);
@@ -352,6 +387,9 @@ export class RecibosStore {
     this.workCenterNameState.set(null);
     this.runIdState.set(null);
     this.rulesChangedState.set(false);
+    // El resalte del recalculo anterior no puede sobrevivir a la carga siguiente: se apaga aqui y
+    // solo lo vuelve a encender un recalculo que termine bien.
+    this.lineasMovidasState.set(new Set());
     this.conceptsErrorState.set(null);
     this.forgetCalculationSteps();
 
@@ -372,6 +410,10 @@ export class RecibosStore {
           this.workCenterNameState.set(detail.workCenterName);
           this.runIdState.set(detail.runId);
           this.rulesChangedState.set(detail.rulesChangedSinceCalculation);
+          if (recalculadoDesde) {
+            this.lineasMovidasState.set(lineasQueSeMovieron(recalculadoDesde, detail.concepts));
+            this.recalculoSeqState.update((n) => n + 1);
+          }
           this.conceptsLoadingState.set(false);
         },
         error: (err: HttpErrorResponse) => {

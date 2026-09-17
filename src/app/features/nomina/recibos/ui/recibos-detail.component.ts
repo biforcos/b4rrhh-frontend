@@ -38,9 +38,22 @@ const STATUS_LABELS: Record<string, string> = {
             le dice a quien pulsa que su clic hizo algo.
           -->
           <span class="calc-info">
-            <span class="calc-when"
-              >Calculada el {{ calculatedAtLabel(payroll.calculatedAt) }}</span
-            >
+            <!--
+              El ancla del recalculo (b4rrhh/frontend#71). La hora SIEMPRE cambia, aunque no se
+              mueva un centimo, y resaltarla cubre el caso que el resalte selectivo dejaria mudo:
+              recalcular sin haber tocado nada. Y ese caso es informacion y no un hueco — la hora
+              se mueve, las lineas se quedan quietas, y lo que se acaba de ensenar es que el motor
+              es determinista.
+
+              Va dentro de un bloque con clave para que el elemento se vuelva a crear en cada
+              recalculo: una animacion CSS no se reinicia porque le vuelvan a poner la misma clase,
+              y esta barra —a diferencia del folio— no se destruye al recalcular.
+            -->
+            @for (seq of [store.recalculoSeq()]; track seq) {
+              <span class="calc-when" [class.valor-movido]="seq > 0"
+                >Calculada el {{ calculatedAtLabel(payroll.calculatedAt) }}</span
+              >
+            }
             @if (store.runId(); as runId) {
               <span class="calc-sep">·</span>
               <a class="calc-run" [routerLink]="['/nomina/operaciones', runId]"
@@ -209,6 +222,7 @@ const STATUS_LABELS: Record<string, string> = {
           <div class="loading-msg">Cargando conceptos...</div>
         } @else {
           <app-recibos-folio
+            [lineasMovidas]="store.lineasMovidas()"
             [concepts]="store.concepts()"
             [employeeNumber]="payroll.employeeNumber"
             [payrollPeriodCode]="payroll.payrollPeriodCode"

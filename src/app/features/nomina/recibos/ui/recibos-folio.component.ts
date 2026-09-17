@@ -109,7 +109,14 @@ const MONTH_NAMES_ES = [
         </thead>
         <tbody>
           @for (concept of bodyConcepts; track concept.lineNumber) {
-            <tr>
+            <!--
+              El resalte del recalculo (b4rrhh/frontend#71). Solo las lineas cuyo valor ha cambiado;
+              las demas se quedan quietas, que es lo que convierte «la pantalla se ha refrescado» en
+              «esto arrastra a esto». La animacion arranca sola porque estas filas se crean de nuevo
+              con el recibo nuevo, y esta atada al gesto y no a los datos: sin recalculo el conjunto
+              viene vacio y aqui no se pone nada.
+            -->
+            <tr [class.valor-movido]="lineasMovidas.has(concept.lineNumber)">
               <td>{{ concept.originPeriodCode ?? '—' }}</td>
               <td>{{ concept.conceptCode }}</td>
               <td>
@@ -148,7 +155,10 @@ const MONTH_NAMES_ES = [
           }
         </tbody>
         <tfoot>
-          <tr class="row-totals">
+          <tr
+            class="row-totals"
+            [class.valor-movido]="seMovio(totalEarningConcept) || seMovio(totalDeductionConcept)"
+          >
             <td colspan="5" class="totals-label">Totales</td>
             <td class="text-right amount-earning">
               {{
@@ -168,7 +178,7 @@ const MONTH_NAMES_ES = [
 
       <!-- NET PAY -->
       @if (netPayConcept && netPayConcept.amount != null) {
-        <div class="net-pay-footer">
+        <div class="net-pay-footer" [class.valor-movido]="seMovio(netPayConcept)">
           <span class="net-pay-label">Líquido total a percibir</span>
           <span class="net-pay-amount">{{ formatNum(netPayConcept.amount) }} €</span>
         </div>
@@ -196,6 +206,20 @@ export class RecibosFolioComponent {
    * ninguna de las dos es un número inventado.
    */
   @Input() seniorityDate: string | null = null;
+
+  /**
+   * Los números de línea que se movieron en el último recálculo (`b4rrhh/frontend#71`).
+   *
+   * Vacío es el caso normal y significa «no hay nada que resaltar»: abrir un recibo no anima nada,
+   * y recalcular sin haber tocado una regla tampoco mueve ninguna línea — lo que se mueve entonces
+   * es la hora, y eso se enseña arriba.
+   */
+  @Input() lineasMovidas: ReadonlySet<number> = new Set();
+
+  /** Si esta línea —de totales o de líquido— es una de las que se movieron. */
+  seMovio(concept: PayrollConceptModel | null): boolean {
+    return concept !== null && this.lineasMovidas.has(concept.lineNumber);
+  }
 
   get periodLabel(): string {
     const code = this.payrollPeriodCode;

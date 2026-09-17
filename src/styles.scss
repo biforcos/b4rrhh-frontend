@@ -201,3 +201,44 @@ select {
   border: 1px solid var(--accent-border) !important;
   color: var(--accent-primary) !important;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * El resalte de lo que se movió al recalcular (`b4rrhh/frontend#71`)
+ *
+ * Va aquí y no en el .scss de un componente porque lo llevan dos: las líneas
+ * del folio y el ancla de la hora, que viven en componentes distintos y tienen
+ * que moverse igual. Y porque los nombres de `@keyframes` son globales aunque
+ * el componente encapsule sus selectores: declararlo dos veces sería declarar
+ * dos animaciones con el mismo nombre.
+ *
+ * GLOSS Y NO DESAPARECER Y APARECER. Un número que se desvanece en un documento
+ * de nómina se lee como inestabilidad; un resalte breve se lee como «mira
+ * aquí».
+ * ────────────────────────────────────────────────────────────────────────── */
+
+@keyframes valor-movido-gloss {
+  from {
+    background-color: var(--accent-muted);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.valor-movido {
+  animation: valor-movido-gloss 1800ms ease-out;
+}
+
+/*
+ * Sin movimiento, la información sigue estando.
+ *
+ * Quitar la animación y dejarlo en nada sería quitar lo que la animación decía.
+ * Quien pide no moverse pide no moverse, no dejar de enterarse: el resalte se
+ * queda fijo en vez de apagarse solo.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .valor-movido {
+    animation: none;
+    background-color: var(--accent-muted);
+  }
+}

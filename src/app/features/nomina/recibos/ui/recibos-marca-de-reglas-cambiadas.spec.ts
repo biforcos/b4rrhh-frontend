@@ -58,6 +58,8 @@ describe('La marca de reglas cambiadas', () => {
             selectedPayroll,
             runId: signal(1),
             rulesChanged: signal(rulesChanged),
+            lineasMovidas: signal(new Set<number>()),
+            recalculoSeq: signal(0),
             concepts: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),
