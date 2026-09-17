@@ -418,3 +418,21 @@
   background: var(--surface-accent);
   box-shadow: inset 3px 0 0 var(--accent-primary);
 }
+
+/*
+ * El salto a la fila de tabla que puso el valor de un paso (`b4rrhh/frontend#71`).
+ *
+ * Sólo aparece en los dos pasos de un recibo que leen tabla, así que no compite con nada: es una
+ * segunda línea bajo el mnemónico, como el `step-meta` de al lado.
+ */
+.step-source-row {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.step-source-row:hover {
+  text-decoration: underline;
+}

@@ -111,5 +111,7 @@ export function mapPayrollCalculationStepResponseToModel(
     rate: response.rate ?? null,
     payslipOrderCode: response.payslipOrderCode ?? null,
     payslipLineNumber: response.payslipLineNumber ?? null,
+    sourceTableCode: response.sourceTableCode ?? null,
+    sourceTableRowId: response.sourceTableRowId ?? null,
   };
 }

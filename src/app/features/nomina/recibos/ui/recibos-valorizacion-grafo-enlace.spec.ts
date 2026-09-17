@@ -288,6 +288,8 @@ describe('El enlace entre «Cálculo» y «Grafo»', () => {
       rate: null,
       payslipOrderCode: null,
       payslipLineNumber: null,
+      sourceTableCode: null,
+      sourceTableRowId: null,
       ...overrides,
     };
   }

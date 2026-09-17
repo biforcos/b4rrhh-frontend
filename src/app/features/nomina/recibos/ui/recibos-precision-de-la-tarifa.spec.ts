@@ -108,6 +108,8 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
       rate: concept.rate,
       payslipOrderCode: concept.conceptCode,
       payslipLineNumber: concept.lineNumber,
+      sourceTableCode: null,
+      sourceTableRowId: null,
     };
 
     const fixture = TestBed.createComponent(RecibosValorizacionPanelComponent);

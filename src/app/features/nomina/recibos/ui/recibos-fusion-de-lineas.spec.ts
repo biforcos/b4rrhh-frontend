@@ -70,6 +70,8 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
       conceptMnemonic: 'COEFICIENTE_JORNADA',
       payslipOrderCode: null,
       payslipLineNumber: null,
+      sourceTableCode: null,
+      sourceTableRowId: null,
       executionScope: 'PERIOD',
     };
 
@@ -99,6 +101,8 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
       rate,
       payslipOrderCode: '101',
       payslipLineNumber,
+      sourceTableCode: null,
+      sourceTableRowId: null,
     };
   }
 

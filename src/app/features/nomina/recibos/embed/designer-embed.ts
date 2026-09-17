@@ -43,6 +43,53 @@ export function buildDesignerReceiptUrl(key: PayrollBusinessKey): string {
 }
 
 /**
+ * Los tres parámetros con los que el designer aterriza en una fila de tabla (`b4rrhh/designer#13`).
+ *
+ * Escritos aquí y leídos allí, que es la segunda duplicación entre los dos repos y la misma clase
+ * de frontera que los dos mensajes de arriba: no cabe en el OpenAPI porque no va del backend, va de
+ * dos clientes que se pasan una dirección. Si uno de los dos renombra un parámetro, el salto deja
+ * de llevar a ninguna parte, en el navegador y sin un solo error. El candado está en el test.
+ */
+export const DESIGNER_TABLE_PARAM = 'tabla';
+export const DESIGNER_ROW_PARAM = 'fila';
+export const DESIGNER_RECEIPT_PARAM = 'recibo';
+
+/**
+ * La dirección de la fila de tabla que puso un número, con el recibo del que se viene.
+ *
+ * La fila **la trae el paso** (`b4rrhh/backend#107`) y no se resuelve aquí: la búsqueda del motor es
+ * por vigencia y por categoría, así que repetirla en el cliente contestaría dónde estaría hoy ese
+ * valor y no de dónde salió. Sería, además, la misma regla en dos sitios, que es lo que el
+ * `b4rrhh/designer#11` acaba de quitar.
+ *
+ * El recibo viaja para que el designer pueda ofrecer la vuelta. Va con sus seis partes y separadas
+ * por `/` dentro de un solo parámetro, que es como se escribe la dirección de un recibo en todas
+ * partes; `URLSearchParams` se encarga de escaparlo.
+ */
+export function buildDesignerTableRowUrl(
+  tableCode: string,
+  rowId: number,
+  key: PayrollBusinessKey,
+): string {
+  const params = new URLSearchParams();
+  params.set(DESIGNER_TABLE_PARAM, tableCode);
+  params.set(DESIGNER_ROW_PARAM, String(rowId));
+  params.set(
+    DESIGNER_RECEIPT_PARAM,
+    [
+      key.ruleSystemCode,
+      key.employeeTypeCode,
+      key.employeeNumber,
+      key.payrollPeriodCode,
+      key.payrollTypeCode,
+      String(key.presenceNumber),
+    ].join('/'),
+  );
+
+  return `/designer/objects?${params.toString()}`;
+}
+
+/**
  * Manda el «céntrate en este concepto» al marco, sin esperar a que diga que está listo.
  *
  * Sin `contentWindow` no hace nada: el marco todavía no está en el DOM, y el designer guarda el

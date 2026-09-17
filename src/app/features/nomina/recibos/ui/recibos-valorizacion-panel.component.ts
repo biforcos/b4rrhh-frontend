@@ -15,7 +15,7 @@ import { formatValor } from '../format/recibos.format';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
-import { buildDesignerReceiptUrl } from '../embed/designer-embed';
+import { buildDesignerReceiptUrl, buildDesignerTableRowUrl } from '../embed/designer-embed';
 import { RecibosValorizacionGrafoComponent } from './recibos-valorizacion-grafo.component';
 
 const NATURES = new Set([
@@ -240,6 +240,32 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
                     <td class="col-label-cell">
                       {{ s.conceptMnemonic }}
                       <span class="step-meta">{{ scopeLabel(s) }} · {{ s.calculationType }}</span>
+                      <!--
+                        El salto a la fila que puso este numero (b4rrhh/frontend#71).
+
+                        Sale SOLO en los pasos cuyo valor vino de una tabla, que en un recibo son
+                        dos de 38. Un enlace que a veces no lleva a ninguna parte es peor que no
+                        tenerlo, asi que aqui no hay boton gris ni «no disponible»: no hay nada.
+
+                        La fila la trae el paso y no se adivina: resolverla en el cliente seria
+                        tener la regla en dos sitios, y ademas contestaria donde estaria HOY ese
+                        valor en vez de de donde salio.
+                      -->
+                      @if (tableRowUrl(s); as url) {
+                        <a
+                          class="step-source-row"
+                          [href]="url"
+                          (click)="$event.stopPropagation()"
+                          [attr.title]="
+                            'Este valor se leyó de la fila ' +
+                            s.sourceTableRowId +
+                            ' de la tabla ' +
+                            s.sourceTableCode +
+                            '. El designer la abre señalada, y sabe volver aquí.'
+                          "
+                          >↗ Ir a la fila que lo puso</a
+                        >
+                      }
                     </td>
                     <td class="col-num-cell">{{ s.quantity != null ? fmt(s.quantity) : '—' }}</td>
                     <td class="col-num-cell">{{ s.rate != null ? fmt(s.rate) : '—' }}</td>
@@ -475,6 +501,20 @@ export class RecibosValorizacionPanelComponent {
     this.highlightedConceptCode.set(conceptCode);
     this.view.set('calculo');
     this.stepsRequested.emit();
+  }
+
+  /**
+   * La dirección de la fila que puso el valor de este paso, o `null` si no la puso ninguna.
+   *
+   * Nulo es lo normal y es lo que hace que la plantilla no pinte nada: de los 38 pasos de un
+   * recibo leen una fila dos. También es nulo en los recibos calculados antes del
+   * `b4rrhh/backend#107`, que se quedan sin procedencia hasta que se recalculen — y entonces lo
+   * honesto es no ofrecer un salto que llevaría a la fila equivocada.
+   */
+  tableRowUrl(step: PayrollCalculationStepModel): string | null {
+    const address = this.payrollAddress;
+    if (!address || step.sourceTableCode === null || step.sourceTableRowId === null) return null;
+    return buildDesignerTableRowUrl(step.sourceTableCode, step.sourceTableRowId, address);
   }
 
   /**

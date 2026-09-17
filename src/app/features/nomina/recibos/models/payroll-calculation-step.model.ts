@@ -45,4 +45,21 @@ export interface PayrollCalculationStepModel {
    * del `backend#103`, que se quedan sin él hasta que se recalculen.
    */
   payslipLineNumber: number | null;
+  /**
+   * La tabla de la que este paso leyó su valor, o `null` si no lo leyó de ninguna
+   * (`b4rrhh/backend#107`).
+   *
+   * El nulo es el caso normal y significa algo: de los 38 pasos de un recibo leen una fila dos —el
+   * precio del día y el de la hora extra—. Un paso sin fila **no ofrece el salto**: un enlace que a
+   * veces no lleva a ninguna parte es peor que no tenerlo.
+   */
+  sourceTableCode: string | null;
+  /**
+   * La fila que el motor leyó, tal como la tenía delante al calcular.
+   *
+   * No se resuelve al leer y por eso no se adivina aquí: la búsqueda es por vigencia y por
+   * categoría, así que repetirla contestaría dónde estaría hoy el valor, no de dónde salió. Y puede
+   * haber desaparecido desde entonces — de eso se encarga el designer al aterrizar.
+   */
+  sourceTableRowId: number | null;
 }

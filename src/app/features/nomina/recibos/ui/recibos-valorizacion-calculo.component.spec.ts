@@ -230,6 +230,8 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
       payslipOrderCode: null,
       // El caso normal desde el backend#103: un paso que no se imprime no tiene linea.
       payslipLineNumber: null,
+      sourceTableCode: null,
+      sourceTableRowId: null,
       ...overrides,
     };
   }

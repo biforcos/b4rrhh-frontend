@@ -10722,6 +10722,7 @@ components:
         - status
         - calculatedAt
         - concepts
+        - rulesChangedSinceCalculation
       properties:
         ruleSystemCode:
           type: string
@@ -10742,6 +10743,24 @@ components:
         calculatedAt:
           type: string
           format: date-time
+        rulesChangedSinceCalculation:
+          type: boolean
+          description: >-
+            True when the rules of this rule system were touched after this payroll was
+            calculated. The payroll itself does not change: it is what the engine calculated and
+            stays that way. This says it may no longer reflect the rules in force, so a screen can
+            offer to recalculate instead of looking as if nothing had happened.
+
+
+            It OVER-WARNS on purpose. The comparison is against the last change to the whole rule
+            system, so a change to a concept this employee does not use raises it too. That is the
+            safe direction — it never says fresh when it is stale — and it is why this must be
+            worded as "may no longer reflect the current rules" and never as a statement of fact.
+            Narrowing it would need to know which concepts reach which payroll, which is a
+            different problem.
+
+
+            It clears itself: recalculating moves calculatedAt past the change.
         runId:
           type: integer
           format: int64
@@ -10965,6 +10984,23 @@ components:
             reached by different paths — instead of leaving the reader to compare rates by eye. It
             is null exactly when payslipOrderCode is, except in payrolls calculated before this
             field existed, which carry null until they are recalculated.
+        sourceTableCode:
+          type: string
+          nullable: true
+          description: >-
+            Payroll table this step read its value from, or null when the value did not come from
+            a table. Most steps carry null and that is what it means: an AGGREGATE reads no table.
+        sourceTableRowId:
+          type: integer
+          format: int64
+          nullable: true
+          description: >-
+            Row of that table the engine actually read. It is recorded when the value is produced,
+            not resolved when it is read: resolving it again would answer where the value would be
+            looked up today, and a change of validity or category in between would silently point
+            at a different row. The row may have been deleted since, so a client must handle the
+            address leading nowhere. Null exactly when sourceTableCode is, plus in payrolls
+            calculated before this field existed, which carry null until they are recalculated.
 
     PayrollConceptResponse:
       type: object
