@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { formatValor } from '../format/recibos.format';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
@@ -511,11 +512,12 @@ export class RecibosValorizacionPanelComponent {
     return 'nature-' + (NATURES.has(nature) ? nature.toLowerCase() : 'unknown');
   }
 
+  /**
+   * Delega, y ese es el punto: la precisión del folio, la de esta pestaña y la del grafo son la
+   * misma porque salen de la misma función (`b4rrhh/backend#106`).
+   */
   fmt(value: number): string {
-    return new Intl.NumberFormat('es-ES', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
+    return formatValor(value);
   }
 
   onClose(): void {

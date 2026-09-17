@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import { formatValor } from '../format/recibos.format';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
 import {
   PayrollCompanyProfileModel,
@@ -274,10 +275,11 @@ export class RecibosFolioComponent {
     return concept.conceptNatureCode === 'DEDUCTION';
   }
 
+  /**
+   * Delega, y ese es el punto: la precisión del folio, la de la pestaña «Cálculo» y la del grafo
+   * son la misma porque salen de la misma función (`b4rrhh/backend#106`).
+   */
   formatNum(value: number): string {
-    return new Intl.NumberFormat('es-ES', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
+    return formatValor(value);
   }
 }
