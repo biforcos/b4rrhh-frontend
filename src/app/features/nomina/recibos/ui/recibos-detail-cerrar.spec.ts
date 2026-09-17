@@ -56,6 +56,7 @@ describe('Cerrar un recibo', () => {
           useValue: {
             selectedPayroll,
             runId: signal(1),
+            rulesChanged: signal(false),
             concepts: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),

@@ -75,6 +75,17 @@ export class RecibosStore {
    * anterior mientras llega el suyo — pasa justo al recalcular, donde el `runId` desaparece.
    */
   private readonly runIdState = signal<number | null>(null);
+
+  /**
+   * Si la reglamentación se tocó después de calcularse el recibo abierto (`b4rrhh/backend#107`).
+   *
+   * Se pone a `false` al empezar cada carga como todo lo demás, y eso importa: la marca del recibo
+   * anterior no puede quedarse encendida sobre el siguiente mientras llega el suyo.
+   *
+   * **Se apaga sola al recalcular** y nadie la apaga: la comparación es contra el `calculated_at`,
+   * y recalcular lo mueve por delante del cambio. No hay estado que mantener aquí.
+   */
+  private readonly rulesChangedState = signal(false);
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
 
@@ -114,6 +125,7 @@ export class RecibosStore {
   readonly workCenterCode = this.workCenterCodeState.asReadonly();
   readonly workCenterName = this.workCenterNameState.asReadonly();
   readonly runId = this.runIdState.asReadonly();
+  readonly rulesChanged = this.rulesChangedState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
   readonly conceptsError = this.conceptsErrorState.asReadonly();
   readonly steps = this.stepsState.asReadonly();
@@ -161,6 +173,7 @@ export class RecibosStore {
     this.selectedPayrollState.set(null);
     this.conceptsState.set([]);
     this.runIdState.set(null);
+    this.rulesChangedState.set(false);
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
     this.transitionErrorState.set(null);
@@ -338,6 +351,7 @@ export class RecibosStore {
     this.workCenterCodeState.set(null);
     this.workCenterNameState.set(null);
     this.runIdState.set(null);
+    this.rulesChangedState.set(false);
     this.conceptsErrorState.set(null);
     this.forgetCalculationSteps();
 
@@ -357,6 +371,7 @@ export class RecibosStore {
           this.workCenterCodeState.set(detail.workCenterCode);
           this.workCenterNameState.set(detail.workCenterName);
           this.runIdState.set(detail.runId);
+          this.rulesChangedState.set(detail.rulesChangedSinceCalculation);
           this.conceptsLoadingState.set(false);
         },
         error: (err: HttpErrorResponse) => {

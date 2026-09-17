@@ -149,6 +149,51 @@ const STATUS_LABELS: Record<string, string> = {
         </div>
       }
 
+      <!--
+        «Puede que este recibo ya no refleje las reglas actuales» (b4rrhh/frontend#71).
+
+        El recibo NO cambia: es lo que el motor calculo y asi se queda (ADR-062). Lo que se anade
+        es que lo diga, porque despues de editar una regla parece que no ha pasado nada.
+
+        Va aqui y no en el flujo de la edicion porque una edicion afecta a TODOS los recibos del
+        sistema de reglas: decirlo solo al que acaba de editar dejaria a los demas rancios en
+        silencio, que es la forma que llevamos dos semanas quitando.
+
+        Y lleva el gesto que lo arregla al lado. Avisar de algo y no ofrecer la salida es dejar al
+        visitante buscando el boton.
+      -->
+      @if (store.rulesChanged()) {
+        <div class="rules-changed" role="status">
+          <div class="rules-changed-text">
+            <p class="rules-changed-title">
+              Puede que este recibo ya no refleje las reglas actuales.
+            </p>
+            <p class="rules-changed-body">
+              La reglamentación se ha tocado después de calcularlo. El recibo sigue diciendo lo que
+              el motor calculó, que es lo correcto; para verlo con las reglas de ahora hay que
+              recalcularlo.
+              <!--
+                Sobre-avisa a proposito: la comparacion es contra el ultimo cambio del sistema de
+                reglas entero, asi que un cambio que no toque a este empleado la levanta igual. Es
+                la direccion segura —nunca dice fresco cuando esta rancio— y por eso se redacta
+                como «puede que» y no como una afirmacion.
+              -->
+            </p>
+          </div>
+          @if (payroll.status === 'CALCULATED' || payroll.status === 'NOT_VALID') {
+            <button
+              class="btn btn-recalcular"
+              [disabled]="store.transitioning()"
+              (click)="recalculate()"
+            >
+              {{ store.transitioning() ? 'Recalculando…' : 'Recalcular' }}
+            </button>
+          } @else {
+            <span class="rules-changed-closed"> Este recibo está cerrado y no se recalcula. </span>
+          }
+        </div>
+      }
+
       @if (store.transitionError(); as error) {
         <div
           class="transition-error"

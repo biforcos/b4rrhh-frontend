@@ -49,6 +49,19 @@ export interface PayrollDetailModel {
    * recálculo suelto de un recibo, que es el que ofrece «Recalcular».
    */
   runId: number | null;
+  /**
+   * Si la reglamentación se tocó después de calcularse este recibo (`b4rrhh/backend#107`).
+   *
+   * Va aquí y no en `PayrollSummaryModel` por lo mismo que `runId`: el modelo común lo comparten la
+   * lista y el detalle, y la lista se sirve de `PayrollSummaryResponse`, que no lo trae. Meterlo
+   * ahí obligaría al mapa de la lista a poner `false`, y «no lo sé» pasaría a decir «está al día».
+   *
+   * **Sobre-avisa a propósito**: el backend compara contra el último cambio del sistema de reglas
+   * entero, así que un cambio en un concepto que este empleado no usa lo levanta igual. Es la
+   * dirección segura —nunca dice fresco cuando está rancio— y por eso se pinta como «puede que» y
+   * nunca como una afirmación.
+   */
+  rulesChangedSinceCalculation: boolean;
   concepts: ReadonlyArray<PayrollConceptModel>;
   companyProfile: PayrollCompanyProfileModel | null;
   employeeProfile: PayrollEmployeeProfileModel | null;
@@ -82,6 +95,9 @@ export class RecibosGateway {
       map((response) => ({
         summary: payrollResponseToSummary(response),
         runId: response.runId ?? null,
+        // Un backend anterior al b4rrhh/backend#107 no lo trae, y entonces no hay nada que decir:
+        // callarse es lo unico que no miente en los dos sentidos.
+        rulesChangedSinceCalculation: response.rulesChangedSinceCalculation ?? false,
         concepts: (response.concepts ?? [])
           .map(mapPayrollConceptResponseToModel)
           .sort((a, b) => a.displayOrder - b.displayOrder),

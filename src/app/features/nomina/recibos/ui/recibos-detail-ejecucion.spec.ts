@@ -53,6 +53,7 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
           useValue: {
             selectedPayroll,
             runId: run,
+            rulesChanged: signal(false),
             concepts: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),
