@@ -67,6 +67,13 @@ jobs:
           # migracion del #13 aun no ha alcanzado, y esa lista solo puede
           # encoger: si una se migra y nadie la borra de la lista, tambien
           # tumba el build.
+          # lint:nginx es el de las cabeceras de seguridad (#67, #73): tumba
+          # el build si un bloque del nginx.conf trae add_header propio sin
+          # incluir el fichero comun, porque en nginx uno propio descarta
+          # TODOS los heredados. Corre aqui, antes de construir la imagen,
+          # porque la otra red -el curl -I contra la demo del reset diario-
+          # corre DESPUES de desplegar: sin este paso el bloque olvidado se
+          # despliega sin cabeceras y lo cuenta la noche siguiente.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -96,6 +103,7 @@ jobs:
                    && npm run lint:inline-styles \
                    && npm run lint:orphan-styles \
                    && npm run lint:own-cards \
+                   && npm run lint:nginx \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
