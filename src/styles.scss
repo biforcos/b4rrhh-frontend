@@ -214,19 +214,32 @@ select {
  * GLOSS Y NO DESAPARECER Y APARECER. Un número que se desvanece en un documento
  * de nómina se lee como inestabilidad; un resalte breve se lee como «mira
  * aquí».
+ *
+ * PRIMERO SE QUEDA QUIETO Y LUEGO SE VA (`b4rrhh/frontend#74`). El fotograma del 40 % no
+ * es un adorno: sin él, la interpolación de punta a punta con `ease-out` se gastaba el
+ * color en los primeros cientos de milisegundos y el resto de los 1800 ms era una cola
+ * que ya no se veía. El presupuesto se iba entero en desaparecer, que es justo donde no
+ * hace falta. Alargar la animación no lo arreglaría: alargaría la cola invisible.
  * ────────────────────────────────────────────────────────────────────────── */
 
 @keyframes valor-movido-gloss {
-  from {
+  0%,
+  40% {
     background-color: var(--accent-muted);
   }
-  to {
+  100% {
     background-color: transparent;
   }
 }
 
+/*
+ * `linear` y no `ease-out`: la curva se aplica a cada tramo, así que un `ease-out` aquí
+ * volvería a vaciar el color nada más soltar el fotograma del 40 % y dejaría otra vez
+ * una cola invisible, sólo que más corta. El tramo que se ve tiene que irse a ritmo
+ * constante.
+ */
 .valor-movido {
-  animation: valor-movido-gloss 1800ms ease-out;
+  animation: valor-movido-gloss 1800ms linear;
 }
 
 /*
