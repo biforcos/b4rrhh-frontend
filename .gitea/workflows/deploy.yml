@@ -45,6 +45,17 @@ jobs:
           # detecta que esta en CI, y el job se quedaria colgado para siempre
           # con la suite en verde.
           #
+          # La suite lleva enganchado en angular.json un reporter que nombra los
+          # tests que se saltan (#72). Aqui es donde importa: los tres candados
+          # de la frontera con el designer leen un fichero del repositorio
+          # hermano y se saltan si no esta, y aqui se clona un repo solo. Se
+          # saltan a proposito -exigir un checkout doble para correr 'ng test'
+          # seria peor que el problema-, pero un test que se salta SALE VERDE y
+          # el "819 tests" del final no lo distingue de uno que cerro. Asi que
+          # la corrida los nombra uno por uno al final y quien lee la entrega
+          # los ve. Cierran en la maquina de quien toca el puente, que es donde
+          # se toca.
+          #
           # La JRE y el api:generate no son opcionales: el cliente del contrato
           # esta en .gitignore, asi que en un checkout limpio no existe y la
           # mitad del codigo no compila. Se genera desde
