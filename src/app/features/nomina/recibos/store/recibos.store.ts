@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
@@ -19,6 +19,20 @@ import { arePayrollBusinessKeysEqual } from '../routing/payroll-route-key.util';
 export type RecibosErrorCode = 'request-failed' | 'not-found' | 'transition-failed';
 
 /**
+ * En qué se ha quedado el recibo que la pantalla lleva rato enseñando (`b4rrhh/frontend#75`).
+ *
+ * `desaparecido` es que en esa dirección ya no hay ningún recibo —la base de debajo se ha
+ * sustituido, que es lo que hace el reinicio nocturno de la demo todas las madrugadas—, y
+ * `cambiado` es que hay uno, pero no el de la pantalla: lo han recalculado o le han movido el
+ * estado desde otro sitio.
+ *
+ * Son dos cosas distintas y se dicen distinto. Y ninguna de las dos es la marca de reglas
+ * cambiadas del `backend#107`, que dice «esto se calculó con reglas que ya no son» — un recibo que
+ * sigue existiendo y sigue siendo el que se está mirando.
+ */
+export type ReciboDesincronizado = 'desaparecido' | 'cambiado';
+
+/**
  * El código con el que el backend dice que esa unidad la está calculando otro ahora mismo
  * (`b4rrhh/backend#101`). Es el mismo que la ejecución masiva escribe en el mensaje de la unidad,
  * así que las dos puertas nombran el suceso igual.
@@ -27,6 +41,19 @@ const UNIDAD_COGIDA = 'UNIT_ALREADY_CLAIMED';
 
 function esUnidadCogida(err: HttpErrorResponse): boolean {
   return err.status === 409 && err.error?.code === UNIDAD_COGIDA;
+}
+
+/**
+ * Si el recibo que acaba de contestar el backend es el mismo que se está enseñando.
+ *
+ * La clave de negocio no sirve para esto: es la misma dirección, y de eso se trata. Lo que
+ * distingue un recibo de su sustituto es **cuándo se calculó** y **en qué estado está**, que son
+ * justo los dos datos que la barra de arriba enseña y sobre los que deciden los botones.
+ */
+function esElMismoRecibo(alaVista: PayrollSummaryModel, delServidor: PayrollSummaryModel): boolean {
+  return (
+    alaVista.calculatedAt === delServidor.calculatedAt && alaVista.status === delServidor.status
+  );
 }
 
 @Injectable({ providedIn: 'root' })
@@ -130,6 +157,15 @@ export class RecibosStore {
   private readonly transitioningState = signal(false);
   private readonly transitionErrorState = signal<string | null>(null);
 
+  /**
+   * Si lo que la pantalla enseña ya no es lo que hay detrás (`b4rrhh/frontend#75`).
+   *
+   * Nulo mientras nadie haya comprobado lo contrario, y **eso no es «está al día»**: es «nadie ha
+   * vuelto a preguntar». La diferencia importa porque quien pregunta es volver a la pestaña, y una
+   * pestaña que nadie ha mirado no ha preguntado nunca.
+   */
+  private readonly desincronizadoState = signal<ReciboDesincronizado | null>(null);
+
   readonly payrolls = this.payrollsState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
@@ -157,6 +193,15 @@ export class RecibosStore {
   readonly stepsLoaded = this.stepsLoadedKeyState.asReadonly();
   readonly transitioning = this.transitioningState.asReadonly();
   readonly transitionError = this.transitionErrorState.asReadonly();
+  readonly desincronizado = this.desincronizadoState.asReadonly();
+
+  /**
+   * El recibo de la pantalla ya no está en ninguna parte.
+   *
+   * Es lo que apaga los cuatro botones: recalcular, invalidar, validar y cerrar algo que no existe
+   * no es una operación que pueda fallar bien, es un gesto que aparenta funcionar.
+   */
+  readonly reciboDesaparecido = computed(() => this.desincronizadoState() === 'desaparecido');
 
   search(filters: RecibosFilters): void {
     this.listLoadingState.set(true);
@@ -201,7 +246,47 @@ export class RecibosStore {
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
     this.transitionErrorState.set(null);
+    this.desincronizadoState.set(null);
     this.forgetCalculationSteps();
+  }
+
+  /**
+   * Volver a preguntar si el recibo que se está enseñando sigue estando ahí (`b4rrhh/frontend#75`).
+   *
+   * Quien llama a esto es **volver a la pestaña**, y nadie más. Una pantalla que lleva horas
+   * abierta puede estar enseñando un recibo de una base que ya se sustituyó —el reinicio nocturno
+   * de la demo lo hace todas las madrugadas— con los importes, la fecha de cálculo y los botones
+   * intactos, y eso se lee como un recibo bueno.
+   *
+   * **No recarga la pantalla, sólo pregunta.** Sustituir lo que alguien estaba mirando sin avisar
+   * es cambiarle un defecto por otro peor: lo que hace falta es decirlo, y recargar lo decide
+   * quien mira.
+   *
+   * Y no pregunta nada si no hay nada que preguntar —ninguna dirección abierta, el recibo todavía
+   * cargando, una transición en marcha—, porque en los tres casos la respuesta va a llegar sola.
+   */
+  revisarSiSigueAhi(): void {
+    const key = this.selectedKeyState();
+    const alaVista = this.selectedPayrollState();
+    if (!key || !alaVista) return;
+    if (this.conceptsLoadingState() || this.transitioningState()) return;
+
+    this.gateway
+      .getDetail(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (detail) => {
+          this.desincronizadoState.set(
+            esElMismoRecibo(alaVista, detail.summary) ? null : 'cambiado',
+          );
+        },
+        error: (err: HttpErrorResponse) => {
+          // Un 404 es que en esa dirección ya no hay recibo. Cualquier otro fallo es la red o el
+          // servidor, y **callarse es lo correcto**: decir «ha desaparecido» porque no contestan
+          // sería el mismo error que este issue arregla, con el signo cambiado.
+          if (err.status === 404) this.desincronizadoState.set('desaparecido');
+        },
+      });
   }
 
   /**
@@ -238,7 +323,7 @@ export class RecibosStore {
   }
 
   invalidate(key: PayrollBusinessKey): void {
-    if (this.transitioningState()) return;
+    if (this.transitioningState() || this.reciboDesaparecido()) return;
     this.transitioningState.set(true);
     this.transitionErrorState.set(null);
 
@@ -258,7 +343,7 @@ export class RecibosStore {
   }
 
   validate(key: PayrollBusinessKey): void {
-    if (this.transitioningState()) return;
+    if (this.transitioningState() || this.reciboDesaparecido()) return;
     this.transitioningState.set(true);
     this.transitionErrorState.set(null);
 
@@ -296,7 +381,7 @@ export class RecibosStore {
    * una decisión grande detrás de un clic, y no la pidió nadie (`b4rrhh/backend#90`).
    */
   finalize(key: PayrollBusinessKey): void {
-    if (this.transitioningState()) return;
+    if (this.transitioningState() || this.reciboDesaparecido()) return;
     this.transitioningState.set(true);
     this.transitionErrorState.set(null);
 
@@ -316,7 +401,7 @@ export class RecibosStore {
   }
 
   recalculateFrom(key: PayrollBusinessKey, status: PayrollSummaryModel['status']): void {
-    if (this.transitioningState()) return;
+    if (this.transitioningState() || this.reciboDesaparecido()) return;
     this.transitioningState.set(true);
     this.transitionErrorState.set(null);
 
@@ -391,6 +476,9 @@ export class RecibosStore {
     // solo lo vuelve a encender un recalculo que termine bien.
     this.lineasMovidasState.set(new Set());
     this.conceptsErrorState.set(null);
+    // Se vuelve a pedir el recibo, asi que lo que llegue ES lo que hay detras: el aviso de que la
+    // pantalla iba rancia deja de tener sentido aqui y no despues (#75).
+    this.desincronizadoState.set(null);
     this.forgetCalculationSteps();
 
     this.gateway

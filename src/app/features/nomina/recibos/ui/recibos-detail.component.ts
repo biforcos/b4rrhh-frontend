@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -82,7 +89,7 @@ const STATUS_LABELS: Record<string, string> = {
           @if (payroll.status === 'CALCULATED' || payroll.status === 'NOT_VALID') {
             <button
               class="btn btn-recalcular"
-              [disabled]="store.transitioning()"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="recalculate()"
             >
               {{ store.transitioning() ? 'Recalculando…' : 'Recalcular' }}
@@ -96,12 +103,16 @@ const STATUS_LABELS: Record<string, string> = {
             -->
             <button
               class="btn btn-invalidar"
-              [disabled]="store.transitioning()"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="invalidate()"
             >
               Invalidar
             </button>
-            <button class="btn btn-validar" [disabled]="store.transitioning()" (click)="validate()">
+            <button
+              class="btn btn-validar"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
+              (click)="validate()"
+            >
               Validar
             </button>
           }
@@ -120,7 +131,7 @@ const STATUS_LABELS: Record<string, string> = {
           @if (payroll.status === 'CALCULATED' || payroll.status === 'EXPLICIT_VALIDATED') {
             <button
               class="btn btn-cerrar"
-              [disabled]="store.transitioning()"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="askToFinalize()"
             >
               Cerrar
@@ -146,11 +157,16 @@ const STATUS_LABELS: Record<string, string> = {
           <div class="confirm-close-buttons">
             <button
               class="btn btn-cerrar"
-              [disabled]="store.transitioning()"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="confirmFinalize()"
             >
               {{ store.transitioning() ? 'Cerrando…' : 'Sí, cerrar' }}
             </button>
+            <!--
+              «No cerrar» NO se apaga con el recibo desaparecido: es la salida de la pregunta, y
+              dejar a alguien encerrado en un dialogo porque le han quitado la base de debajo seria
+              el mismo defecto de este issue puesto del reves (#75).
+            -->
             <button
               class="btn"
               [disabled]="store.transitioning()"
@@ -159,6 +175,51 @@ const STATUS_LABELS: Record<string, string> = {
               No cerrar
             </button>
           </div>
+        </div>
+      }
+
+      <!--
+        «Esto ya no esta» (b4rrhh/frontend#75).
+
+        Una pestana que lleva horas abierta puede estar ensenando un recibo de una base que ya se
+        sustituyo —el reinicio nocturno de la demo lo hace todas las madrugadas— con los importes,
+        la fecha y los botones intactos. Lo que se ve entonces no es una pantalla en blanco ni un
+        error, que se entenderian: son numeros que parecen buenos y no salen de ninguna parte.
+
+        Va ANTES de la marca de reglas cambiadas y no dentro: aquella dice «esto se calculo con
+        reglas que ya no son» —un recibo que existe y es el que se esta mirando— y esta dice «esto
+        ya no existe». Confundirlas es el error que este issue hizo cometer una vez ya.
+
+        Y no recarga: dice lo que pasa y deja el gesto al lado. Sustituir lo que alguien estaba
+        mirando sin avisar seria cambiarle un defecto por otro peor.
+      -->
+      @if (store.desincronizado(); as desincronizado) {
+        <div
+          class="recibo-rancio"
+          [class.recibo-rancio--desaparecido]="desincronizado === 'desaparecido'"
+          [attr.role]="desincronizado === 'desaparecido' ? 'alert' : 'status'"
+        >
+          <div class="recibo-rancio-text">
+            @if (desincronizado === 'desaparecido') {
+              <p class="recibo-rancio-title">Este recibo ya no existe.</p>
+              <p class="recibo-rancio-body">
+                Al volver a esta pestaña se ha vuelto a pedir y no está: los datos de detrás se han
+                sustituido desde que se abrió. Lo de abajo es lo que había antes, y por eso no se
+                puede recalcular, invalidar, validar ni cerrar.
+              </p>
+            } @else {
+              <p class="recibo-rancio-title">Este recibo ha cambiado desde que lo abriste.</p>
+              <p class="recibo-rancio-body">
+                Al volver a esta pestaña ya no era el mismo: lo han recalculado o le han movido el
+                estado desde otro sitio. Lo de abajo es lo que había antes.
+              </p>
+            }
+          </div>
+          @if (desincronizado === 'desaparecido') {
+            <a class="btn" routerLink="/nomina/recibos">Volver a la lista</a>
+          } @else {
+            <button class="btn" (click)="recargar()">Volver a cargarlo</button>
+          }
         </div>
       }
 
@@ -196,7 +257,7 @@ const STATUS_LABELS: Record<string, string> = {
           @if (payroll.status === 'CALCULATED' || payroll.status === 'NOT_VALID') {
             <button
               class="btn btn-recalcular"
-              [disabled]="store.transitioning()"
+              [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="recalculate()"
             >
               {{ store.transitioning() ? 'Recalculando…' : 'Recalcular' }}
@@ -290,6 +351,22 @@ export class RecibosDetailComponent {
       this.drawerOpen.set(false);
     });
 
+    /*
+     * Al volver a esta pestaña se vuelve a preguntar por el recibo (`b4rrhh/frontend#75`).
+     *
+     * `visibilitychange` y no un temporizador, y esa es la mitad del punto. Una pestaña olvidada
+     * en segundo plano no interroga al servidor sola: la demo vive en una máquina modesta y 873
+     * recibos por pestañas abiertas es tráfico que no pidió nadie. Se pregunta cuando alguien
+     * vuelve a mirar, que es exactamente cuando la respuesta le sirve para algo.
+     */
+    const alVolverALaPestana = () => {
+      if (document.visibilityState === 'visible') this.store.revisarSiSigueAhi();
+    };
+    document.addEventListener('visibilitychange', alVolverALaPestana);
+    inject(DestroyRef).onDestroy(() =>
+      document.removeEventListener('visibilitychange', alVolverALaPestana),
+    );
+
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((paramMap) => {
       if (paramMap.keys.length === 0) {
         this.badAddress.set(false);
@@ -356,6 +433,17 @@ export class RecibosDetailComponent {
 
   quedoInvalido(error: string): boolean {
     return error.includes('INVÁLIDO');
+  }
+
+  /**
+   * Volver a cargar el recibo que ha cambiado por detrás (`b4rrhh/frontend#75`).
+   *
+   * Lo pide quien mira y nadie más: el aviso dice lo que ha pasado y deja el gesto al lado, y
+   * hacerlo solo sería quitarle de la pantalla lo que estaba leyendo sin avisar.
+   */
+  recargar(): void {
+    const key = this.store.selectedKey();
+    if (key) this.store.selectPayroll(key);
   }
 
   invalidate(): void {
