@@ -82,6 +82,12 @@ describe('La marca de reglas cambiadas', () => {
             // El recibo abierto sigue siendo el que hay detras (`b4rrhh/frontend#75`).
             desincronizado: signal(null),
             reciboDesaparecido: () => false,
+            // La descarga del documento (b4rrhh/frontend#78). Quieta: estos tests no van de eso,
+            // y el gesto no cambia nada de lo que si miran.
+            descargando: signal(false),
+            ultimaDescarga: signal(null),
+            descargaError: signal(null),
+            descargarDocumento: vi.fn(),
             revisarSiSigueAhi: vi.fn(),
             clearSelection: vi.fn(),
             selectPayroll: vi.fn(),

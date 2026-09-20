@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  computed,
   effect,
   inject,
   signal,
@@ -137,10 +138,52 @@ const STATUS_LABELS: Record<string, string> = {
               Cerrar
             </button>
           }
+          <!--
+            «Descargar» es el documento del recibo, y lo emite el backend (b4rrhh/frontend#78).
+            Aquí no se genera nada: ni window.print() ni una plantilla en TypeScript. Un fichero
+            que depende del navegador de quien lo pide no se puede archivar ni servir dos veces
+            igual, y esto es lo que se le entrega a una persona.
+
+            NO aparece en un recibo inválido, y ésa es la única decisión de esta pantalla sobre el
+            gesto: no hay nada que entregar de un recibo que el motor ha dicho que no vale.
+
+            La palabra del botón sale del estado cargado y es una anticipación, no una afirmación:
+            lo que de verdad llegó lo dice la respuesta, y se cuenta debajo.
+          -->
+          @if (payroll.status !== 'NOT_VALID') {
+            <button
+              class="btn btn-descargar"
+              [disabled]="store.descargando() || store.reciboDesaparecido()"
+              (click)="descargar()"
+            >
+              {{
+                store.descargando()
+                  ? 'Descargando…'
+                  : payroll.status === 'DEFINITIVE'
+                    ? 'Descargar'
+                    : 'Descargar borrador'
+              }}
+            </button>
+          }
           @if (!store.conceptsLoading()) {
             <button class="btn btn-valorizacion" (click)="drawerOpen.set(true)">
               ⊞ Valorización
             </button>
+          }
+          <!--
+            Y lo que llegó de verdad, que lo dice la cabecera y no el estado de esta pantalla. Los
+            dos pueden discrepar —basta con que alguien cierre el recibo desde otra pestaña entre
+            que ésta se cargó y alguien pulsa— y entonces esto lo dice con todas las letras.
+          -->
+          @if (store.descargaError(); as error) {
+            <span class="descarga-dicho descarga-dicho--error" role="alert">{{ error }}</span>
+          } @else if (loQueLlego(); as dicho) {
+            <span
+              class="descarga-dicho"
+              [class.descarga-dicho--discrepa]="descargaDiscrepa()"
+              role="status"
+              >{{ dicho }}</span
+            >
           }
         </div>
       </div>
@@ -446,6 +489,46 @@ export class RecibosDetailComponent {
     const key = this.store.selectedKey();
     if (key) this.store.selectPayroll(key);
   }
+
+  /**
+   * Pedir el documento del recibo (`b4rrhh/frontend#78`).
+   *
+   * Descargar es leer: no recarga el recibo, no lo recalcula y no le mueve el estado. Los tres
+   * avisos de esta pantalla —reglas cambiadas, resalte del recálculo, pestaña olvidada— siguen
+   * diciendo exactamente lo que decían.
+   */
+  descargar(): void {
+    const key = this.store.selectedKey();
+    if (key) this.store.descargarDocumento(key);
+  }
+
+  /**
+   * Si lo que llegó no es lo que esta pantalla anticipó.
+   *
+   * El caso real: alguien cierra el recibo desde otra pestaña, aquí sigue poniendo «CALCULADA» y
+   * el botón ofrecía un borrador, pero el backend entrega el documento archivado. Manda la
+   * cabecera, y decirlo es la diferencia entre leerla y obedecerla.
+   */
+  protected readonly descargaDiscrepa = computed(() => {
+    const descargado = this.store.ultimaDescarga();
+    if (!descargado) return false;
+    return descargado.definitive !== (this.store.selectedPayroll()?.status === 'DEFINITIVE');
+  });
+
+  /** Lo que llegó, dicho con las palabras del caso. Nulo hasta que alguien descarga algo. */
+  protected readonly loQueLlego = computed(() => {
+    const descargado = this.store.ultimaDescarga();
+    if (!descargado) return null;
+
+    if (this.descargaDiscrepa()) {
+      return descargado.definitive
+        ? `Ha llegado el documento definitivo: alguien ha cerrado este recibo · ${descargado.fileName}`
+        : `Ha llegado un borrador: este recibo ya no está cerrado · ${descargado.fileName}`;
+    }
+    return descargado.definitive
+      ? `Descargado el documento · ${descargado.fileName}`
+      : `Descargado un borrador, no es el documento · ${descargado.fileName}`;
+  });
 
   invalidate(): void {
     const key = this.store.selectedKey();

@@ -67,6 +67,40 @@
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  /*
+   * Envuelve para que lo que se dice de la descarga (frontend#78) caiga en su propia linea
+   * debajo de los botones en vez de estrujarlos. La barra crece un renglon cuando hay algo que
+   * decir, y ni un pixel cuando no.
+   */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/*
+ * Lo que llego de verdad, dicho por la cabecera de la respuesta (frontend#78).
+ *
+ * Va aqui, pegado al gesto, y no arriba con los tres avisos de la pantalla: aquellos hablan del
+ * recibo y este habla del fichero que se acaba de guardar.
+ */
+.descarga-dicho {
+  flex-basis: 100%;
+  text-align: right;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+/*
+ * La discrepancia se ve, y por eso existe esta clase. Que el estado de la pantalla y la cabecera
+ * digan cosas distintas no es un detalle de formato: significa que alguien ha tocado el recibo
+ * desde otro sitio mientras esta pestana estaba abierta.
+ */
+.descarga-dicho--discrepa {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.descarga-dicho--error {
+  color: var(--error-text);
 }
 
 /* Una sola accion solida (validar); el resto, contorno. */

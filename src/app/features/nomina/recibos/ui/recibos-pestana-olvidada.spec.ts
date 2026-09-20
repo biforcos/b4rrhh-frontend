@@ -85,6 +85,12 @@ describe('Volver a la pestaña del recibo', () => {
             transitionError: signal(null),
             desincronizado,
             reciboDesaparecido: () => desincronizado() === 'desaparecido',
+            // La descarga del documento (b4rrhh/frontend#78). Quieta: estos tests no van de eso,
+            // y el gesto no cambia nada de lo que si miran.
+            descargando: signal(false),
+            ultimaDescarga: signal(null),
+            descargaError: signal(null),
+            descargarDocumento: vi.fn(),
             clearSelection: vi.fn(),
             selectPayroll,
             loadCalculationSteps: vi.fn(),
