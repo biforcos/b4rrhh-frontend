@@ -1,3 +1,4 @@
+import { HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
@@ -19,6 +20,7 @@ import {
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
+import { PayslipDocumentModel } from '../models/payslip-document.model';
 import { PayslipSectionModel } from '../models/payslip-section.model';
 import {
   PayrollSummaryModel,
@@ -131,6 +133,18 @@ export class RecibosGateway {
       .pipe(map((steps) => steps.map(mapPayrollCalculationStepResponseToModel)));
   }
 
+  /**
+   * El documento del recibo, con lo que la respuesta dice de él (`b4rrhh/frontend#78`).
+   *
+   * Aquí se leen las cabeceras y no se interpreta nada más. El nombre sale de
+   * `Content-Disposition` y el régimen de `X-Payslip-Document-Definitive`; si alguna faltara, se
+   * cae del lado que no afirma nada —un nombre neutro, y «no es el definitivo»— en vez de
+   * inventarse la que falta.
+   */
+  getDocument(key: PayrollBusinessKey): Observable<PayslipDocumentModel> {
+    return this.client.getDocument(key).pipe(map(responseToPayslipDocument));
+  }
+
   invalidate(key: PayrollBusinessKey): Observable<PayrollSummaryModel> {
     return this.client.invalidate(key).pipe(map(payrollResponseToSummary));
   }
@@ -159,6 +173,50 @@ export class RecibosGateway {
       .listPayslipSections(ruleSystemCode)
       .pipe(map((sections) => sections.map(mapPayslipSectionResponseToModel)));
   }
+}
+
+/**
+ * Un nombre que no afirma nada, para cuando la respuesta no trae `Content-Disposition`.
+ *
+ * No lleva `-borrador` ni deja de llevarlo: componerlo aquí sería decidir en el cliente lo que la
+ * cabecera no ha dicho, que es exactamente lo que este paso saca del cliente.
+ */
+const NOMBRE_SIN_CABECERA = 'recibo.pdf';
+
+function responseToPayslipDocument(response: HttpResponse<Blob>): PayslipDocumentModel {
+  return {
+    blob: response.body ?? new Blob([], { type: 'application/pdf' }),
+    fileName: nombreDeContentDisposition(response.headers.get('Content-Disposition')),
+    // Sólo el «true» exacto cuenta. Ausente, vacío o cualquier otra cosa significa «no me consta
+    // que sea el definitivo», que es el lado seguro: decir «borrador» de un documento entregado
+    // molesta; decir «definitivo» de un borrador engaña.
+    definitive: response.headers.get('X-Payslip-Document-Definitive') === 'true',
+  };
+}
+
+/**
+ * El nombre del fichero que dice la cabecera.
+ *
+ * Se leen las dos formas —`filename*=UTF-8''…` primero, que es la que manda cuando están las dos,
+ * y `filename="…"` después—. Hoy el backend escribe la segunda porque sus nombres son ASCII, pero
+ * un apellido con acento en el nombre del fichero cambiaría eso sin avisar.
+ */
+function nombreDeContentDisposition(contentDisposition: string | null): string {
+  if (!contentDisposition) return NOMBRE_SIN_CABECERA;
+
+  const extendido = /filename\*\s*=\s*[^']*'[^']*'([^;]+)/i.exec(contentDisposition);
+  if (extendido) {
+    try {
+      const nombre = decodeURIComponent(extendido[1].trim());
+      if (nombre) return nombre;
+    } catch {
+      // Un porcentaje mal escrito no vale para nombrar un fichero: se prueba la otra forma.
+    }
+  }
+
+  const simple = /filename\s*=\s*"?([^";]+)"?/i.exec(contentDisposition);
+  const nombre = simple?.[1]?.trim();
+  return nombre ? nombre : NOMBRE_SIN_CABECERA;
 }
 
 const PAYROLL_RESPONSE_STATUS_MAP: Record<PayrollStatus, PayrollSummaryModel['status']> = {

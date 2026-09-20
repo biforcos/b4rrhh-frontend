@@ -2,11 +2,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
+import { GuardarFicheroService } from '../descarga/guardar-fichero.service';
 import { RecibosGateway } from '../gateway/recibos.gateway';
 import { lineasQueSeMovieron } from './lineas-movidas.util';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
+import { PayslipDocumentModel } from '../models/payslip-document.model';
 import { PayslipSectionModel } from '../models/payslip-section.model';
 import {
   PayrollSummaryModel,
@@ -60,6 +62,7 @@ function esElMismoRecibo(alaVista: PayrollSummaryModel, delServidor: PayrollSumm
 @Injectable({ providedIn: 'root' })
 export class RecibosStore {
   private readonly gateway = inject(RecibosGateway);
+  private readonly guardarFichero = inject(GuardarFicheroService);
 
   private readonly payrollsState = signal<ReadonlyArray<PayrollSummaryModel>>([]);
   private readonly listLoadingState = signal(false);
@@ -177,6 +180,19 @@ export class RecibosStore {
    */
   private readonly desincronizadoState = signal<ReciboDesincronizado | null>(null);
 
+  /**
+   * La descarga del documento, con estado PROPIO y no con `transitioning` (`frontend#78`).
+   *
+   * No es un detalle de nombres. `transitioning` significa «el recibo está cambiando de estado» y
+   * es lo que apaga recalcular, invalidar, validar y cerrar mientras dura. Descargar es leer: no
+   * cambia el recibo, así que no puede apagar los gestos que sí lo cambian ni hacer creer que algo
+   * se está moviendo. Reutilizar aquella bandera habría sido la forma barata de que el botón se
+   * apagase solo, y habría mentido sobre lo que pasa.
+   */
+  private readonly descargandoState = signal(false);
+  private readonly ultimaDescargaState = signal<PayslipDocumentModel | null>(null);
+  private readonly descargaErrorState = signal<string | null>(null);
+
   readonly payrolls = this.payrollsState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
@@ -206,6 +222,9 @@ export class RecibosStore {
   readonly transitioning = this.transitioningState.asReadonly();
   readonly transitionError = this.transitionErrorState.asReadonly();
   readonly desincronizado = this.desincronizadoState.asReadonly();
+  readonly descargando = this.descargandoState.asReadonly();
+  readonly ultimaDescarga = this.ultimaDescargaState.asReadonly();
+  readonly descargaError = this.descargaErrorState.asReadonly();
 
   /**
    * El recibo de la pantalla ya no está en ninguna parte.
@@ -244,6 +263,7 @@ export class RecibosStore {
     }
     this.selectedKeyState.set(key);
     this.transitionErrorState.set(null);
+    this.olvidarDescarga();
     this.loadConcepts(key);
   }
 
@@ -260,6 +280,7 @@ export class RecibosStore {
     this.payslipSectionsState.set([]);
     this.transitionErrorState.set(null);
     this.desincronizadoState.set(null);
+    this.olvidarDescarga();
     this.forgetCalculationSteps();
   }
 
@@ -411,6 +432,79 @@ export class RecibosStore {
           this.transitionErrorState.set(this.mapTransitionError(err));
         },
       });
+  }
+
+  /**
+   * Traerse el documento del recibo y guardarlo (`b4rrhh/frontend#78`).
+   *
+   * <b>Descargar es leer.</b> De ahí sale todo lo que este método NO hace: no vuelve a pedir el
+   * recibo, no toca `selectedPayroll`, ni `rulesChanged`, ni `lineasMovidas`, ni `desincronizado`,
+   * ni `transitioning`. La marca de reglas cambiadas, el resalte del recálculo y el aviso de
+   * pestaña olvidada se quedan exactamente donde estaban, porque nada de lo que los sostiene se
+   * ha movido.
+   *
+   * Lo que sí se guarda es <b>qué llegó</b>, y eso lo dice la respuesta y no el estado que esta
+   * pantalla tenía cargado. Los dos pueden discrepar: basta con que alguien cierre el recibo desde
+   * otra pestaña entre que ésta se cargó y alguien pulsa, y entonces la pantalla dijo «borrador» y
+   * el backend entregó el documento. La cabecera es la que manda.
+   *
+   * Se apaga con el recibo desaparecido, con los otros cuatro gestos (`frontend#75`): descargar el
+   * documento de algo que ya no está es el mismo defecto que aquel issue arregló, con otro botón.
+   */
+  descargarDocumento(key: PayrollBusinessKey): void {
+    if (this.descargandoState() || this.reciboDesaparecido()) return;
+    this.descargandoState.set(true);
+    this.descargaErrorState.set(null);
+
+    this.gateway
+      .getDocument(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (documento) => {
+          this.guardarFichero.guardar(documento.blob, documento.fileName);
+          this.ultimaDescargaState.set(documento);
+          this.descargandoState.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.descargandoState.set(false);
+          this.ultimaDescargaState.set(null);
+          this.descargaErrorState.set(this.mapDownloadError(err));
+        },
+      });
+  }
+
+  /**
+   * Lo que se dijo de la última descarga deja de valer al cambiar de recibo.
+   *
+   * Arrastrarlo sería enseñar «descargado el documento definitivo» encima de otro recibo, que es
+   * la clase de mentira que no se nota hasta que alguien la cree.
+   */
+  private olvidarDescarga(): void {
+    this.descargandoState.set(false);
+    this.ultimaDescargaState.set(null);
+    this.descargaErrorState.set(null);
+  }
+
+  /**
+   * Por qué no se ha podido traer el documento.
+   *
+   * Se mira el código de estado y <b>no el cuerpo</b>, que es lo contrario de lo que hace
+   * `mapTransitionError`. La razón es concreta: esta petición va con `responseType: 'blob'`, así
+   * que `err.error` llega como un `Blob` también cuando el backend ha mandado su JSON con
+   * `code` y `message`. Leerlo exigiría descodificarlo de forma asíncrona para acabar diciendo lo
+   * mismo que ya dice el código.
+   */
+  private mapDownloadError(err: HttpErrorResponse): string {
+    if (err.status === 404) return 'Este recibo ya no está.';
+    // El recibo está cerrado y su documento no está guardado: sólo les puede pasar a los que se
+    // cerraron antes de que cerrar emitiera el papel. No se regenera, y por eso esto no ofrece
+    // «volver a intentarlo»: intentarlo otra vez daría lo mismo.
+    if (err.status === 409)
+      return 'Este recibo está cerrado y su documento no está archivado. No se genera otro.';
+    // Y el único que sí se reintenta.
+    if (err.status === 503)
+      return 'El almacén de documentos no responde. Vuelve a intentarlo en un momento.';
+    return 'No se ha podido descargar el documento. Inténtalo de nuevo.';
   }
 
   recalculateFrom(key: PayrollBusinessKey, status: PayrollSummaryModel['status']): void {

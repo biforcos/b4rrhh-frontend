@@ -4674,6 +4674,107 @@ paths:
               schema:
                 $ref: "#/components/schemas/PayrollErrorResponse"
 
+  /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/document:
+    get:
+      tags: [Payroll]
+      operationId: getPayslipDocument
+      summary: The payslip document, the first artefact that leaves the system
+      description: >-
+        The PDF of a payslip. Everything else the engine produces is looked at from inside;
+        this is what is handed to a person, filed and printed, and that is what shapes the
+        two regimes below.
+
+        A DEFINITIVE payroll is served from the store, exactly as it was written when the
+        payroll was closed. It is never regenerated: asking twice returns the same bytes
+        because it is the same object, not because it would be generated the same way. Two
+        generations with different templates would be two documents of one payslip, and the
+        employee has one.
+
+        The other three states are rendered on demand, are not stored, and carry a visible
+        draft mark. Recalculating and asking again shows the new figures, which is correct
+        because nothing has been handed over yet. NOT_VALID is served too: the backend
+        answers what exists and the screen decides not to offer the gesture.
+
+        What it carries is the official payslip — the five sections, the labels frozen with
+        each line, the contribution bases — and its provenance: employee, period, presence,
+        run, calculation timestamp and the payroll business key. What it does not carry is
+        the explanation: no mnemonics, no calculation steps, no graph. The bridge to the
+        explanation is the printed key, not the content.
+
+        The X-Payslip-Document-Definitive response header says which of the two regimes
+        answered, so a client can warn before the file leaves the browser and not only
+        inside it.
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeTypeCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeNumber
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollPeriodCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollTypeCode
+          in: path
+          required: true
+          schema: { type: string, enum: [NORMAL, EXTRA] }
+        - name: presenceNumber
+          in: path
+          required: true
+          schema: { type: integer, format: int32 }
+      responses:
+        "200":
+          description: >-
+            The payslip document. Archived when the payroll is DEFINITIVE, rendered on
+            demand and marked as a draft otherwise.
+          headers:
+            X-Payslip-Document-Definitive:
+              description: >-
+                true when the body is the archived document of a closed payslip, false when
+                it was rendered on demand and carries the draft mark.
+              schema: { type: boolean }
+            Content-Disposition:
+              description: >-
+                attachment, with a file name that spells out a draft: recibo-EMP000001-202609.pdf
+                against recibo-EMP000001-202609-borrador.pdf.
+              schema: { type: string }
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Payroll not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+        "409":
+          description: >-
+            PAYSLIP_DOCUMENT_NOT_ARCHIVED. The payroll is closed and its document is not in
+            the store, which can only happen for payrolls closed before closing emitted the
+            document. It is not regenerated: that would be another document of the same
+            payslip.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+        "503":
+          description: >-
+            PAYSLIP_DOCUMENT_STORAGE_UNAVAILABLE. The document store did not answer. Unlike
+            the other failures this one can be retried.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
+
   /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/invalidate:
     post:
       tags: [Payroll]

@@ -1,3 +1,4 @@
+import { HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -44,6 +45,29 @@ export class RecibosClient {
       payrollTypeCode: key.payrollTypeCode,
       presenceNumber: key.presenceNumber,
     });
+  }
+
+  /**
+   * El documento del recibo, con su respuesta entera (`b4rrhh/frontend#78`).
+   *
+   * **`observe: 'response'` y no el cuerpo a secas**, que es lo único que este método hace de
+   * distinto y la razón de que exista. Lo que el backend sirve no se entiende sólo con los bytes:
+   * `X-Payslip-Document-Definitive` dice cuál de los dos regímenes ha contestado y
+   * `Content-Disposition` dice con qué nombre se guarda. Pedir sólo el cuerpo obligaría a la
+   * pantalla a deducir las dos cosas, que es justo lo que el issue prohíbe.
+   */
+  getDocument(key: PayrollBusinessKey): Observable<HttpResponse<Blob>> {
+    return this.api.getPayslipDocument(
+      {
+        ruleSystemCode: key.ruleSystemCode,
+        employeeTypeCode: key.employeeTypeCode,
+        employeeNumber: key.employeeNumber,
+        payrollPeriodCode: key.payrollPeriodCode,
+        payrollTypeCode: key.payrollTypeCode,
+        presenceNumber: key.presenceNumber,
+      },
+      'response',
+    );
   }
 
   invalidate(key: PayrollBusinessKey): Observable<PayrollResponse> {
