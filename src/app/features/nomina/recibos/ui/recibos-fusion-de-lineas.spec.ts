@@ -110,6 +110,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
     return {
       lineNumber,
       conceptCode: '101',
+      conceptMnemonic: 'SALARIO_BASE',
       conceptLabel: 'Salario base',
       amount,
       quantity: null,
@@ -118,6 +119,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
       originPeriodCode: '202501',
       displayOrder: lineNumber,
       mergedStepCount,
+      payslipSectionCode: 'DEVENGOS',
     };
   }
 

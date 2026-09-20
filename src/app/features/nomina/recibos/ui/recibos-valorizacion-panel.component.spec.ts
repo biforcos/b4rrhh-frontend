@@ -6,6 +6,7 @@ function makeConcept(code: string, label: string, nature = 'EARNING'): PayrollCo
   return {
     lineNumber: 1,
     conceptCode: code,
+    conceptMnemonic: label.toUpperCase().replace(/ /g, '_'),
     conceptLabel: label,
     amount: 100,
     quantity: null,
@@ -14,6 +15,7 @@ function makeConcept(code: string, label: string, nature = 'EARNING'): PayrollCo
     originPeriodCode: null,
     displayOrder: 1,
     mergedStepCount: 1,
+    payslipSectionCode: 'DEVENGOS',
   };
 }
 

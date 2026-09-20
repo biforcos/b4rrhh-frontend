@@ -34,6 +34,10 @@ export function mapPayrollConceptResponseToModel(
   return {
     lineNumber: response.lineNumber,
     conceptCode: response.conceptCode,
+    // Dos campos, dos trabajos (b4rrhh/backend#109). El mnemónico es el identificador; el literal
+    // es lo que se enseña. Un backend anterior no trae el mnemónico, y entonces lo que hay en el
+    // literal ES el mnemónico, porque era el único sitio donde estaba.
+    conceptMnemonic: response.conceptMnemonic ?? response.conceptLabel,
     conceptLabel: response.conceptLabel,
     amount: response.amount ?? null,
     quantity: response.quantity ?? null,
@@ -44,6 +48,10 @@ export function mapPayrollConceptResponseToModel(
     // El contrato lo declara obligatorio desde el backend#103, pero un recibo servido por un
     // backend anterior no lo trae: uno es lo mismo que «no funde nada».
     mergedStepCount: response.mergedStepCount ?? 1,
+    // Nulo cuando el concepto no tiene sección declarada, y también cuando el recibo lo calculó
+    // un backend anterior al b4rrhh/backend#109. En los dos casos significa lo mismo para quien
+    // pinta: esta línea no tiene bloque, y hay que verlo.
+    payslipSectionCode: response.payslipSectionCode ?? null,
   };
 }
 

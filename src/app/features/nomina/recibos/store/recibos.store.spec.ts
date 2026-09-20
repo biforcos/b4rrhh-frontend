@@ -26,6 +26,7 @@ const MOCK_SUMMARY: PayrollSummaryModel = {
 const MOCK_CONCEPT: PayrollConceptModel = {
   lineNumber: 1,
   conceptCode: '001',
+  conceptMnemonic: 'SALARIO_BASE',
   conceptLabel: 'Salario base',
   amount: 2100,
   quantity: 30,
@@ -34,6 +35,7 @@ const MOCK_CONCEPT: PayrollConceptModel = {
   originPeriodCode: '202604',
   displayOrder: 10,
   mergedStepCount: 1,
+  payslipSectionCode: 'DEVENGOS',
 };
 
 function detailWith(

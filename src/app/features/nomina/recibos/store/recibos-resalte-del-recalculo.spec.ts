@@ -25,6 +25,7 @@ function linea(lineNumber: number, conceptCode: string, amount: number): Payroll
   return {
     lineNumber,
     conceptCode,
+    conceptMnemonic: conceptCode,
     conceptLabel: conceptCode,
     amount,
     quantity: null,
@@ -33,6 +34,7 @@ function linea(lineNumber: number, conceptCode: string, amount: number): Payroll
     originPeriodCode: '202609',
     displayOrder: lineNumber,
     mergedStepCount: 1,
+    payslipSectionCode: 'DEVENGOS',
   };
 }
 

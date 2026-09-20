@@ -239,6 +239,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
   const CATORCE_LINEAS: PayrollConceptModel[] = Array.from({ length: 14 }, (_, i) => ({
     lineNumber: i + 1,
     conceptCode: `C${i + 1}`,
+    conceptMnemonic: `CONCEPTO_${i + 1}`,
     conceptLabel: `Concepto ${i + 1}`,
     amount: 10,
     quantity: null,
@@ -248,6 +249,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
     displayOrder: i + 1,
     // Ninguna funde nada: es el caso que no ensena marca (backend#103).
     mergedStepCount: 1,
+    payslipSectionCode: 'DEVENGOS',
   }));
 
   function render(inputs: {

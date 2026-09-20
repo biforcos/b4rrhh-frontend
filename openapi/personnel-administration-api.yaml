@@ -5179,6 +5179,79 @@ paths:
         '404':
           description: Not found
 
+  /payroll-engine/{ruleSystemCode}/payslip-sections:
+    get:
+      tags:
+        - Payroll Engine
+      summary: List the payslip sections of the official model
+      description: >-
+        The blocks of the official payslip — earnings, deductions, net pay, contribution bases,
+        employer contribution — and the order they print in. They are declared here, not inferred
+        from the numeric range of a concept code: that a 1xx is an earning and a 7xx a deduction
+        is a numbering habit, not a rule, and it breaks silently the day someone numbers an
+        earning in the 750s. What puts a line in a block is its conceptNatureCode; each payslip
+        line already carries the resulting payslipSectionCode frozen, and this endpoint is what
+        gives that code a name and a position.
+      operationId: listPayslipSections
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The declared sections, in printing order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayslipSectionResponse'
+
+  /payroll-engine/{ruleSystemCode}/concepts/{conceptCode}/label:
+    patch:
+      tags:
+        - Payroll Engine
+      summary: Name a payroll concept
+      description: >-
+        Sets what the concept is called. It does not touch any payroll already calculated: a
+        payslip line freezes its literal at calculation time, because the line is a document and
+        not a view of the catalogue. What this changes is what the next calculation will say.
+      operationId: updatePayrollConceptLabel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conceptCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConceptLabelRequest'
+      responses:
+        '200':
+          description: Named
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollConceptDesignerResponse'
+        '400':
+          description: Blank or oversized label
+        '404':
+          description: Not found
+
   /payroll-engine/{ruleSystemCode}/concepts/{conceptCode}:
     delete:
       tags:
@@ -11011,9 +11084,17 @@ components:
         payslip screen and the calculation screen disagree on the number of rows with nothing
         explaining why. To get from a line to its steps, take the steps of that payroll whose
         payslipLineNumber equals this lineNumber: no grouping has to be reconstructed.
+
+
+        conceptMnemonic and conceptLabel are two different things and both are here. The mnemonic
+        is the concept's IDENTIFIER in the engine — what rules and the graph reference — and the
+        label is what the concept was called WHEN THIS LINE WAS CALCULATED. The label is frozen,
+        not resolved on read: a payslip is a document, not a view of the catalogue, and renaming a
+        concept must not change what an already delivered payslip says.
       required:
         - lineNumber
         - conceptCode
+        - conceptMnemonic
         - conceptLabel
         - conceptNatureCode
         - displayOrder
@@ -11023,8 +11104,22 @@ components:
           type: integer
         conceptCode:
           type: string
+        conceptMnemonic:
+          type: string
+          example: "SALARIO_BASE"
+          description: >-
+            The concept's identifier in the engine, frozen with the line. This is what to key on
+            to reach the concept, its graph node or its steps — never conceptLabel, which is a
+            name and may differ between two payrolls of the same concept.
         conceptLabel:
           type: string
+          example: "Salario base"
+          description: >-
+            What the concept was called when this line was calculated. It is what to show. Two
+            payslips of the same concept may carry different labels if the catalogue was renamed
+            in between, and that is correct: each says what it said when it was produced. A line
+            whose concept had no name falls back to its mnemonic, so a label that looks like an
+            identifier means the name is missing, not that the field is wrong.
         amount:
           type: number
         quantity:
@@ -11043,6 +11138,17 @@ components:
           description: >-
             How many engine steps this line merges. One means the line is one step, and a client
             must not draw any mark: a mark that shows up on every line marks nothing.
+        payslipSectionCode:
+          type: string
+          nullable: true
+          example: "DEVENGOS"
+          description: >-
+            The block of the official payslip model this line was printed in, frozen with the
+            line. Group by this and order the groups by the displayOrder that
+            GET /payroll-engine/{ruleSystemCode}/payslip-sections gives each section: never infer
+            the block from the concept code's numeric range. Null when the concept's nature had
+            no section declared — show that, do not default it into some block, because a line
+            nobody declared a home for is exactly what needs to be noticed.
     PayrollSummaryResponse:
       type: object
       required:
@@ -11120,6 +11226,11 @@ components:
 
     PayrollConceptDesignerResponse:
       type: object
+      description: >-
+        An engine concept. conceptMnemonic and label are two different things and both are here.
+        The mnemonic is the IDENTIFIER: it is what rules reference to find the concept, and it is
+        what the graph and the calculation trace key on. The label is what the concept is called.
+        A client must never show one in place of the other.
       required: [ruleSystemCode, conceptCode, conceptMnemonic, calculationType, functionalNature, executionScope]
       properties:
         ruleSystemCode:
@@ -11128,6 +11239,15 @@ components:
           type: string
         conceptMnemonic:
           type: string
+        label:
+          type: string
+          nullable: true
+          example: "Salario base"
+          description: >-
+            What this concept is called, in the single language the engine resolves today. Null
+            when the concept has no name yet, which happens whenever someone adds a concept and
+            forgets the literal. A client showing this must fall back to conceptMnemonic rather
+            than paint a gap: a visible absence is better than an invisible one.
         calculationType:
           type: string
         functionalNature:
@@ -11147,6 +11267,40 @@ components:
         summary:
           type: string
           nullable: true
+
+    PayslipSectionResponse:
+      type: object
+      description: >-
+        One block of the official payslip model. A payslip line belongs to it through its
+        conceptNatureCode, not through its concept code.
+      required: [sectionCode, label, displayOrder]
+      properties:
+        sectionCode:
+          type: string
+          example: "DEVENGOS"
+        label:
+          type: string
+          example: "Devengos"
+        displayOrder:
+          type: integer
+          format: int32
+          description: >-
+            Where this block goes relative to the others. Order the blocks by this, and the lines
+            inside each block by their own displayOrder.
+
+    UpdateConceptLabelRequest:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+          maxLength: 200
+          example: "Salario base"
+          description: >-
+            What the concept is called. Required and not blank: a blank literal is not "no name",
+            it is a gap. Changing it does NOT move any payroll already calculated — each payslip
+            line froze its literal when it was calculated — it changes what the next calculation
+            will say.
 
     UpdateConceptOperandsRequest:
       type: object

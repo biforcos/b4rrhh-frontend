@@ -97,7 +97,7 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
     const paso: PayrollCalculationStepModel = {
       executionOrder: 1,
       conceptCode: concept.conceptCode,
-      conceptMnemonic: concept.conceptLabel,
+      conceptMnemonic: concept.conceptMnemonic,
       calculationType: 'RATE_BY_QUANTITY',
       functionalNature: 'EARNING',
       executionScope: 'SEGMENT',
@@ -135,6 +135,7 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
     return {
       lineNumber: 1,
       conceptCode: '101',
+      conceptMnemonic: 'SALARIO_BASE',
       conceptLabel: 'Salario base',
       amount: valores.amount,
       quantity: valores.quantity,
@@ -143,6 +144,7 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
       originPeriodCode: '202609',
       displayOrder: 1,
       mergedStepCount: 1,
+      payslipSectionCode: 'DEVENGOS',
     };
   }
 

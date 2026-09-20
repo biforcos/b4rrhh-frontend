@@ -44,7 +44,8 @@ describe('El recibo abierto deja de ser el que hay detrás', () => {
   const LINEA: PayrollConceptModel = {
     lineNumber: 1,
     conceptCode: '101',
-    conceptLabel: 'SALARIO_BASE',
+    conceptMnemonic: 'SALARIO_BASE',
+    conceptLabel: 'Salario base',
     amount: 1350,
     quantity: null,
     rate: null,
@@ -52,6 +53,7 @@ describe('El recibo abierto deja de ser el que hay detrás', () => {
     originPeriodCode: '202609',
     displayOrder: 1,
     mergedStepCount: 1,
+    payslipSectionCode: 'DEVENGOS',
   };
 
   function detalle(summary: PayrollSummaryModel) {

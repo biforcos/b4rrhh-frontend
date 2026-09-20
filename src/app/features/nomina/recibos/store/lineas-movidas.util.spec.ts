@@ -11,6 +11,7 @@ function linea(
   return {
     lineNumber,
     conceptCode,
+    conceptMnemonic: conceptCode,
     conceptLabel: conceptCode,
     amount,
     quantity: null,
@@ -19,6 +20,7 @@ function linea(
     originPeriodCode: '202609',
     displayOrder: lineNumber,
     mergedStepCount: 1,
+    payslipSectionCode: 'DEVENGOS',
   };
 }
 

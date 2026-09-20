@@ -39,14 +39,15 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
 
   /** Un concepto real de cada naturaleza, con un importe irrepetible para poder buscarlo. */
   const UNO_DE_CADA_NATURALEZA: PayrollConceptModel[] = [
-    concepto('101', 'Salario base', 'EARNING', 1111.11),
-    concepto('700', 'Contingencias comunes', 'DEDUCTION', 2222.22),
-    concepto('720', 'SS empresa CC', 'INFORMATIONAL', 3333.33),
-    concepto('B_CC', 'Base de contingencias comunes', 'BASE', 4444.44),
-    concepto('P_IRPF', 'Tipo de IRPF', 'TECHNICAL', 5555.55),
-    concepto('970', 'Total devengado', 'TOTAL_EARNING', 6666.66),
-    concepto('980', 'Total a deducir', 'TOTAL_DEDUCTION', 7777.77),
-    concepto('990', 'Líquido a percibir', 'NET_PAY', 8888.88),
+    concepto('101', 'Salario base', 'EARNING', 1111.11, 'DEVENGOS'),
+    concepto('700', 'Contingencias comunes', 'DEDUCTION', 2222.22, 'DEDUCCIONES'),
+    concepto('720', 'SS empresa CC', 'INFORMATIONAL', 3333.33, 'APORTACION_EMPRESARIAL'),
+    concepto('B_CC', 'Base de contingencias comunes', 'BASE', 4444.44, 'BASES'),
+    // La única sin bloque: TECHNICAL no tiene sección declarada en la V138, a propósito.
+    concepto('P_IRPF', 'Tipo de IRPF', 'TECHNICAL', 5555.55, null),
+    concepto('970', 'Total devengado', 'TOTAL_EARNING', 6666.66, 'DEVENGOS'),
+    concepto('980', 'Total a deducir', 'TOTAL_DEDUCTION', 7777.77, 'DEDUCCIONES'),
+    concepto('990', 'Líquido a percibir', 'NET_PAY', 8888.88, 'LIQUIDO'),
   ];
 
   /**
@@ -124,10 +125,12 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
     conceptLabel: string,
     conceptNatureCode: string,
     amount: number,
+    payslipSectionCode: string | null,
   ): PayrollConceptModel {
     return {
       lineNumber: 1,
       conceptCode,
+      conceptMnemonic: conceptCode,
       conceptLabel,
       amount,
       quantity: null,
@@ -136,6 +139,7 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
       originPeriodCode: '202609',
       displayOrder: 1,
       mergedStepCount: 1,
+      payslipSectionCode,
     };
   }
 

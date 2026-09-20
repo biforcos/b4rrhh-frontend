@@ -11,10 +11,12 @@ function linea(
   conceptCode: string,
   amount: number,
   conceptNatureCode = 'EARNING',
+  payslipSectionCode = 'DEVENGOS',
 ): PayrollConceptModel {
   return {
     lineNumber,
     conceptCode,
+    conceptMnemonic: conceptCode,
     conceptLabel: conceptCode,
     amount,
     quantity: null,
@@ -23,15 +25,16 @@ function linea(
     originPeriodCode: '202609',
     displayOrder: lineNumber,
     mergedStepCount: 1,
+    payslipSectionCode,
   };
 }
 
 const RECIBO = [
   linea(1, '101', 1350),
   linea(2, '102', 90),
-  linea(3, '970', 1440, 'TOTAL_EARNING'),
-  linea(4, '980', 200, 'TOTAL_DEDUCTION'),
-  linea(5, '990', 1240, 'NET_PAY'),
+  linea(3, '970', 1440, 'TOTAL_EARNING', 'DEVENGOS'),
+  linea(4, '980', 200, 'TOTAL_DEDUCTION', 'DEDUCCIONES'),
+  linea(5, '990', 1240, 'NET_PAY', 'LIQUIDO'),
 ];
 
 function render(lineasMovidas: ReadonlySet<number>): HTMLElement {
