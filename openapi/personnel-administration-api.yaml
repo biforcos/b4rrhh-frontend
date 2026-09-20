@@ -5245,6 +5245,46 @@ paths:
         '409':
           description: Concept already exists
 
+  /payroll-engine/{ruleSystemCode}/graph:
+    get:
+      tags:
+        - Payroll Engine
+      summary: The whole concept graph of a rule system in one call
+      operationId: getPayrollConceptGraph
+      description: >-
+        Concepts, operands and feed relations of a rule system, together.
+
+        This exists because drawing the graph used to cost 1 + 2N calls: the concept list, then
+        the operands and the feeds of each concept, one by one. Measured in the browser, 78 calls
+        for the 38 concepts of ESP and 200 for a 99-concept catalogue, and 198 of those 200
+        answered a list of between zero and two items. It grows with the concepts of the RULE
+        SYSTEM, not of the payslip, so the simplest payslip pays the same as the most complex one
+        - and this is the screen that opens right after someone asked "where does this number
+        come from".
+
+        The engine had already paid this bill on its own side: the execution metamodel is loaded
+        once per run for exactly the same reason. This is the same N+1 on the other side of the
+        contract.
+
+        The per-concept endpoints stay, and are not deprecated: they are what the detail panel
+        and the two PUTs work against. This one answers a different question - the whole graph at
+        once - and a client drawing a graph should use it.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollConceptGraphResponse'
+
   /payroll-engine/{ruleSystemCode}/concepts/{conceptCode}/summary:
     patch:
       tags:
@@ -11440,6 +11480,73 @@ components:
                 type: string
                 format: date
                 nullable: true
+
+    PayrollConceptGraphResponse:
+      type: object
+      description: >-
+        The whole graph of a rule system: its concepts and every edge between them.
+
+        Edges are flat and carry the concept they point AT, which is what the per-concept
+        endpoints cannot say because there the target is in the path. Nothing here is grouped by
+        concept on purpose: a client draws edges, not trees, and grouping would force it to
+        flatten what the server had just nested.
+
+        The three lists are read in one transaction, so they are consistent with each other: an
+        operand never names a concept that is missing from concepts.
+      required: [ruleSystemCode, concepts, operands, feeds]
+      properties:
+        ruleSystemCode:
+          type: string
+        concepts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollConceptDesignerResponse'
+        operands:
+          type: array
+          description: Every operand of every concept of the rule system, ordered by concept and role.
+          items:
+            $ref: '#/components/schemas/ConceptGraphOperandResponse'
+        feeds:
+          type: array
+          description: >-
+            Every feed relation of the rule system, ordered by target concept. Not filtered by
+            date: the designer draws the wiring as it is declared, including what is not in force
+            today, which is what the per-concept endpoint also returns.
+          items:
+            $ref: '#/components/schemas/ConceptGraphFeedResponse'
+
+    ConceptGraphOperandResponse:
+      type: object
+      description: An operand edge, with the concept it feeds into.
+      required: [conceptCode, operandRole, sourceObjectCode]
+      properties:
+        conceptCode:
+          type: string
+          description: The concept this operand belongs to - the target of the edge.
+        operandRole:
+          type: string
+        sourceObjectCode:
+          type: string
+
+    ConceptGraphFeedResponse:
+      type: object
+      description: A feed edge, with the concept it feeds into.
+      required: [conceptCode, sourceObjectCode, invertSign, effectiveFrom]
+      properties:
+        conceptCode:
+          type: string
+          description: The concept being fed - the target of the edge.
+        sourceObjectCode:
+          type: string
+        invertSign:
+          type: boolean
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type: string
+          format: date
+          nullable: true
 
     ConceptOperandResponse:
       type: object
