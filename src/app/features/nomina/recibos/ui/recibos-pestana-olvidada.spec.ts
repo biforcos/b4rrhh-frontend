@@ -65,6 +65,7 @@ describe('Volver a la pestaña del recibo', () => {
             lineasMovidas: signal(new Set<number>()),
             recalculoSeq: signal(0),
             concepts: signal([]),
+            payslipSections: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),
             companyProfile: signal(null),

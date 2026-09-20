@@ -88,6 +88,7 @@ describe('El recibo abierto deja de ser el que hay detrás', () => {
         {
           provide: RecibosGateway,
           useValue: {
+            getPayslipSections: () => of([]),
             getDetail: () => {
               llamadas.push('getDetail');
               return detalleDevuelve();

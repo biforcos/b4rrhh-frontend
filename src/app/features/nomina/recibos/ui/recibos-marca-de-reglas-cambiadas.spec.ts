@@ -61,6 +61,7 @@ describe('La marca de reglas cambiadas', () => {
             lineasMovidas: signal(new Set<number>()),
             recalculoSeq: signal(0),
             concepts: signal([]),
+            payslipSections: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),
             companyProfile: signal(null),

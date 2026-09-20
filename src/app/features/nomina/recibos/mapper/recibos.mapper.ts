@@ -1,6 +1,7 @@
 import { PayrollSummaryResponse } from '../../../../core/api/generated/model/payroll-summary-response';
 import { PayrollCalculationStepResponse } from '../../../../core/api/generated/model/payroll-calculation-step-response';
 import { PayrollConceptResponse } from '../../../../core/api/generated/model/payroll-concept-response';
+import { PayslipSectionResponse } from '../../../../core/api/generated/model/payslip-section-response';
 import { PayrollCompanyProfileResponse } from '../../../../core/api/generated/model/payroll-company-profile-response';
 import { PayrollEmployeeProfileResponse } from '../../../../core/api/generated/model/payroll-employee-profile-response';
 import { PayrollAgreementProfileResponse } from '../../../../core/api/generated/model/payroll-agreement-profile-response';
@@ -12,6 +13,7 @@ import {
 } from '../models/payroll-summary.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
+import { PayslipSectionModel } from '../models/payslip-section.model';
 
 export function mapPayrollSummaryResponseToModel(
   response: PayrollSummaryResponse,
@@ -52,6 +54,23 @@ export function mapPayrollConceptResponseToModel(
     // un backend anterior al b4rrhh/backend#109. En los dos casos significa lo mismo para quien
     // pinta: esta línea no tiene bloque, y hay que verlo.
     payslipSectionCode: response.payslipSectionCode ?? null,
+  };
+}
+
+/**
+ * Un bloque del recibo, tal cual lo declara el catálogo (`b4rrhh/backend#109`).
+ *
+ * Copia y nada más: el nombre del bloque es del catálogo y aquí no se traduce ni se reordena.
+ * Cualquier cosa que este mapa decidiera por su cuenta volvería a ser la agrupación deducida en
+ * el cliente, que es justo lo que este paso retira.
+ */
+export function mapPayslipSectionResponseToModel(
+  response: PayslipSectionResponse,
+): PayslipSectionModel {
+  return {
+    sectionCode: response.sectionCode,
+    label: response.label,
+    displayOrder: response.displayOrder,
   };
 }
 

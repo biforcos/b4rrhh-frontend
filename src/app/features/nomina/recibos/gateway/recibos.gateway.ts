@@ -11,6 +11,7 @@ import {
   mapPayrollSummaryResponseToModel,
   mapPayrollCalculationStepResponseToModel,
   mapPayrollConceptResponseToModel,
+  mapPayslipSectionResponseToModel,
   mapCompanyProfileResponseToModel,
   mapEmployeeProfileResponseToModel,
   mapAgreementProfileResponseToModel,
@@ -18,6 +19,7 @@ import {
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
+import { PayslipSectionModel } from '../models/payslip-section.model';
 import {
   PayrollSummaryModel,
   PayrollCompanyProfileModel,
@@ -143,6 +145,19 @@ export class RecibosGateway {
 
   recalculate(key: PayrollBusinessKey): Observable<PayrollSummaryModel> {
     return this.client.recalculate(key).pipe(map(payrollResponseToSummary));
+  }
+
+  /**
+   * Los bloques declarados del recibo, en el orden en el que se imprimen.
+   *
+   * **Sin `sort` aquí.** El orden lo declara el catálogo y el backend lo sirve ya ordenado por
+   * `displayOrder`; reordenarlos aquí por cualquier otra cosa sería volver a decidir en el
+   * cliente lo que este paso acaba de sacar del cliente (`b4rrhh/backend#109`).
+   */
+  getPayslipSections(ruleSystemCode: string): Observable<ReadonlyArray<PayslipSectionModel>> {
+    return this.client
+      .listPayslipSections(ruleSystemCode)
+      .pipe(map((sections) => sections.map(mapPayslipSectionResponseToModel)));
   }
 }
 

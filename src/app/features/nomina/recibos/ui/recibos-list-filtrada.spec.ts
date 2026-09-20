@@ -57,6 +57,7 @@ describe('La lista de recibos filtrada por un empleado', () => {
         {
           provide: RecibosGateway,
           useValue: {
+            getPayslipSections: () => of([]),
             search: vi.fn((filtros: RecibosFilters) => {
               buscados.push(filtros);
               return of(resultado);

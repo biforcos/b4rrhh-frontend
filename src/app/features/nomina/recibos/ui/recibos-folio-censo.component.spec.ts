@@ -5,37 +5,53 @@ import { PayrollConceptModel } from '../models/payroll-concept.model';
 import { RecibosFolioComponent } from './recibos-folio.component';
 
 /**
- * La mitad de frontend del `b4rrhh/backend#94`: **qué naturalezas pinta el folio**.
+ * La mitad de frontend del `b4rrhh/backend#94`, **actualizada en el `b4rrhh/frontend#76`**: qué
+ * pinta el folio y qué no.
  *
- * El backend reparte por `payslip_order_code` —lo tiene y es una línea del recibo, no lo tiene y
- * es un paso de cálculo que se guarda y no se imprime— y el folio filtra por **naturaleza**. Son
- * dos criterios distintos que responden a dos preguntas distintas, y hoy **no coinciden**: se
- * persisten 14 conceptos y este folio pinta 9. Los cinco que sobran son la aportación empresarial
- * a la Seguridad Social (720 a 724, `INFORMATIONAL`), que en una nómina de verdad va en su propio
- * recuadro al pie y no entre las líneas.
+ * <h3>Qué decía este censo, y por qué cambió</h3>
  *
- * Nada de esto es un defecto: los cinco están bien persistidos y bien no pintados. Lo que faltaba
- * era que estuviera escrito y que se enterase alguien cuando cambie.
+ * Decía que el folio pintaba **cinco naturalezas de ocho**, y que los cinco `INFORMATIONAL` de la
+ * aportación empresarial (720 a 724) eran «la divergencia conocida»: se persistían con orden de
+ * recibo y el folio no los pintaba. Aquel test dejaba escrito cuándo sería legítimo romperlo —el
+ * día que el folio aprendiera a pintar el recuadro de la aportación empresarial— y decía qué
+ * hacer entonces: **actualizar el censo de los dos lados, no borrarlo.** Ese día es éste.
  *
- * **Por qué son dos tests y no uno.** El censo de lo que se persiste vive en `b4rrhh/backend`
+ * Lo que aquella divergencia escondía era peor de lo que parecía: no era una decisión de
+ * maquetación pendiente, era que **el recibo omitía un bloque entero del modelo oficial**. Las
+ * aportaciones de la empresa están en la nómina española por ley, se calculaban bien, viajaban en
+ * la respuesta, y un `if` del cliente las tiraba. Nadie lo vio porque el folio *parecía* completo.
+ *
+ * <h3>Y por qué la pregunta ya no es la misma</h3>
+ *
+ * **Porque el folio ya no clasifica por naturaleza.** Lo que coloca una línea es su
+ * `payslipSectionCode`, declarado en el catálogo (`V138`) y congelado con la línea. Preguntar
+ * «qué naturalezas pinta» era una pregunta con sentido cuando la naturaleza decidía; ahora la
+ * respuesta es una sola frase: **el folio pinta lo que tiene bloque, y lo pinta en su bloque.**
+ *
+ * Por eso el censo es ahora de secciones y no de naturalezas, y lo que vigila es que no vuelva a
+ * desaparecer nada sin que se entere nadie.
+ *
+ * <h3>Las dos mitades siguen siendo dos</h3>
+ *
+ * El censo de lo que se persiste vive en `b4rrhh/backend`
  * (`WhatIsPersistedAndWhatThePayslipPaintsAreTwoCriteriaTest`), porque sale de consultar
  * `payroll_engine.payroll_concept` y una prueba de aquí no puede verlo. Lo que el folio pinta vive
- * aquí, y una prueba de allí tampoco puede verlo: allí sólo hay una **copia** de esta lista, y
- * esto es lo que la mantiene cierta. Ninguna prueba abarca las dos mitades.
- *
- * **Cuándo es legítimo romper este test.** Cuando el folio aprenda a pintar lo que hoy no pinta, y
- * hay dos candidatos escritos: el **bloque de determinación de las bases de cotización** —base de
- * contingencias comunes, de AT y EP, y sujeta a IRPF, que son conceptos `BASE`— y el **recuadro de
- * la aportación empresarial**. Los dos son decisiones de maquetación perfectamente razonables. El
- * día que se tomen, esto se pone rojo con razón: lo que hay que hacer es actualizar el censo de
- * los dos lados, no borrarlo.
+ * aquí. Ninguna prueba abarca las dos mitades, y por eso cada lado lleva una copia de lo que
+ * afirma el otro.
  */
-describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse', () => {
-  /** Las cinco que se pintan, de las ocho que existen. Este es el censo. */
-  const PINTADAS = ['DEDUCTION', 'EARNING', 'NET_PAY', 'TOTAL_DEDUCTION', 'TOTAL_EARNING'];
-
-  /** Y las tres que no. `BASE` y `TECHNICAL` ni siquiera llegan al recibo; `INFORMATIONAL` sí. */
-  const NO_PINTADAS = ['BASE', 'INFORMATIONAL', 'TECHNICAL'];
+describe('Qué pinta el folio, y en qué bloque lo pone', () => {
+  /** Los bloques declarados de ESP, como los sirve la API. */
+  const SECCIONES = [
+    { sectionCode: 'DEVENGOS', label: 'Devengos', displayOrder: 10 },
+    { sectionCode: 'DEDUCCIONES', label: 'Deducciones', displayOrder: 20 },
+    { sectionCode: 'LIQUIDO', label: 'Liquido total a percibir', displayOrder: 30 },
+    { sectionCode: 'BASES', label: 'Determinacion de las bases de cotizacion', displayOrder: 40 },
+    {
+      sectionCode: 'APORTACION_EMPRESARIAL',
+      label: 'Aportacion empresarial',
+      displayOrder: 50,
+    },
+  ];
 
   /** Un concepto real de cada naturaleza, con un importe irrepetible para poder buscarlo. */
   const UNO_DE_CADA_NATURALEZA: PayrollConceptModel[] = [
@@ -51,71 +67,142 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
   ];
 
   /**
-   * El censo entero, en una afirmación.
+   * Las cinco de la aportación empresarial, que son las que el folio tiraba.
    *
-   * Cada naturaleza se prueba **sola en su folio**, con un nombre y un importe que no se repiten:
-   * si alguno de los dos aparece en la página, esa naturaleza se pinta. No se mira por qué hueco
-   * sale —el cuerpo, la fila de totales o el pie— porque lo que este censo afirma es si sale o no
-   * sale.
-   *
-   * Si mañana alguien añade al folio un bloque para las bases de cotización, esta lista se mueve y
-   * el test lo dice nombrando la naturaleza que ha cambiado de lado.
+   * Los importes son potencias de dos para que su suma sólo pueda salir de sumarlas todas: si
+   * faltara una, el total del bloque sería otro número y no uno parecido.
    */
-  it('de las ocho naturalezas, el folio pinta cinco y deja tres fuera', () => {
-    const pintadas = UNO_DE_CADA_NATURALEZA.filter(seVeEnElFolio)
-      .map((c) => c.conceptNatureCode)
-      .sort();
-    const fuera = UNO_DE_CADA_NATURALEZA.filter((c) => !seVeEnElFolio(c))
-      .map((c) => c.conceptNatureCode)
-      .sort();
+  const LAS_CINCO_DE_LA_EMPRESA: PayrollConceptModel[] = [
+    concepto('720', 'SS empresa CC', 'INFORMATIONAL', 5, 'APORTACION_EMPRESARIAL'),
+    concepto('721', 'SS empresa desempleo', 'INFORMATIONAL', 10, 'APORTACION_EMPRESARIAL'),
+    concepto('722', 'SS empresa FP', 'INFORMATIONAL', 20, 'APORTACION_EMPRESARIAL'),
+    concepto('723', 'SS empresa FOGASA', 'INFORMATIONAL', 40, 'APORTACION_EMPRESARIAL'),
+    concepto('724', 'SS empresa MEI', 'INFORMATIONAL', 80, 'APORTACION_EMPRESARIAL'),
+  ].map((c, i) => ({ ...c, displayOrder: 720 + i }));
 
-    expect(pintadas).toEqual(PINTADAS);
-    expect(fuera).toEqual(NO_PINTADAS);
-  });
+  /**
+   * El censo entero, en una afirmación: **todo lo que llega al recibo se pinta.**
+   *
+   * Cada línea se prueba sola en su folio, con un nombre y un importe irrepetibles: si alguno de
+   * los dos aparece en la página, esa línea se pinta. Ya no hay lista de naturalezas admitidas
+   * que mantener — lo único que decide es si la línea trae bloque, y hasta la que no lo trae sale.
+   *
+   * Este es el test que faltaba desde el principio. Con el folio anterior, `720` y `B_CC` habrían
+   * salido en la lista de las que no se pintan.
+   */
+  it('todas las líneas que llegan al recibo se pintan, tengan bloque o no', () => {
+    const fuera = UNO_DE_CADA_NATURALEZA.filter((c) => !seVeEnElFolio(c)).map((c) => c.conceptCode);
 
-  it('el cuerpo del recibo son los devengos y las deducciones, y nada más', () => {
-    expect(codigosDelCuerpo(UNO_DE_CADA_NATURALEZA)).toEqual(['101', '700']);
-  });
-
-  it('los tres totales se buscan uno a uno por su naturaleza', () => {
-    const folio = render(UNO_DE_CADA_NATURALEZA);
-
-    expect(textoDe(folio, '.row-totals .amount-earning')).toBe(importe(6666.66));
-    expect(textoDe(folio, '.row-totals .amount-deduction')).toBe(importe(7777.77));
-    expect(textoDe(folio, '.net-pay-amount')).toBe(`${importe(8888.88)} €`);
+    expect(fuera).toEqual([]);
   });
 
   /**
-   * Los cinco `INFORMATIONAL` de la aportación empresarial son la divergencia conocida, y la
-   * única: se persisten con orden de recibo y este folio no los pinta.
+   * **El test que este issue existía para escribir** (`b4rrhh/frontend#76`, criterio 6).
    *
-   * Si algún día los pinta, será en su propio recuadro al pie —como manda una nómina de verdad— y
-   * no como una línea más del cuerpo, que las sumaría a las deducciones del trabajador.
+   * Si alguien vuelve a colar un filtro por naturaleza en el folio, las cinco líneas de la
+   * aportación empresarial desaparecen otra vez y el recibo vuelve a omitir un bloque del modelo
+   * oficial pareciendo completo. Esto se pone rojo el mismo día.
    */
-  it('la aportación empresarial se persiste con su orden de recibo y el folio no la pinta', () => {
-    const folio = render(UNO_DE_CADA_NATURALEZA);
+  it('el bloque de aportación empresarial se pinta, con sus líneas y su total', () => {
+    const folio = render(LAS_CINCO_DE_LA_EMPRESA);
 
-    expect(codigosDelCuerpo(UNO_DE_CADA_NATURALEZA)).not.toContain('720');
-    expect(folio.textContent).not.toContain('SS empresa CC');
-    expect(folio.textContent).not.toContain(importe(3333.33));
+    expect(codigosDelCuerpo(LAS_CINCO_DE_LA_EMPRESA)).toEqual(['720', '721', '722', '723', '724']);
+    expect(folio.textContent).toContain('Aportacion empresarial');
+    // El total del bloque es la suma de sus cinco líneas: el motor no totaliza este recuadro.
+    expect(textoDe(folio, 'tfoot .row-totals .amount')).toBe(importe(5 + 10 + 20 + 40 + 80));
   });
 
   /**
-   * La columna de importes del cuerpo no se suma nunca para sacar un total.
+   * Y no se suman a las deducciones del trabajador, que es la otra mitad de pintarlas bien.
    *
-   * Los totales del folio salen de sus tres conceptos —970, 980 y 990—, que el motor calculó. Una
-   * suma hecha aquí daría otro número en cuanto el folio pinte una naturaleza más, y sería un
-   * número que no cuadra con el recibo del backend.
+   * El empleado no paga la aportación de la empresa. El modelo oficial la separa y la `V138`
+   * también: van en su bloque, con su total, y el `980` no se entera de que existen.
    */
-  it('los totales son los conceptos 970, 980 y 990, no la suma de lo que se ve', () => {
-    const sinLaAportacionEmpresarial = UNO_DE_CADA_NATURALEZA.filter(
-      (c) => c.conceptCode !== '720',
+  it('la aportación empresarial no toca el total de deducciones', () => {
+    const conLaEmpresa = [...UNO_DE_CADA_NATURALEZA];
+    const sinLaEmpresa = UNO_DE_CADA_NATURALEZA.filter((c) => c.conceptCode !== '720');
+
+    expect(totalDeDeducciones(render(conLaEmpresa))).toBe(totalDeDeducciones(render(sinLaEmpresa)));
+    expect(totalDeDeducciones(render(conLaEmpresa))).toBe(importe(7777.77));
+  });
+
+  /**
+   * Los bloques salen en el orden que declara el catálogo, no en el que se le ocurra al cliente.
+   *
+   * Es la comprobación de que el orden viene de fuera: `payslipSections` llega con su
+   * `displayOrder` y el folio lo respeta. Si alguien escribiera aquí una lista de bloques, este
+   * test seguiría pasando — pero el siguiente, no.
+   */
+  it('los bloques salen en el orden declarado', () => {
+    expect(bloquesDe(render(UNO_DE_CADA_NATURALEZA))).toEqual([
+      'Devengos',
+      'Deducciones',
+      'Liquido total a percibir',
+      'Determinacion de las bases de cotizacion',
+      'Aportacion empresarial',
+      // Y al final, lo que el catálogo no colocó. Va detrás de todo lo declarado a propósito.
+      'Sin bloque declarado',
+    ]);
+  });
+
+  /**
+   * **El criterio 4 del issue, provocado desde aquí** (`b4rrhh/frontend#76`).
+   *
+   * Se cambia en el catálogo el orden de los bloques y la sección de una línea, sin tocar el
+   * componente, y el folio coloca distinto. Si el folio tuviera los bloques escritos dentro, esto
+   * no se movería.
+   */
+  it('cambiar el catálogo mueve las líneas de bloque sin tocar el folio', () => {
+    const catalogoAlReves = [...SECCIONES].map((s) => ({
+      ...s,
+      displayOrder: 100 - s.displayOrder,
+    }));
+    const elSalarioPasaAOtroBloque = UNO_DE_CADA_NATURALEZA.map((c) =>
+      c.conceptCode === '101' ? { ...c, payslipSectionCode: 'APORTACION_EMPRESARIAL' } : c,
     );
 
-    // La aportación empresarial entra en la lista y los totales no se mueven, porque no se suman.
-    expect(textoDe(render(UNO_DE_CADA_NATURALEZA), '.row-totals .amount-deduction')).toBe(
-      textoDe(render(sinLaAportacionEmpresarial), '.row-totals .amount-deduction'),
-    );
+    const folio = render(elSalarioPasaAOtroBloque, catalogoAlReves);
+
+    expect(bloquesDe(folio)[0]).toBe('Aportacion empresarial');
+    expect(codigosDelBloque(folio, 'Aportacion empresarial')).toEqual(['101', '720']);
+  });
+
+  /**
+   * Una línea a la que el catálogo no le declaró bloque **se pinta igual**, con su código por
+   * nombre.
+   *
+   * Es el caso de `TECHNICAL`, y el de cualquier recibo calculado antes del `b4rrhh/backend#109`.
+   * Callarla sería exactamente el defecto que este paso arregla: una línea que llega y no se ve.
+   */
+  it('una línea sin bloque declarado sale al final, y se nota que le falta', () => {
+    const folio = render(UNO_DE_CADA_NATURALEZA);
+
+    expect(bloquesDe(folio)).toContain('Sin bloque declarado');
+    expect(codigosDelBloque(folio, 'Sin bloque declarado')).toEqual(['P_IRPF']);
+  });
+
+  /**
+   * Un bloque declarado y vacío no se pinta.
+   *
+   * Las bases de cotización están declaradas desde la `V138` y hoy ningún concepto `BASE` llega
+   * al recibo. Un recuadro vacío con su título no dice «no hay bases»: dice que algo se ha roto.
+   */
+  it('un bloque sin líneas no deja un recuadro vacío', () => {
+    expect(bloquesDe(render(LAS_CINCO_DE_LA_EMPRESA))).toEqual(['Aportacion empresarial']);
+  });
+
+  /**
+   * Los totales que el motor calcula siguen saliendo del motor, no de una suma de la pantalla.
+   *
+   * El `970` es el total de devengos y lo calculó el backend. El folio lo pinta como la línea que
+   * cierra su bloque y **no le añade encima una suma propia**, que daría otro número.
+   */
+  it('un bloque que trae su total no se suma otra vez', () => {
+    const devengos = UNO_DE_CADA_NATURALEZA.filter((c) => ['101', '970'].includes(c.conceptCode));
+    const folio = render(devengos);
+
+    expect(folio.querySelector('tfoot .row-totals')).toBeNull();
+    expect(folio.textContent).toContain(importe(6666.66));
   });
 
   // ── helpers ────────────────────────────────────────────────────────────────
@@ -165,9 +252,17 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
     return folio.includes(concept.conceptLabel) || folio.includes(importe(concept.amount!));
   }
 
-  function render(concepts: ReadonlyArray<PayrollConceptModel>): HTMLElement {
+  function render(
+    concepts: ReadonlyArray<PayrollConceptModel>,
+    secciones: ReadonlyArray<{
+      sectionCode: string;
+      label: string;
+      displayOrder: number;
+    }> = SECCIONES,
+  ): HTMLElement {
     const fixture = TestBed.createComponent(RecibosFolioComponent);
     fixture.componentRef.setInput('concepts', concepts);
+    fixture.componentRef.setInput('payslipSections', secciones);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
@@ -177,6 +272,34 @@ describe('Qué naturalezas pinta el folio, y cuáles se persisten sin pintarse',
       render(concepts).querySelectorAll('.concept-table tbody tr'),
     ) as HTMLElement[];
     return filas.map((fila) => fila.querySelectorAll('td')[1]?.textContent?.trim() ?? '');
+  }
+
+  /** Los títulos de los bloques pintados, en el orden en que salen. */
+  function bloquesDe(folio: HTMLElement): string[] {
+    return Array.from(folio.querySelectorAll('.section-label, .net-pay-label')).map(
+      (el) => el.textContent?.trim() ?? '',
+    );
+  }
+
+  /** Las claves de concepto de un bloque, buscado por su título. */
+  function codigosDelBloque(folio: HTMLElement, titulo: string): string[] {
+    const tabla = Array.from(folio.querySelectorAll('.concept-table')).find(
+      (t) => t.querySelector('.section-label')?.textContent?.trim() === titulo,
+    );
+    return Array.from(tabla?.querySelectorAll('tbody tr') ?? []).map(
+      (fila) => fila.querySelectorAll('td')[1]?.textContent?.trim() ?? '',
+    );
+  }
+
+  /** El total que cierra el bloque de deducciones: la línea 980, que calculó el motor. */
+  function totalDeDeducciones(folio: HTMLElement): string {
+    const tabla = Array.from(folio.querySelectorAll('.concept-table')).find(
+      (t) => t.querySelector('.section-label')?.textContent?.trim() === 'Deducciones',
+    );
+    const fila = Array.from(tabla?.querySelectorAll('tbody tr') ?? []).find(
+      (tr) => tr.querySelectorAll('td')[1]?.textContent?.trim() === '980',
+    );
+    return fila?.querySelector('.amount')?.textContent?.trim() ?? '';
   }
 
   function textoDe(folio: HTMLElement, selector: string): string {

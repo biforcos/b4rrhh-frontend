@@ -67,11 +67,19 @@ describe('El folio resalta lo que se movió', () => {
     expect(root.querySelector('.net-pay-footer.valor-movido')).not.toBeNull();
   });
 
-  /** El total se mueve si se movió alguno de los dos importes que lo forman. */
-  it('la fila de totales se resalta si se movieron los devengos o las deducciones', () => {
-    expect(render(new Set([3])).querySelector('tfoot .row-totals.valor-movido')).not.toBeNull();
-    expect(render(new Set([4])).querySelector('tfoot .row-totals.valor-movido')).not.toBeNull();
-    expect(render(new Set([1])).querySelector('tfoot .row-totals.valor-movido')).toBeNull();
+  /**
+   * Los totales se resaltan como lo que ahora son: **líneas dentro de su bloque**
+   * (`b4rrhh/frontend#76`).
+   *
+   * Antes eran una fila de `tfoot` fuera de los conceptos y el resalte se encendía si se había
+   * movido cualquiera de los dos. Ahora el 970 cierra los devengos y el 980 las deducciones, cada
+   * uno con su número de línea, así que el resalte los distingue: moverse el total de devengos ya
+   * no enciende el de deducciones. Es más fino que antes, no menos.
+   */
+  it('los totales se resaltan por separado, cada uno en su bloque', () => {
+    expect(resaltadas(render(new Set([3])))).toEqual(['970']);
+    expect(resaltadas(render(new Set([4])))).toEqual(['980']);
+    expect(resaltadas(render(new Set([1])))).toEqual(['101']);
   });
 
   /**

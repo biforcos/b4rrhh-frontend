@@ -285,6 +285,7 @@ const STATUS_LABELS: Record<string, string> = {
           <app-recibos-folio
             [lineasMovidas]="store.lineasMovidas()"
             [concepts]="store.concepts()"
+            [payslipSections]="store.payslipSections()"
             [employeeNumber]="payroll.employeeNumber"
             [payrollPeriodCode]="payroll.payrollPeriodCode"
             [companyProfile]="store.companyProfile()"

@@ -7,6 +7,7 @@ import { lineasQueSeMovieron } from './lineas-movidas.util';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
+import { PayslipSectionModel } from '../models/payslip-section.model';
 import {
   PayrollSummaryModel,
   PayrollCompanyProfileModel,
@@ -136,6 +137,16 @@ export class RecibosStore {
   private readonly recalculoSeqState = signal(0);
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
+  /**
+   * Los bloques declarados del recibo (`b4rrhh/backend#109`).
+   *
+   * Vacío mientras no se hayan pedido, **y vacío también si la petición falla**. Las dos cosas
+   * significan lo mismo para el folio —no sé en qué bloques va esto— y el folio las pinta igual:
+   * las líneas salen, agrupadas por el código de bloque que cada una trae congelado, y sin el
+   * nombre bonito del bloque. **Un recibo no se deja de enseñar porque el catálogo no conteste**:
+   * los importes son del documento y no dependen de esta llamada.
+   */
+  private readonly payslipSectionsState = signal<ReadonlyArray<PayslipSectionModel>>([]);
 
   /**
    * Los pasos del cálculo, que se piden aparte y sólo cuando alguien pregunta.
@@ -187,6 +198,7 @@ export class RecibosStore {
   readonly recalculoSeq = this.recalculoSeqState.asReadonly();
   readonly conceptsLoading = this.conceptsLoadingState.asReadonly();
   readonly conceptsError = this.conceptsErrorState.asReadonly();
+  readonly payslipSections = this.payslipSectionsState.asReadonly();
   readonly steps = this.stepsState.asReadonly();
   readonly stepsLoading = this.stepsLoadingState.asReadonly();
   readonly stepsError = this.stepsErrorState.asReadonly();
@@ -245,6 +257,7 @@ export class RecibosStore {
     this.lineasMovidasState.set(new Set());
     this.conceptsLoadingState.set(false);
     this.conceptsErrorState.set(null);
+    this.payslipSectionsState.set([]);
     this.transitionErrorState.set(null);
     this.desincronizadoState.set(null);
     this.forgetCalculationSteps();
@@ -480,6 +493,7 @@ export class RecibosStore {
     // pantalla iba rancia deja de tener sentido aqui y no despues (#75).
     this.desincronizadoState.set(null);
     this.forgetCalculationSteps();
+    this.loadPayslipSections(key.ruleSystemCode);
 
     this.gateway
       .getDetail(key)
@@ -510,6 +524,27 @@ export class RecibosStore {
           // pantalla tiene que decir eso y no quedarse en blanco (`frontend#64`, criterio 4).
           this.conceptsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
+      });
+  }
+
+  /**
+   * Los bloques del recibo, del catálogo (`b4rrhh/backend#109`).
+   *
+   * **No tiene bandera de carga ni de error, y es deliberado.** El folio no espera a esto: un
+   * recibo es el documento y sus importes, y los bloques son cómo se colocan. Si el catálogo no
+   * contesta, las líneas se agrupan igual por el código que cada una trae congelado y lo único
+   * que falta es el nombre del bloque. Darle bandera de error obligaría a la pantalla a decidir
+   * si enseña un recibo a medias o ninguno, y la respuesta buena a esa pregunta es la de no
+   * hacerla.
+   */
+  private loadPayslipSections(ruleSystemCode: string): void {
+    this.payslipSectionsState.set([]);
+    this.gateway
+      .getPayslipSections(ruleSystemCode)
+      .pipe(take(1))
+      .subscribe({
+        next: (sections) => this.payslipSectionsState.set(sections),
+        error: () => this.payslipSectionsState.set([]),
       });
   }
 

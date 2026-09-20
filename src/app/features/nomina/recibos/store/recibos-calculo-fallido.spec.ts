@@ -56,6 +56,7 @@ describe('Un cálculo que no se puede hacer', () => {
             invalidate: () => of({ ...KEY, status: 'NOT_VALID' as const, calculatedAt: null }),
             recalculate: () => recalculateDevuelve(),
             getDetail: () => throwError(() => new HttpErrorResponse({ status: 404 })),
+            getPayslipSections: () => of([]),
           },
         },
       ],

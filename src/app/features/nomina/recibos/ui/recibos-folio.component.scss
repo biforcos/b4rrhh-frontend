@@ -145,9 +145,23 @@
 
 .concept-table th.col-qty,
 .concept-table th.col-rate,
-.concept-table th.col-earning,
-.concept-table th.col-deduction {
+.concept-table th.col-amount {
   text-align: right;
+}
+
+/*
+ * El título del bloque (`b4rrhh/frontend#76`): devengos, deducciones, aportación empresarial.
+ * Lo declara el catálogo y lo sirve la API; aquí sólo se pinta.
+ */
+.section-label {
+  caption-side: top;
+  text-align: left;
+  padding: 16px 8px 6px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
 .concept-table td {
@@ -172,10 +186,19 @@
   color: var(--text-tertiary);
 }
 
-.amount-earning,
-.amount-deduction {
+.amount {
   color: var(--text-primary);
   font-size: 13px;
+}
+
+/*
+ * La línea que cierra su bloque: el 970 en devengos, el 980 en deducciones. El modelo oficial la
+ * pone ahí dentro y no en un pie aparte, así que se distingue con peso y una raya, no sacándola.
+ */
+.row-total td {
+  font-weight: 600;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-default);
 }
 
 .row-totals td {
@@ -232,8 +255,7 @@
   width: 10%;
 }
 
-.col-earning,
-.col-deduction {
+.col-amount {
   width: 15%;
 }
 

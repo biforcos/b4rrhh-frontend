@@ -58,6 +58,7 @@ describe('El resalte del recálculo', () => {
         {
           provide: RecibosGateway,
           useValue: {
+            getPayslipSections: () => of([]),
             invalidate: () => of(recibo('NOT_VALID')),
             recalculate: () => of(recibo('CALCULATED')),
             getDetail: () =>

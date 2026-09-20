@@ -57,6 +57,7 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
             lineasMovidas: signal(new Set<number>()),
             recalculoSeq: signal(0),
             concepts: signal([]),
+            payslipSections: signal([]),
             conceptsLoading: signal(false),
             conceptsError: signal(null),
             companyProfile: signal(null),

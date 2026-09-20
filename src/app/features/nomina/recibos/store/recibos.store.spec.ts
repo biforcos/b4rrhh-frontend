@@ -61,6 +61,7 @@ describe('RecibosStore', () => {
   let gatewayMock: {
     search: ReturnType<typeof vi.fn>;
     getDetail: ReturnType<typeof vi.fn>;
+    getPayslipSections: ReturnType<typeof vi.fn>;
     invalidate: ReturnType<typeof vi.fn>;
     validate: ReturnType<typeof vi.fn>;
     recalculate: ReturnType<typeof vi.fn>;
@@ -70,6 +71,7 @@ describe('RecibosStore', () => {
     gatewayMock = {
       search: vi.fn(),
       getDetail: vi.fn(),
+      getPayslipSections: vi.fn(() => of([])),
       invalidate: vi.fn(),
       validate: vi.fn(),
       recalculate: vi.fn(),

@@ -78,6 +78,7 @@ describe('Recalcular un recibo en un gesto', () => {
         {
           provide: RecibosGateway,
           useValue: {
+            getPayslipSections: () => of([]),
             invalidate: () => {
               llamadas.push('invalidate');
               return invalidateDevuelve();
