@@ -201,16 +201,11 @@
   border-top: 1px solid var(--border-default);
 }
 
-.row-totals td {
-  font-weight: 600;
-  color: var(--text-primary);
-  border-top: 1px solid var(--border-default);
-  border-bottom: 1px solid var(--border-default);
-}
-
-.totals-label {
-  color: var(--text-primary);
-}
+/*
+ * Aquí había un `.row-totals` y un `.totals-label` para el pie de totales de los bloques que el
+ * folio sumaba por su cuenta. Ese pie se fue con el `b4rrhh/frontend#79` —el folio no suma— y con
+ * él sus estilos: lo único que cierra un bloque es su línea de total, que es `.row-total`.
+ */
 
 /* NET PAY: la unica linea con peso */
 .net-pay-footer {

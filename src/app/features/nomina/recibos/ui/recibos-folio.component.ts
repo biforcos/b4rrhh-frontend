@@ -14,8 +14,6 @@ interface BloqueDelFolio {
   sectionCode: string;
   label: string;
   lines: ReadonlyArray<PayrollConceptModel>;
-  /** La suma del bloque, sólo cuando el motor no trae un total para él. */
-  subtotal: number | null;
   /** Si se pinta como la línea de cierre del recibo en vez de como una tabla. */
   esCierre: boolean;
 }
@@ -26,11 +24,14 @@ const SIN_BLOQUE = '__SIN_BLOQUE__';
 /**
  * Si esta línea es el total de su bloque (`b4rrhh/frontend#76`).
  *
- * **Esto mira la naturaleza y no es una recaída.** Lo que el criterio 2 saca del cliente es
- * decidir *en qué bloque va* una línea, que ahora lo dice `payslipSectionCode`. Qué ES una línea
- * —un concepto o el total que lo cierra— lo dice su naturaleza, que también viene declarada y
- * congelada, y sin esa distinción un bloque se sumaría a sí mismo: el 970 ya es la suma del 101
- * y el 102, y totalizarlo otra vez daría el doble.
+ * **Esto mira la naturaleza y no es una recaída.** Lo que el criterio 2 del `#76` saca del cliente
+ * es decidir *en qué bloque va* una línea, que ahora lo dice `payslipSectionCode`. Qué ES una
+ * línea —un concepto o el total que lo cierra— lo dice su naturaleza, que también viene declarada
+ * y congelada.
+ *
+ * Desde el `b4rrhh/frontend#79` esto ya sólo decide **cómo se pinta** la fila, no si el bloque
+ * lleva total: el total de un bloque es esta línea, cuando el motor la ha dado, y ninguna otra
+ * cosa. El folio no suma.
  */
 function esTotalDeBloque(concept: PayrollConceptModel): boolean {
   return (
@@ -38,10 +39,6 @@ function esTotalDeBloque(concept: PayrollConceptModel): boolean {
     concept.conceptNatureCode === 'TOTAL_DEDUCTION' ||
     concept.conceptNatureCode === 'NET_PAY'
   );
-}
-
-function sumaDe(lineas: ReadonlyArray<PayrollConceptModel>): number {
-  return lineas.reduce((total, linea) => total + (linea.amount ?? 0), 0);
 }
 
 const MONTH_NAMES_ES = [
@@ -216,18 +213,12 @@ const MONTH_NAMES_ES = [
               }
             </tbody>
             <!--
-              Sólo el bloque que el motor no totaliza —la aportación empresarial— lleva suma
-              aquí. Los que traen su propio total (970, 980) ya lo pintan como una línea más,
-              que es donde el modelo oficial lo pone.
+              Aquí no va ningún pie de totales, y eso es la decisión entera del
+              b4rrhh/frontend#79: el total de un bloque es la línea de naturaleza total que el
+              motor le haya dado —el 970, el 980—, que se pinta como una fila más porque es donde
+              el modelo oficial la pone. Un bloque al que el motor no le ha dado total no lleva
+              total. El folio no suma.
             -->
-            @if (bloque.subtotal !== null) {
-              <tfoot>
-                <tr class="row-totals">
-                  <td colspan="5" class="totals-label">Total {{ bloque.label.toLowerCase() }}</td>
-                  <td class="text-right amount">{{ formatNum(bloque.subtotal) }}</td>
-                </tr>
-              </tfoot>
-            }
           </table>
         }
       }
@@ -393,16 +384,20 @@ export class RecibosFolioComponent {
     lineas: PayrollConceptModel[],
   ): BloqueDelFolio {
     const ordenadas = [...lineas].sort((a, b) => a.displayOrder - b.displayOrder);
-    const traeSuTotal = ordenadas.some((l) => esTotalDeBloque(l));
     return {
       sectionCode,
       label,
       lines: ordenadas,
-      // Un bloque que ya trae su total no se suma: el 970 y el 980 son el total de su bloque y
-      // los calculó el motor. Sumar aquí encima daría otro número y no cuadraría con el recibo.
-      // El que no lo trae —la aportación empresarial, que el motor no totaliza— sí necesita el
-      // suyo, y es una suma de lo que hay a la vista, no un concepto.
-      subtotal: traeSuTotal ? null : sumaDe(ordenadas),
+      // No hay campo de total, y esa ausencia es el arreglo del `b4rrhh/frontend#79`. El folio
+      // sumaba todos los bloques que no traían un total del motor, y con el recuadro de bases
+      // —que la V139 llenó— eso empezó a imprimir un número que no significa nada: la base de
+      // contingencias comunes y la base sujeta a retención son dos magnitudes distintas, y
+      // 1.323,00 + 1.068,75 no es ninguna.
+      //
+      // El arreglo no es excluir las de naturaleza BASE: eso sería el `#76` al revés, y dejaría
+      // esperando al siguiente bloque cuya suma tampoco signifique nada. Un bloque tiene total si
+      // el motor le ha dado uno, y si no, no lo tiene.
+      //
       // El bloque del líquido se pinta como la línea de cierre del recibo y no como una tabla de
       // una fila: así sale como sale en una nómina de verdad, y su nombre no aparece dos veces,
       // en el título del bloque y en la fila.

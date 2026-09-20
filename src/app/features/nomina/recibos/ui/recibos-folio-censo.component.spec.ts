@@ -103,13 +103,16 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
    * aportación empresarial desaparecen otra vez y el recibo vuelve a omitir un bloque del modelo
    * oficial pareciendo completo. Esto se pone rojo el mismo día.
    */
-  it('el bloque de aportación empresarial se pinta, con sus líneas y su total', () => {
+  it('el bloque de aportación empresarial se pinta, con sus cinco líneas', () => {
     const folio = render(LAS_CINCO_DE_LA_EMPRESA);
 
     expect(codigosDelCuerpo(LAS_CINCO_DE_LA_EMPRESA)).toEqual(['720', '721', '722', '723', '724']);
     expect(folio.textContent).toContain('Aportacion empresarial');
-    // El total del bloque es la suma de sus cinco líneas: el motor no totaliza este recuadro.
-    expect(textoDe(folio, 'tfoot .row-totals .amount')).toBe(importe(5 + 10 + 20 + 40 + 80));
+    // Este test afirmaba también que el bloque cerraba con la suma de sus cinco líneas. Ya no:
+    // el `b4rrhh/frontend#79` decidió que el folio no suma, y el motor no totaliza este recuadro,
+    // así que se queda sin total. Lo que este test defiende —que las cinco líneas se pintan, que
+    // era el defecto del `#76`— no ha cambiado.
+    expect(folio.querySelector('tfoot')).toBeNull();
   });
 
   /**
@@ -300,9 +303,5 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
       (tr) => tr.querySelectorAll('td')[1]?.textContent?.trim() === '980',
     );
     return fila?.querySelector('.amount')?.textContent?.trim() ?? '';
-  }
-
-  function textoDe(folio: HTMLElement, selector: string): string {
-    return folio.querySelector(selector)?.textContent?.trim() ?? '';
   }
 });
