@@ -209,7 +209,7 @@ describe('Descargar el documento del recibo', () => {
 
 function detalle(status: PayrollSummaryModel['status']) {
   return {
-    summary: { ...KEY, status, calculatedAt: '2026-09-20T18:04:37' },
+    summary: { ...KEY, status, calculatedAt: '2026-09-20T16:04:37Z' },
     runId: 1,
     rulesChangedSinceCalculation: false,
     concepts: [],

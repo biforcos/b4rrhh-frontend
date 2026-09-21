@@ -42,7 +42,7 @@ describe('Cerrar un recibo', () => {
     const selectedPayroll = signal<PayrollSummaryModel | null>({
       ...KEY,
       status,
-      calculatedAt: '2026-09-14T22:03:48.395388',
+      calculatedAt: '2026-09-14T20:03:48.395388Z',
     });
 
     TestBed.configureTestingModule({

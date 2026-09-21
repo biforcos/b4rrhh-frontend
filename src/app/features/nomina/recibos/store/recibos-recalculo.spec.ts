@@ -31,7 +31,7 @@ describe('Recalcular un recibo en un gesto', () => {
   };
 
   function recibo(status: PayrollSummaryModel['status']): PayrollSummaryModel {
-    return { ...KEY, status, calculatedAt: '2026-09-14T22:03:48' };
+    return { ...KEY, status, calculatedAt: '2026-09-14T20:03:48Z' };
   }
 
   let llamadas: string[];

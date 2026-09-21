@@ -29,7 +29,7 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
     payrollTypeCode: 'NORMAL',
     presenceNumber: 2,
     status: 'CALCULATED',
-    calculatedAt: '2026-09-14T22:03:48.395388',
+    calculatedAt: '2026-09-14T20:03:48.395388Z',
   };
 
   let store: {

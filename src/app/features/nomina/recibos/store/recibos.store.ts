@@ -52,6 +52,11 @@ function esUnidadCogida(err: HttpErrorResponse): boolean {
  * La clave de negocio no sirve para esto: es la misma dirección, y de eso se trata. Lo que
  * distingue un recibo de su sustituto es **cuándo se calculó** y **en qué estado está**, que son
  * justo los dos datos que la barra de arriba enseña y sobre los que deciden los botones.
+ *
+ * <p>La fecha se compara **como cadena y a propósito**: las dos vienen del mismo servidor y en la
+ * misma forma, así que la igualdad de texto es la igualdad de instante sin coste. Parsearla no
+ * añadiría nada y abriría la puerta a que dos formas del mismo momento se leyeran como distintas
+ * (`b4rrhh/frontend#81`).
  */
 function esElMismoRecibo(alaVista: PayrollSummaryModel, delServidor: PayrollSummaryModel): boolean {
   return (

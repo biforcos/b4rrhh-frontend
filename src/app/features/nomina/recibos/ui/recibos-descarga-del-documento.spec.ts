@@ -65,7 +65,7 @@ describe('Descargar el documento desde la pantalla del recibo', () => {
             selectedPayroll: signal<PayrollSummaryModel | null>({
               ...KEY,
               status,
-              calculatedAt: '2026-09-20T18:04:37',
+              calculatedAt: '2026-09-20T16:04:37Z',
             }),
             runId: signal(1),
             rulesChanged,

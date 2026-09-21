@@ -20,7 +20,7 @@ const MOCK_KEY: PayrollBusinessKey = {
 const MOCK_SUMMARY: PayrollSummaryModel = {
   ...MOCK_KEY,
   status: 'CALCULATED',
-  calculatedAt: '2026-04-24T10:00:00',
+  calculatedAt: '2026-04-24T08:00:00Z',
 };
 
 const MOCK_CONCEPT: PayrollConceptModel = {

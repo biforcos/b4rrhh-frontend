@@ -58,7 +58,7 @@ describe('Volver a la pestaña del recibo', () => {
             selectedPayroll: signal<PayrollSummaryModel | null>({
               ...KEY,
               status,
-              calculatedAt: '2026-09-14T22:03:48',
+              calculatedAt: '2026-09-14T20:03:48Z',
             }),
             runId: signal(1),
             rulesChanged: signal(false),

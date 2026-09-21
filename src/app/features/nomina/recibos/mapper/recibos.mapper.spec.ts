@@ -20,7 +20,7 @@ describe('recibos.mapper', () => {
         payrollTypeCode: PayrollSummaryResponsePayrollTypeCodeEnum.Normal,
         presenceNumber: 1,
         status: PayrollSummaryResponseStatusEnum.Calculated,
-        calculatedAt: '2026-04-24T12:00:00',
+        calculatedAt: '2026-04-24T10:00:00Z',
       };
 
       const model = mapPayrollSummaryResponseToModel(response);

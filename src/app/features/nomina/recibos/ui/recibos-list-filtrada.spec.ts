@@ -36,7 +36,7 @@ describe('La lista de recibos filtrada por un empleado', () => {
     payrollTypeCode: 'NORMAL',
     presenceNumber: 2,
     status: 'CALCULATED',
-    calculatedAt: '2026-09-14T22:03:48',
+    calculatedAt: '2026-09-14T20:03:48Z',
   };
 
   function paramMapDe(valores: Record<string, string>): Map<string, string> {
