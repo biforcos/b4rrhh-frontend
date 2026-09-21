@@ -74,7 +74,11 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "reporters": ["default", "./tools/reportar-tests-saltados.mjs"],
+            "reporters": [
+              "default",
+              "./tools/reportar-tests-saltados.mjs",
+              "./tools/reportar-tests-lentos.mjs"
+            ],
             "setupFiles": ["src/testing/zona-horaria.setup.ts"]
           }
         }
