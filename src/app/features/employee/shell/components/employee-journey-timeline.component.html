@@ -5,117 +5,103 @@
   ya rotula con esa palabra.
 -->
 <section class="journey-timeline">
-  <header>
-    <button
-      type="button"
-      class="journey-timeline__toggle"
-      [attr.aria-expanded]="isExpanded()"
-      [attr.aria-label]="toggleAriaLabel()"
-      aria-controls="journey-timeline-content"
-      (click)="toggle()"
-    >
-      <span class="journey-timeline__headline">
-        <p class="journey-timeline__summary">{{ collapsedSummary() }}</p>
-      </span>
-      <span class="journey-timeline__chevron" aria-hidden="true">{{
-        isExpanded() ? '▴' : '▾'
-      }}</span>
-    </button>
-  </header>
+  @if (summaryLine(); as resumen) {
+    <header class="journey-timeline__header">
+      <p class="journey-timeline__summary">{{ resumen }}</p>
+    </header>
+  }
 
-  @if (isExpanded()) {
-    <div id="journey-timeline-content">
-      @if (loading()) {
-        <div class="journey-timeline__loading">
-          <div class="journey-timeline__skeleton"></div>
-          <div class="journey-timeline__skeleton"></div>
-        </div>
-      } @else if (error()) {
-        <p class="journey-timeline__error">{{ texts.timelineLoadFailedMessage }}</p>
-      } @else if (!hasEvents()) {
-        <p class="journey-timeline__empty">{{ texts.timelineNoEventsMessage }}</p>
-      } @else {
-        <ol class="journey-timeline__presences" role="list">
-          @for (presence of presenceGroups(); track trackPresenceBy($index, presence)) {
-            <li class="journey-presence-card">
-              <div
-                class="journey-presence-card__header"
-                [class.journey-presence-card__header--active]="presence.isActive"
-                [class.journey-presence-card__header--closed]="!presence.isActive"
-              >
-                <div class="journey-presence-card__header-row">
-                  <div>
-                    <p class="journey-presence-card__company">
-                      {{ presence.company || texts.timelineNoCompanyLabel }}
-                    </p>
-                    <p class="journey-presence-card__period">
-                      {{ presence.start | date: displayDateFormat }}
-                      @if (presence.end) {
-                        → {{ presence.end | date: displayDateFormat }}
-                      } @else {
-                        · {{ texts.timelineCurrentPeriodLabel }}
-                      }
-                    </p>
-                  </div>
-                  <span
-                    class="journey-presence-card__badge"
-                    [class.journey-presence-card__badge--active]="presence.isActive"
-                    [class.journey-presence-card__badge--closed]="!presence.isActive"
-                  >
-                    {{
-                      presence.isActive
-                        ? texts.timelineCurrentPresenceLabel
-                        : texts.timelineClosedPresenceLabel
-                    }}
-                  </span>
+  <div id="journey-timeline-content">
+    @if (loading()) {
+      <div class="journey-timeline__loading">
+        <div class="journey-timeline__skeleton"></div>
+        <div class="journey-timeline__skeleton"></div>
+      </div>
+    } @else if (error()) {
+      <p class="journey-timeline__error">{{ texts.timelineLoadFailedMessage }}</p>
+    } @else if (!hasEvents()) {
+      <p class="journey-timeline__empty">{{ texts.timelineNoEventsMessage }}</p>
+    } @else {
+      <ol class="journey-timeline__presences" role="list">
+        @for (presence of presenceGroups(); track trackPresenceBy($index, presence)) {
+          <li class="journey-presence-card">
+            <div
+              class="journey-presence-card__header"
+              [class.journey-presence-card__header--active]="presence.isActive"
+              [class.journey-presence-card__header--closed]="!presence.isActive"
+            >
+              <div class="journey-presence-card__header-row">
+                <div>
+                  <p class="journey-presence-card__company">
+                    {{ presence.company || texts.timelineNoCompanyLabel }}
+                  </p>
+                  <p class="journey-presence-card__period">
+                    {{ presence.start | date: displayDateFormat }}
+                    @if (presence.end) {
+                      → {{ presence.end | date: displayDateFormat }}
+                    } @else {
+                      · {{ texts.timelineCurrentPeriodLabel }}
+                    }
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  class="journey-presence-card__toggle"
-                  [attr.aria-expanded]="isPresenceExpanded(presence.id, presence.isActive)"
-                  (click)="togglePresence(presence.id)"
+                <span
+                  class="journey-presence-card__badge"
+                  [class.journey-presence-card__badge--active]="presence.isActive"
+                  [class.journey-presence-card__badge--closed]="!presence.isActive"
                 >
                   {{
-                    isPresenceExpanded(presence.id, presence.isActive)
-                      ? texts.timelineCollapseActionLabel
-                      : texts.timelineExpandActionLabel
+                    presence.isActive
+                      ? texts.timelineCurrentPresenceLabel
+                      : texts.timelineClosedPresenceLabel
                   }}
-                  <span aria-hidden="true">{{
-                    isPresenceExpanded(presence.id, presence.isActive) ? '▴' : '▾'
-                  }}</span>
-                </button>
+                </span>
               </div>
+              <button
+                type="button"
+                class="journey-presence-card__toggle"
+                [attr.aria-expanded]="isPresenceExpanded(presence.id, presence.isActive)"
+                (click)="togglePresence(presence.id)"
+              >
+                {{
+                  isPresenceExpanded(presence.id, presence.isActive)
+                    ? texts.timelineCollapseActionLabel
+                    : texts.timelineExpandActionLabel
+                }}
+                <span aria-hidden="true">{{
+                  isPresenceExpanded(presence.id, presence.isActive) ? '▴' : '▾'
+                }}</span>
+              </button>
+            </div>
 
-              @if (isPresenceExpanded(presence.id, presence.isActive)) {
-                <ul class="journey-presence-card__events" role="list">
-                  @for (group of presence.groupedEvents; track group.eventDate) {
-                    <li class="journey-event-row" role="listitem">
-                      <div
-                        class="journey-event-row__icon"
-                        [style.background]="resolveGroupIconBackground(group)"
-                        aria-hidden="true"
-                      ></div>
-                      <div class="journey-event-row__body">
-                        <p class="journey-event-row__date">
-                          {{ group.eventDate | date: displayDateFormat }}
-                        </p>
-                        <p class="journey-event-row__label">{{ group.primaryEventLabel }}</p>
-                        @if (group.secondaryEvents.length > 0) {
-                          <ul class="journey-event-row__secondary" role="list">
-                            @for (ev of group.secondaryEvents; track ev.id) {
-                              <li class="journey-event-row__secondary-item">{{ ev.summary }}</li>
-                            }
-                          </ul>
-                        }
-                      </div>
-                    </li>
-                  }
-                </ul>
-              }
-            </li>
-          }
-        </ol>
-      }
-    </div>
-  }
+            @if (isPresenceExpanded(presence.id, presence.isActive)) {
+              <ul class="journey-presence-card__events" role="list">
+                @for (group of presence.groupedEvents; track group.eventDate) {
+                  <li class="journey-event-row" role="listitem">
+                    <div
+                      class="journey-event-row__icon"
+                      [style.background]="resolveGroupIconBackground(group)"
+                      aria-hidden="true"
+                    ></div>
+                    <div class="journey-event-row__body">
+                      <p class="journey-event-row__date">
+                        {{ group.eventDate | date: displayDateFormat }}
+                      </p>
+                      <p class="journey-event-row__label">{{ group.primaryEventLabel }}</p>
+                      @if (group.secondaryEvents.length > 0) {
+                        <ul class="journey-event-row__secondary" role="list">
+                          @for (ev of group.secondaryEvents; track ev.id) {
+                            <li class="journey-event-row__secondary-item">{{ ev.summary }}</li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ol>
+    }
+  </div>
 </section>

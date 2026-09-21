@@ -269,7 +269,6 @@ export const employeeTexts = {
   timelineStatusCurrentLabel: 'Actual',
   timelineStatusFutureLabel: 'Futuro',
   timelineNoEventsMessage: 'No hay eventos disponibles.',
-  timelineLoadingMessage: 'Cargando journey del empleado...',
   timelineLoadFailedMessage: 'No se pudo cargar el journey del empleado.',
   sectionShellCreateAction: 'Crear',
   sectionShellEditAction: 'Editar',

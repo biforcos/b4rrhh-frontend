@@ -114,7 +114,6 @@ export class EmployeeJourneyTimelineComponent {
   readonly presences = input<ReadonlyArray<EmployeePresenceModel> | null>(null);
   readonly loading = input(false);
   readonly error = input<EmployeeJourneyErrorCode | null>(null);
-  protected readonly isExpanded = signal(false);
   protected readonly expandedPresences = signal<Record<string, boolean>>({});
 
   protected readonly texts = employeeTexts;
@@ -140,19 +139,25 @@ export class EmployeeJourneyTimelineComponent {
       latestEventDate: latestEvent?.eventDate ?? null,
     };
   });
-  protected readonly collapsedSummary = computed(() => {
-    if (this.loading()) {
-      return this.texts.timelineLoadingMessage;
-    }
-
-    if (this.error()) {
-      return this.texts.timelineLoadFailedMessage;
+  /**
+   * La linea de arriba del Historial: cuantos eventos hay y cual fue el ultimo.
+   *
+   * <p>Antes era el rotulo de un boton que plegaba el Historial entero, y ese boton sobraba: el
+   * hueco contextual del esqueleto ya lo pliega contra el borde, asi que una vez abierto se
+   * volvia a plegar de arriba abajo (`frontend#22`). Si ya has pedido verlo, se ensena.
+   *
+   * <p>Devuelve nulo mientras carga, si falla o si no hay eventos, porque en esos tres casos lo
+   * dice el cuerpo: con el boton los dos decian lo mismo y no se notaba.
+   */
+  protected readonly summaryLine = computed<string | null>(() => {
+    if (this.loading() || this.error()) {
+      return null;
     }
 
     const summary = this.summary();
     const totalEvents = summary.totalEvents;
     if (totalEvents === 0) {
-      return this.texts.timelineNoEventsMessage;
+      return null;
     }
 
     const eventsLabel =
@@ -166,16 +171,7 @@ export class EmployeeJourneyTimelineComponent {
 
     return `${totalEvents} ${eventsLabel} · ${this.texts.timelineLastEventLabel}: ${summary.latestEventLabel} (${formatDisplayDate(summary.latestEventDate)})`;
   });
-  protected readonly toggleAriaLabel = computed(() =>
-    this.isExpanded()
-      ? this.texts.timelineCollapseActionLabel
-      : this.texts.timelineExpandActionLabel,
-  );
   protected readonly hasEvents = computed(() => this.presenceGroups().length > 0);
-
-  protected toggle(): void {
-    this.isExpanded.update((value) => !value);
-  }
 
   protected isPresenceExpanded(presenceId: string, defaultExpanded: boolean): boolean {
     const map = this.expandedPresences();

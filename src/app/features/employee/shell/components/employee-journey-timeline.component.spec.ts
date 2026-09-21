@@ -97,11 +97,9 @@ describe('EmployeeJourneyTimelineComponent', () => {
     fixture.componentRef.setInput('presences', presences);
     fixture.detectChanges();
 
-    const host = fixture.nativeElement as HTMLElement;
-    (host.querySelector('.journey-timeline__toggle') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    return host;
+    // Sin clic: el Historial ya no se pliega dos veces (`frontend#22`). Lo pliega el hueco
+    // contextual del esqueleto y nada mas, asi que aqui el contenido esta desde el principio.
+    return fixture.nativeElement as HTMLElement;
   }
 
   function textsOf(host: HTMLElement, selector: string): string[] {
@@ -171,6 +169,26 @@ describe('EmployeeJourneyTimelineComponent', () => {
       'Último: Reactivación',
     );
     expect(host.textContent).not.toMatch(formerEnglishPhrasePattern);
+  });
+
+  /**
+   * El Historial se plegaba dos veces (`frontend#22`).
+   *
+   * <p>El hueco contextual del esqueleto lo pliega contra el borde, y una vez abierto su
+   * contenido volvia a plegarse de arriba abajo. Sobraba el segundo nivel: si ya has pedido
+   * verlo, se ensena.
+   *
+   * <p>Lo que se defiende es una ausencia, asi que se afirma por los dos lados: no hay boton
+   * que pliegue la seccion entera, y el contenido esta pintado sin tocar nada. El pliegue por
+   * presencia si se queda -- son varios periodos y cada uno es suyo.
+   */
+  it('does not fold itself a second time', () => {
+    const host = render(journeyOf([event('HIRE', '2024-01-01', { presenceNumber: 1 })]));
+
+    expect(host.querySelector('.journey-timeline__toggle')).toBeNull();
+    expect(host.querySelector('#journey-timeline-content')).not.toBeNull();
+    expect(textsOf(host, '.journey-event-row__label')).toEqual(['Alta']);
+    expect(host.querySelectorAll('.journey-presence-card__toggle').length).toBe(1);
   });
 
   it('ignores whatever the event data says when choosing the label', () => {
