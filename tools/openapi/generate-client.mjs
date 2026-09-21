@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,6 +15,13 @@ if (!existsSync(inputSpec)) {
   process.exit(1);
 }
 
+// Se borra antes de generar (`b4rrhh/workspace#14`). El generador escribe encima, no limpia:
+// un endpoint o un modelo que desaparece del contrato deja aqui su fichero de ayer, y ese
+// fichero compila e importa igual de bien que los buenos. Es la misma forma que el `.class`
+// viejo que dio `test-compile` en verde sobre un fuente roto. Aqui no se nota en el pipeline
+// -la carpeta esta en .gitignore y un checkout limpio la trae vacia-, se nota en el portatil,
+// que es donde se mira el diff antes de commitear.
+rmSync(outputDirectory, { recursive: true, force: true });
 mkdirSync(outputDirectory, { recursive: true });
 
 const generatorArgs = [
