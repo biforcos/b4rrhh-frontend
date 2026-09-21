@@ -148,6 +148,22 @@ export const WORKING_TIME_PLAN_VOCABULARY: TimelinePlanVocabulary = {
 };
 
 /**
+ * El régimen de pagas extras (`b4rrhh/backend#118`). Cobertura obligatoria, como la jornada: un
+ * tramo de presencia sin régimen sería un mes del que no se sabe por qué puerta entra la prorrata.
+ */
+export const EXTRA_PAYMENT_REGIME_PLAN_VOCABULARY: TimelinePlanVocabulary = {
+  subject: 'El régimen',
+  previousSubject: 'El régimen anterior',
+  object: 'el régimen',
+  another: 'otro régimen',
+  noOther: 'ningún otro régimen',
+  indefinite: 'un régimen',
+  overlapErrorCode: 'EXTRA_PAYMENT_REGIME_OVERLAP',
+  gapErrorCode: 'EXTRA_PAYMENT_REGIME_COVERAGE_GAP',
+  isACorrectionErrorCode: 'EXTRA_PAYMENT_REGIME_IS_A_CORRECTION',
+};
+
+/**
  * La única serie del producto con cobertura opcional (`backend#54`): aquí un hueco no impide
  * nada, y el aviso tiene que decirlo con esas palabras. No se copia el de las obligatorias, que
  * dice lo contrario.

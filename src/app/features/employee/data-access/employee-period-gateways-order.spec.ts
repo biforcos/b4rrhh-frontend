@@ -5,19 +5,22 @@ import { firstValueFrom, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { EmployeeContractReadClient } from '../../../core/api/clients/employee-contract-read.client';
+import { EmployeeExtraPaymentRegimeReadClient } from '../../../core/api/clients/employee-extra-payment-regime-read.client';
 import { EmployeeLaborClassificationReadClient } from '../../../core/api/clients/employee-labor-classification-read.client';
 import { EmployeePresenceReadClient } from '../../../core/api/clients/employee-presence-read.client';
 import { EmployeeWorkCenterReadClient } from '../../../core/api/clients/employee-work-center-read.client';
 import { EmployeeWorkingTimeReadClient } from '../../../core/api/clients/employee-working-time-read.client';
 import { EmployeeContractReadGateway } from './employee-contract-read.gateway';
+import { EmployeeExtraPaymentRegimeGateway } from './employee-extra-payment-regime.gateway';
 import { EmployeeLaborClassificationReadGateway } from './employee-labor-classification-read.gateway';
 import { EmployeePresenceReadGateway } from './employee-presence-read.gateway';
 import { EmployeeWorkCenterGateway } from './employee-work-center.gateway';
 import { EmployeeWorkingTimeGateway } from './employee-working-time.gateway';
 
 /**
- * Las cinco tablas de períodos de la ficha ordenan igual (frontend#37): lo vigente arriba
- * y, dentro de cada grupo, por fecha de inicio descendente.
+ * Las tablas de períodos de la ficha ordenan igual (frontend#37): lo vigente arriba
+ * y, dentro de cada grupo, por fecha de inicio descendente. Eran cinco y son seis desde que el
+ * `b4rrhh/backend#118` añadió el régimen de pagas extras.
  *
  * La regla estaba copiada en tres gateways y el cuarto (presencia) no la tenía; nadie se
  * enteró hasta verlo en pantalla. El issue contaba cuatro tablas; la lectura del fuente
@@ -180,6 +183,29 @@ describe('period gateways of the employee record', () => {
     expect(startDatesOf(workCenters)).toEqual(expectedOrder);
   });
 
+  it('extra payment regime orders active first, then by start date descending', async () => {
+    const client = {
+      readEmployeeExtraPaymentRegimesByBusinessKey: vi.fn().mockReturnValue(
+        of(
+          periods.map((period, index) => ({
+            extraPaymentRegimeNumber: index + 1,
+            prorated: false,
+            ...period,
+          })),
+        ),
+      ),
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: EmployeeExtraPaymentRegimeReadClient, useValue: client }],
+    });
+
+    const regimes = await firstValueFrom(
+      TestBed.inject(EmployeeExtraPaymentRegimeGateway).getEmployeeExtraPaymentRegimes(employeeKey),
+    );
+
+    expect(startDatesOf(regimes)).toEqual(expectedOrder);
+  });
+
   describe('every period gateway in data-access', () => {
     const dataAccessDir = resolve(process.cwd(), 'src/app/features/employee/data-access');
 
@@ -200,7 +226,9 @@ describe('period gateways of the employee record', () => {
     );
 
     it('is covered by this spec', () => {
-      expect(periodGatewayFiles).toHaveLength(5 + Object.keys(periodGatewaysOutsideTheRule).length);
+      // Seis desde el `b4rrhh/backend#118`: el regimen de pagas extras es la sexta tabla de
+      // periodos de la ficha, y ordena con el comparador comun como las otras cinco.
+      expect(periodGatewayFiles).toHaveLength(6 + Object.keys(periodGatewaysOutsideTheRule).length);
     });
 
     it.each(periodGatewayFiles)('%s uses the shared comparator instead of its own copy', (file) => {

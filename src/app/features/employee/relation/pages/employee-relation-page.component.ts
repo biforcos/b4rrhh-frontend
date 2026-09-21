@@ -25,6 +25,7 @@ import { EmployeeContractSectionComponent } from '../../presence/components/empl
 import { EmployeeLaborClassificationSectionComponent } from '../../presence/components/employee-labor-classification-section.component';
 import { EmployeePresenceSectionComponent } from '../../presence/components/employee-presence-section.component';
 import { EmployeeWorkCenterSectionComponent } from '../../presence/components/employee-work-center-section.component';
+import { EmployeeExtraPaymentRegimeSectionComponent } from '../../presence/components/employee-extra-payment-regime-section.component';
 import { EmployeeWorkingTimeSectionComponent } from '../../presence/components/employee-working-time-section.component';
 import {
   EmployeeRelationAnchor,
@@ -59,6 +60,7 @@ import { EmployeeTodayStripComponent } from '../components/employee-today-strip.
     EmployeePresenceSectionComponent,
     EmployeeContractSectionComponent,
     EmployeeWorkingTimeSectionComponent,
+    EmployeeExtraPaymentRegimeSectionComponent,
     EmployeeLaborClassificationSectionComponent,
     EmployeeWorkCenterSectionComponent,
     EmployeeCostCenterSectionComponent,

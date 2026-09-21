@@ -668,6 +668,21 @@ export const employeeTexts = {
   workingTimeSectionEndDateAriaLabel: 'Fecha fin de la jornada (vacía si queda en vigor)',
   workingTimeSectionPercentageAriaLabel: 'Porcentaje de jornada',
   workingTimeSectionPlanningMessage: 'Calculando qué cambiaría…',
+
+  // El régimen de pagas extras (b4rrhh/backend#118). Las palabras son las del dominio —«se
+  // pagan en su mes» y «prorrateadas»— y no «sí» y «no»: son dos casos con nombre, no una
+  // opción y su ausencia.
+  extraPaymentRegimeSectionAddTitle: 'Añadir régimen de pagas extras',
+  extraPaymentRegimeSectionCorrectTitle: 'Corregir régimen de pagas extras',
+  extraPaymentRegimeSectionRemoveTitle: 'Eliminar régimen de pagas extras',
+  extraPaymentRegimeSectionAddSubmitAction: 'Añadir régimen',
+  extraPaymentRegimeSectionCorrectSubmitAction: 'Guardar corrección',
+  extraPaymentRegimeSectionRemoveSubmitAction: 'Eliminar régimen',
+  extraPaymentRegimeSectionStartDateAriaLabel: 'Fecha inicio del régimen de pagas extras',
+  extraPaymentRegimeSectionEndDateAriaLabel:
+    'Fecha fin del régimen de pagas extras (vacía si queda en vigor)',
+  extraPaymentRegimeSectionRegimeAriaLabel: 'Régimen de pagas extras',
+  extraPaymentRegimeSectionPlanningMessage: 'Calculando qué cambiaría…',
   workingTimeSectionCoverageGapMessage:
     'La jornada dejaría sin cubrir un tramo de la presencia del empleado.',
   laborClassificationBlockTitle: 'Clasificación laboral',

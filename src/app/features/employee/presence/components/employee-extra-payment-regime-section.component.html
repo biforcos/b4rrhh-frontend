@@ -1,0 +1,54 @@
+<app-temporal-section
+  anchorId="employee-section-extra-payment-regime"
+  title="Pagas extras"
+  [addLabel]="texts.extraPaymentRegimeSectionAddTitle"
+  [rows]="rows()"
+  (addClicked)="openAdd()"
+  (editClicked)="openCorrect($event)"
+  (deleteClicked)="openRemove($event)"
+>
+  <ng-template #columnHeaders>
+    <th class="temporal-section__th">Régimen</th>
+  </ng-template>
+  <ng-template #cellContent let-row>
+    <td class="temporal-section__td">{{ row.prorated ? 'Prorrateadas' : 'Se pagan en su mes' }}</td>
+  </ng-template>
+</app-temporal-section>
+
+<!-- El aviso bajo el formulario es el plan del backend (ADR-057): qué se cierra o se reabre, o
+     el hueco o solape con fechas que impide confirmar. Cuando el rechazo es una corrección, el
+     aviso trae también la salida. Igual que en jornada: el molde es el mismo. -->
+<app-period-modal
+  [title]="modalTitle()"
+  [subtitle]="modalSubtitle()"
+  [visible]="modalVisible()"
+  [saving]="saving()"
+  [submitEnabled]="isSubmitEnabled()"
+  [submitLabel]="submitLabel()"
+  [note]="noteLines()"
+  [noteTone]="noteTone()"
+  [noteActionLabel]="correctionOffer()"
+  (visibleChange)="modalVisible.set($event)"
+  (submitted)="submit()"
+  (cancelled)="closeModal()"
+  (noteActionClicked)="switchToCorrection()"
+>
+  @if (modalMode() !== 'remove') {
+    <app-ui-date-input
+      [ariaLabel]="texts.extraPaymentRegimeSectionStartDateAriaLabel"
+      [value]="startDateDraft()"
+      (valueChanged)="startDateDraft.set($event)"
+    />
+    <app-ui-date-input
+      [ariaLabel]="texts.extraPaymentRegimeSectionEndDateAriaLabel"
+      [value]="endDateDraft()"
+      (valueChanged)="endDateDraft.set($event)"
+    />
+    <app-ui-select
+      [ariaLabel]="texts.extraPaymentRegimeSectionRegimeAriaLabel"
+      [options]="regimeOptions"
+      [value]="proratedDraft() ? 'true' : 'false'"
+      (valueChanged)="proratedDraft.set($event === 'true')"
+    />
+  }
+</app-period-modal>
