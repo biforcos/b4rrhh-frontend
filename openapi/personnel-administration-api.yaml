@@ -10464,6 +10464,7 @@ components:
         - officialAgreementNumber
         - displayName
         - annualHours
+        - extraPaymentsProrated
         - active
       properties:
         officialAgreementNumber:
@@ -10480,6 +10481,13 @@ components:
           type: number
           format: decimal
           description: Annual working hours used for derivation of weekly, daily, and monthly hours. Typical values 1560 (Spain 40 hours/week), 1800 (40h/week * 45 weeks), etc.
+        extraPaymentsProrated:
+          type: boolean
+          description: >-
+            Whether this agreement prorates the extra payments by default. This is the value
+            hiring copies into the employee's extra-payment regime vertical; it is not what
+            decides a payslip. Copied, not linked: an agreement that changes later does not
+            move the employees already hired under it.
         active:
           type: boolean
           description: Whether the agreement profile is currently active
@@ -10511,6 +10519,11 @@ components:
           type: number
           format: decimal
           description: Annual working hours for working time derivation. Range 1-9999.99.
+        extraPaymentsProrated:
+          type: boolean
+          description: >-
+            Whether this agreement prorates the extra payments by default. Defaults to false
+            if not specified.
         active:
           type: boolean
           nullable: true
