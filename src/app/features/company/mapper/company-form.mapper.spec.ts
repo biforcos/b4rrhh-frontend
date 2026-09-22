@@ -16,6 +16,7 @@ const detail: CompanyDetailModel = {
   active: true,
   legalName: 'Company Spain SL',
   taxIdentifier: 'B12345678',
+  cnaeCode: '4719',
   address: {
     street: 'Calle Mayor 1',
     city: 'Madrid',
@@ -51,6 +52,7 @@ describe('buildCompanyFormValueFromDetail', () => {
       ...detail,
       description: null,
       taxIdentifier: null,
+      cnaeCode: null,
     });
 
     expect(form.description).toBe('');

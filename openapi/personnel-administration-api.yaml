@@ -10716,6 +10716,15 @@ components:
           nullable: true
         address:
           $ref: "#/components/schemas/CompanyAddress"
+        cnaeCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: >-
+            The company's economic activity, in CNAE. It is what the AT/EP premium rate of its
+            employees' payroll is looked up by, so leaving it out on an update clears it and the
+            next payroll run for that company fails.
+          example: "4719"
     UpdateCompanyRequest:
       type: object
       required:
@@ -10738,6 +10747,15 @@ components:
           nullable: true
         address:
           $ref: "#/components/schemas/CompanyAddress"
+        cnaeCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: >-
+            The company's economic activity, in CNAE. It is what the AT/EP premium rate of its
+            employees' payroll is looked up by, so leaving it out on an update clears it and the
+            next payroll run for that company fails.
+          example: "4719"
     CompanyResponse:
       type: object
       required:
@@ -10780,6 +10798,13 @@ components:
           nullable: true
         address:
           $ref: "#/components/schemas/CompanyAddress"
+        cnaeCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: >-
+            The company's economic activity, in CNAE. Null when the company does not declare one.
+          example: "4719"
     CompanyListItemResponse:
       type: object
       required:
@@ -10866,12 +10891,17 @@ components:
           nullable: true
         address:
           $ref: "#/components/schemas/CompanyProfileAddress"
-        epigrafeAtCode:
+        cnaeCode:
           type: string
           maxLength: 10
           nullable: true
-          description: "Epígrafe AT/EP de la empresa ante la TGSS (código de tarifa de accidentes de trabajo)"
-          example: "6210"
+          description: >-
+            The company's economic activity, in CNAE. It is what the AT/EP premium rate is looked
+            up by: the tariff lists two-, three- and four-digit entries and the most specific one
+            covering this code wins. It was called epigrafeAtCode until b4rrhh/backend#122 and the
+            old name is gone, with no alias: the "epigrafe" is the pre-2007 tariff and means
+            nothing today.
+          example: "4719"
     CompanyProfileResponse:
       type: object
       required:
@@ -10891,11 +10921,15 @@ components:
           nullable: true
         address:
           $ref: "#/components/schemas/CompanyProfileAddress"
-        epigrafeAtCode:
+        cnaeCode:
           type: string
           nullable: true
-          description: "Epígrafe AT/EP registrado ante la TGSS"
-          example: "6210"
+          description: >-
+            The company's economic activity, in CNAE. Null when the company does not declare one,
+            and then its employees' payroll cannot resolve the AT/EP premium rate: the run fails
+            instead of contributing zero, because a zero there is a wrong figure that nothing
+            reports.
+          example: "4719"
     CompanyProfileErrorResponse:
       type: object
       required:

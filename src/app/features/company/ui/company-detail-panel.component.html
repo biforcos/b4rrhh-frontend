@@ -172,6 +172,17 @@
               displayValue(detail()?.taxIdentifier)
             }}</span>
           </div>
+          <!--
+            La actividad economica (b4rrhh/backend#122). Va en los datos fiscales y no en un
+            bloque aparte porque es lo que es: un dato de la empresa ante la Administracion, del
+            que sale el tipo de la cuota de accidentes de trabajo de sus empleados.
+          -->
+          <div class="company-detail-panel__view-item">
+            <span class="company-detail-panel__view-label">{{ texts.fieldCnaeLabel }}</span>
+            <span class="company-detail-panel__view-value">{{
+              displayValue(detail()?.cnaeCode)
+            }}</span>
+          </div>
         </div>
       } @else {
         <div class="company-detail-panel__grid">
@@ -198,6 +209,13 @@
               texts.fieldTaxIdLabel
             }}</label>
             <input pInputText id="taxIdentifier" formControlName="taxIdentifier" maxlength="50" />
+          </div>
+
+          <div class="company-detail-panel__field">
+            <label for="cnaeCode" class="company-detail-panel__label">{{
+              texts.fieldCnaeLabel
+            }}</label>
+            <input pInputText id="cnaeCode" formControlName="cnaeCode" maxlength="10" />
           </div>
         </div>
       }

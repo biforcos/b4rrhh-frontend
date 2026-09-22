@@ -13,6 +13,7 @@ export function buildEmptyCompanyFormValue(): CompanyFormValue {
     startDate: '',
     legalName: '',
     taxIdentifier: '',
+    cnaeCode: '',
     street: '',
     city: '',
     postalCode: '',
@@ -30,6 +31,7 @@ export function buildCompanyFormValueFromDetail(detail: CompanyDetailModel): Com
     startDate: detail.startDate,
     legalName: detail.legalName,
     taxIdentifier: detail.taxIdentifier ?? '',
+    cnaeCode: detail.cnaeCode ?? '',
     street: detail.address.street ?? '',
     city: detail.address.city ?? '',
     postalCode: detail.address.postalCode ?? '',
@@ -48,6 +50,7 @@ export function mapCompanyFormValueToCreateRequest(form: CompanyFormValue): Crea
     legalName: form.legalName.trim(),
     taxIdentifier: form.taxIdentifier.trim() || null,
     address: buildAddressPayload(form),
+    cnaeCode: form.cnaeCode.trim() || null,
   };
 }
 
@@ -58,6 +61,10 @@ export function mapCompanyFormValueToUpdateRequest(form: CompanyFormValue): Upda
     legalName: form.legalName.trim(),
     taxIdentifier: form.taxIdentifier.trim() || null,
     address: buildAddressPayload(form),
+    // Se manda siempre, tambien vacio: el backend guarda lo que llega, asi que callarselo lo
+    // borraria. Es un campo del formulario como el CIF, no un parche opcional
+    // (`b4rrhh/backend#122`).
+    cnaeCode: form.cnaeCode.trim() || null,
   };
 }
 

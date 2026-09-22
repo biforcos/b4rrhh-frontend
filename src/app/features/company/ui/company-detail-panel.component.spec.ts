@@ -16,6 +16,7 @@ describe('CompanyDetailPanelComponent', () => {
     active: true,
     legalName: 'Empresa Uno SA',
     taxIdentifier: 'A12345678',
+    cnaeCode: '4719',
     address: {
       street: 'Gran Via 1',
       city: 'Madrid',
@@ -84,6 +85,7 @@ describe('CompanyDetailPanelComponent', () => {
       startDate: new Date(2026, 0, 1),
       legalName: 'Empresa Uno SA',
       taxIdentifier: 'A12345678',
+      cnaeCode: '4719',
       street: 'Gran Via 1',
       city: 'Madrid',
       postalCode: '28013',
@@ -103,6 +105,7 @@ describe('CompanyDetailPanelComponent', () => {
       startDate: '2026-01-01',
       legalName: 'Empresa Uno SA',
       taxIdentifier: 'A12345678',
+      cnaeCode: '4719',
       street: 'Gran Via 1',
       city: 'Madrid',
       postalCode: '28013',

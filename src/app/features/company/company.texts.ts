@@ -54,6 +54,7 @@ export const companyTexts = {
   sectionFiscalTitle: 'Datos fiscales',
   fieldLegalNameLabel: 'Razón social',
   fieldTaxIdLabel: 'CIF/NIF',
+  fieldCnaeLabel: 'CNAE',
 
   sectionAddressTitle: 'Dirección',
   fieldStreetLabel: 'Dirección',

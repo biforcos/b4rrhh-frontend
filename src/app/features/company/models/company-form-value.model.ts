@@ -8,6 +8,8 @@ export interface CompanyFormValue {
   // Fiscal
   legalName: string;
   taxIdentifier: string;
+  /** La actividad economica, en CNAE (`b4rrhh/backend#122`). */
+  cnaeCode: string;
   // Address
   street: string;
   city: string;

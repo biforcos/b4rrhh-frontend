@@ -37,5 +37,6 @@ export function mapCompanyResponseToDetailModel(response: CompanyResponse): Comp
       regionCode: response.address?.regionCode ?? null,
       countryCode: response.address?.countryCode ?? null,
     },
+    cnaeCode: response.cnaeCode ?? null,
   };
 }
