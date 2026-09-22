@@ -11808,6 +11808,18 @@ components:
             the block from the concept code's numeric range. Null when the concept's nature had
             no section declared — show that, do not default it into some block, because a line
             nobody declared a home for is exactly what needs to be noticed.
+        payslipSubsectionCode:
+          type: string
+          nullable: true
+          example: "BASE_CC"
+          description: >-
+            The part of that block this line was printed in, frozen with the line. Null is the
+            normal case — a line is printed in its block with nothing above it — and only the
+            contribution-bases box has parts today: the four numbered sections of the official
+            model. Unlike the section, this does NOT follow from the nature: the ten lines of
+            that box are all BASE and live in four different parts, so it is declared by the
+            concept. Group by it inside the block and order the parts by the displayOrder that
+            GET /payroll-engine/{ruleSystemCode}/payslip-sections gives each one.
     PayrollSummaryResponse:
       type: object
       required:
@@ -11946,6 +11958,34 @@ components:
           description: >-
             Where this block goes relative to the others. Order the blocks by this, and the lines
             inside each block by their own displayOrder.
+        subsections:
+          type: array
+          description: >-
+            The parts this block is divided into, in print order. Empty in four of the five
+            blocks of the official model, which is the normal case: earnings print as one list.
+            The contribution-bases box has four numbered parts, and a line lands in one of them
+            through its payslipSubsectionCode.
+          items:
+            $ref: '#/components/schemas/PayslipSubsectionResponse'
+
+    PayslipSubsectionResponse:
+      type: object
+      description: >-
+        One part of a payslip block. Which part a line belongs to is declared by its concept and
+        does not follow from its nature: the ten lines of the contribution-bases box are all
+        BASE and live in four different parts.
+      required: [subsectionCode, label, displayOrder]
+      properties:
+        subsectionCode:
+          type: string
+          example: "BASE_CC"
+        label:
+          type: string
+          example: "1. Contingencias comunes"
+        displayOrder:
+          type: integer
+          format: int32
+          description: Where this part goes inside its block.
 
     UpdateConceptLabelRequest:
       type: object

@@ -135,6 +135,7 @@ describe('El folio no suma: un bloque tiene el total que le dio el motor, o ning
     conceptNatureCode: string,
     amount: number,
     payslipSectionCode: string | null,
+    payslipSubsectionCode: string | null = null,
   ): PayrollConceptModel {
     return {
       lineNumber: 1,
@@ -149,6 +150,7 @@ describe('El folio no suma: un bloque tiene el total que le dio el motor, o ning
       displayOrder: Number(conceptCode.replace(/\D/g, '')) || 1,
       mergedStepCount: 1,
       payslipSectionCode,
+      payslipSubsectionCode,
     };
   }
 

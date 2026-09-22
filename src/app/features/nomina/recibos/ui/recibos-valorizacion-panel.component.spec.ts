@@ -16,6 +16,7 @@ function makeConcept(code: string, label: string, nature = 'EARNING'): PayrollCo
     displayOrder: 1,
     mergedStepCount: 1,
     payslipSectionCode: 'DEVENGOS',
+    payslipSubsectionCode: null,
   };
 }
 

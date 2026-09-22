@@ -26,6 +26,7 @@ function linea(
     displayOrder: lineNumber,
     mergedStepCount: 1,
     payslipSectionCode,
+    payslipSubsectionCode: null,
   };
 }
 

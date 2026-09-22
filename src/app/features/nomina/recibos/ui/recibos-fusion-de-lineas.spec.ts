@@ -120,6 +120,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
       displayOrder: lineNumber,
       mergedStepCount,
       payslipSectionCode: 'DEVENGOS',
+      payslipSubsectionCode: null,
     };
   }
 

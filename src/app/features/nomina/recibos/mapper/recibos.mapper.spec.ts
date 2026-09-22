@@ -47,6 +47,7 @@ describe('recibos.mapper', () => {
         displayOrder: 10,
         mergedStepCount: 1,
         payslipSectionCode: 'DEVENGOS',
+        payslipSubsectionCode: null,
       };
 
       const model = mapPayrollConceptResponseToModel(response);
@@ -74,6 +75,7 @@ describe('recibos.mapper', () => {
         displayOrder: 720,
         mergedStepCount: 1,
         payslipSectionCode: 'APORTACION_EMPRESARIAL',
+        payslipSubsectionCode: null,
       });
 
       expect(model.conceptMnemonic).toBe('SS_CC_EMPRESARIO');
@@ -116,6 +118,7 @@ describe('recibos.mapper', () => {
         displayOrder: 10,
         mergedStepCount: 1,
         payslipSectionCode: 'DEVENGOS',
+        payslipSubsectionCode: null,
       };
 
       const model = mapPayrollConceptResponseToModel(response);

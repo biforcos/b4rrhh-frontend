@@ -145,6 +145,7 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
       displayOrder: 1,
       mergedStepCount: 1,
       payslipSectionCode: 'DEVENGOS',
+      payslipSubsectionCode: null,
     };
   }
 

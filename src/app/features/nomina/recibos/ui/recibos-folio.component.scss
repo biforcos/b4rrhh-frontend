@@ -164,6 +164,27 @@
   color: var(--text-primary);
 }
 
+/*
+ * El rótulo de un apartado dentro de un bloque (`b4rrhh/backend#121`).
+ *
+ * Se lee como un escalón y no como un bloque nuevo: sin el relleno de arriba que separa los
+ * bloques, en cuerpo menor que el título del bloque y sangrado hasta la columna del concepto,
+ * que es donde empieza lo que el apartado agrupa.
+ */
+.concept-table .subsection-label {
+  background: transparent;
+  border-top: none;
+  border-bottom: 1px solid var(--surface-hover);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  padding: 10px 8px 4px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 .concept-table td {
   padding: 6px 8px;
   border-bottom: 1px solid var(--surface-hover);

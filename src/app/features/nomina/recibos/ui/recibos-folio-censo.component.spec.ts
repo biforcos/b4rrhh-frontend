@@ -53,6 +53,39 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
     },
   ];
 
+  /**
+   * Los mismos bloques, con los cuatro apartados del recuadro de bases (`b4rrhh/backend#121`).
+   *
+   * Y un quinto declarado del que este recibo no tiene ninguna línea, para poder comprobar que un
+   * apartado vacío no deja un hueco con título.
+   */
+  const SECCIONES_CON_APARTADOS = SECCIONES.map((seccion) =>
+    seccion.sectionCode === 'BASES'
+      ? {
+          ...seccion,
+          subsections: [
+            { subsectionCode: 'BASE_CC', label: '1. Contingencias comunes', displayOrder: 10 },
+            {
+              subsectionCode: 'BASE_CP',
+              label: '2. Contingencias profesionales y recaudacion conjunta',
+              displayOrder: 20,
+            },
+            { subsectionCode: 'BASE_HE', label: '3. Horas extraordinarias', displayOrder: 30 },
+            {
+              subsectionCode: 'BASE_IRPF',
+              label: '4. Base sujeta a retencion del IRPF',
+              displayOrder: 40,
+            },
+            {
+              subsectionCode: 'BASE_NADA',
+              label: '5. Un apartado que este recibo no usa',
+              displayOrder: 50,
+            },
+          ],
+        }
+      : seccion,
+  );
+
   /** Un concepto real de cada naturaleza, con un importe irrepetible para poder buscarlo. */
   const UNO_DE_CADA_NATURALEZA: PayrollConceptModel[] = [
     concepto('101', 'Salario base', 'EARNING', 1111.11, 'DEVENGOS'),
@@ -64,6 +97,48 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
     concepto('970', 'Total devengado', 'TOTAL_EARNING', 6666.66, 'DEVENGOS'),
     concepto('980', 'Total a deducir', 'TOTAL_DEDUCTION', 7777.77, 'DEDUCCIONES'),
     concepto('990', 'Líquido a percibir', 'NET_PAY', 8888.88, 'LIQUIDO'),
+  ];
+
+  /**
+   * Un recibo con el recuadro de bases entero y un devengo, para ver los dos casos a la vez: un
+   * bloque con apartados y uno sin ellos.
+   */
+  const EL_RECUADRO_DE_BASES: PayrollConceptModel[] = [
+    { ...concepto('101', 'Salario base', 'EARNING', 1850.1, 'DEVENGOS'), displayOrder: 101 },
+    {
+      ...concepto('B03', 'Remuneracion mensual', 'BASE', 1850.1, 'BASES', 'BASE_CC'),
+      displayOrder: 401,
+    },
+    {
+      ...concepto('B04', 'Prorrata de pagas extraordinarias', 'BASE', 616.7, 'BASES', 'BASE_CC'),
+      displayOrder: 402,
+    },
+    {
+      ...concepto('B01', 'Base de cotizacion', 'BASE', 2466.8, 'BASES', 'BASE_CC'),
+      displayOrder: 403,
+    },
+    {
+      ...concepto('B_CC', 'Base tras topes', 'BASE', 2466.8, 'BASES', 'BASE_CC'),
+      displayOrder: 404,
+    },
+    {
+      ...concepto('B05', 'Base de contingencias comunes', 'BASE', 2466.8, 'BASES', 'BASE_CP'),
+      displayOrder: 411,
+    },
+    {
+      ...concepto('B06', 'Horas extraordinarias', 'BASE', 138.78, 'BASES', 'BASE_CP'),
+      displayOrder: 412,
+    },
+    {
+      ...concepto('B07', 'Base de cotizacion', 'BASE', 2605.58, 'BASES', 'BASE_CP'),
+      displayOrder: 413,
+    },
+    {
+      ...concepto('B_CP', 'Base tras topes', 'BASE', 2605.58, 'BASES', 'BASE_CP'),
+      displayOrder: 414,
+    },
+    { ...concepto('B08', 'Base', 'BASE', 138.78, 'BASES', 'BASE_HE'), displayOrder: 421 },
+    { ...concepto('B09', 'Base', 'BASE', 1988.88, 'BASES', 'BASE_IRPF'), displayOrder: 431 },
   ];
 
   /**
@@ -208,7 +283,76 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
     expect(folio.textContent).toContain(importe(6666.66));
   });
 
+  /**
+   * **El recuadro de bases se lee en sus cuatro apartados** (`b4rrhh/backend#121`).
+   *
+   * El modelo oficial no tiene diez líneas de bases seguidas: tiene cuatro apartados numerados y
+   * cada uno se lee de arriba abajo. Lo que coloca una línea en uno de ellos es su
+   * `payslipSubsectionCode`, congelado con la línea, y el nombre y el orden de cada apartado los
+   * da el catálogo — igual que con los bloques, y por la misma razón: **aquí no hay ninguna lista
+   * escrita a mano**.
+   *
+   * Los otros cuatro bloques siguen sin apartados y se pintan como siempre, que es lo que
+   * comprueba la segunda mitad: si el folio empezara a pintar un rótulo por bloque, los devengos
+   * ganarían una fila que nadie ha pedido.
+   */
+  it('el recuadro de bases se pinta en los cuatro apartados del modelo oficial', () => {
+    const folio = render(EL_RECUADRO_DE_BASES, SECCIONES_CON_APARTADOS);
+
+    expect(apartadosDelBloque(folio, 'Determinacion de las bases de cotizacion')).toEqual([
+      '1. Contingencias comunes',
+      '2. Contingencias profesionales y recaudacion conjunta',
+      '3. Horas extraordinarias',
+      '4. Base sujeta a retencion del IRPF',
+    ]);
+    // Y las líneas van dentro del suyo, no repartidas por donde caigan.
+    expect(codigosDelApartado(folio, '1. Contingencias comunes')).toEqual([
+      'B03',
+      'B04',
+      'B01',
+      'B_CC',
+    ]);
+    expect(codigosDelApartado(folio, '3. Horas extraordinarias')).toEqual(['B08']);
+  });
+
+  /**
+   * Un bloque sin apartados no estrena ningún rótulo, y un apartado vacío no sale.
+   *
+   * Las dos mitades juntas a propósito: la primera dice que lo normal sigue siendo lo normal —los
+   * devengos son una lista de líneas— y la segunda, que un apartado declarado del que este recibo
+   * no tiene ninguna línea no deja un hueco con título. Es la misma regla que ya tenían los
+   * bloques.
+   */
+  it('un bloque sin apartados se pinta seguido, y un apartado sin líneas no sale', () => {
+    const folio = render(EL_RECUADRO_DE_BASES, SECCIONES_CON_APARTADOS);
+
+    expect(apartadosDelBloque(folio, 'Devengos')).toEqual([]);
+    expect(apartadosDelBloque(folio, 'Determinacion de las bases de cotizacion')).not.toContain(
+      '5. Un apartado que este recibo no usa',
+    );
+  });
+
   // ── helpers ────────────────────────────────────────────────────────────────
+
+  /** Los rótulos de los apartados pintados dentro de un bloque, en orden. */
+  function apartadosDelBloque(folio: HTMLElement, titulo: string): string[] {
+    const tabla = Array.from(folio.querySelectorAll('.concept-table')).find(
+      (t) => t.querySelector('.section-label')?.textContent?.trim() === titulo,
+    );
+    return Array.from(tabla?.querySelectorAll('.subsection-label') ?? []).map(
+      (el) => el.textContent?.trim() ?? '',
+    );
+  }
+
+  /** Las claves de concepto de un apartado, buscado por su rótulo. */
+  function codigosDelApartado(folio: HTMLElement, rotulo: string): string[] {
+    const cuerpo = Array.from(folio.querySelectorAll('.concept-table tbody')).find(
+      (t) => t.querySelector('.subsection-label')?.textContent?.trim() === rotulo,
+    );
+    return Array.from(cuerpo?.querySelectorAll('tr') ?? [])
+      .filter((fila) => fila.querySelectorAll('td').length > 0)
+      .map((fila) => fila.querySelectorAll('td')[1]?.textContent?.trim() ?? '');
+  }
 
   function concepto(
     conceptCode: string,
@@ -216,6 +360,7 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
     conceptNatureCode: string,
     amount: number,
     payslipSectionCode: string | null,
+    payslipSubsectionCode: string | null = null,
   ): PayrollConceptModel {
     return {
       lineNumber: 1,
@@ -230,6 +375,7 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
       displayOrder: 1,
       mergedStepCount: 1,
       payslipSectionCode,
+      payslipSubsectionCode,
     };
   }
 

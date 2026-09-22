@@ -40,6 +40,15 @@ export interface PayrollConceptModel {
    */
   payslipSectionCode: string | null;
   /**
+   * El apartado de ese bloque en el que se imprimió esta línea (`b4rrhh/backend#121`).
+   *
+   * **Nulo es el caso normal**, y aquí eso no es una ausencia que enseñar: una línea se imprime
+   * en su bloque, sin nada por encima. Sólo el recuadro de bases tiene apartados —los cuatro
+   * bloques numerados del modelo oficial— y a diferencia de la sección esto **no se deduce de la
+   * naturaleza**: sus diez líneas son todas `BASE` y van en cuatro apartados distintos.
+   */
+  payslipSubsectionCode: string | null;
+  /**
    * De cuántos pasos del motor viene esta línea (`b4rrhh/backend#103`).
    *
    * Uno casi siempre. **Más de uno cuando el folio ha fundido varios tramos** del mismo concepto al

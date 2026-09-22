@@ -35,6 +35,7 @@ function linea(lineNumber: number, conceptCode: string, amount: number): Payroll
     displayOrder: lineNumber,
     mergedStepCount: 1,
     payslipSectionCode: 'DEVENGOS',
+    payslipSubsectionCode: null,
   };
 }
 

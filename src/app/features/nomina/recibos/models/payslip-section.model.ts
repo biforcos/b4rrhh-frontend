@@ -12,4 +12,21 @@ export interface PayslipSectionModel {
   label: string;
   /** Dónde va este bloque respecto de los otros. El folio ordena por esto y por nada más. */
   displayOrder: number;
+  /**
+   * Las partes en las que se divide este bloque (`b4rrhh/backend#121`).
+   *
+   * Vacío en cuatro de los cinco, que es el caso normal: los devengos se imprimen seguidos. El
+   * recuadro de bases tiene cuatro apartados numerados, y lo que coloca una línea en uno de
+   * ellos es su `payslipSubsectionCode`, congelado con la línea igual que el del bloque.
+   */
+  subsections: ReadonlyArray<PayslipSubsectionModel>;
+}
+
+/** Una parte de un bloque del recibo (`b4rrhh/backend#121`). */
+export interface PayslipSubsectionModel {
+  subsectionCode: string;
+  /** Cómo se llama el apartado. Viene del catálogo; aquí no se traduce nada. */
+  label: string;
+  /** Dónde va dentro de su bloque. */
+  displayOrder: number;
 }

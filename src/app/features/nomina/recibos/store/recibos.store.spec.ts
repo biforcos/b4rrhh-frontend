@@ -36,6 +36,7 @@ const MOCK_CONCEPT: PayrollConceptModel = {
   displayOrder: 10,
   mergedStepCount: 1,
   payslipSectionCode: 'DEVENGOS',
+  payslipSubsectionCode: null,
 };
 
 function detailWith(

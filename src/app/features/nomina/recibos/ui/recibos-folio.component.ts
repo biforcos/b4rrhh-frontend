@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import { formatValor } from '../format/recibos.format';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
-import { PayslipSectionModel } from '../models/payslip-section.model';
+import { PayslipSectionModel, PayslipSubsectionModel } from '../models/payslip-section.model';
 import {
   PayrollCompanyProfileModel,
   PayrollEmployeeProfileModel,
@@ -13,9 +13,23 @@ import {
 interface BloqueDelFolio {
   sectionCode: string;
   label: string;
+  /**
+   * Las partes del bloque, en el orden en el que se imprimen (`b4rrhh/backend#121`).
+   *
+   * Casi siempre una, sin rótulo: un bloque de devengos es una lista de líneas. El recuadro de
+   * bases del modelo oficial tiene cuatro apartados numerados.
+   */
+  grupos: ReadonlyArray<GrupoDelFolio>;
+  /** Las líneas del bloque seguidas, para quien no necesita la división. */
   lines: ReadonlyArray<PayrollConceptModel>;
   /** Si se pinta como la línea de cierre del recibo en vez de como una tabla. */
   esCierre: boolean;
+}
+
+/** Una parte de un bloque. `label` nulo cuando el bloque no tiene apartados. */
+interface GrupoDelFolio {
+  label: string | null;
+  lines: ReadonlyArray<PayrollConceptModel>;
 }
 
 /** El hueco donde caen las líneas a las que el catálogo no les declaró bloque. */
@@ -165,53 +179,65 @@ const MONTH_NAMES_ES = [
                 <th class="col-amount">Importe</th>
               </tr>
             </thead>
-            <tbody>
-              @for (concept of bloque.lines; track concept.lineNumber) {
+            @for (grupo of bloque.grupos; track grupo.label) {
+              <tbody>
                 <!--
+                  El rótulo del apartado, cuando lo hay. Un bloque sin apartados trae un único
+                  grupo sin rótulo y esta fila no sale: así los devengos se siguen imprimiendo
+                  como una lista (b4rrhh/backend#121).
+                -->
+                @if (grupo.label) {
+                  <tr class="subsection-row">
+                    <th class="subsection-label" colspan="6" scope="colgroup">{{ grupo.label }}</th>
+                  </tr>
+                }
+                @for (concept of grupo.lines; track concept.lineNumber) {
+                  <!--
               El resalte del recalculo (b4rrhh/frontend#71). Solo las lineas cuyo valor ha cambiado;
               las demas se quedan quietas, que es lo que convierte «la pantalla se ha refrescado» en
               «esto arrastra a esto». La animacion arranca sola porque estas filas se crean de nuevo
               con el recibo nuevo, y esta atada al gesto y no a los datos: sin recalculo el conjunto
               viene vacio y aqui no se pone nada.
             -->
-                <tr
-                  [class.valor-movido]="lineasMovidas.has(concept.lineNumber)"
-                  [class.row-total]="esTotal(concept)"
-                >
-                  <td>{{ concept.originPeriodCode ?? '—' }}</td>
-                  <td>{{ concept.conceptCode }}</td>
-                  <td>
-                    {{ concept.conceptLabel }}
-                    <!--
+                  <tr
+                    [class.valor-movido]="lineasMovidas.has(concept.lineNumber)"
+                    [class.row-total]="esTotal(concept)"
+                  >
+                    <td>{{ concept.originPeriodCode ?? '—' }}</td>
+                    <td>{{ concept.conceptCode }}</td>
+                    <td>
+                      {{ concept.conceptLabel }}
+                      <!--
                   La marca de fusión (b4rrhh/backend#103). Sólo aparece cuando la línea viene de
                   más de un paso: una marca que saliera en todas no marcaría nada. Dice cuántos
                   tramos suma, porque el número es la mitad del aviso — «2 tramos» invita a mirar
                   la pestaña Cálculo, un asterisco no.
                 -->
-                    @if (concept.mergedStepCount > 1) {
-                      <span
-                        class="concept-merged"
-                        [attr.title]="
-                          'Esta línea suma ' +
-                          concept.mergedStepCount +
-                          ' tramos calculados al mismo precio. La pestaña Cálculo los enseña por separado.'
-                        "
-                        >{{ concept.mergedStepCount }} tramos</span
-                      >
-                    }
-                  </td>
-                  <td class="text-right">
-                    {{ concept.quantity != null ? formatNum(concept.quantity) : '—' }}
-                  </td>
-                  <td class="text-right">
-                    {{ concept.rate != null ? formatNum(concept.rate) : '—' }}
-                  </td>
-                  <td class="text-right amount">
-                    {{ concept.amount != null ? formatNum(concept.amount) : '—' }}
-                  </td>
-                </tr>
-              }
-            </tbody>
+                      @if (concept.mergedStepCount > 1) {
+                        <span
+                          class="concept-merged"
+                          [attr.title]="
+                            'Esta línea suma ' +
+                            concept.mergedStepCount +
+                            ' tramos calculados al mismo precio. La pestaña Cálculo los enseña por separado.'
+                          "
+                          >{{ concept.mergedStepCount }} tramos</span
+                        >
+                      }
+                    </td>
+                    <td class="text-right">
+                      {{ concept.quantity != null ? formatNum(concept.quantity) : '—' }}
+                    </td>
+                    <td class="text-right">
+                      {{ concept.rate != null ? formatNum(concept.rate) : '—' }}
+                    </td>
+                    <td class="text-right amount">
+                      {{ concept.amount != null ? formatNum(concept.amount) : '—' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            }
             <!--
               Aquí no va ningún pie de totales, y eso es la decisión entera del
               b4rrhh/frontend#79: el total de un bloque es la línea de naturaleza total que el
@@ -357,7 +383,7 @@ export class RecibosFolioComponent {
     for (const seccion of declaradas) {
       const lineas = porSeccion.get(seccion.sectionCode);
       if (lineas?.length) {
-        bloques.push(this.bloque(seccion.sectionCode, seccion.label, lineas));
+        bloques.push(this.bloque(seccion.sectionCode, seccion.label, lineas, seccion.subsections));
         porSeccion.delete(seccion.sectionCode);
       }
     }
@@ -371,6 +397,7 @@ export class RecibosFolioComponent {
           sectionCode ?? SIN_BLOQUE,
           sectionCode ?? 'Sin bloque declarado',
           lineas.slice(),
+          [],
         ),
       );
     }
@@ -382,11 +409,13 @@ export class RecibosFolioComponent {
     sectionCode: string,
     label: string,
     lineas: PayrollConceptModel[],
+    apartados: ReadonlyArray<PayslipSubsectionModel>,
   ): BloqueDelFolio {
     const ordenadas = [...lineas].sort((a, b) => a.displayOrder - b.displayOrder);
     return {
       sectionCode,
       label,
+      grupos: this.grupos(ordenadas, apartados),
       lines: ordenadas,
       // No hay campo de total, y esa ausencia es el arreglo del `b4rrhh/frontend#79`. El folio
       // sumaba todos los bloques que no traían un total del motor, y con el recuadro de bases
@@ -408,6 +437,51 @@ export class RecibosFolioComponent {
       // de cierre. La regla tiene que nombrar lo que quiere decir.
       esCierre: ordenadas.length === 1 && ordenadas[0].conceptNatureCode === 'NET_PAY',
     };
+  }
+
+  /**
+   * Las partes de un bloque (`b4rrhh/backend#121`).
+   *
+   * Las líneas sin apartado van primero y sin rótulo, que es como se imprimen los devengos y las
+   * deducciones. Después, los apartados que declara el catálogo, en su orden y sólo los que
+   * tienen alguna línea. Y al final, los apartados que las líneas dicen y el catálogo no
+   * conoce: **se pintan igual**, con su código por rótulo, por la misma razón que un bloque sin
+   * nombre se pinta igual.
+   */
+  private grupos(
+    ordenadas: ReadonlyArray<PayrollConceptModel>,
+    apartados: ReadonlyArray<PayslipSubsectionModel>,
+  ): ReadonlyArray<GrupoDelFolio> {
+    const porApartado = new Map<string | null, PayrollConceptModel[]>();
+    for (const concept of ordenadas) {
+      const clave = concept.payslipSubsectionCode ?? null;
+      const lineas = porApartado.get(clave);
+      if (lineas) lineas.push(concept);
+      else porApartado.set(clave, [concept]);
+    }
+
+    const grupos: GrupoDelFolio[] = [];
+    const sinApartado = porApartado.get(null);
+    if (sinApartado?.length) {
+      grupos.push({ label: null, lines: sinApartado });
+      porApartado.delete(null);
+    }
+
+    // `?? []` y no por gusto: un backend anterior al `b4rrhh/backend#121` no trae el campo, y
+    // entonces este bloque se pinta como se pintaba, seguido. Un catálogo que no contesta quita
+    // agrupaciones, no líneas.
+    const declarados = [...(apartados ?? [])].sort((a, b) => a.displayOrder - b.displayOrder);
+    for (const apartado of declarados) {
+      const lineas = porApartado.get(apartado.subsectionCode);
+      if (lineas?.length) {
+        grupos.push({ label: apartado.label, lines: lineas });
+        porApartado.delete(apartado.subsectionCode);
+      }
+    }
+    for (const [subsectionCode, lineas] of porApartado) {
+      grupos.push({ label: subsectionCode, lines: lineas });
+    }
+    return grupos;
   }
 
   /**

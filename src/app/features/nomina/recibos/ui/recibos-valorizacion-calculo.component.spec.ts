@@ -250,6 +250,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
     // Ninguna funde nada: es el caso que no ensena marca (backend#103).
     mergedStepCount: 1,
     payslipSectionCode: 'DEVENGOS',
+    payslipSubsectionCode: null,
   }));
 
   function render(inputs: {

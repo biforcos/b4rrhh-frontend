@@ -54,6 +54,7 @@ describe('El recibo abierto deja de ser el que hay detrás', () => {
     displayOrder: 1,
     mergedStepCount: 1,
     payslipSectionCode: 'DEVENGOS',
+    payslipSubsectionCode: null,
   };
 
   function detalle(summary: PayrollSummaryModel) {

@@ -54,6 +54,9 @@ export function mapPayrollConceptResponseToModel(
     // un backend anterior al b4rrhh/backend#109. En los dos casos significa lo mismo para quien
     // pinta: esta línea no tiene bloque, y hay que verlo.
     payslipSectionCode: response.payslipSectionCode ?? null,
+    // Nulo es el caso normal: una línea se imprime en su bloque, sin apartado. Sólo las del
+    // recuadro de bases lo traen (`b4rrhh/backend#121`).
+    payslipSubsectionCode: response.payslipSubsectionCode ?? null,
   };
 }
 
@@ -71,6 +74,14 @@ export function mapPayslipSectionResponseToModel(
     sectionCode: response.sectionCode,
     label: response.label,
     displayOrder: response.displayOrder,
+    // Vacío en cuatro de los cinco bloques, y también cuando contesta un backend anterior al
+    // `b4rrhh/backend#121`: las dos cosas significan lo mismo para quien pinta, que este bloque
+    // se imprime como una lista de líneas.
+    subsections: (response.subsections ?? []).map((subsection) => ({
+      subsectionCode: subsection.subsectionCode,
+      label: subsection.label,
+      displayOrder: subsection.displayOrder,
+    })),
   };
 }
 
