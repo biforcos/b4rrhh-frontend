@@ -25,6 +25,7 @@ const employeeCatalogFields = {
   presenceEntryReason: { resourceCode: 'employee.presence', fieldCode: 'entryReasonCode' },
   presenceExitReason: { resourceCode: 'employee.presence', fieldCode: 'exitReasonCode' },
   costCenter: { resourceCode: 'employee.cost_center', fieldCode: 'costCenterCode' },
+  absenceType: { resourceCode: 'employee.absence', fieldCode: 'absenceTypeCode' },
 } as const;
 
 type CatalogFieldSpec = (typeof employeeCatalogFields)[keyof typeof employeeCatalogFields];
@@ -51,6 +52,24 @@ export class EmployeeFieldCatalogService {
     return this.loadDirectOptionsByField(
       ruleSystemCode,
       employeeCatalogFields.contactType,
+      referenceDate,
+    );
+  }
+
+  /**
+   * Los tipos de ausencia del catalogo (`b4rrhh/frontend#84`).
+   *
+   * <p>Sale del catalogo y no de una lista en el codigo, como los demas desplegables de la ficha.
+   * La atadura la puso la `V158` del backend: existia el catalogo de tipos desde la `V102` y no
+   * existia la fila que lo ata al campo, porque hasta esta pantalla nadie lo habia pedido.
+   */
+  loadAbsenceTypeOptions(
+    ruleSystemCode: string,
+    referenceDate?: string | null,
+  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
+    return this.loadDirectOptionsByField(
+      ruleSystemCode,
+      employeeCatalogFields.absenceType,
       referenceDate,
     );
   }

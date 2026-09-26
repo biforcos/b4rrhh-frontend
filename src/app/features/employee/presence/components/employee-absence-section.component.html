@@ -1,0 +1,225 @@
+<section class="employee-absence-section" [attr.aria-label]="texts.absencesSectionTitle">
+  <app-section-heading
+    [title]="texts.absencesSectionTitle"
+    [addLabel]="texts.absencesDeclareAction"
+    [addDisabled]="sectionState().busy || declaring()"
+    (addClicked)="startDeclare()"
+  />
+
+  <p class="employee-absence-section__subtitle">{{ texts.absencesSectionSubtitle }}</p>
+
+  <div class="employee-absence-section__body">
+    <!--
+      Declarar una ausencia: el tipo y el día en que empieza son su clave, así que se eligen aquí y
+      no se vuelven a tocar. El testigo de derecho sólo aparece si el tipo lo admite.
+    -->
+    @if (declaring()) {
+      <article class="employee-absence-section__slot employee-absence-section__slot--create">
+        <div class="employee-absence-section__form-grid">
+          <div class="employee-absence-section__field">
+            <span id="absence-type-label">{{ texts.absencesTypeLabel }}</span>
+            <app-ui-select
+              [options]="absenceTypeOptions()"
+              [value]="draft().absenceTypeCode"
+              [placeholder]="texts.absencesTypePlaceholder"
+              [ariaLabel]="texts.absencesTypeLabel"
+              [disabled]="sectionState().busy"
+              (valueChanged)="updateDraftType($event)"
+            />
+          </div>
+
+          <label class="employee-absence-section__field">
+            <span>{{ texts.absencesStartDateLabel }}</span>
+            <app-ui-date-input
+              [value]="draft().startDate"
+              [ariaLabel]="texts.absencesStartDateLabel"
+              [disabled]="sectionState().busy"
+              (valueChanged)="updateDraftStartDate($event)"
+            />
+          </label>
+
+          <label class="employee-absence-section__field">
+            <span>{{ texts.absencesEndDateLabel }}</span>
+            <app-ui-date-input
+              [value]="draft().endDate"
+              [min]="draft().startDate"
+              [ariaLabel]="texts.absencesEndDateLabel"
+              [disabled]="sectionState().busy"
+              (valueChanged)="updateDraftEndDate($event)"
+            />
+            <small class="employee-absence-section__hint">{{ texts.absencesEndDateHint }}</small>
+          </label>
+
+          @if (draftHasEntitlement()) {
+            <label class="employee-absence-section__field employee-absence-section__field--check">
+              <input
+                type="checkbox"
+                [checked]="draft().benefitEntitled"
+                [disabled]="sectionState().busy"
+                (change)="updateDraftEntitlement($any($event.target).checked)"
+              />
+              <span>{{ texts.absencesEntitlementLabel }}</span>
+              <small class="employee-absence-section__hint">{{
+                texts.absencesEntitlementHint
+              }}</small>
+            </label>
+          }
+        </div>
+
+        <div class="employee-absence-section__row-actions">
+          <app-ui-button
+            type="button"
+            size="small"
+            [label]="texts.absencesSaveDeclareAction"
+            [disabled]="!canSave() || sectionState().busy"
+            (pressed)="submit()"
+          />
+          <app-ui-button
+            type="button"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [label]="texts.absencesCancelAction"
+            [disabled]="sectionState().busy"
+            (pressed)="cancel()"
+          />
+        </div>
+      </article>
+    }
+
+    @if (hasRows()) {
+      <ul class="employee-absence-section__list" role="list">
+        @for (row of rows(); track keyOf(row)) {
+          <li
+            class="employee-absence-section__row"
+            [class.employee-absence-section__row--open]="row.isOpen"
+          >
+            <div class="employee-absence-section__row-main">
+              <p class="employee-absence-section__row-type">{{ row.absenceTypeLabel }}</p>
+
+              @if (editingKey() === keyOf(row)) {
+                <!--
+                  Corregir: el fin y, si el tipo lo admite, el testigo. El tipo y el inicio se
+                  enseñan y no se editan — son la clave, y cambiarlos es otra ausencia.
+                -->
+                <div class="employee-absence-section__form-grid">
+                  <label class="employee-absence-section__field">
+                    <span>{{ texts.absencesEndDateLabel }}</span>
+                    <app-ui-date-input
+                      [value]="draft().endDate"
+                      [min]="draft().startDate"
+                      [ariaLabel]="texts.absencesEndDateLabel"
+                      [disabled]="sectionState().busy"
+                      (valueChanged)="updateDraftEndDate($event)"
+                    />
+                  </label>
+
+                  @if (draftHasEntitlement()) {
+                    <label
+                      class="employee-absence-section__field employee-absence-section__field--check"
+                    >
+                      <input
+                        type="checkbox"
+                        [checked]="draft().benefitEntitled"
+                        [disabled]="sectionState().busy"
+                        (change)="updateDraftEntitlement($any($event.target).checked)"
+                      />
+                      <span>{{ texts.absencesEntitlementLabel }}</span>
+                    </label>
+                  }
+                </div>
+              } @else if (deletingKey() === keyOf(row)) {
+                <p class="employee-absence-section__confirm-text">
+                  {{ texts.absencesConfirmDeleteMessage }}
+                </p>
+              } @else {
+                <p class="employee-absence-section__row-period">{{ describePeriod(row) }}</p>
+                @if (showsEntitlement(row)) {
+                  <p
+                    class="employee-absence-section__row-entitlement"
+                    [class.employee-absence-section__row-entitlement--without]="
+                      !row.benefitEntitled
+                    "
+                  >
+                    {{ entitlementLabel(row) }}
+                  </p>
+                }
+              }
+            </div>
+
+            <div class="employee-absence-section__row-actions">
+              @if (editingKey() === keyOf(row)) {
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  [label]="texts.absencesSaveEditAction"
+                  [disabled]="!canSave() || sectionState().busy"
+                  (pressed)="submit()"
+                />
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  [label]="texts.absencesCancelAction"
+                  [disabled]="sectionState().busy"
+                  (pressed)="cancel()"
+                />
+              } @else if (deletingKey() === keyOf(row)) {
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="danger"
+                  [label]="texts.absencesConfirmDeleteAction"
+                  [disabled]="sectionState().busy"
+                  (pressed)="confirmDelete(row)"
+                />
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  [label]="texts.absencesCancelAction"
+                  [disabled]="sectionState().busy"
+                  (pressed)="cancel()"
+                />
+              } @else {
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  [label]="editLabel(row)"
+                  [disabled]="sectionState().busy"
+                  (pressed)="startEdit(row)"
+                />
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="danger"
+                  [outlined]="true"
+                  [label]="texts.absencesDeleteAction"
+                  [disabled]="sectionState().busy"
+                  (pressed)="requestDelete(row)"
+                />
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else if (!declaring()) {
+      <p class="employee-absence-section__empty">{{ texts.absencesEmptyMessage }}</p>
+    }
+  </div>
+
+  <!--
+    Aquí no hay banderín de error ni de éxito: los publica la página al servicio global de mensajes,
+    que es donde vive el feedback en este frontend (ADR-022, ADR-023). Lo único que la sección dice
+    de sí misma es que está ocupada, porque eso no es un mensaje: es el estado del control.
+  -->
+  @if (sectionState().busy) {
+    <p class="employee-absence-section__status" role="status" aria-live="polite">
+      {{ texts.absencesBusyMessage }}
+    </p>
+  }
+</section>

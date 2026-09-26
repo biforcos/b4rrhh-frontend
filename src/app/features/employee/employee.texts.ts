@@ -181,6 +181,46 @@ export const employeeTexts = {
   areaDisabledLabel: 'Disponible en siguiente iteracion',
   navRoutingHint:
     'Personales, Laborales y Organizativos ya navegan sobre verticales activos. Nómina queda preparada.',
+  // ── Ausencias (b4rrhh/frontend#84) ───────────────────────────────────────
+  //
+  // El vocabulario nombra la acción, no el verbo universal (ADR-010, ADR-016): se DECLARA una
+  // ausencia, se CIERRA la que está abierta, se CORRIGE EL FIN de la que ya lo tiene. «Editar» no
+  // aparece, porque de una ausencia no se edita todo: el tipo y el día en que empieza son su clave.
+  absencesSectionTitle: 'Ausencias',
+  absencesSectionSubtitle:
+    'Vacaciones, permisos y bajas. La baja por enfermedad común y el permiso no retribuido quitan días de la nómina; los demás tipos se cobran enteros.',
+  absencesDeclareAction: 'Declarar ausencia',
+  absencesTypeLabel: 'Tipo de ausencia',
+  absencesTypePlaceholder: 'Elige el tipo',
+  absencesStartDateLabel: 'Primer día',
+  absencesEndDateLabel: 'Último día',
+  absencesEndDateHint: 'En blanco, la ausencia queda sin cerrar.',
+  absencesEntitlementLabel: 'Con derecho a prestación',
+  absencesEntitlementHint:
+    'Lo dice la resolución del INSS: 180 días cotizados en cinco años. Sin derecho, la baja quita días y no paga prestación.',
+  absencesEntitledLabel: 'Con derecho a prestación',
+  absencesNotEntitledLabel: 'Sin derecho a prestación',
+  absencesSaveDeclareAction: 'Declarar',
+  absencesSaveEditAction: 'Guardar',
+  absencesCloseAction: 'Cerrar',
+  absencesCorrectEndAction: 'Corregir el fin',
+  absencesDeleteAction: 'Borrar',
+  absencesCancelAction: 'Cancelar',
+  absencesConfirmDeleteMessage:
+    'Se borra la ausencia entera. Si lo que está mal es el día en que empezó, ésta es la forma de arreglarlo: bórrala y vuelve a declararla.',
+  absencesConfirmDeleteAction: 'Confirmar borrado',
+  absencesEmptyMessage: 'Este empleado no tiene ausencias registradas.',
+  absencesBusyMessage: 'Procesando cambios...',
+  absencesOverlapMessage: 'Esa ausencia se solapa con otra que ya está registrada.',
+  absencesOutsidePresenceMessage:
+    'Esas fechas caen fuera del período en que el empleado estuvo en la empresa.',
+  absencesInvalidRangeMessage: 'El último día no puede ser anterior al primero.',
+  absencesNotFoundMessage: 'Esa ausencia ya no existe.',
+  absencesRequestFailedMessage: 'No se pudo procesar la operación. Reintenta.',
+  absencesLoadFailedMessage: 'No se pudieron cargar las ausencias.',
+  absencesSaveSuccessMessage: 'Ausencia guardada.',
+  absencesDeleteSuccessMessage: 'Ausencia borrada.',
+
   payrollInputsSectionTitle: 'Entradas de nómina',
   payrollInputsSectionSubtitle:
     'Cantidades de entrada por período que consume el motor de cálculo.',

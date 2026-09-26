@@ -12697,6 +12697,16 @@ components:
           nullable: true
           pattern: '^\d{2}:\d{2}$'
           example: "17:30"
+        benefitEntitled:
+          type: boolean
+          nullable: true
+          description: >-
+            Si la baja lleva derecho a prestacion economica (backend#129). Omitirlo es dejarla con
+            derecho, que es el caso normal. Solo significa algo en IT_COMMON: en los demas tipos de
+            ausencia no hay prestacion a la que tener derecho.
+            Lo decide el INSS con la carencia del art. 172.a) de la LGSS -180 dias cotizados en cinco
+            anos-, que es la vida del empleado fuera de esta empresa: la nomina no lo calcula, lo lee.
+          example: true
 
     AbsenceResponse:
       type: object
@@ -12704,6 +12714,7 @@ components:
         - absenceTypeCode
         - startDate
         - startTime
+        - benefitEntitled
         - createdAt
         - updatedAt
       properties:
@@ -12726,6 +12737,12 @@ components:
           type: string
           nullable: true
           example: null
+        benefitEntitled:
+          type: boolean
+          description: >-
+            Si la baja lleva derecho a prestacion economica (backend#129). Sin el, la baja quita dias
+            igual y no paga prestacion ni cotiza.
+          example: true
         createdAt:
           type: string
           format: date-time

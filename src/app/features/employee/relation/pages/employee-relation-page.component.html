@@ -53,4 +53,15 @@
     class="employee-relation__lane"
     [employeeKey]="activeEmployeeKey()"
   />
+
+  <!--
+    Las ausencias van al final y no junto a la presencia, aunque cuelguen de ella: son las únicas
+    que no son una vigencia continua sino huecos dentro de una. Poniéndolas entre los carriles se
+    leerían como un tramo más del eje, y no lo son (`b4rrhh/frontend#84`).
+  -->
+  <app-employee-absence-section
+    id="employee-section-absence"
+    class="employee-relation__lane"
+    [employeeBusinessKey]="activeEmployeeKey()"
+  />
 </section>

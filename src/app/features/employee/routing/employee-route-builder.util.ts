@@ -24,6 +24,9 @@ export const employeeRelationAnchors = [
   'classification',
   'work-center',
   'cost-center',
+  // La ausencia no tiene carril en el eje de la línea de vida y sí ancla: es un carril más de la
+  // relación, y los mensajes globales tienen que saber a dónde llevar (`b4rrhh/frontend#84`).
+  'absence',
 ] as const;
 export type EmployeeRelationAnchor = (typeof employeeRelationAnchors)[number];
 

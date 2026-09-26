@@ -13,6 +13,7 @@ import { map } from 'rxjs';
 
 import { EmployeeContractStore } from '../../data-access/employee-contract.store';
 import { EmployeeCostCenterStore } from '../../data-access/employee-cost-center.store';
+import { EmployeeAbsenceStore } from '../../data-access/employee-absence.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeLaborClassificationStore } from '../../data-access/employee-labor-classification.store';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
@@ -21,6 +22,7 @@ import { EmployeeWorkingTimeStore } from '../../data-access/employee-working-tim
 import { employeeTexts } from '../../employee.texts';
 import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { EmployeeCostCenterSectionComponent } from '../../organization/components/employee-cost-center-section.component';
+import { EmployeeAbsenceSectionComponent } from '../../presence/components/employee-absence-section.component';
 import { EmployeeContractSectionComponent } from '../../presence/components/employee-contract-section.component';
 import { EmployeeLaborClassificationSectionComponent } from '../../presence/components/employee-labor-classification-section.component';
 import { EmployeePresenceSectionComponent } from '../../presence/components/employee-presence-section.component';
@@ -58,6 +60,7 @@ import { EmployeeTodayStripComponent } from '../components/employee-today-strip.
     EmployeeTodayStripComponent,
     EmployeeLifelineComponent,
     EmployeePresenceSectionComponent,
+    EmployeeAbsenceSectionComponent,
     EmployeeContractSectionComponent,
     EmployeeWorkingTimeSectionComponent,
     EmployeeExtraPaymentRegimeSectionComponent,
@@ -78,6 +81,7 @@ export class EmployeeRelationPageComponent {
   private readonly laborClassificationStore = inject(EmployeeLaborClassificationStore);
   private readonly workCenterStore = inject(EmployeeWorkCenterStore);
   private readonly costCenterStore = inject(EmployeeCostCenterStore);
+  private readonly absenceStore = inject(EmployeeAbsenceStore);
   private readonly globalMessageService = inject(GlobalMessageService);
 
   private previousContractSuccess: 'created' | 'corrected' | null = null;
@@ -85,6 +89,7 @@ export class EmployeeRelationPageComponent {
   private previousLaborClassificationSuccess: 'created' | 'corrected' | null = null;
   private previousWorkCenterSuccess: 'created' | 'corrected' | 'deleted' | null = null;
   private previousCostCenterSuccess: 'created' | 'corrected' | 'deleted' | null = null;
+  private previousAbsenceSuccess: 'saved' | 'deleted' | null = null;
 
   protected readonly texts = employeeTexts;
   protected readonly activeEmployeeKey = toSignal(
@@ -197,6 +202,8 @@ export class EmployeeRelationPageComponent {
     const costCenterError = this.mapCostCenterErrorMessage(this.costCenterStore.error());
     if (costCenterError)
       sticky('cost-center-error', costCenterError, 'cost-center', t.costCenterSectionTitle);
+    const absenceError = this.mapAbsenceErrorMessage(this.absenceStore.error());
+    if (absenceError) sticky('absence-error', absenceError, 'absence', t.absencesSectionTitle);
     return messages;
   }
 
@@ -278,6 +285,20 @@ export class EmployeeRelationPageComponent {
       );
     }
     this.previousCostCenterSuccess = costCenterSuccess;
+
+    const absenceSuccess = this.absenceStore.success();
+    if (absenceSuccess && absenceSuccess !== this.previousAbsenceSuccess) {
+      this.publishTransientSuccess(
+        `absence-${absenceSuccess}`,
+        'absence',
+        t.absencesSectionTitle,
+        {
+          saved: t.absencesSaveSuccessMessage,
+          deleted: t.absencesDeleteSuccessMessage,
+        }[absenceSuccess],
+      );
+    }
+    this.previousAbsenceSuccess = absenceSuccess;
   }
 
   private publishTransientSuccess(
@@ -432,6 +453,24 @@ export class EmployeeRelationPageComponent {
       default:
         return null;
     }
+  }
+
+  /**
+   * El mensaje del error de ausencias (`b4rrhh/frontend#84`).
+   *
+   * <p>El solape y el «fuera de la presencia» tienen mensaje propio porque se arreglan de forma
+   * distinta: uno cambiando las fechas de esta ausencia, el otro mirando si el empleado estaba en la
+   * empresa esos días. Darles el mismo texto sería decirle a alguien «reinténtalo» cuando lo que
+   * tiene que hacer es otra cosa.
+   */
+  private mapAbsenceErrorMessage(code: string | null): string | null {
+    const t = this.texts;
+    if (code === 'overlap') return t.absencesOverlapMessage;
+    if (code === 'outside-presence') return t.absencesOutsidePresenceMessage;
+    if (code === 'invalid-range') return t.absencesInvalidRangeMessage;
+    if (code === 'not-found') return t.absencesNotFoundMessage;
+    if (code === 'request-failed') return t.absencesRequestFailedMessage;
+    return null;
   }
 
   private mapCostCenterErrorMessage(errorCode: string | null): string | null {
