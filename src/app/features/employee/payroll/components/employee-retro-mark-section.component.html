@@ -1,0 +1,113 @@
+<section class="employee-retro-mark-section" [attr.aria-label]="texts.retroMarksSectionTitle">
+  <!--
+    Sin acción de añadir, y la ausencia es la decisión: estas filas las escriben los verticales por
+    su puerto (`b4rrhh/backend#130`), no una persona desde una pantalla.
+  -->
+  <app-section-heading [title]="texts.retroMarksSectionTitle" />
+
+  <p class="employee-retro-mark-section__subtitle">{{ texts.retroMarksSectionSubtitle }}</p>
+
+  <div class="employee-retro-mark-section__body">
+    @if (hasRows()) {
+      <ul class="employee-retro-mark-section__list" role="list">
+        @for (row of rows(); track row.id) {
+          <li
+            class="employee-retro-mark-section__row"
+            [class.employee-retro-mark-section__row--discarded]="row.status === 'DISCARDED'"
+            [class.employee-retro-mark-section__row--consumed]="row.status === 'CONSUMED'"
+          >
+            <div class="employee-retro-mark-section__row-main">
+              <p class="employee-retro-mark-section__row-title">
+                {{ verticalLabel(row) }}
+                <span class="employee-retro-mark-section__row-origin">{{
+                  describeOrigin(row)
+                }}</span>
+              </p>
+
+              <p class="employee-retro-mark-section__row-status">
+                {{ describeStatus(row) }}
+                @if (row.status === 'DISCARDED' && row.discardedAt) {
+                  el {{ row.discardedAt | date: 'dd/MM/yyyy HH:mm' }}
+                }
+              </p>
+
+              <!--
+                El motivo del descarte se lee en la fila, no en un histórico aparte: es lo que hace
+                que la fila descartada siga contando algo.
+              -->
+              @if (row.status === 'DISCARDED' && row.discardReason) {
+                <p class="employee-retro-mark-section__row-reason">«{{ row.discardReason }}»</p>
+              }
+
+              <p class="employee-retro-mark-section__row-source">
+                {{ describeSource(row) }} ·
+                {{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              </p>
+
+              @if (discardingId() === row.id) {
+                <label class="employee-retro-mark-section__field">
+                  <span>{{ texts.retroMarksDiscardReasonLabel }}</span>
+                  <input
+                    type="text"
+                    class="employee-retro-mark-section__input"
+                    maxlength="500"
+                    [value]="discardReason()"
+                    [disabled]="busy()"
+                    (input)="updateDiscardReason($any($event.target).value)"
+                  />
+                  <small class="employee-retro-mark-section__hint">{{
+                    texts.retroMarksDiscardReasonHint
+                  }}</small>
+                </label>
+              }
+            </div>
+
+            <div class="employee-retro-mark-section__row-actions">
+              @if (discardingId() === row.id) {
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="danger"
+                  [label]="texts.retroMarksConfirmDiscardAction"
+                  [disabled]="!canDiscard() || busy()"
+                  (pressed)="confirmDiscard()"
+                />
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  [label]="texts.retroMarksCancelAction"
+                  [disabled]="busy()"
+                  (pressed)="cancel()"
+                />
+              } @else if (offersDiscard(row)) {
+                <app-ui-button
+                  type="button"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  [label]="texts.retroMarksDiscardAction"
+                  [disabled]="busy()"
+                  (pressed)="startDiscard(row)"
+                />
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="employee-retro-mark-section__empty">{{ texts.retroMarksEmptyMessage }}</p>
+    }
+  </div>
+
+  <!--
+    El feedback lo publica la página al servicio global (ADR-022, ADR-023). Lo único que la sección
+    dice de sí misma es que está ocupada, porque eso no es un mensaje: es el estado del control.
+  -->
+  @if (busy()) {
+    <p class="employee-retro-mark-section__status" role="status" aria-live="polite">
+      {{ texts.retroMarksBusyMessage }}
+    </p>
+  }
+</section>

@@ -221,6 +221,37 @@ export const employeeTexts = {
   absencesSaveSuccessMessage: 'Ausencia guardada.',
   absencesDeleteSuccessMessage: 'Ausencia borrada.',
 
+  // ── Marcas de retroactividad (b4rrhh/frontend#86) ────────────────────────
+  //
+  // Un verbo y sólo uno: DESCARTAR. No «editar» ni «borrar», porque ninguno de los dos es lo que
+  // pasa: la fila se queda para siempre, y lo que cambia es que alguien decidió no pagarla y dijo
+  // por qué (ADR-010, ADR-016).
+  retroMarksSectionTitle: 'Correcciones a meses ya entregados',
+  retroMarksSectionSubtitle:
+    'Cada vez que se escribe algo con fecha dentro de un mes con recibo entregado queda una fila aquí. El cálculo del mes abierto las recoge y paga la diferencia como atraso.',
+  retroMarksEmptyMessage: 'A este empleado no se le ha tocado ningún mes ya entregado.',
+  retroMarksBusyMessage: 'Procesando cambios...',
+  retroMarksOriginLabel: 'Recalcula desde',
+  retroMarksVerticalLabel: 'Qué cambió',
+  retroMarksSourceLabel: 'De dónde salió',
+  retroMarksCreatedLabel: 'Cuándo',
+  retroMarksActiveLabel: 'Pendiente de pagar',
+  retroMarksDiscardedLabel: 'Descartada',
+  retroMarksConsumedLabel: 'Pagada',
+  retroMarksDiscardAction: 'Descartar',
+  retroMarksConfirmDiscardAction: 'Confirmar el descarte',
+  retroMarksCancelAction: 'Cancelar',
+  retroMarksDiscardReasonLabel: 'Por qué no se paga',
+  retroMarksDiscardReasonHint:
+    'Obligatorio. La fila no se borra: se queda con este motivo y con quién lo decidió, para que el recibo pueda contar que la corrección se conocía.',
+  retroMarksNotActiveMessage:
+    'Esa corrección ya no está pendiente: entre medias se pagó o alguien la descartó. Recarga la ficha para ver en qué quedó.',
+  retroMarksNotFoundMessage: 'Esa corrección ya no existe.',
+  retroMarksReasonRequiredMessage: 'Hace falta un motivo para descartar la corrección.',
+  retroMarksRequestFailedMessage: 'No se pudo procesar la operación. Reintenta.',
+  retroMarksLoadFailedMessage: 'No se pudieron cargar las correcciones a meses entregados.',
+  retroMarksDiscardSuccessMessage: 'Corrección descartada.',
+
   payrollInputsSectionTitle: 'Entradas de nómina',
   payrollInputsSectionSubtitle:
     'Cantidades de entrada por período que consume el motor de cálculo.',

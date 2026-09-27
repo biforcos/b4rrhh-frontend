@@ -1,0 +1,167 @@
+/*
+ * Las correcciones a meses ya entregados, con el mismo tratamiento que la sección de ausencias
+ * (`frontend#84`): lista de ocurrencias, sin caja, con el rótulo y el filete que pone
+ * `app-section-heading`. Que dos secciones con la misma mecánica se vean igual es lo que hace que
+ * quien sabe usar una sepa usar la otra.
+ */
+.employee-retro-mark-section {
+  padding-bottom: 6px;
+}
+
+.employee-retro-mark-section__subtitle {
+  margin: -10px 0 12px;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.employee-retro-mark-section__status {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.employee-retro-mark-section__body {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.employee-retro-mark-section__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.56rem;
+}
+
+.employee-retro-mark-section__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.62rem;
+  background: var(--surface-panel);
+  padding: 0.56rem;
+  /* Pendiente de pagar: el filete del borde es lo que se busca al mirar la lista. */
+  border-left: 3px solid var(--accent-border);
+}
+
+/*
+ * Descartada y pagada son las dos que ya no piden nada, y se apagan. No se ocultan: la descartada
+ * está ahí justo para que se pueda leer que alguien decidió no pagarla.
+ */
+.employee-retro-mark-section__row--discarded,
+.employee-retro-mark-section__row--consumed {
+  border-left-color: var(--border-default);
+  background: var(--surface-hover);
+}
+
+.employee-retro-mark-section__row-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.14rem;
+  flex: 1 1 auto;
+}
+
+.employee-retro-mark-section__row-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.employee-retro-mark-section__row-origin {
+  margin-left: 0.4rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.employee-retro-mark-section__row-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.employee-retro-mark-section__row-reason {
+  margin: 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* El dato técnico se enseña como lo que es: de dónde salió la fila, en letra pequeña. */
+.employee-retro-mark-section__row-source {
+  margin: 0;
+  font-size: 0.66rem;
+  color: var(--text-tertiary);
+}
+
+.employee-retro-mark-section__field {
+  display: grid;
+  gap: 0.08rem;
+  margin-top: 0.4rem;
+}
+
+.employee-retro-mark-section__field span {
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: var(--text-tertiary);
+}
+
+.employee-retro-mark-section__input {
+  border: 1px solid var(--border-default);
+  border-radius: 0.42rem;
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 0.32rem 0.42rem;
+  min-height: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.employee-retro-mark-section__input:focus-visible {
+  outline: none;
+  border-color: var(--accent-border);
+  box-shadow: var(--focus-ring);
+}
+
+.employee-retro-mark-section__hint {
+  font-size: 0.66rem;
+  line-height: 1.3;
+  color: var(--text-tertiary);
+}
+
+.employee-retro-mark-section__row-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.32rem;
+}
+
+.employee-retro-mark-section__row-actions :where(app-ui-button) {
+  min-width: 5.6rem;
+}
+
+.employee-retro-mark-section__empty {
+  margin: 0;
+  border: 1px dashed var(--border-default);
+  border-radius: 0.62rem;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 0.79rem;
+  padding: 0.55rem 0.62rem;
+}
+
+@media (max-width: 599px) {
+  .employee-retro-mark-section__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .employee-retro-mark-section__row-actions {
+    justify-content: flex-start;
+  }
+}

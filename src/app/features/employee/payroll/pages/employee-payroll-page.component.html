@@ -16,6 +16,21 @@
     <app-employee-payroll-input-section [employeeKey]="activeEmployeeKey()" />
 
     <!--
+      Las correcciones a meses ya entregados van en Nómina y no en la relación laboral
+      (`b4rrhh/frontend#86`), aunque las generen verticales de la relación. Lo que la fila dice no es
+      qué le pasó al empleado —eso ya está en su carril— sino que hay un mes de nómina entregado que
+      dejó de cuadrar y que alguien va a cobrar la diferencia. Su unidad es el período de nómina, y
+      el sitio donde eso se lee es éste.
+
+      Y va después de «Entradas de nómina» a propósito: meter horas a un mes cerrado es lo que deja
+      una fila ahí abajo, así que la causa queda justo encima del efecto.
+    -->
+    <app-employee-retro-mark-section
+      id="employee-section-retro-marks"
+      [employeeBusinessKey]="activeEmployeeKey()"
+    />
+
+    <!--
       El salto a sus recibos (frontend#68). Es un enlace y no una pantalla: desde el frontend#64
       el recibo tiene direccion, y la lista de Nominas ya sabe filtrar por empleado.
 
