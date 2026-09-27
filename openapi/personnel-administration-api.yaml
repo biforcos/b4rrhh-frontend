@@ -7334,6 +7334,7 @@ components:
         - createdAt
         - sourceVerticalCode
         - sourceTable
+        - withoutAReceiptToPayIt
       properties:
         id:
           type: integer
@@ -7401,6 +7402,13 @@ components:
           type: integer
           format: int64
           nullable: true
+        withoutAReceiptToPayIt:
+          type: boolean
+          description: >-
+            Activa y sin ningun recibo que la pueda pagar (backend#139): su presencia ceso y el recibo
+            del mes del cese ya esta cerrado. No se paga en la presencia nueva -eso seria un finiquito
+            complementario, otro recibo y otro camino (ADR-076 §8)-; la corrida lo cuenta en sus
+            mensajes y la ficha lo dice. Falso en una marca pagada o descartada.
 
     DiscardRetroMarkRequest:
       type: object
