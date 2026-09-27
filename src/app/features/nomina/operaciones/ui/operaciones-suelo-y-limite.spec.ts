@@ -30,6 +30,7 @@ describe('El formulario de lanzamiento enseña el suelo y el límite', () => {
         {
           provide: OperacionesGateway,
           useValue: {
+            listEmployeeTypes: vi.fn().mockReturnValue(of(['EXTERNAL', 'INTERNAL'])),
             launchCalculation: vi.fn().mockReturnValue(of({ runId: 1 })),
             getCalculationRun: vi.fn(),
             bulkInvalidate: vi.fn(),

@@ -48,6 +48,7 @@ const ACEPTADA: CalculationRun = {
 describe('El lanzamiento dice hasta dónde atrás recalcula', () => {
   let store: OperacionesStore;
   let gatewayMock: {
+    listEmployeeTypes: ReturnType<typeof vi.fn>;
     launchCalculation: ReturnType<typeof vi.fn>;
     getCalculationRun: ReturnType<typeof vi.fn>;
     bulkInvalidate: ReturnType<typeof vi.fn>;
@@ -56,6 +57,7 @@ describe('El lanzamiento dice hasta dónde atrás recalcula', () => {
 
   beforeEach(() => {
     gatewayMock = {
+      listEmployeeTypes: vi.fn().mockReturnValue(of(['EXTERNAL', 'INTERNAL'])),
       launchCalculation: vi.fn().mockReturnValue(of(ACEPTADA)),
       getCalculationRun: vi.fn(),
       bulkInvalidate: vi.fn(),

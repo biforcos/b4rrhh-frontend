@@ -53,6 +53,7 @@ const CIERRE: BulkFinalizeResult = {
 describe('OperacionesStore', () => {
   let store: OperacionesStore;
   let gatewayMock: {
+    listEmployeeTypes: ReturnType<typeof vi.fn>;
     launchCalculation: ReturnType<typeof vi.fn>;
     getCalculationRun: ReturnType<typeof vi.fn>;
     bulkInvalidate: ReturnType<typeof vi.fn>;
@@ -62,6 +63,7 @@ describe('OperacionesStore', () => {
 
   beforeEach(() => {
     gatewayMock = {
+      listEmployeeTypes: vi.fn().mockReturnValue(of(['EXTERNAL', 'INTERNAL'])),
       launchCalculation: vi.fn().mockReturnValue(of(ACCEPTED)),
       getCalculationRun: vi.fn().mockReturnValue(of(ACCEPTED)),
       bulkInvalidate: vi.fn(),

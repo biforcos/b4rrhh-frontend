@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -85,6 +86,9 @@ export class OperacionesStore {
   private readonly payrollTypeCodeState = signal<'NORMAL' | 'EXTRA'>('NORMAL');
   private readonly targetModeState = signal<TargetSelectionMode>('ALL');
   private readonly employeeListTextState = signal<string>('');
+  /** Los tipos de empleado del sistema de reglas (`b4rrhh/frontend#88`). */
+  private readonly employeeTypesState = signal<string[]>([]);
+  private readonly listEmployeeTypeState = signal<string>('');
   private readonly singleEmployeeTypeState = signal<string>('');
   private readonly singleEmployeeNumberState = signal<string>('');
 
@@ -110,6 +114,12 @@ export class OperacionesStore {
   private readonly engineVersionState = signal<string>('1.0');
   private readonly launchingState = signal<boolean>(false);
   private readonly launchErrorState = signal<string | null>(null);
+  /**
+   * Lo que dijo el servidor al rechazar el lanzamiento, cuando dijo algo (`b4rrhh/frontend#88`). Un
+   * empleado que no existe lo nombra el servidor —«no existe el tipo EMP; los del sistema ESP son:
+   * INTERNAL»—, y taparlo con «no se pudo lanzar» es perder lo único que sirve.
+   */
+  private readonly launchErrorMessageState = signal<string | null>(null);
 
   /**
    * El limite de la retro, en `yyyyMM`. Null es el campo vacio, y entonces no se puede lanzar: el
@@ -142,6 +152,8 @@ export class OperacionesStore {
   readonly payrollTypeCode = this.payrollTypeCodeState.asReadonly();
   readonly targetMode = this.targetModeState.asReadonly();
   readonly employeeListText = this.employeeListTextState.asReadonly();
+  readonly employeeTypes = this.employeeTypesState.asReadonly();
+  readonly listEmployeeType = this.listEmployeeTypeState.asReadonly();
   readonly singleEmployeeType = this.singleEmployeeTypeState.asReadonly();
   readonly singleEmployeeNumber = this.singleEmployeeNumberState.asReadonly();
   readonly statusReasonCode = this.statusReasonCodeState.asReadonly();
@@ -156,6 +168,7 @@ export class OperacionesStore {
   readonly engineVersion = this.engineVersionState.asReadonly();
   readonly launching = this.launchingState.asReadonly();
   readonly launchError = this.launchErrorState.asReadonly();
+  readonly launchErrorMessage = this.launchErrorMessageState.asReadonly();
   readonly retroLimitPeriod = this.retroLimitPeriodState.asReadonly();
   readonly retroFloorPeriod = this.retroFloorPeriodState.asReadonly();
   readonly retroLimitProposalReason = computed(() => RETRO_LIMIT_PROPOSAL_REASON);
@@ -220,8 +233,32 @@ export class OperacionesStore {
       !this.retroFloorOlderThanLimit(),
   );
 
+  constructor() {
+    this.loadEmployeeTypes();
+  }
+
+  /**
+   * Los tipos del sistema de reglas. Si sólo hay uno viene puesto y no se pregunta; si hay más, no
+   * se elige por nadie (`b4rrhh/frontend#88`).
+   */
+  private loadEmployeeTypes(): void {
+    this.gateway.listEmployeeTypes(this.ruleSystemCodeState()).subscribe({
+      next: (tipos) => {
+        this.employeeTypesState.set(tipos);
+        const unico = tipos.length === 1 ? tipos[0] : '';
+        if (!tipos.includes(this.singleEmployeeTypeState()))
+          this.singleEmployeeTypeState.set(unico);
+        if (!tipos.includes(this.listEmployeeTypeState())) this.listEmployeeTypeState.set(unico);
+      },
+      // Sin lista no hay de donde elegir, y el lanzamiento a uno o a varios queda parado; «Todos
+      // del período» sigue funcionando, que es lo que no necesita tipo.
+      error: () => this.employeeTypesState.set([]),
+    });
+  }
+
   setRuleSystemCode(v: string): void {
     this.ruleSystemCodeState.set(v);
+    this.loadEmployeeTypes();
     this.disarmFinalize();
   }
   setPayrollTypeCode(v: 'NORMAL' | 'EXTRA'): void {
@@ -234,6 +271,10 @@ export class OperacionesStore {
   }
   setEmployeeListText(v: string): void {
     this.employeeListTextState.set(v);
+    this.disarmFinalize();
+  }
+  setListEmployeeType(v: string): void {
+    this.listEmployeeTypeState.set(v);
     this.disarmFinalize();
   }
   setSingleEmployeeType(v: string): void {
@@ -300,6 +341,7 @@ export class OperacionesStore {
         targetSelection: buildTargetSelectionPayload(
           this.targetModeState(),
           this.employeeListTextState(),
+          this.listEmployeeTypeState(),
           this.singleEmployeeTypeState(),
           this.singleEmployeeNumberState(),
         ),
@@ -350,6 +392,7 @@ export class OperacionesStore {
         targetSelection: buildTargetSelectionPayload(
           this.targetModeState(),
           this.employeeListTextState(),
+          this.listEmployeeTypeState(),
           this.singleEmployeeTypeState(),
           this.singleEmployeeNumberState(),
         ),
@@ -379,6 +422,7 @@ export class OperacionesStore {
     const floor = this.retroFloorPeriodState();
     this.launchingState.set(true);
     this.launchErrorState.set(null);
+    this.launchErrorMessageState.set(null);
     this.gateway
       .launchCalculation({
         ruleSystemCode: this.ruleSystemCodeState(),
@@ -389,6 +433,7 @@ export class OperacionesStore {
         targetSelection: buildTargetSelectionPayload(
           this.targetModeState(),
           this.employeeListTextState(),
+          this.listEmployeeTypeState(),
           this.singleEmployeeTypeState(),
           this.singleEmployeeNumberState(),
         ),
@@ -402,10 +447,19 @@ export class OperacionesStore {
           this.launchingState.set(false);
           void this.router.navigate(['/nomina/operaciones', run.runId]);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.launchingState.set(false);
           this.launchErrorState.set('launch-failed');
+          this.launchErrorMessageState.set(serverMessage(err));
         },
       });
   }
+}
+
+/** El mensaje del cuerpo de un 4xx del servidor, si lo trae. */
+function serverMessage(err: unknown): string | null {
+  if (err instanceof HttpErrorResponse && err.error && typeof err.error.message === 'string') {
+    return err.error.message;
+  }
+  return null;
 }

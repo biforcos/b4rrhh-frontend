@@ -6,9 +6,17 @@ export interface TargetSelectionPayload {
   employees?: Array<{ employeeTypeCode: string; employeeNumber: string }>;
 }
 
+/**
+ * El encargo de a quién se lanza.
+ *
+ * En «Lista» el tipo se elige una vez, arriba, y cada línea es un número (`b4rrhh/frontend#88`): el
+ * tipo es un valor de catálogo, y escribirlo en cada línea era la forma de equivocarse que tuvo la
+ * demo del 27/09.
+ */
 export function buildTargetSelectionPayload(
   mode: TargetSelectionMode,
   listText: string,
+  listTypeCode: string,
   singleTypeCode: string,
   singleNumber: string,
 ): TargetSelectionPayload {
@@ -19,14 +27,8 @@ export function buildTargetSelectionPayload(
     const employees = listText
       .split('\n')
       .map((l) => l.trim())
-      .filter((l) => l.includes(':'))
-      .map((l) => {
-        const colonIdx = l.indexOf(':');
-        return {
-          employeeTypeCode: l.slice(0, colonIdx).trim(),
-          employeeNumber: l.slice(colonIdx + 1).trim(),
-        };
-      });
+      .filter((l) => l.length > 0)
+      .map((employeeNumber) => ({ employeeTypeCode: listTypeCode.trim(), employeeNumber }));
     return { selectionType: 'EMPLOYEE_LIST', employees };
   }
   return {

@@ -65,9 +65,26 @@
       </div>
 
       @if (store.targetMode() === 'LIST') {
+        <label class="ops-page__field">
+          <span class="ops-page__field-label">Tipo</span>
+          <select
+            class="ops-page__input"
+            [value]="store.listEmployeeType()"
+            (change)="store.setListEmployeeType($any($event.target).value)"
+          >
+            @if (store.employeeTypes().length !== 1) {
+              <option value="" [selected]="store.listEmployeeType() === ''">Elige un tipo</option>
+            }
+            @for (tipo of store.employeeTypes(); track tipo) {
+              <option [value]="tipo" [selected]="store.listEmployeeType() === tipo">
+                {{ tipo }}
+              </option>
+            }
+          </select>
+        </label>
         <textarea
           class="ops-page__textarea"
-          placeholder="Una línea por empleado, formato TIPO:NÚMERO&#10;Ejemplo:&#10;EMP:EMP001&#10;EMP:EMP002"
+          placeholder="Un número de empleado por línea&#10;Ejemplo:&#10;EMP000001&#10;EMP000002"
           rows="4"
           [value]="store.employeeListText()"
           (input)="store.setEmployeeListText($any($event.target).value)"
@@ -78,13 +95,22 @@
         <div class="ops-page__single-employee">
           <label class="ops-page__field">
             <span class="ops-page__field-label">Tipo</span>
-            <input
-              type="text"
+            <select
               class="ops-page__input"
-              placeholder="EMP"
               [value]="store.singleEmployeeType()"
-              (input)="store.setSingleEmployeeType($any($event.target).value)"
-            />
+              (change)="store.setSingleEmployeeType($any($event.target).value)"
+            >
+              @if (store.employeeTypes().length !== 1) {
+                <option value="" [selected]="store.singleEmployeeType() === ''">
+                  Elige un tipo
+                </option>
+              }
+              @for (tipo of store.employeeTypes(); track tipo) {
+                <option [value]="tipo" [selected]="store.singleEmployeeType() === tipo">
+                  {{ tipo }}
+                </option>
+              }
+            </select>
           </label>
           <label class="ops-page__field">
             <span class="ops-page__field-label">Número</span>
@@ -266,7 +292,9 @@
       }
 
       @if (store.launchError()) {
-        <p class="ops-page__error">No se pudo lanzar el cálculo. Reintenta.</p>
+        <p class="ops-page__error">
+          {{ store.launchErrorMessage() ?? 'No se pudo lanzar el cálculo. Reintenta.' }}
+        </p>
       }
     </div>
 

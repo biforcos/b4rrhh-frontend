@@ -3,6 +3,7 @@ import { Observable, map } from 'rxjs';
 
 import { PayrollCalculationRunService } from '../../../../core/api/generated/api/payroll-calculation-run.service';
 import { PayrollService } from '../../../../core/api/generated/api/payroll.service';
+import { RuleEntitiesService } from '../../../../core/api/generated/api/rule-entities.service';
 import {
   BulkFinalizePayrollRequest,
   BulkFinalizePayrollRequestPayrollTypeCodeEnum,
@@ -27,6 +28,21 @@ type PayrollTypeCode = 'NORMAL' | 'EXTRA';
 export class OperacionesGateway {
   private readonly payrollApi = inject(PayrollService);
   private readonly calculationRunApi = inject(PayrollCalculationRunService);
+  private readonly ruleEntitiesApi = inject(RuleEntitiesService);
+
+  /**
+   * Los tipos de empleado del sistema de reglas, para elegir en vez de escribir
+   * (`b4rrhh/frontend#88`). Los activos, por código.
+   */
+  listEmployeeTypes(ruleSystemCode: string): Observable<string[]> {
+    return this.ruleEntitiesApi
+      .listRuleEntities({ ruleSystemCode, ruleEntityTypeCode: 'EMPLOYEE_TYPE', active: true })
+      .pipe(
+        map((tipos) =>
+          [...new Set(tipos.map((t) => t.code).filter((c): c is string => !!c))].sort(),
+        ),
+      );
+  }
 
   /**
    * Los dos parametros de la retro van en la **peticion** (`b4rrhh/backend#132`).
