@@ -7071,6 +7071,149 @@ paths:
         "404":
           description: Row not found
 
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/retro-marks:
+    get:
+      summary: List the retroactivity marks of an employee
+      description: >-
+        Las marcas de retroactividad del empleado, todas y en su estado (backend#130). Todas y no
+        solo las activas: una marca descartada sigue visible con quien y por que la descarto -es la
+        razon de que descartar no borre- y una consumida dice que recibo la pago.
+      operationId: listEmployeeRetroMarks
+      tags:
+        - Employee Retro Marks
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 10
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        '200':
+          description: Marks ordered by createdAt DESC
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RetroMarkResponse'
+
+  /payroll/retro-marks/{id}/discard:
+    post:
+      summary: Discard a retroactivity mark, with a reason
+      description: >-
+        Decide que esa correccion no se paga (backend#130). No es un borrado: la fila se queda en
+        DISCARDED con quien y con por que, porque el recibo tiene que poder contar que habia una
+        correccion conocida que alguien decidio no pagar. Solo desde ACTIVE.
+      operationId: discardRetroMark
+      tags:
+        - Employee Retro Marks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscardRetroMarkRequest'
+      responses:
+        '200':
+          description: The mark, now discarded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetroMarkResponse'
+        '404':
+          description: Mark not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetroMarkErrorResponse'
+        '409':
+          description: The mark is not ACTIVE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetroMarkErrorResponse'
+        '422':
+          description: Reason missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetroMarkErrorResponse'
+
+  /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}/arrears-explanation:
+    get:
+      tags: [Payroll]
+      operationId: explainPayrollArrears
+      summary: Where each arrears line of this payroll comes from
+      description: >-
+        La explicacion de las lineas de atraso de un recibo (backend#134). Es la condicion de este camino
+        aplicada al paso dificil: el recibo tiene que seguir explicandose cuando la nomina deja de ser
+        facil.
+
+        Una linea de atraso NO se explica con una travesia del grafo, porque no viene de ningun paso de
+        este calculo -su mergedStepCount es cero-. Se explica con tres numeros: agosto vale hoy X, por
+        agosto se habia pagado Y, esta linea es X menos Y. Por eso este endpoint esta al lado de
+        /steps y no dentro: meter las lineas de atraso en la lista de pasos habria obligado a inventar
+        pasos que no existen.
+
+        La Y es lo pagado ANTES de este recibo: sin excluirlo, la diferencia de un recibo ya cerrado
+        saldria cero, porque su propia linea ya estaria contada como pagada.
+
+        Un recibo sin lineas de atraso contesta 200 con la lista vacia, y eso es el caso normal.
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeTypeCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: employeeNumber
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollPeriodCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: payrollTypeCode
+          in: path
+          required: true
+          schema: { type: string }
+        - name: presenceNumber
+          in: path
+          required: true
+          schema: { type: integer, format: int32 }
+      responses:
+        "200":
+          description: One entry per arrears line, or an empty array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArrearExplanationResponse"
+
 components:
   parameters:
     AcceptLanguage:
@@ -7086,6 +7229,189 @@ components:
         type: string
         example: es-ES
   schemas:
+    ArrearExplanationResponse:
+      type: object
+      description: >-
+        De donde sale una linea de atraso (backend#134).
+      required:
+        - originPeriodCode
+        - conceptCode
+        - conceptLabel
+        - lineAmount
+        - currentValue
+        - alreadyPaid
+        - paidIn
+        - difference
+        - addsUp
+      properties:
+        originPeriodCode:
+          type: string
+          description: El mes al que pertenece la linea.
+          example: "202508"
+        conceptCode:
+          type: string
+          example: "102"
+        conceptLabel:
+          type: string
+          description: >-
+            El literal congelado en la linea, con su origen a la vista. Un sufijo sobre el nombre del
+            concepto y no un concepto nuevo por mes: un catalogo con "Salario base de agosto" y "Salario
+            base de septiembre" como conceptos distintos se llenaria de conceptos que no son conceptos.
+          example: "Importe horas extra (atraso 08/2025)"
+        lineAmount:
+          type: number
+          description: Lo que la linea dice. Es el documento, y es lo que manda.
+        currentValue:
+          type: number
+          description: >-
+            La X: lo que ese mes vale HOY para ese concepto, leido de su calculo vigente. Cero si no hay
+            vigente, y entonces currentValueCalculatedAt viene a null y lo dice en vez de callarlo.
+        currentValueCalculatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Cuando se calculo ese vigente.
+        alreadyPaid:
+          type: number
+          description: >-
+            La Y: lo pagado atribuido a ese mes ANTES de este recibo. Sin excluir este recibo, un recibo
+            ya cerrado se contaria a si mismo.
+        paidIn:
+          type: array
+          description: >-
+            El desglose de la Y, un renglon por recibo que pago algo. Es la mitad que la hace util: "por
+            agosto se han pagado 59,40" no explica nada, y "el recibo de agosto pago 0 y el de septiembre
+            pago 59,40 como atraso" si.
+          items:
+            $ref: "#/components/schemas/ArrearPaidInResponse"
+        difference:
+          type: number
+          description: X menos Y, que es lo que esta linea deberia valer.
+        addsUp:
+          type: boolean
+          description: >-
+            Si los tres numeros cuadran con el importe de la linea. Puede ser false, y no es un defecto de
+            la explicacion: pasa cuando esta linea se pago en una corrida anterior y desde entonces el
+            vigente se ha vuelto a pisar. Decirlo es mejor que esconderlo: la pantalla lo puede marcar en
+            vez de ensenar tres numeros que no suman.
+
+    ArrearPaidInResponse:
+      type: object
+      required:
+        - payrollPeriodCode
+        - amount
+      properties:
+        payrollPeriodCode:
+          type: string
+          description: El recibo que pago.
+          example: "202509"
+        amount:
+          type: number
+          description: >-
+            Cuanto pago atribuido al mes de origen. En el propio mes es su linea normal; en un mes
+            posterior es una linea de atraso.
+
+    RetroMarkResponse:
+      type: object
+      description: >-
+        Una marca de retroactividad: el pasado de este empleado ha cambiado desde tal mes
+        (backend#130).
+      required:
+        - id
+        - presenceNumber
+        - fromPeriodCode
+        - status
+        - createdAt
+        - sourceVerticalCode
+        - sourceTable
+      properties:
+        id:
+          type: integer
+          format: int64
+        presenceNumber:
+          type: integer
+          description: >-
+            La presencia a la que alcanza. Un recibo es de una presencia, asi que la marca tambien:
+            unas horas metidas a la presencia 1 de un readmitido no obligan a recalcular la 2.
+          example: 1
+        fromPeriodCode:
+          type: string
+          description: >-
+            El periodo al que la escritura fue, y desde el que se recalcula hacia delante. Leido del
+            otro lado es "hasta que mes alcanza esta marca".
+          example: "202608"
+        status:
+          type: string
+          enum: [ACTIVE, DISCARDED, CONSUMED]
+        createdAt:
+          type: string
+          format: date-time
+        sourceVerticalCode:
+          type: string
+          description: Que vertical la genero, que es por lo que se agrupa.
+          example: "ABSENCE"
+        sourceTable:
+          type: string
+          example: "employee.employee_absence"
+        sourceRowId:
+          type: integer
+          format: int64
+          nullable: true
+          description: >-
+            La fila que la genero, o null si la escritura fue un borrado: entonces la marca es lo
+            unico que queda de ella.
+        sourceRowKey:
+          type: string
+          nullable: true
+          description: >-
+            La clave de negocio de la fila, en texto, para las verticales que no tienen id surrogado:
+            una entrada de nomina se identifica por concepto y periodo. Null cuando el id ya la
+            identifica.
+          example: "OVERTIME/202608"
+        discardedAt:
+          type: string
+          format: date-time
+          nullable: true
+        discardedBy:
+          type: string
+          nullable: true
+        discardReason:
+          type: string
+          nullable: true
+        consumedAt:
+          type: string
+          format: date-time
+          nullable: true
+        consumedPeriodCode:
+          type: string
+          nullable: true
+          description: El periodo del recibo que la pago.
+          example: "202609"
+        consumedRunId:
+          type: integer
+          format: int64
+          nullable: true
+
+    DiscardRetroMarkRequest:
+      type: object
+      required:
+        - discardReason
+      properties:
+        discardReason:
+          type: string
+          maxLength: 500
+          description: >-
+            Por que no se paga. Obligatorio: sin motivo el recibo no puede contar que la habia.
+          example: "Las horas ya se pagaron en mano en agosto"
+
+    RetroMarkErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
     RuleEntityTranslationCoverageResponse:
       type: object
       required:
@@ -7228,6 +7554,26 @@ components:
           type: string
         targetSelection:
           $ref: "#/components/schemas/PayrollLaunchTargetSelectionRequest"
+        retroLimitPeriodCode:
+          type: string
+          description: >-
+            Hasta que mes atras permite recalcular este lanzamiento (backend#132). El formulario propone
+            un valor CON SU MOTIVO ESCRITO al lado -doce meses atras, por el lio con seguros sociales y
+            Hacienda mas atras de eso- y quien lanza lo confirma o lo cambia; no es un 12 magico.
+            Si falta, la corrida no recalcula ningun mes cerrado, y si habia empleados con marcas activas
+            lo dice en sus mensajes (RETRO_SKIPPED_NO_LIMIT): no puede inventarse hasta donde tiene
+            permiso, y tampoco puede dejar de pagar un atraso en silencio.
+          example: "202510"
+        retroFloorPeriodCode:
+          type: string
+          nullable: true
+          description: >-
+            Suelo obligatorio para todos: todo empleado del lanzamiento recalcula desde aqui aunque no
+            tenga ninguna marca. Es la forma humana de una revision de convenio -"todos desde enero"- y
+            nulo es lo normal. Un suelo mas antiguo que el limite se rechaza con un 400: son dos cosas
+            contrarias y no hay forma de cumplir las dos. Un suelo sin limite tambien, porque sin limite
+            no hay retro y el suelo no llegaria a ninguna parte.
+          example: "202601"
 
     PayrollCalculationRunResponse:
       type: object
@@ -7248,6 +7594,9 @@ components:
         - totalCalculated
         - totalNotValid
         - totalErrors
+        - totalRetroUnits
+        - totalRetroRecalculated
+        - totalRetroNotRecalculated
         - requestedAt
       properties:
         runId:
@@ -7271,6 +7620,36 @@ components:
           description: >-
             Expanded candidate calculation units after presence overlap resolution for the payroll
             month.
+          type: integer
+          format: int32
+        retroLimitPeriodCode:
+          type: string
+          nullable: true
+          description: >-
+            Con que limite de retroactividad se calculo esta corrida (backend#132). Null en las corridas
+            de antes del #132 y en las que no hacen retro. El recibo y la checklist lo leen de aqui.
+        retroFloorPeriodCode:
+          type: string
+          nullable: true
+          description: El suelo para todos con el que se calculo, si lo hubo.
+        totalRetroUnits:
+          description: >-
+            El universo de la retro: unidades EMPLEADO x MES que hay que recalcular, contadas una vez y
+            al principio, como totalCandidates. Es una terna aparte y no se suma a los nueve contadores
+            del recibo, porque una unidad de retro no acaba en ninguno de esos cajones: no escribe
+            recibo, escribe calculo vigente. El trabajo de verdad de la corrida, que es lo que la
+            pantalla tiene que ensenar, es totalCandidates + totalRetroUnits.
+          type: integer
+          format: int32
+        totalRetroRecalculated:
+          description: Vigentes escritos. Su particion es totalRetroUnits = recalculated + notRecalculated.
+          type: integer
+          format: int32
+        totalRetroNotRecalculated:
+          description: >-
+            Meses del tramo que no se pudieron recalcular, cada uno con su mensaje en la corrida
+            (RETRO_MONTH_NOT_RECALCULATED). No es un error: el recibo de aquel mes no se ha tocado y el
+            resto del tramo ha seguido.
           type: integer
           format: int32
         totalEligible:
