@@ -253,6 +253,16 @@
   color: var(--accent-primary);
 }
 
+/*
+ * La tabla única de devengos y deducciones (`b4rrhh/frontend#89`): el pie son el 970 y el 980 del
+ * motor, uno bajo cada columna. Se distingue como cualquier línea de total, con `.row-total`.
+ */
+.tabla-unica tfoot td {
+  font-weight: 600;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-default);
+}
+
 /* COL WIDTHS */
 .col-period {
   width: 8%;

@@ -213,8 +213,9 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
    */
   it('los bloques salen en el orden declarado', () => {
     expect(bloquesDe(render(UNO_DE_CADA_NATURALEZA))).toEqual([
-      'Devengos',
-      'Deducciones',
+      // Devengos y deducciones, fundidos en una tabla desde el b4rrhh/frontend#89: los dos bloques
+      // siguen declarados en el catálogo, y la tabla sale donde sale el primero.
+      'Devengos y deducciones',
       'Liquido total a percibir',
       'Determinacion de las bases de cotizacion',
       'Aportacion empresarial',
@@ -440,14 +441,11 @@ describe('Qué pinta el folio, y en qué bloque lo pone', () => {
     );
   }
 
-  /** El total que cierra el bloque de deducciones: la línea 980, que calculó el motor. */
+  /**
+   * El total de deducciones: la línea 980, que calculó el motor. Desde el `b4rrhh/frontend#89` va al
+   * pie de la columna Deducción de la tabla única.
+   */
   function totalDeDeducciones(folio: HTMLElement): string {
-    const tabla = Array.from(folio.querySelectorAll('.concept-table')).find(
-      (t) => t.querySelector('.section-label')?.textContent?.trim() === 'Deducciones',
-    );
-    const fila = Array.from(tabla?.querySelectorAll('tbody tr') ?? []).find(
-      (tr) => tr.querySelectorAll('td')[1]?.textContent?.trim() === '980',
-    );
-    return fila?.querySelector('.amount')?.textContent?.trim() ?? '';
+    return folio.querySelector('.tabla-unica tfoot [data-clave="980"]')?.textContent?.trim() ?? '';
   }
 });

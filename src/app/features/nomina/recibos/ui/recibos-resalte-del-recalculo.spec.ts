@@ -48,9 +48,15 @@ function render(lineasMovidas: ReadonlySet<number>): HTMLElement {
 
 /** Los códigos de las líneas del cuerpo que han quedado resaltadas. */
 function resaltadas(root: HTMLElement): string[] {
-  return Array.from(root.querySelectorAll('tbody tr.valor-movido')).map(
+  // Los totales de devengos y deducciones van al pie de la tabla única desde el b4rrhh/frontend#89,
+  // cada uno en su celda y con su clave: se resaltan igual de por separado que cuando eran filas.
+  const pie = Array.from(root.querySelectorAll('tfoot .valor-movido[data-clave]')).map(
+    (td) => td.getAttribute('data-clave') ?? '',
+  );
+  const cuerpo = Array.from(root.querySelectorAll('tbody tr.valor-movido')).map(
     (tr) => tr.querySelectorAll('td')[1]?.textContent?.trim() ?? '',
   );
+  return [...pie, ...cuerpo];
 }
 
 /**

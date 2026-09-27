@@ -32,6 +32,27 @@ interface GrupoDelFolio {
   lines: ReadonlyArray<PayrollConceptModel>;
 }
 
+/**
+ * Devengos y deducciones en una sola tabla (`b4rrhh/frontend#89`), como en los recibos de nómina:
+ * cada línea en la columna de su bloque, y al pie los totales que el motor le dio a cada uno.
+ */
+interface TablaUnica {
+  label: string;
+  filas: ReadonlyArray<{ concept: PayrollConceptModel; columna: 'devengo' | 'deduccion' }>;
+  /** El `970`, tal cual llega. Nulo si el motor no lo dio: entonces el pie dice que no lo sabe. */
+  totalDevengos: PayrollConceptModel | null;
+  /** El `980`, tal cual llega. */
+  totalDeducciones: PayrollConceptModel | null;
+}
+
+/** Lo que se pinta, en orden: un bloque del modelo oficial o la tabla única. */
+type PiezaDelFolio =
+  | { tipo: 'bloque'; key: string; bloque: BloqueDelFolio }
+  | { tipo: 'unica'; key: string; unica: TablaUnica };
+
+/** El rótulo de la tabla única. */
+const DEVENGOS_Y_DEDUCCIONES = 'Devengos y deducciones';
+
 /** El hueco donde caen las líneas a las que el catálogo no les declaró bloque. */
 const SIN_BLOQUE = '__SIN_BLOQUE__';
 
@@ -147,17 +168,99 @@ const MONTH_NAMES_ES = [
         Uno por sección declarada, en el orden que declara el catálogo. Aquí no hay ninguna lista
         de bloques escrita a mano: lo que coloca cada línea es su payslipSectionCode.
       -->
-      @for (bloque of bloques; track bloque.sectionCode) {
-        @if (bloque.esCierre) {
+      @for (pieza of vista; track pieza.key) {
+        @if (pieza.tipo === 'unica') {
+          <!--
+            DEVENGOS Y DEDUCCIONES, EN UNA TABLA (b4rrhh/frontend#89). Cada línea en la columna de su
+            bloque, y al pie el 970 y el 980 tal cual los dio el motor: el folio no suma
+            (b4rrhh/backend#114). El PDF no cambia; esta tabla es de la pantalla.
+          -->
+          <table class="concept-table tabla-unica">
+            <caption class="section-label">
+              {{
+                pieza.unica.label
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th class="col-period">Período</th>
+                <th class="col-code">Clave</th>
+                <th class="col-label">Concepto</th>
+                <th class="col-qty">Cantidad</th>
+                <th class="col-rate">Tarifa/Base</th>
+                <th class="col-amount">Devengo</th>
+                <th class="col-amount">Deducción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of pieza.unica.filas; track fila.concept.lineNumber) {
+                <tr [class.valor-movido]="lineasMovidas.has(fila.concept.lineNumber)">
+                  <td>{{ periodo(fila.concept) }}</td>
+                  <td>{{ fila.concept.conceptCode }}</td>
+                  <td>
+                    {{ fila.concept.conceptLabel }}
+                    @if (fila.concept.mergedStepCount > 1) {
+                      <span
+                        class="concept-merged"
+                        [attr.title]="
+                          'Esta línea suma ' +
+                          fila.concept.mergedStepCount +
+                          ' tramos calculados al mismo precio. La pestaña Cálculo los enseña por separado.'
+                        "
+                        >{{ fila.concept.mergedStepCount }} tramos</span
+                      >
+                    }
+                  </td>
+                  <td class="text-right">
+                    {{ fila.concept.quantity != null ? formatNum(fila.concept.quantity) : '—' }}
+                  </td>
+                  <td class="text-right">
+                    {{ fila.concept.rate != null ? formatNum(fila.concept.rate) : '—' }}
+                  </td>
+                  <td class="text-right amount">
+                    {{ fila.columna === 'devengo' ? importe(fila.concept) : '' }}
+                  </td>
+                  <td class="text-right amount">
+                    {{ fila.columna === 'deduccion' ? importe(fila.concept) : '' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="row-total">
+                <td colspan="5">
+                  {{ pieza.unica.totalDevengos?.conceptLabel ?? 'Total devengado' }} ·
+                  {{ pieza.unica.totalDeducciones?.conceptLabel ?? 'Total a deducir' }}
+                </td>
+                <td
+                  class="text-right amount"
+                  [class.valor-movido]="seMovio(pieza.unica.totalDevengos)"
+                  [attr.data-clave]="pieza.unica.totalDevengos?.conceptCode"
+                >
+                  {{ pieza.unica.totalDevengos ? importe(pieza.unica.totalDevengos) : '—' }}
+                </td>
+                <td
+                  class="text-right amount"
+                  [class.valor-movido]="seMovio(pieza.unica.totalDeducciones)"
+                  [attr.data-clave]="pieza.unica.totalDeducciones?.conceptCode"
+                >
+                  {{ pieza.unica.totalDeducciones ? importe(pieza.unica.totalDeducciones) : '—' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        } @else if (pieza.bloque.esCierre) {
           <!--
             Un bloque cuya única línea es un total se pinta como la línea de cierre: es el líquido
             de una nómina de verdad, y así su nombre no sale dos veces.
           -->
-          <div class="net-pay-footer" [class.valor-movido]="seMovio(bloque.lines[0])">
-            <span class="net-pay-label">{{ bloque.label }}</span>
+          <div class="net-pay-footer" [class.valor-movido]="seMovio(pieza.bloque.lines[0])">
+            <span class="net-pay-label">{{ pieza.bloque.label }}</span>
             <span class="net-pay-amount"
               >{{
-                bloque.lines[0].amount != null ? formatNum(bloque.lines[0].amount!) : '—'
+                pieza.bloque.lines[0].amount != null
+                  ? formatNum(pieza.bloque.lines[0].amount!)
+                  : '—'
               }}
               €</span
             >
@@ -166,7 +269,7 @@ const MONTH_NAMES_ES = [
           <table class="concept-table">
             <caption class="section-label">
               {{
-                bloque.label
+                pieza.bloque.label
               }}
             </caption>
             <thead>
@@ -179,7 +282,7 @@ const MONTH_NAMES_ES = [
                 <th class="col-amount">Importe</th>
               </tr>
             </thead>
-            @for (grupo of bloque.grupos; track grupo.label) {
+            @for (grupo of pieza.bloque.grupos; track grupo.label) {
               <tbody>
                 <!--
                   El rótulo del apartado, cuando lo hay. Un bloque sin apartados trae un único
@@ -203,7 +306,7 @@ const MONTH_NAMES_ES = [
                     [class.valor-movido]="lineasMovidas.has(concept.lineNumber)"
                     [class.row-total]="esTotal(concept)"
                   >
-                    <td>{{ concept.originPeriodCode ?? '—' }}</td>
+                    <td>{{ periodo(concept) }}</td>
                     <td>{{ concept.conceptCode }}</td>
                     <td>
                       {{ concept.conceptLabel }}
@@ -292,6 +395,65 @@ export class RecibosFolioComponent {
   /** Si esta línea —de totales o de líquido— es una de las que se movieron. */
   seMovio(concept: PayrollConceptModel | null): boolean {
     return concept !== null && this.lineasMovidas.has(concept.lineNumber);
+  }
+
+  /**
+   * La columna de período **sólo habla cuando la línea es de otro mes** (`b4rrhh/frontend#89`): con
+   * veinte filas que dicen el mes del recibo no informa, y con una distinta la retro salta a la vista.
+   * La misma regla que el PDF (`b4rrhh/backend#138`).
+   */
+  periodo(concept: PayrollConceptModel): string {
+    if (concept.originPeriodCode == null) return '—';
+    return concept.originPeriodCode === this.payrollPeriodCode ? '' : concept.originPeriodCode;
+  }
+
+  importe(concept: PayrollConceptModel): string {
+    return concept.amount != null ? this.formatNum(concept.amount) : '—';
+  }
+
+  /**
+   * Lo que se pinta, en orden (`b4rrhh/frontend#89`): los bloques del catálogo, con devengos y
+   * deducciones fundidos en una tabla.
+   *
+   * **Cuáles se funden no lo dice una lista de secciones**: lo dice su total. El bloque que lleva la
+   * línea de naturaleza `TOTAL_EARNING` es el de devengos y el que lleva `TOTAL_DEDUCTION` el de
+   * deducciones, que es la misma pregunta que ya contesta {@link esTotalDeBloque}. Si falta alguno de
+   * los dos, no hay pie que poner y se pintan como antes, cada uno en su tabla.
+   */
+  get vista(): ReadonlyArray<PiezaDelFolio> {
+    const bloques = this.bloques;
+    const devengos = bloques.find((b) =>
+      b.lines.some((l) => l.conceptNatureCode === 'TOTAL_EARNING'),
+    );
+    const deducciones = bloques.find(
+      (b) => b.lines.some((l) => l.conceptNatureCode === 'TOTAL_DEDUCTION') && b !== devengos,
+    );
+    if (!devengos || !deducciones) {
+      return bloques.map((bloque) => ({ tipo: 'bloque', key: bloque.sectionCode, bloque }));
+    }
+
+    const unica: TablaUnica = {
+      label: DEVENGOS_Y_DEDUCCIONES,
+      filas: [
+        ...devengos.lines
+          .filter((l) => l.conceptNatureCode !== 'TOTAL_EARNING')
+          .map((concept) => ({ concept, columna: 'devengo' as const })),
+        ...deducciones.lines
+          .filter((l) => l.conceptNatureCode !== 'TOTAL_DEDUCTION')
+          .map((concept) => ({ concept, columna: 'deduccion' as const })),
+      ],
+      totalDevengos: devengos.lines.find((l) => l.conceptNatureCode === 'TOTAL_EARNING') ?? null,
+      totalDeducciones:
+        deducciones.lines.find((l) => l.conceptNatureCode === 'TOTAL_DEDUCTION') ?? null,
+    };
+
+    const piezas: PiezaDelFolio[] = [];
+    for (const bloque of bloques) {
+      if (bloque === devengos) piezas.push({ tipo: 'unica', key: 'DEVENGOS_Y_DEDUCCIONES', unica });
+      else if (bloque !== deducciones)
+        piezas.push({ tipo: 'bloque', key: bloque.sectionCode, bloque });
+    }
+    return piezas;
   }
 
   /** Si la línea cierra su bloque, para pintarla como tal. Ver {@link esTotalDeBloque}. */
