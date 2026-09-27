@@ -28,6 +28,13 @@ export class OperacionesGateway {
   private readonly payrollApi = inject(PayrollService);
   private readonly calculationRunApi = inject(PayrollCalculationRunService);
 
+  /**
+   * Los dos parametros de la retro van en la **peticion** (`b4rrhh/backend#132`).
+   *
+   * `retroFloorPeriodCode` viaja como `null` y no se omite cuando no hay suelo: el contrato lo
+   * declara anulable, y mandar null dice «sin suelo» donde omitirlo diria «no te he contado nada de
+   * esto». Con un solo campo da igual; con dos que se validan el uno contra el otro, no.
+   */
   launchCalculation(params: {
     ruleSystemCode: string;
     payrollPeriodCode: string;
@@ -35,6 +42,8 @@ export class OperacionesGateway {
     calculationEngineCode: string;
     calculationEngineVersion: string;
     targetSelection: TargetSelectionPayload;
+    retroLimitPeriodCode: string;
+    retroFloorPeriodCode: string | null;
   }): Observable<CalculationRun> {
     const request = {
       ...params,
@@ -122,6 +131,11 @@ export class OperacionesGateway {
     totalCalculated: r.totalCalculated ?? 0,
     totalNotValid: r.totalNotValid ?? 0,
     totalErrors: r.totalErrors ?? 0,
+    retroLimitPeriodCode: r.retroLimitPeriodCode ?? null,
+    retroFloorPeriodCode: r.retroFloorPeriodCode ?? null,
+    totalRetroUnits: r.totalRetroUnits ?? 0,
+    totalRetroRecalculated: r.totalRetroRecalculated ?? 0,
+    totalRetroNotRecalculated: r.totalRetroNotRecalculated ?? 0,
     requestedAt: r.requestedAt,
     startedAt: r.startedAt ?? null,
     finishedAt: r.finishedAt ?? null,

@@ -16,7 +16,10 @@ import {
   isRunFinished,
   isRunQueued,
   runDurationMs,
+  runHasRetro,
   runProcessedUnits,
+  runRetroProcessedUnits,
+  runTotalWorkUnits,
 } from '../models/calculation-run.model';
 import { EjecucionMessageFilter, EjecucionStore } from '../store/ejecucion.store';
 
@@ -158,6 +161,24 @@ export class EjecucionPageComponent {
 
   protected processedUnits(run: CalculationRun): number {
     return runProcessedUnits(run);
+  }
+
+  /**
+   * Si esta corrida recalculó pasado. Sin retro, la terna de la retro no se pinta: son tres ceros y
+   * un título, y es lo que le pasa a la mayoría de las corridas.
+   */
+  protected hasRetro(run: CalculationRun): boolean {
+    return runHasRetro(run);
+  }
+
+  /** Las unidades de retro ya resueltas, escritas o no. */
+  protected retroProcessedUnits(run: CalculationRun): number {
+    return runRetroProcessedUnits(run);
+  }
+
+  /** Recibos **más** meses recalculados, que es el trabajo de verdad de la corrida. */
+  protected totalWork(run: CalculationRun): number {
+    return runTotalWorkUnits(run);
   }
 
   protected durationLabel(run: CalculationRun): string {

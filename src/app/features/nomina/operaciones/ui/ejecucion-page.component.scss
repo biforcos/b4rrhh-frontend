@@ -170,6 +170,18 @@
   line-height: 1.2;
 }
 
+/* La terna de la retro, aparte de los nueve contadores del recibo (frontend#85). */
+.ejecucion-page__retro {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ejecucion-page__retro-total {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
 .ejecucion-page__messages {
   border: 1px solid var(--border-default);
   border-radius: 8px;

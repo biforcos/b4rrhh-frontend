@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { PayrollCalculationRunService } from '../../../../core/api/generated/api/payroll-calculation-run.service';
 import { PayrollService } from '../../../../core/api/generated/api/payroll.service';
+import { CalculationRun } from '../models/calculation-run.model';
 import { OperacionesGateway } from './operaciones.gateway';
 
 /**
@@ -97,5 +98,77 @@ describe('Los contadores de los verbos masivos llegan a la pantalla sin cruzarse
       totalSkippedProtected: 55,
       totalSkippedNotFound: 66,
     });
+  });
+});
+
+/**
+ * Y la terna de la retro, que corre el mismo riesgo y por lo mismo (`b4rrhh/frontend#85`).
+ *
+ * El cliente generado los declara opcionales, el `?? 0` los apaga, y la pantalla pintaria tres ceros
+ * perfectamente creibles: «esta corrida no recalculo nada» es una frase que se lee sin sospechar. Los
+ * cinco valores son distintos entre si a proposito, porque con valores repetidos dos campos cruzados
+ * darian el mismo resultado.
+ */
+describe('Los contadores de la retro llegan a la pantalla sin cruzarse', () => {
+  it('los cinco campos del #132', async () => {
+    const getPayrollCalculationRun = vi.fn().mockReturnValue(
+      of({
+        runId: 9,
+        status: 'COMPLETED',
+        ruleSystemCode: 'ESP',
+        payrollPeriodCode: '202609',
+        requestedAt: '2026-09-27T10:00:00',
+        retroLimitPeriodCode: '202509',
+        retroFloorPeriodCode: '202601',
+        totalRetroUnits: 111,
+        totalRetroRecalculated: 222,
+        totalRetroNotRecalculated: 333,
+      }),
+    );
+    TestBed.configureTestingModule({
+      providers: [
+        OperacionesGateway,
+        { provide: PayrollService, useValue: {} },
+        {
+          provide: PayrollCalculationRunService,
+          useValue: { getPayrollCalculationRun } as unknown as PayrollCalculationRunService,
+        },
+      ],
+    });
+
+    const run = await new Promise<CalculationRun>((resolve) =>
+      TestBed.inject(OperacionesGateway).getCalculationRun(9).subscribe(resolve),
+    );
+
+    expect(run.retroLimitPeriodCode).toBe('202509');
+    expect(run.retroFloorPeriodCode).toBe('202601');
+    expect(run.totalRetroUnits).toBe(111);
+    expect(run.totalRetroRecalculated).toBe(222);
+    expect(run.totalRetroNotRecalculated).toBe(333);
+  });
+
+  /** Una corrida de antes del #132 no trae ninguno de los cinco, y eso no es un cero mentiroso. */
+  it('una corrida vieja no los trae, y entonces son nulos y ceros', async () => {
+    const getPayrollCalculationRun = vi
+      .fn()
+      .mockReturnValue(of({ runId: 1, status: 'COMPLETED', requestedAt: '2026-01-01T00:00:00' }));
+    TestBed.configureTestingModule({
+      providers: [
+        OperacionesGateway,
+        { provide: PayrollService, useValue: {} },
+        {
+          provide: PayrollCalculationRunService,
+          useValue: { getPayrollCalculationRun } as unknown as PayrollCalculationRunService,
+        },
+      ],
+    });
+
+    const run = await new Promise<CalculationRun>((resolve) =>
+      TestBed.inject(OperacionesGateway).getCalculationRun(1).subscribe(resolve),
+    );
+
+    expect(run.retroLimitPeriodCode).toBeNull();
+    expect(run.retroFloorPeriodCode).toBeNull();
+    expect(run.totalRetroUnits).toBe(0);
   });
 });

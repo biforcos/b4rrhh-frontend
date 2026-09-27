@@ -38,6 +38,43 @@ function movePeriod(period: number, delta: 1 | -1): number {
   return month === 12 ? (year + 1) * 100 + 1 : period + 1;
 }
 
+/** Corre un periodo `yyyyMM` los meses que se le digan, hacia atras con negativo. */
+function shiftPeriod(period: number, months: number): number {
+  const month = period % 100;
+  const year = Math.floor(period / 100);
+  const absolute = year * 12 + (month - 1) + months;
+  return Math.floor(absolute / 12) * 100 + (absolute % 12) + 1;
+}
+
+/** Cuantos meses atras del periodo que se lanza se propone el limite de la retro. */
+const RETRO_LIMIT_MONTHS_BACK = 12;
+
+/**
+ * Por que doce, escrito. **No es un 12 magico** y eso lo pide el issue con esas palabras.
+ *
+ * Va a la pantalla al lado del campo y no a un `title`: un motivo que hay que descubrir pasando el
+ * raton no esta escrito para quien lanza, esta escrito para quien escribio el formulario.
+ */
+export const RETRO_LIMIT_PROPOSAL_REASON =
+  'Doce meses atrás: dentro de ese año la corrección se arregla con una liquidación complementaria' +
+  ' a la Seguridad Social y con la retención del mes en que se paga. Más atrás entra el ejercicio' +
+  ' fiscal ya declarado, y eso no lo resuelve una nómina. Cámbialo si este lanzamiento tiene otra' +
+  ' razón: es una propuesta, no un tope del sistema.';
+
+/** Un periodo `yyyyMM` como el texto que quiere un `<input type="month">`, y de vuelta. */
+export function periodToMonthInput(period: number | null): string {
+  if (period === null) return '';
+  return `${Math.floor(period / 100)}-${String(period % 100).padStart(2, '0')}`;
+}
+
+export function monthInputToPeriod(value: string): number | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(value.trim());
+  if (match === null) return null;
+  const month = Number(match[2]);
+  if (month < 1 || month > 12) return null;
+  return Number(match[1]) * 100 + month;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OperacionesStore {
   private readonly gateway = inject(OperacionesGateway);
@@ -74,6 +111,27 @@ export class OperacionesStore {
   private readonly launchingState = signal<boolean>(false);
   private readonly launchErrorState = signal<string | null>(null);
 
+  /**
+   * El limite de la retro, en `yyyyMM`. Null es el campo vacio, y entonces no se puede lanzar: el
+   * formulario lo hace **obligatorio** aunque el contrato lo acepte nulo. Una corrida sin limite no
+   * hace retro y lo dice en sus mensajes; desde una pantalla, callarse hasta donde se recalcula
+   * seria dejar la decision al azar de un campo en blanco.
+   */
+  private readonly retroLimitPeriodState = signal<number | null>(
+    shiftPeriod(currentPeriod(), -RETRO_LIMIT_MONTHS_BACK),
+  );
+  /**
+   * Si alguien ha tocado el limite.
+   *
+   * Mientras nadie lo toque, el limite **sigue al periodo**: mover el mes que se lanza mueve el
+   * propuesto con el, que es lo que hace que el valor de la pantalla sea siempre doce meses antes del
+   * mes que se va a calcular. En cuanto se escribe uno a mano manda el de la persona: mover el
+   * periodo debajo de un valor puesto a proposito seria pisarselo sin decirlo.
+   */
+  private readonly retroLimitTouchedState = signal<boolean>(false);
+  /** El suelo para todos. Null es lo normal: la mayoria de los lanzamientos no lo llevan. */
+  private readonly retroFloorPeriodState = signal<number | null>(null);
+
   readonly payrollTypeOptions = [
     { value: 'NORMAL' as const, label: 'Normal' },
     { value: 'EXTRA' as const, label: 'Extra' },
@@ -98,8 +156,37 @@ export class OperacionesStore {
   readonly engineVersion = this.engineVersionState.asReadonly();
   readonly launching = this.launchingState.asReadonly();
   readonly launchError = this.launchErrorState.asReadonly();
+  readonly retroLimitPeriod = this.retroLimitPeriodState.asReadonly();
+  readonly retroFloorPeriod = this.retroFloorPeriodState.asReadonly();
+  readonly retroLimitProposalReason = computed(() => RETRO_LIMIT_PROPOSAL_REASON);
 
   readonly periodLabel = computed(() => formatPeriod(this.periodState()));
+  readonly retroLimitProposal = computed(() =>
+    shiftPeriod(this.periodState(), -RETRO_LIMIT_MONTHS_BACK),
+  );
+  readonly retroLimitLabel = computed(() => {
+    const limit = this.retroLimitPeriodState();
+    return limit === null ? '' : formatPeriod(limit);
+  });
+  readonly retroFloorLabel = computed(() => {
+    const floor = this.retroFloorPeriodState();
+    return floor === null ? '' : formatPeriod(floor);
+  });
+  /**
+   * Los dos campos se contradicen: el suelo manda recalcular desde antes de donde el limite deja
+   * llegar. Se dice **antes que el servidor**, que tambien lo rechaza con un 400
+   * (`b4rrhh/backend#132`): los dos valores estan a la vista en la misma pantalla, y quien lanza
+   * tiene derecho a verlo sin esperar una respuesta.
+   *
+   * Un suelo justo EN el limite no es contradiccion: el limite es un «hasta donde», no un «antes
+   * de», asi que se cumple.
+   */
+  readonly retroFloorOlderThanLimit = computed(() => {
+    const floor = this.retroFloorPeriodState();
+    const limit = this.retroLimitPeriodState();
+    if (floor === null || limit === null) return false;
+    return floor < limit;
+  });
   readonly canInvalidate = computed(
     () =>
       !this.invalidatingState() &&
@@ -116,6 +203,10 @@ export class OperacionesStore {
       this.ruleSystemCodeState().trim().length > 0 &&
       this.payrollTypeCodeState().trim().length > 0,
   );
+  /**
+   * Y la retro condiciona solo a **lanzar**. Invalidar y cerrar no calculan nada, asi que un limite
+   * en blanco no puede dejarlos parados: seria el campo de un panel bloqueando los otros dos.
+   */
   readonly canLaunch = computed(
     () =>
       !this.invalidatingState() &&
@@ -124,7 +215,9 @@ export class OperacionesStore {
       this.ruleSystemCodeState().trim().length > 0 &&
       this.payrollTypeCodeState().trim().length > 0 &&
       this.engineCodeState().trim().length > 0 &&
-      this.engineVersionState().trim().length > 0,
+      this.engineVersionState().trim().length > 0 &&
+      this.retroLimitPeriodState() !== null &&
+      !this.retroFloorOlderThanLimit(),
   );
 
   setRuleSystemCode(v: string): void {
@@ -160,13 +253,37 @@ export class OperacionesStore {
   setEngineVersion(v: string): void {
     this.engineVersionState.set(v);
   }
+  setRetroLimitPeriod(v: number | null): void {
+    this.retroLimitPeriodState.set(v);
+    this.retroLimitTouchedState.set(true);
+  }
+  setRetroFloorPeriod(v: number | null): void {
+    this.retroFloorPeriodState.set(v);
+  }
+  /** Vuelve el limite al propuesto del periodo de hoy, y que vuelva a seguirlo. */
+  useProposedRetroLimit(): void {
+    this.retroLimitTouchedState.set(false);
+    this.retroLimitPeriodState.set(this.retroLimitProposal());
+  }
+  setPeriod(v: number): void {
+    this.periodState.set(v);
+    this.followPeriodWithProposedLimit();
+    this.disarmFinalize();
+  }
   prevPeriod(): void {
     this.periodState.update((p) => movePeriod(p, -1));
+    this.followPeriodWithProposedLimit();
     this.disarmFinalize();
   }
   nextPeriod(): void {
     this.periodState.update((p) => movePeriod(p, 1));
+    this.followPeriodWithProposedLimit();
     this.disarmFinalize();
+  }
+
+  private followPeriodWithProposedLimit(): void {
+    if (this.retroLimitTouchedState()) return;
+    this.retroLimitPeriodState.set(this.retroLimitProposal());
   }
 
   invalidate(): void {
@@ -259,6 +376,7 @@ export class OperacionesStore {
    */
   launch(): void {
     if (!this.canLaunch()) return;
+    const floor = this.retroFloorPeriodState();
     this.launchingState.set(true);
     this.launchErrorState.set(null);
     this.gateway
@@ -274,6 +392,10 @@ export class OperacionesStore {
           this.singleEmployeeTypeState(),
           this.singleEmployeeNumberState(),
         ),
+        // `canLaunch()` ya ha comprobado que el limite esta puesto, asi que el `!` no tapa un caso
+        // que pudiera pasar: sin limite no se llega hasta aqui.
+        retroLimitPeriodCode: String(this.retroLimitPeriodState()!),
+        retroFloorPeriodCode: floor === null ? null : String(floor),
       })
       .subscribe({
         next: (run) => {

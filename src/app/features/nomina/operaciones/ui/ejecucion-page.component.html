@@ -39,6 +39,21 @@
           <dt>Duración</dt>
           <dd>{{ durationLabel(run) }}</dd>
         </div>
+        <!--
+          Con qué se calculó la retro (`b4rrhh/backend#132`). Los dos salen siempre, tambien cuando no
+          hubo: «sin límite» es una respuesta y un hueco no lo es. El recibo y la checklist leen estos
+          dos de la corrida, así que la pantalla de la corrida tiene que decirlos.
+        -->
+        <div class="ejecucion-page__fact">
+          <dt>Recalculó hasta</dt>
+          <dd data-testid="run-retro-limit">
+            {{ run.retroLimitPeriodCode ?? 'sin límite: no tocó ningún mes cerrado' }}
+          </dd>
+        </div>
+        <div class="ejecucion-page__fact">
+          <dt>Suelo para todos</dt>
+          <dd data-testid="run-retro-floor">{{ run.retroFloorPeriodCode ?? 'sin suelo' }}</dd>
+        </div>
       </dl>
     </header>
 
@@ -50,6 +65,16 @@
           <p class="ejecucion-page__verdict">
             Aceptada y esperando su turno. Las ejecuciones se sirven de una en una: esta empieza
             cuando termine la que tenga delante.
+          </p>
+        } @else if (hasRetro(run)) {
+          <!--
+            Con retro el avance NO se cuenta en recibos, y decirlo así es la mitad del issue: los
+            siete mil meses son el trabajo que cuesta el tiempo, y una línea que sólo contara los
+            873 recibos diría que la corrida va por el 1 % cuando lleva media hora.
+          -->
+          <p class="ejecucion-page__verdict">
+            {{ processedUnits(run) + retroProcessedUnits(run) }} de {{ totalWork(run) }} unidades
+            resueltas, contando recibos y meses recalculados. La pantalla se actualiza sola.
           </p>
         } @else {
           <p class="ejecucion-page__verdict">
@@ -111,6 +136,41 @@
         </div>
       }
     </div>
+
+    <!--
+      La terna de la retro, aparte de los nueve (`b4rrhh/frontend#85`). Una unidad de retro no acaba
+      en ninguno de los nueve cajones del recibo —no escribe recibo, escribe cálculo vigente—, así que
+      meterla ahí habría roto su partición sin que nada avisara.
+
+      Y no sale cuando no hubo retro: tres ceros y un título no cuentan nada, y la mayoría de las
+      corridas no recalculan nada.
+    -->
+    @if (hasRetro(run)) {
+      <div class="ejecucion-page__retro">
+        <h3 class="ejecucion-page__subtitle">Meses cerrados recalculados</h3>
+        <p class="ejecucion-page__retro-total" data-testid="run-total-work">
+          El trabajo de esta corrida son {{ run.totalCandidates }} recibos y
+          {{ run.totalRetroUnits }} meses recalculados: {{ totalWork(run) }} unidades en total.
+        </p>
+        <div class="ejecucion-page__counters">
+          <div class="ejecucion-page__counter" data-testid="run-retro-units">
+            <span class="ejecucion-page__counter-value">{{ run.totalRetroUnits }}</span>
+            <span class="ejecucion-page__counter-label">A recalcular (empleado × mes)</span>
+          </div>
+          <div class="ejecucion-page__counter">
+            <span class="ejecucion-page__counter-value">{{ run.totalRetroRecalculated }}</span>
+            <span class="ejecucion-page__counter-label">Vigentes escritos</span>
+          </div>
+          <div
+            class="ejecucion-page__counter"
+            [class.ejecucion-page__counter--asks]="run.totalRetroNotRecalculated > 0"
+          >
+            <span class="ejecucion-page__counter-value">{{ run.totalRetroNotRecalculated }}</span>
+            <span class="ejecucion-page__counter-label">Meses que no se pudieron recalcular</span>
+          </div>
+        </div>
+      </div>
+    }
 
     <div class="ejecucion-page__messages">
       <div class="ejecucion-page__messages-header">

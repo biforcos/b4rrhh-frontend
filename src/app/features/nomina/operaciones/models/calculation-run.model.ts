@@ -30,6 +30,31 @@ export interface CalculationRun {
   totalCalculated: number;
   totalNotValid: number;
   totalErrors: number;
+  /**
+   * Hasta qué mes atrás se le permitió recalcular (`b4rrhh/backend#132`).
+   *
+   * Null en las corridas de antes del #132 y en las que no hacen retro. No es un detalle de la
+   * petición que ya pasó: es con qué se calculó, y el recibo y la checklist lo leen de aquí.
+   */
+  retroLimitPeriodCode: string | null;
+  /** El suelo para todos con el que corrió, si lo hubo. Null es lo normal. */
+  retroFloorPeriodCode: string | null;
+  /**
+   * El universo de la retro: unidades **empleado × mes** que había que recalcular.
+   *
+   * Contadas una vez y al principio, igual que `totalCandidates`, así que sirve de denominador. Es
+   * una terna aparte y **no se suma a los nueve contadores del recibo**: una unidad de retro no
+   * acaba en ninguno de esos cajones porque no escribe recibo, escribe cálculo vigente.
+   */
+  totalRetroUnits: number;
+  /** Vigentes escritos. Su partición es `totalRetroUnits = recalculated + notRecalculated`. */
+  totalRetroRecalculated: number;
+  /**
+   * Meses del tramo que no se pudieron recalcular, cada uno con su mensaje en la corrida.
+   *
+   * No es un error: el recibo de aquel mes no se ha tocado y el resto del tramo ha seguido.
+   */
+  totalRetroNotRecalculated: number;
   requestedAt: string;
   startedAt: string | null;
   finishedAt: string | null;
@@ -81,20 +106,48 @@ export function runProcessedUnits(run: CalculationRun): number {
   return run.totalCalculated + unitsWithoutPayslip(run);
 }
 
+/** Si esta corrida recalculó pasado, y por tanto hay una terna de retro que contar. */
+export function runHasRetro(run: CalculationRun): boolean {
+  return run.totalRetroUnits > 0;
+}
+
+/** Las unidades de retro ya resueltas, escritas o no. Su partición es el total de la retro. */
+export function runRetroProcessedUnits(run: CalculationRun): number {
+  return run.totalRetroRecalculated + run.totalRetroNotRecalculated;
+}
+
+/**
+ * El trabajo de verdad de la corrida: recibos **más** vigentes.
+ *
+ * Los dos universos se suman aqui y en ningun otro sitio. Un lanzamiento con suelo para todos son
+ * 873 recibos y siete mil vigentes, y los siete mil son los que cuestan el tiempo: una pantalla que
+ * ensenara solo los 873 diria que la corrida va por el uno por ciento cuando lleva media hora.
+ */
+export function runTotalWorkUnits(run: CalculationRun): number {
+  return run.totalCandidates + run.totalRetroUnits;
+}
+
 /**
  * Por donde va la ejecucion, en tanto por ciento; null mientras no se sepa cuantas unidades son.
  *
- * El denominador es `totalCandidates` **porque es el unico que no se mueve**: se fija cuando la
- * ejecucion expande las unidades y no cambia ya. `totalEligible` no sirve —sube unidad por unidad
- * igual que `totalCalculated`, asi que el cociente entre los dos vale casi 1 desde el primer
- * segundo y la barra aparece llena con el trabajo sin empezar (frontend#62).
+ * El denominador es el trabajo de la corrida —candidatas **mas** unidades de retro—, y son esos dos
+ * **porque son los unicos que no se mueven**: los dos se fijan cuando la ejecucion expande sus
+ * unidades y no cambian ya. `totalEligible` no sirve —sube unidad por unidad igual que
+ * `totalCalculated`, asi que el cociente entre los dos vale casi 1 desde el primer segundo y la barra
+ * aparece llena con el trabajo sin empezar (frontend#62).
  *
- * Mientras la ejecucion esta en cola, `totalCandidates` es cero: todavia no ha mirado a nadie, y
+ * La retro entra en el denominador desde el `b4rrhh/frontend#85`, y en el numerador con ella. Con la
+ * barra contando solo los recibos, un lanzamiento con suelo para todos se quedaba en el mismo numero
+ * mientras recalculaba siete mil meses, que es exactamente cuando hace falta saber que avanza.
+ *
+ * Mientras la ejecucion esta en cola los dos totales son cero: todavia no ha mirado a nadie, y
  * entonces no hay porcentaje que dar.
  */
 export function runProgressPercent(run: CalculationRun): number | null {
-  if (run.totalCandidates === 0) return null;
-  return Math.min(100, Math.round((runProcessedUnits(run) / run.totalCandidates) * 100));
+  const total = runTotalWorkUnits(run);
+  if (total === 0) return null;
+  const done = runProcessedUnits(run) + runRetroProcessedUnits(run);
+  return Math.min(100, Math.round((done / total) * 100));
 }
 
 /** Cuanto duro la ejecucion, en milisegundos; null mientras no haya terminado. */

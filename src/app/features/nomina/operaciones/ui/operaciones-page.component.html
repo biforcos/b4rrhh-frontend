@@ -186,6 +186,74 @@
         </label>
       </div>
 
+      <!--
+        Hasta donde atras recalcula este lanzamiento (`b4rrhh/backend#132`). Los dos van en la
+        peticion y no en la empresa: una revision de convenio es una cosa que pasa una vez.
+
+        El motivo del valor propuesto esta AQUI y no en un `title`, y eso lo pide el issue con esas
+        palabras: un motivo que hay que descubrir pasando el raton no esta escrito para quien lanza.
+      -->
+      <div class="ops-page__retro">
+        <div class="ops-page__retro-fields">
+          <label class="ops-page__field">
+            <span class="ops-page__field-label">Recalcular como mucho hasta</span>
+            <input
+              type="month"
+              class="ops-page__input"
+              data-testid="retro-limit"
+              [value]="retroLimitValue()"
+              [disabled]="store.launching()"
+              (input)="setRetroLimit($any($event.target).value)"
+            />
+          </label>
+          <label class="ops-page__field">
+            <span class="ops-page__field-label">Suelo para todos (opcional)</span>
+            <input
+              type="month"
+              class="ops-page__input"
+              data-testid="retro-floor"
+              [value]="retroFloorValue()"
+              [disabled]="store.launching()"
+              (input)="setRetroFloor($any($event.target).value)"
+            />
+          </label>
+        </div>
+
+        <p class="ops-page__retro-reason" data-testid="retro-limit-reason">
+          {{ store.retroLimitProposalReason() }}
+          @if (store.retroLimitPeriod() !== store.retroLimitProposal()) {
+            <button
+              type="button"
+              class="ops-page__retro-restore"
+              (click)="store.useProposedRetroLimit()"
+            >
+              Volver al propuesto
+            </button>
+          }
+        </p>
+
+        <p class="ops-page__retro-note">
+          El suelo recalcula desde ese mes a <strong>todos</strong> los empleados del lanzamiento,
+          tengan corrección o no. Vacío es lo normal: entonces sólo recalcula quien tiene alguna.
+        </p>
+
+        @if (store.retroLimitPeriod() === null) {
+          <p class="ops-page__error" data-testid="retro-limit-error">
+            Falta el límite. Una corrida sin límite no recalcula ningún mes cerrado, y desde aquí
+            eso no se decide con un campo en blanco: pon hasta dónde atrás puede llegar.
+          </p>
+        }
+
+        @if (store.retroFloorOlderThanLimit()) {
+          <p class="ops-page__error" data-testid="retro-floor-error">
+            El suelo ({{ store.retroFloorLabel() }}) es más antiguo que el límite ({{
+              store.retroLimitLabel()
+            }}): son dos cosas contrarias y no hay forma de cumplir las dos. Sube el suelo o baja el
+            límite.
+          </p>
+        }
+      </div>
+
       <app-ui-button label="Lanzar" [disabled]="!store.canLaunch()" (pressed)="store.launch()" />
 
       <p class="ops-page__status-text">

@@ -217,6 +217,49 @@
   gap: 0.4rem;
 }
 
+/* Hasta donde atras recalcula el lanzamiento (frontend#85). */
+.ops-page__retro {
+  display: grid;
+  gap: 0.3rem;
+  border-top: 1px solid var(--success-border);
+  padding-top: 0.5rem;
+}
+
+.ops-page__retro-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+/*
+  El motivo del valor propuesto, a la vista y no en un tooltip: es lo que convierte un 12 en una
+  decision que alguien puede discutir.
+*/
+.ops-page__retro-reason {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.ops-page__retro-note {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--text-tertiary);
+}
+
+.ops-page__retro-restore {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--accent-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .ops-page__status-text {
   margin: 0;
   font-size: 0.72rem;

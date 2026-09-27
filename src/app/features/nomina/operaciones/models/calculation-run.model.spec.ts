@@ -4,8 +4,11 @@ import {
   isRunFinished,
   isRunQueued,
   runDurationMs,
+  runHasRetro,
   runProcessedUnits,
   runProgressPercent,
+  runRetroProcessedUnits,
+  runTotalWorkUnits,
   unitsWithoutPayslip,
 } from './calculation-run.model';
 import type { CalculationRun } from './calculation-run.model';
@@ -27,6 +30,11 @@ const base: CalculationRun = {
   totalCalculated: 0,
   totalNotValid: 0,
   totalErrors: 0,
+  retroLimitPeriodCode: null,
+  retroFloorPeriodCode: null,
+  totalRetroUnits: 0,
+  totalRetroRecalculated: 0,
+  totalRetroNotRecalculated: 0,
   requestedAt: '2026-04-29T08:00:00',
   startedAt: null,
   finishedAt: null,
@@ -69,7 +77,8 @@ describe('runProcessedUnits y runProgressPercent', () => {
   it('cuenta todo lo resuelto, calculado o no', () => expect(runProcessedUnits(midway)).toBe(176));
 
   it('el avance se mide sobre las candidatas, que son las que no se mueven', () => {
-    // Sobre totalEligible saldria 11/12, o sea 92% con el trabajo casi sin empezar.
+    // Sobre totalEligible saldria 11/12, o sea 92% con el trabajo casi sin empezar. Y sin retro,
+    // candidatas ES el trabajo de la corrida.
     expect(runProgressPercent(midway)).toBe(20);
   });
 
@@ -108,6 +117,72 @@ describe('runProcessedUnits y runProgressPercent', () => {
     // Y sus unidades sin recibo son cero, que es justo por lo que la pantalla no puede leer el
     // final de una ejecucion fallida con ese contador (frontend#62).
     expect(unitsWithoutPayslip(failed)).toBe(0);
+  });
+});
+
+/**
+ * La terna de la retro (`b4rrhh/frontend#85`, contrato del `b4rrhh/backend#132`).
+ *
+ * Es **aparte** de los nueve contadores del recibo: una unidad de retro no acaba en ninguno de esos
+ * cajones porque no escribe recibo, escribe calculo vigente. Lo que se suma es el trabajo de la
+ * corrida, y eso se suma en un solo sitio.
+ */
+describe('el trabajo de la corrida cuenta empleado x mes', () => {
+  // Un lanzamiento con suelo para todos desde enero: 873 recibos y ocho meses cerrados por
+  // empleado. Los 6.984 son los que cuestan el tiempo.
+  const conSuelo = {
+    ...base,
+    status: 'RUNNING' as const,
+    retroLimitPeriodCode: '202509',
+    retroFloorPeriodCode: '202601',
+    totalCandidates: 873,
+    totalCalculated: 400,
+    totalRetroUnits: 6984,
+    totalRetroRecalculated: 3200,
+    totalRetroNotRecalculated: 0,
+  };
+
+  it('suma los dos universos, y solo aqui', () => {
+    expect(runTotalWorkUnits(conSuelo)).toBe(7857);
+    // Los nueve del recibo no se enteran de la retro: su particion sigue siendo la suya.
+    expect(runProcessedUnits(conSuelo)).toBe(400);
+  });
+
+  it('la retro tiene su propia particion', () => {
+    expect(runRetroProcessedUnits(conSuelo)).toBe(3200);
+    expect(runRetroProcessedUnits({ ...conSuelo, totalRetroNotRecalculated: 12 })).toBe(3212);
+  });
+
+  it('el avance cuenta los dos, que es lo que hace que la barra se mueva', () => {
+    // Sobre los recibos solos serian 400/873; con los dos universos, 3.600 de 7.857.
+    expect(runProgressPercent(conSuelo)).toBe(46);
+  });
+
+  /**
+   * Y una corrida **sin** retro no cambia de cuenta. Es el caso normal, y si el denominador se
+   * hubiera movido para ella, las nueve corridas de cada resiembra habrian empezado a mentir.
+   */
+  it('sin retro el avance es el de siempre', () => {
+    const sinRetro = { ...conSuelo, totalRetroUnits: 0, totalRetroRecalculated: 0 };
+
+    expect(runHasRetro(sinRetro)).toBe(false);
+    expect(runTotalWorkUnits(sinRetro)).toBe(873);
+    expect(runProgressPercent(sinRetro)).toBe(46);
+  });
+
+  it('un mes que no se pudo recalcular no es un error, pero cuenta como resuelto', () => {
+    const conFallo = {
+      ...conSuelo,
+      totalRetroRecalculated: 6900,
+      totalRetroNotRecalculated: 84,
+      totalCalculated: 873,
+    };
+
+    // 873 + 6.984 = 7.857 de 7.857: la corrida acabo, con 84 meses sin recalcular y contados.
+    expect(runProgressPercent(conFallo)).toBe(100);
+    expect(conFallo.totalRetroRecalculated + conFallo.totalRetroNotRecalculated).toBe(
+      conFallo.totalRetroUnits,
+    );
   });
 });
 

@@ -1,8 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { TargetSelectionMode } from '../models/target-selection.model';
-import { OperacionesStore } from '../store/operaciones.store';
+import {
+  OperacionesStore,
+  monthInputToPeriod,
+  periodToMonthInput,
+} from '../store/operaciones.store';
 
 /**
  * Lo que se pide: el contexto, los empleados objetivo y los dos actos —invalidar y lanzar.
@@ -27,4 +31,26 @@ export class OperacionesPageComponent {
     { value: 'LIST', label: 'Lista' },
     { value: 'SINGLE', label: 'Empleado único' },
   ];
+
+  /**
+   * Los dos periodos de la retro se editan con un `<input type="month">`, que habla `yyyy-MM`, y el
+   * store los guarda en `yyyyMM`, que es lo que entiende el contrato. La traduccion vive en el store
+   * y no aqui para que un spec la pueda probar sin montar la pantalla.
+   */
+  protected readonly retroLimitValue = computed(() =>
+    periodToMonthInput(this.store.retroLimitPeriod()),
+  );
+
+  protected readonly retroFloorValue = computed(() =>
+    periodToMonthInput(this.store.retroFloorPeriod()),
+  );
+
+  /** Un mes a medio escribir —o borrado— es null, y null en el limite deja el lanzamiento parado. */
+  protected setRetroLimit(value: string): void {
+    this.store.setRetroLimitPeriod(monthInputToPeriod(value));
+  }
+
+  protected setRetroFloor(value: string): void {
+    this.store.setRetroFloorPeriod(monthInputToPeriod(value));
+  }
 }
