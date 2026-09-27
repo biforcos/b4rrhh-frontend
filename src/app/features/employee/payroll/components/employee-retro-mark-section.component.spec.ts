@@ -37,6 +37,7 @@ const mark = (overrides: Partial<EmployeeRetroMarkModel> = {}): EmployeeRetroMar
   consumedAt: null,
   consumedPeriodCode: null,
   consumedRunId: null,
+  withoutAReceiptToPayIt: false,
   ...overrides,
 });
 
@@ -195,6 +196,18 @@ describe('EmployeeRetroMarkSectionComponent', () => {
   });
 
   /** Una consumida dice qué recibo la pagó: es lo que cierra su historia. */
+  /**
+   * Una marca activa de una presencia cesada, con su último recibo ya cerrado, no la paga nadie
+   * (`b4rrhh/backend#139`): no se paga en la presencia nueva —sería un finiquito complementario—, y
+   * «pendiente de pagar» diría algo que no va a pasar. Se dice por qué lleva meses ahí.
+   */
+  it('una marca sin recibo que la pague lo dice, y no «pendiente»', () => {
+    expect(c.describeStatus(mark({ withoutAReceiptToPayIt: true }))).toBe(
+      'Sin recibo que la pague: su presencia cesó y su último mes está cerrado',
+    );
+    expect(c.describeStatus(mark())).toBe('Pendiente de pagar');
+  });
+
   it('una marca consumida dice el recibo que la pagó', () => {
     store.marksState.set([
       mark({

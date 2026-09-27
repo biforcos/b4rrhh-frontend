@@ -139,6 +139,7 @@ export class EmployeeRetroMarkStore {
                 consumedAt: item.consumedAt ?? null,
                 consumedPeriodCode: item.consumedPeriodCode ?? null,
                 consumedRunId: item.consumedRunId ?? null,
+                withoutAReceiptToPayIt: item.withoutAReceiptToPayIt ?? false,
               }))
               // La más reciente arriba. El backend ya las sirve así y ordenar aquí es lo que hace
               // que la pantalla no dependa de que siga haciéndolo.

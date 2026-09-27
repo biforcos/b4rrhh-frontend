@@ -134,6 +134,10 @@ export class EmployeeRetroMarkSectionComponent {
       const corrida = row.consumedRunId === null ? '' : ` (ejecución #${row.consumedRunId})`;
       return `${t.retroMarksConsumedLabel}${donde}${corrida}`;
     }
+    // Activa y sin nadie que la pague (b4rrhh/backend#139): «pendiente» diría algo que no va a pasar.
+    if (row.withoutAReceiptToPayIt) {
+      return t.retroMarksWithoutAReceiptLabel;
+    }
     return t.retroMarksActiveLabel;
   }
 

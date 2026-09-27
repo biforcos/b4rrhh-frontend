@@ -26,6 +26,11 @@ export interface EmployeeRetroMarkModel {
   /** El período del recibo que la pagó. */
   consumedPeriodCode: string | null;
   consumedRunId: number | null;
+  /**
+   * Activa y sin ningún recibo que la pueda pagar (`b4rrhh/backend#139`): su presencia cesó y su
+   * último mes está cerrado. Lo decide el backend, que es quien sabe qué recibos quedan.
+   */
+  withoutAReceiptToPayIt: boolean;
 }
 
 export type RetroMarkStatus = 'ACTIVE' | 'DISCARDED' | 'CONSUMED';

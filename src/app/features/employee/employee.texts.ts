@@ -236,6 +236,8 @@ export const employeeTexts = {
   retroMarksSourceLabel: 'De dónde salió',
   retroMarksCreatedLabel: 'Cuándo',
   retroMarksActiveLabel: 'Pendiente de pagar',
+  retroMarksWithoutAReceiptLabel:
+    'Sin recibo que la pague: su presencia cesó y su último mes está cerrado',
   retroMarksDiscardedLabel: 'Descartada',
   retroMarksConsumedLabel: 'Pagada',
   retroMarksDiscardAction: 'Descartar',
