@@ -9,6 +9,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { EmployeeRetroMarkGateway } from './employee-retro-mark.gateway';
+import { EmployeeWritesNotifier } from './employee-writes.interceptor';
 
 /**
  * Lo que esta sección sabe contar con palabras.
@@ -39,6 +40,16 @@ export class EmployeeRetroMarkStore {
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly success = this.successState.asReadonly();
+
+  constructor() {
+    // Un guardado del empleado que se está mirando puede haber dejado una marca: se releen al terminar
+    // el guardado, sin sondeo (b4rrhh/frontend#87). Los de otro empleado no tocan esta lista.
+    inject(EmployeeWritesNotifier).writes$.subscribe((key) => {
+      if (areEmployeeBusinessKeysEqual(this.selectedKeyState(), toEmployeeBusinessKey(key))) {
+        this.loadMarksInternal(key, true);
+      }
+    });
+  }
 
   clearFeedback(): void {
     this.errorState.set(null);

@@ -8,9 +8,18 @@ import { b4rrhhPrimeNgThemePreset } from './core/theme/b4rrhh-primeng-theme.pres
 import { BASE_PATH } from './core/api/generated/variables';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { employeeWritesInterceptor } from './features/employee/data-access/employee-writes.interceptor';
 import { acceptLanguageInterceptor } from './core/i18n/accept-language.interceptor';
 import { provideSpanishLocale } from './core/i18n/spanish-locale';
 import { provideIconSprite } from './core/icons/icon-sprite';
+
+/** Los interceptores de la aplicación, con nombre para que un spec monte los mismos. */
+export const appHttpInterceptors = [
+  authInterceptor,
+  acceptLanguageInterceptor,
+  // Un guardado del empleado avisa, y las marcas de retro se releen (b4rrhh/frontend#87).
+  employeeWritesInterceptor,
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideSpanishLocale(),
     provideIconSprite(),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor, acceptLanguageInterceptor])),
+    provideHttpClient(withInterceptors(appHttpInterceptors)),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),
     providePrimeNG({
       theme: {
