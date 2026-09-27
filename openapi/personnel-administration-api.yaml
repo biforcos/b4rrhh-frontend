@@ -5412,6 +5412,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PayrollCalculationRunResponse"
+        "400":
+          description: >-
+            El encargo no se puede lanzar, y no deja ejecucion. Entre otras cosas, un empleado nombrado
+            que no existe se nombra en el mensaje (frontend#88): si es el tipo, con los tipos que tiene el
+            sistema de reglas; si es el numero, con el numero.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollErrorResponse"
 
   /payroll/calculation-runs/{runId}:
     get:
@@ -7254,10 +7263,11 @@ components:
         conceptLabel:
           type: string
           description: >-
-            El literal congelado en la linea, con su origen a la vista. Un sufijo sobre el nombre del
-            concepto y no un concepto nuevo por mes: un catalogo con "Salario base de agosto" y "Salario
+            El literal congelado en la linea: el del concepto, tal cual (backend#138). El mes de origen
+            va en originPeriodCode y no en el nombre; decirlo en los dos sitios era decirlo dos veces.
+            Tampoco es un concepto nuevo por mes: un catalogo con "Salario base de agosto" y "Salario
             base de septiembre" como conceptos distintos se llenaria de conceptos que no son conceptos.
-          example: "Importe horas extra (atraso 08/2025)"
+          example: "Horas extraordinarias"
         lineAmount:
           type: number
           description: Lo que la linea dice. Es el documento, y es lo que manda.
