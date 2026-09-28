@@ -31,6 +31,7 @@ import {
   describeCorrectionSwitchAction,
   describeTimelinePlan,
 } from '../../shared/utils/timeline-plan-message.util';
+import { sameAsInForceNotice, withSameAsInForce } from '../../shared/utils/same-as-in-force.util';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 /**
@@ -127,14 +128,31 @@ export class EmployeeWorkCenterSectionComponent {
     return plan ? describeTimelinePlan(plan, WORK_CENTER_PLAN_VOCABULARY) : null;
   });
 
+  /**
+   * Una vigencia nueva igual a la que está en vigor ese día (`b4rrhh/frontend#94`): se avisa antes
+   * de guardar y se deja guardar.
+   */
+  protected readonly sameAsInForce = computed<string | null>(() =>
+    this.modalVisible() && this.modalMode() === 'add'
+      ? sameAsInForceNotice(
+          this.rows(),
+          this.startDateDraft(),
+          (row) => row.workCenterCode === this.workCenterCodeDraft(),
+          this.texts.workCenterSectionSameAsInForceMessage,
+        )
+      : null,
+  );
+
+  private readonly modalNote = computed(() =>
+    withSameAsInForce(this.planNotice(), this.sameAsInForce()),
+  );
+
   protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
     if (this.workCenterStore.planning()) return [this.texts.workCenterSectionPlanningMessage];
-    return this.planNotice()?.lines ?? [];
+    return this.modalNote().lines;
   });
 
-  protected readonly noteTone = computed<PeriodModalNoteTone>(
-    () => this.planNotice()?.tone ?? 'info',
-  );
+  protected readonly noteTone = computed<PeriodModalNoteTone>(() => this.modalNote().tone);
 
   protected readonly correctionOffer = computed<string | null>(() => {
     const plan = this.plan();

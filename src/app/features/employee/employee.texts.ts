@@ -115,6 +115,19 @@ export const employeeTexts = {
   monthNavigatorLabel: 'Mes',
   monthNavigatorAriaLabel: 'Mes del que habla la página',
   otherMonthsLabel: 'También en:',
+  // Una vigencia nueva igual a la que está en vigor (frontend#94). `{desde}` es su fecha.
+  workingTimeSectionSameAsInForceMessage:
+    'Esta jornada es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+  contractSectionSameAsInForceMessage:
+    'Este contrato es igual al que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+  laborClassificationSectionSameAsInForceMessage:
+    'Esta clasificación es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+  workCenterSectionSameAsInForceMessage:
+    'Este centro es el mismo que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+  extraPaymentRegimeSectionSameAsInForceMessage:
+    'Este régimen de pagas es igual al que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+  costCenterSectionSameAsInForceMessage:
+    'Esta distribución es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
   absencesEmptyInMonthMessage: 'Ninguna ausencia toca este mes.',
   retroMarksEmptyInMonthMessage: 'Ninguna corrección va a este mes ni se pagó en él.',
   organizationCostCenterAreaLabel: 'Cost center',

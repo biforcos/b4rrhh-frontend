@@ -301,4 +301,32 @@ describe('EmployeeLaborClassificationSectionComponent', () => {
     expect(c.categoryOptionsState()).toEqual([]);
     expect(c['categoryLoadingState']()).toBe(false);
   });
+
+  /**
+   * Guardar una vigencia igual a la que está en vigor avisa antes (`b4rrhh/frontend#94`): no se
+   * prohíbe —renovar sin cambiar el valor puede tener motivo—, pero parte el mes sin cambiar el
+   * cálculo, y eso se dice en el propio modal, antes de guardar.
+   */
+  describe('una clasificación igual a la que está en vigor', () => {
+    it('igual, avisa; distinta, no', () => {
+      store.classificationsState.set([
+        {
+          agreementCode: 'AGR1',
+          agreementCategoryCode: 'CAT1',
+          startDate: '2024-01-01',
+          endDate: null,
+          isActive: true,
+        },
+      ]);
+      fix.detectChanges();
+      const c = fix.componentInstance as any;
+      c.openAdd();
+      c.startDateDraft.set('2026-09-16');
+      c.agreementCodeDraft.set('AGR1');
+      c.agreementCategoryCodeDraft.set('CAT1');
+      expect(c.noteLines().join(' ')).toContain('igual a la que está en vigor desde el 01/01/2024');
+      c.agreementCategoryCodeDraft.set('CAT2');
+      expect(c.noteLines().join(' ')).not.toContain('en vigor desde');
+    });
+  });
 });

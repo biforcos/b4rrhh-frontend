@@ -151,7 +151,8 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
     });
 
     it('shows, before confirming, that the working time in force will close the day before', () => {
-      store.workingTimesState.set([workingTime()]);
+      // Distinta de la que se añade (100 %): este test mira el plan, no el aviso de frontend#94.
+      store.workingTimesState.set([workingTime({ workingTimePercentage: 50 })]);
       c.openAdd();
       c.startDateDraft.set('2026-03-16');
       fix.detectChanges();
@@ -399,5 +400,36 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
 
     expect(c.modalVisible()).toBe(false);
     expect(store.clearPlan).toHaveBeenCalled();
+  });
+
+  /**
+   * Guardar una vigencia igual a la que está en vigor avisa antes (`b4rrhh/frontend#94`): no se
+   * prohíbe —renovar sin cambiar el valor puede tener motivo—, pero parte el mes sin cambiar el
+   * cálculo, y eso se dice en el propio modal, antes de guardar.
+   */
+  describe('una jornada igual a la que está en vigor', () => {
+    beforeEach(() => {
+      store.workingTimesState.set([
+        workingTime({ startDate: '2026-03-01', workingTimePercentage: 50 }),
+      ]);
+      fix.detectChanges();
+      c.openAdd();
+      c.startDateDraft.set('2026-09-16');
+    });
+
+    it('avisa, con la fecha de la vigente, y deja guardar', () => {
+      c.percentageDraft.set(50);
+      expect(c.noteLines().join(' ')).toContain('igual a la que está en vigor desde el 01/03/2026');
+      expect(c.noteTone()).toBe('warning');
+      store.planState.set(acceptedPlan());
+      fix.detectChanges();
+      expect(c.noteLines()[0]).toContain('igual a la que está en vigor');
+      expect(c.isSubmitEnabled()).toBe(true);
+    });
+
+    it('distinta, no avisa', () => {
+      c.percentageDraft.set(100);
+      expect(c.noteLines().join(' ')).not.toContain('igual a la que está en vigor');
+    });
   });
 });

@@ -13,7 +13,10 @@ import { take } from 'rxjs';
 
 import { EmployeeCostCenterStore } from '../../data-access/employee-cost-center.store';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
-import { CostCenterPlanDraft } from '../../data-access/employee-cost-center.mapper';
+import {
+  CostCenterDistributionItemDraft,
+  CostCenterPlanDraft,
+} from '../../data-access/employee-cost-center.mapper';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -29,6 +32,7 @@ import {
   describeCorrectionSwitchAction,
   describeTimelinePlan,
 } from '../../shared/utils/timeline-plan-message.util';
+import { sameAsInForceNotice, withSameAsInForce } from '../../shared/utils/same-as-in-force.util';
 import {
   CostCenterDistributionDraft,
   EmployeeCostCenterDistributionEditorComponent,
@@ -72,6 +76,10 @@ export class EmployeeCostCenterSectionComponent {
   private readonly fieldCatalogService = inject(EmployeeFieldCatalogService);
 
   protected readonly editorRef = viewChild(EmployeeCostCenterDistributionEditorComponent);
+  /** Las líneas que hay escritas en el editor, para compararlas con la distribución en vigor. */
+  private readonly editorItems = computed<ReadonlyArray<CostCenterDistributionItemDraft>>(
+    () => (this.editorRef()?.itemsValue() ?? []) as ReadonlyArray<CostCenterDistributionItemDraft>,
+  );
 
   protected readonly modalVisible = signal(false);
   protected readonly modalMode = signal<CostCenterModalMode>('add');
@@ -146,14 +154,31 @@ export class EmployeeCostCenterSectionComponent {
     return plan ? describeTimelinePlan(plan, COST_CENTER_PLAN_VOCABULARY) : null;
   });
 
+  /**
+   * Una vigencia nueva igual a la que está en vigor ese día (`b4rrhh/frontend#94`): se avisa antes
+   * de guardar y se deja guardar.
+   */
+  protected readonly sameAsInForce = computed<string | null>(() =>
+    this.modalVisible() && this.modalMode() === 'add'
+      ? sameAsInForceNotice(
+          this.rows(),
+          this.startDateDraft(),
+          (row) => sameDistribution(row.window.items, this.editorItems()),
+          this.texts.costCenterSectionSameAsInForceMessage,
+        )
+      : null,
+  );
+
+  private readonly modalNote = computed(() =>
+    withSameAsInForce(this.planNotice(), this.sameAsInForce()),
+  );
+
   protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
     if (this.costCenterStore.planning()) return [this.texts.costCenterSectionPlanningMessage];
-    return this.planNotice()?.lines ?? [];
+    return this.modalNote().lines;
   });
 
-  protected readonly noteTone = computed<PeriodModalNoteTone>(
-    () => this.planNotice()?.tone ?? 'info',
-  );
+  protected readonly noteTone = computed<PeriodModalNoteTone>(() => this.modalNote().tone);
 
   protected readonly correctionOffer = computed<string | null>(() => {
     const plan = this.plan();
@@ -335,4 +360,17 @@ export class EmployeeCostCenterSectionComponent {
         next: (opts) => this.costCenterOptions.set(opts),
       });
   }
+}
+
+/** El mismo reparto: los mismos centros con los mismos porcentajes, en cualquier orden. */
+function sameDistribution(
+  inForce: ReadonlyArray<{ costCenterCode: string; allocationPercentage: number }>,
+  draft: ReadonlyArray<CostCenterDistributionItemDraft>,
+): boolean {
+  const key = (items: ReadonlyArray<{ costCenterCode: string; allocationPercentage: number }>) =>
+    items
+      .map((i) => `${i.costCenterCode.trim()}=${Number(i.allocationPercentage)}`)
+      .sort()
+      .join('|');
+  return draft.length > 0 && key(inForce) === key(draft);
 }

@@ -213,4 +213,25 @@ describe('EmployeeWorkCenterSectionComponent', () => {
     fix.detectChanges();
     expect((fix.componentInstance as any).modalVisible()).toBe(false);
   });
+
+  /**
+   * Guardar una vigencia igual a la que está en vigor avisa antes (`b4rrhh/frontend#94`): no se
+   * prohíbe —renovar sin cambiar el valor puede tener motivo—, pero parte el mes sin cambiar el
+   * cálculo, y eso se dice en el propio modal, antes de guardar.
+   */
+  describe('un centro igual al que está en vigor', () => {
+    it('igual, avisa; distinto, no', () => {
+      store.workCentersState.set([
+        wc({ workCenterCode: 'WC1', startDate: '2024-01-01', endDate: null }),
+      ]);
+      fix.detectChanges();
+      const c = fix.componentInstance as any;
+      c.openAdd();
+      c.startDateDraft.set('2026-09-16');
+      c.workCenterCodeDraft.set('WC1');
+      expect(c.noteLines().join(' ')).toContain('mismo que está en vigor desde el 01/01/2024');
+      c.workCenterCodeDraft.set('WC2');
+      expect(c.noteLines().join(' ')).not.toContain('en vigor desde');
+    });
+  });
 });

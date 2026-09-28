@@ -7,6 +7,8 @@ import {
   input,
   untracked,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
@@ -135,6 +137,18 @@ export class EmployeeCostCenterDistributionEditorComponent {
     startDate: [''],
     items: this.fb.array([], [Validators.required, Validators.minLength(1)]),
   });
+
+  /**
+   * Las líneas que hay escritas, como señal, para que la sección pueda compararlas con la
+   * distribución en vigor antes de guardar (`b4rrhh/frontend#94`). El formulario es reactivo y un
+   * `computed` no ve sus cambios si no se los dan así.
+   */
+  readonly itemsValue = toSignal(
+    this.form.controls.items.valueChanges.pipe(
+      map((items) => items as ReadonlyArray<CostCenterDistributionItemDraft>),
+    ),
+    { initialValue: [] as ReadonlyArray<CostCenterDistributionItemDraft> },
+  );
 
   constructor() {
     // `initialValue` es una entrada: en el constructor todavía no vale nada, así que el

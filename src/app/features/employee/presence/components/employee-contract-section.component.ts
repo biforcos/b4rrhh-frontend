@@ -32,6 +32,7 @@ import {
   describeCorrectionSwitchAction,
   describeTimelinePlan,
 } from '../../shared/utils/timeline-plan-message.util';
+import { sameAsInForceNotice, withSameAsInForce } from '../../shared/utils/same-as-in-force.util';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 /**
@@ -135,14 +136,33 @@ export class EmployeeContractSectionComponent {
     return plan ? describeTimelinePlan(plan, CONTRACT_PLAN_VOCABULARY) : null;
   });
 
+  /**
+   * Una vigencia nueva igual a la que está en vigor ese día (`b4rrhh/frontend#94`): se avisa antes
+   * de guardar y se deja guardar.
+   */
+  protected readonly sameAsInForce = computed<string | null>(() =>
+    this.modalVisible() && this.modalMode() === 'add'
+      ? sameAsInForceNotice(
+          this.rows(),
+          this.startDateDraft(),
+          (row) =>
+            row.contractCode === this.contractCodeDraft() &&
+            (row.contractSubtypeCode ?? '') === this.contractSubtypeCodeDraft(),
+          this.texts.contractSectionSameAsInForceMessage,
+        )
+      : null,
+  );
+
+  private readonly modalNote = computed(() =>
+    withSameAsInForce(this.planNotice(), this.sameAsInForce()),
+  );
+
   protected readonly noteLines = computed<ReadonlyArray<string>>(() => {
     if (this.contractStore.planning()) return [this.texts.contractSectionPlanningMessage];
-    return this.planNotice()?.lines ?? [];
+    return this.modalNote().lines;
   });
 
-  protected readonly noteTone = computed<PeriodModalNoteTone>(
-    () => this.planNotice()?.tone ?? 'info',
-  );
+  protected readonly noteTone = computed<PeriodModalNoteTone>(() => this.modalNote().tone);
 
   /**
    * El alta que empieza el mismo día que un contrato existente es su corrección, y el backend lo

@@ -241,4 +241,28 @@ describe('EmployeeCostCenterSectionComponent', () => {
 
     expect(store.createDistribution).not.toHaveBeenCalled();
   });
+
+  /**
+   * Una distribución nueva igual a la que está en vigor avisa antes de guardar
+   * (`b4rrhh/frontend#94`). El reparto se compara como conjunto: los mismos centros con los mismos
+   * porcentajes, en cualquier orden.
+   */
+  it('una distribución igual a la que está en vigor avisa; distinta, no', () => {
+    store.currentDistributionState.set(currentWindow);
+    store.historyState.set([currentWindow, closedWindow]);
+    fix.detectChanges();
+    const c = fix.componentInstance as any;
+    c.openAdd();
+    c.startDateDraft.set('2099-01-01');
+    fix.detectChanges();
+    const editor = c.editorRef();
+    const [inForce] = currentWindow.items;
+    editor.items.at(0).setValue({
+      costCenterCode: inForce.costCenterCode,
+      allocationPercentage: inForce.allocationPercentage,
+    });
+    expect(c.noteLines().join(' ')).toContain('igual a la que está en vigor desde el');
+    editor.items.at(0).setValue({ costCenterCode: 'OTRO', allocationPercentage: 100 });
+    expect(c.noteLines().join(' ')).not.toContain('en vigor desde');
+  }, 15000);
 });
