@@ -81,7 +81,7 @@ describe('EmployeeTaxInformationSectionComponent', () => {
     expect(rows.length).toBe(2);
     // La primera es la vigente: la marca el componente por su posición, no el backend.
     expect(rows[0].querySelector('.temporal-section__badge').textContent.trim()).toBe('Vigente');
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(2);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Borrar"]').length).toBe(2);
   });
 
   it('deletes the row in force by its validFrom', () => {
@@ -91,7 +91,7 @@ describe('EmployeeTaxInformationSectionComponent', () => {
     ]);
     fix.detectChanges();
 
-    fix.nativeElement.querySelector('[aria-label="Eliminar 01/06/2026"]').click();
+    fix.nativeElement.querySelector('[aria-label="Borrar el período del 01/06/2026"]').click();
     fix.detectChanges();
 
     const c = fix.componentInstance as unknown as { submit: () => void };
@@ -104,6 +104,6 @@ describe('EmployeeTaxInformationSectionComponent', () => {
     store.recordsState.set([record({ validFrom: '2026-01-01' })]);
     fix.detectChanges();
 
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(1);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Borrar"]').length).toBe(1);
   });
 });

@@ -25,70 +25,76 @@
   @if (rows().length === 0) {
     <p class="temporal-section__empty">{{ emptyMessage() }}</p>
   } @else {
-    <table class="temporal-section__table">
-      <thead>
-        <tr>
-          <th class="temporal-section__th">Período</th>
-          @if (columnHeadersTemplate) {
-            <ng-container [ngTemplateOutlet]="columnHeadersTemplate" />
-          }
-          <th class="temporal-section__th">Estado</th>
-          <th class="temporal-section__th temporal-section__th--actions"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows(); track row.startDate; let index = $index) {
-          <tr
-            class="temporal-section__row"
-            [class.temporal-section__row--active]="row.isActive"
-            [class.temporal-section__row--closed]="!row.isActive"
-          >
-            <td class="temporal-section__td temporal-section__td--period">
-              {{ formatPeriod(row) }}
-            </td>
-            @if (cellContentTemplate) {
-              <ng-container
-                [ngTemplateOutlet]="cellContentTemplate"
-                [ngTemplateOutletContext]="{ $implicit: row, index: index }"
-              />
+    <!-- Si la tabla no cabe, se desplaza dentro de su sección y no por debajo de la columna de
+         al lado (frontend#91). -->
+    <div class="temporal-section__scroll">
+      <table class="temporal-section__table">
+        <thead>
+          <tr>
+            <th class="temporal-section__th">Período</th>
+            @if (columnHeadersTemplate) {
+              <ng-container [ngTemplateOutlet]="columnHeadersTemplate" />
             }
-            <td class="temporal-section__td">
-              <span
-                class="temporal-section__badge"
-                [class.temporal-section__badge--active]="row.isActive"
-              >
-                {{ row.isActive ? 'Vigente' : 'Cerrado' }}
-              </span>
-            </td>
-            <td class="temporal-section__td temporal-section__td--actions">
-              <div class="temporal-section__actions">
-                @if (showEdit(row)) {
-                  <button
-                    type="button"
-                    class="temporal-section__icon-btn"
-                    [attr.aria-label]="editLabel(row)"
-                    [title]="editLabel(row)"
-                    (click)="editClicked.emit(index)"
-                  >
-                    <b4-icon name="editar" [size]="16" />
-                  </button>
-                }
-                @if (showDelete(row)) {
-                  <button
-                    type="button"
-                    class="temporal-section__icon-btn temporal-section__icon-btn--danger"
-                    [attr.aria-label]="deleteLabel(row)"
-                    [title]="deleteLabel(row)"
-                    (click)="deleteClicked.emit(index)"
-                  >
-                    <b4-icon name="cerrar" [size]="16" />
-                  </button>
-                }
-              </div>
-            </td>
+            <th class="temporal-section__th">Estado</th>
+            <th class="temporal-section__th temporal-section__th--actions"></th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.startDate; let index = $index) {
+            <tr
+              class="temporal-section__row"
+              [class.temporal-section__row--active]="row.isActive"
+              [class.temporal-section__row--closed]="!row.isActive"
+            >
+              <!-- Se parte entre las dos fechas y nunca dentro de una (frontend#91). -->
+              <td class="temporal-section__td temporal-section__td--period">
+                <span class="temporal-section__period-part">{{ periodStart(row) }}</span>
+                &ngsp;
+                <span class="temporal-section__period-part">{{ periodEnd(row) }}</span>
+              </td>
+              @if (cellContentTemplate) {
+                <ng-container
+                  [ngTemplateOutlet]="cellContentTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: row, index: index }"
+                />
+              }
+              <td class="temporal-section__td">
+                <span
+                  class="temporal-section__badge"
+                  [class.temporal-section__badge--active]="row.isActive"
+                >
+                  {{ row.isActive ? 'Vigente' : 'Cerrado' }}
+                </span>
+              </td>
+              <td class="temporal-section__td temporal-section__td--actions">
+                <div class="temporal-section__actions">
+                  <!-- La botonera de las ausencias (frontend#84, frontend#91): el verbo escrito. -->
+                  @if (showEdit(row)) {
+                    <app-ui-button
+                      size="small"
+                      severity="secondary"
+                      [outlined]="true"
+                      [label]="correctVerb"
+                      [ariaLabel]="correctLabel(row)"
+                      (pressed)="editClicked.emit(index)"
+                    />
+                  }
+                  @if (showDelete(row)) {
+                    <app-ui-button
+                      size="small"
+                      severity="danger"
+                      [outlined]="true"
+                      [label]="deleteVerb"
+                      [ariaLabel]="deleteLabel(row)"
+                      (pressed)="deleteClicked.emit(index)"
+                    />
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 </section>

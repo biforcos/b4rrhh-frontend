@@ -109,7 +109,7 @@ describe('TemporalSectionComponent', () => {
     expect(fix.nativeElement.querySelectorAll('.temporal-section__row--closed').length).toBe(2);
     expect(fix.nativeElement.querySelector('.temporal-section__fold')).toBeNull();
     // Borrar la cerrada emite su índice original.
-    fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();
+    fix.nativeElement.querySelector('[aria-label^="Borrar"]').click();
     expect(host.delIdx).toBe(1);
   });
 
@@ -139,24 +139,52 @@ describe('TemporalSectionComponent', () => {
       row({ isActive: false, canDelete: true }),
       row({ isActive: false }),
     ]);
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(2);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Borrar"]').length).toBe(2);
     const { fix: fix2 } = createHost([row({ isActive: false, canDelete: false })]);
-    expect(fix2.nativeElement.querySelector('[aria-label^="Eliminar"]')).toBeNull();
+    expect(fix2.nativeElement.querySelector('[aria-label^="Borrar"]')).toBeNull();
   });
 
-  it('editar se oculta cuando la fila no lo permite', () => {
+  it('corregir se oculta cuando la fila no lo permite', () => {
     const { fix } = createHost([row({ canEdit: false })]);
-    expect(fix.nativeElement.querySelector('[aria-label^="Editar"]')).toBeNull();
+    expect(fix.nativeElement.querySelector('[aria-label^="Corregir"]')).toBeNull();
   });
 
-  it('emite añadir, editar y borrar con su índice', () => {
+  /**
+   * Una sola botonera para todas las vigencias de la ficha (`b4rrhh/frontend#91`), la de las
+   * ausencias (`b4rrhh/frontend#84`): botones con el verbo escrito, no un lápiz y una equis. Y el
+   * verbo es lo que hace: «Corregir» abre la corrección de esa ocurrencia (ADR-057), no una
+   * edición genérica; «Borrar» la quita. «Editar» como verbo universal es lo que ADR-010 y ADR-016
+   * dicen que no se haga.
+   */
+  it('la botonera de una fila dice «Corregir» y «Borrar», con el verbo escrito', () => {
+    const { fix } = createHost([row({ startDate: '2025-06-17', canDelete: true })]);
+    const buttons = Array.from(
+      fix.nativeElement.querySelectorAll('.temporal-section__actions button'),
+    ) as HTMLButtonElement[];
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Corregir', 'Borrar']);
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Corregir el período del 17/06/2025',
+      'Borrar el período del 17/06/2025',
+    ]);
+  });
+
+  it('ni «Editar» ni «Eliminar» en ningún sitio de la sección', () => {
+    const { fix } = createHost([
+      row({ canDelete: true }),
+      row({ isActive: false, canDelete: true }),
+    ]);
+    const html = (fix.nativeElement as HTMLElement).innerHTML;
+    expect(html).not.toMatch(/Editar|Eliminar/);
+  });
+
+  it('emite añadir, corregir y borrar con su índice', () => {
     const { fix, host } = createHost([
       row(),
       row({ startDate: '2020-01-01', isActive: false, canDelete: true }),
     ]);
     fix.nativeElement.querySelector('.section-heading__add-btn').click();
-    fix.nativeElement.querySelector('[aria-label^="Editar"]').click();
-    fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();
+    fix.nativeElement.querySelector('[aria-label^="Corregir"]').click();
+    fix.nativeElement.querySelector('[aria-label^="Borrar"]').click();
     expect(host.adds).toBe(1);
     expect(host.editIdx).toBe(0);
     expect(host.delIdx).toBe(1);

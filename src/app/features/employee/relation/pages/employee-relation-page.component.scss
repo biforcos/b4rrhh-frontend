@@ -3,6 +3,10 @@
    aquí dejaría una separación que no es la que se midió. */
 .employee-relation {
   display: grid;
+  /* La pista la pone la columna, no la tabla más ancha: con `auto` crecía hasta el contenido y
+     empujaba los carriles por debajo del historial (frontend#91, visto con la botonera nueva, pero
+     ya les pasaba a los lápices de antes). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
 }
 

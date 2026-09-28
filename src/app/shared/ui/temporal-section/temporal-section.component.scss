@@ -34,6 +34,10 @@ app-temporal-section {
   background: var(--surface-accent);
 }
 
+.temporal-section__scroll {
+  overflow-x: auto;
+}
+
 .temporal-section__table {
   width: 100%;
   border-collapse: collapse;
@@ -81,8 +85,13 @@ app-temporal-section {
   vertical-align: middle;
 }
 
+/* El período se parte entre sus dos fechas cuando la tabla no cabe, nunca dentro de una: con la
+   botonera escrita (frontend#91) una tabla de cinco columnas no cabía entera en una línea. */
 .temporal-section__td--period {
   font-variant-numeric: tabular-nums;
+}
+
+.temporal-section__period-part {
   white-space: nowrap;
 }
 
@@ -123,34 +132,16 @@ app-temporal-section {
   color: var(--success-text);
 }
 
+/*
+ * Los botones van uno encima del otro y no en fila (frontend#91): con el verbo escrito no caben
+ * dos al lado en una tabla de cinco columnas, y en fila empujaban la tabla fuera de la columna
+ * principal, hasta debajo del historial.
+ */
 .temporal-section__actions {
   display: flex;
+  flex-direction: column;
   gap: 4px;
-  align-items: center;
-}
-
-.temporal-section__icon-btn {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  background: var(--surface-panel);
-  color: var(--text-tertiary);
-  cursor: pointer;
-}
-
-.temporal-section__icon-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-.temporal-section__icon-btn--danger:hover {
-  background: var(--error-bg);
-  border-color: var(--error-border);
-  color: var(--error-text);
+  align-items: stretch;
 }
 
 /* Un total que cuadra o no (la distribución de coste): semántico, no decorativo. */

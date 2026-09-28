@@ -84,7 +84,7 @@ describe('EmployeePresenceSectionComponent', () => {
     expect(rows[1].textContent).toContain('11/03/2024 — en vigor');
     expect(fixture.nativeElement.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     // Sin editar ni borrar: los periodos de presencia los mueven los flujos.
-    expect(fixture.nativeElement.querySelector('[aria-label^="Editar"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label^="Corregir"]')).toBeNull();
   });
 
   it('sin catálogo, el código va solo y no se inventa un literal', () => {

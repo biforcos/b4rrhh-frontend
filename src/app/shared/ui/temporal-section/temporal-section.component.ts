@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 
 import { formatDisplayDate } from '../../utils/local-date.util';
-import { B4IconComponent } from '../icon/b4-icon.component';
+import { UiButtonComponent } from '../button/ui-button.component';
 import { SectionHeadingComponent } from '../section-heading/section-heading.component';
 import { TemporalSectionRow } from './temporal-section-row.model';
 
@@ -40,7 +40,7 @@ import { TemporalSectionRow } from './temporal-section-row.model';
 @Component({
   selector: 'app-temporal-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, B4IconComponent, SectionHeadingComponent],
+  imports: [NgTemplateOutlet, UiButtonComponent, SectionHeadingComponent],
   templateUrl: './temporal-section.component.html',
   styleUrl: './temporal-section.component.scss',
   // Sin encapsulación a propósito: las secciones proyectan sus propias celdas y cabeceras con
@@ -81,17 +81,35 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   protected readonly count = computed(() => this.rows().length);
   protected readonly activeCount = computed(() => this.rows().filter((row) => row.isActive).length);
 
-  protected formatPeriod(row: T): string {
-    const start = formatDisplayDate(row.startDate);
-    return row.endDate ? `${start} — ${formatDisplayDate(row.endDate)}` : `${start} — en vigor`;
+  /** «01/01/2024 —», la primera mitad del período. */
+  protected periodStart(row: T): string {
+    return `${formatDisplayDate(row.startDate)} —`;
   }
 
-  protected editLabel(row: T): string {
-    return `Editar ${formatDisplayDate(row.startDate)}`;
+  /** «31/12/2024» o «en vigor», la segunda. */
+  protected periodEnd(row: T): string {
+    return row.endDate ? formatDisplayDate(row.endDate) : 'en vigor';
+  }
+
+  /**
+   * Los verbos de la fila, los de las ausencias (`b4rrhh/frontend#84`, `b4rrhh/frontend#91`), con la
+   * fecha en la etiqueta accesible para que dos filas no se lean igual.
+   *
+   * No hay «Cerrar» en la fila, y no es un olvido: las series que usan este contenedor exigen que
+   * la presencia quede cubierta (ADR-057), así que cerrar la vigente sin nada detrás se rechaza
+   * siempre. Lo que termina una vigencia es **añadir la siguiente**, que la cierra; el plan lo
+   * enseña antes de confirmar. Y el inicio se corrige, a diferencia de en las ausencias, porque
+   * aquí la clave es el número de la ocurrencia y no la fecha en que empieza.
+   */
+  protected readonly correctVerb = 'Corregir';
+  protected readonly deleteVerb = 'Borrar';
+
+  protected correctLabel(row: T): string {
+    return `${this.correctVerb} el período del ${formatDisplayDate(row.startDate)}`;
   }
 
   protected deleteLabel(row: T): string {
-    return `Eliminar ${formatDisplayDate(row.startDate)}`;
+    return `${this.deleteVerb} el período del ${formatDisplayDate(row.startDate)}`;
   }
 
   protected showEdit(row: T): boolean {

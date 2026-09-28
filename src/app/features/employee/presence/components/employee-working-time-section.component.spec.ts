@@ -115,8 +115,8 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
     fix.detectChanges();
 
     expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(2);
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Editar"]').length).toBe(2);
-    expect(fix.nativeElement.querySelectorAll('[aria-label^="Eliminar"]').length).toBe(2);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Corregir"]').length).toBe(2);
+    expect(fix.nativeElement.querySelectorAll('[aria-label^="Borrar"]').length).toBe(2);
   });
 
   describe('adding a working time', () => {
@@ -314,12 +314,12 @@ describe('EmployeeWorkingTimeSectionComponent', () => {
     });
 
     it('opens the remove modal from the row and asks for its plan', () => {
-      fix.nativeElement.querySelector('[aria-label^="Eliminar"]').click();
+      fix.nativeElement.querySelector('[aria-label^="Borrar"]').click();
       fix.detectChanges();
 
       expect(c.modalVisible()).toBe(true);
       expect(c.modalMode()).toBe('remove');
-      expect(c.submitLabel()).toBe('Eliminar jornada');
+      expect(c.submitLabel()).toBe('Borrar jornada');
       expect(store.planChange).toHaveBeenLastCalledWith(employeeKey, {
         operation: 'REMOVE',
         workingTimeNumber: 2,

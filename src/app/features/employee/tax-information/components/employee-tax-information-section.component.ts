@@ -121,7 +121,7 @@ export class EmployeeTaxInformationSectionComponent {
 
   protected readonly modalTitle = computed(() => {
     if (this.modalMode() === 'create') return 'Nueva información fiscal';
-    if (this.modalMode() === 'delete-confirm') return 'Eliminar información fiscal';
+    if (this.modalMode() === 'delete-confirm') return 'Borrar información fiscal';
     return 'Corregir información fiscal';
   });
 
@@ -137,7 +137,7 @@ export class EmployeeTaxInformationSectionComponent {
   });
 
   protected readonly modalSubmitLabel = computed(() =>
-    this.modalMode() === 'delete-confirm' ? 'Eliminar' : 'Guardar cambios',
+    this.modalMode() === 'delete-confirm' ? 'Borrar' : 'Guardar cambios',
   );
 
   protected readonly isSubmitEnabled = computed(() => {
