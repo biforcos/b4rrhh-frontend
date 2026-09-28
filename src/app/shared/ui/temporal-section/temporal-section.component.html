@@ -69,6 +69,16 @@
               <td class="temporal-section__td temporal-section__td--actions">
                 <div class="temporal-section__actions">
                   <!-- La botonera de las ausencias (frontend#84, frontend#91): el verbo escrito. -->
+                  @if (showClose(row)) {
+                    <app-ui-button
+                      size="small"
+                      severity="secondary"
+                      [outlined]="true"
+                      [label]="closeVerb"
+                      [ariaLabel]="closeLabel(row)"
+                      (pressed)="closeClicked.emit(index)"
+                    />
+                  }
                   @if (showEdit(row)) {
                     <app-ui-button
                       size="small"

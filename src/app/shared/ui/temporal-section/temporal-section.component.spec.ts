@@ -28,6 +28,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
       (addClicked)="adds = adds + 1"
       (editClicked)="editIdx = $event"
       (deleteClicked)="delIdx = $event"
+      (closeClicked)="closeIdx = $event"
     >
       <ng-template #columnHeaders><th>Label</th></ng-template>
       <ng-template #cellContent let-r
@@ -45,6 +46,7 @@ class Host {
   adds = 0;
   editIdx: number | null = null;
   delIdx: number | null = null;
+  closeIdx: number | null = null;
 }
 
 function createHost(initialRows: TestRow[] = []): { fix: ComponentFixture<Host>; host: Host } {
@@ -195,5 +197,32 @@ describe('TemporalSectionComponent', () => {
     const headers = Array.from(fix.nativeElement.querySelectorAll('th')) as HTMLElement[];
     expect(headers.some((h) => h.textContent?.includes('Label'))).toBe(true);
     expect(fix.nativeElement.textContent).toContain('My Label');
+  });
+
+  /**
+   * «Cerrar» sólo en la fila que lo permite: la vigente de una serie de cobertura opcional
+   * (`b4rrhh/frontend#91`). En las de cobertura obligatoria cerrar la vigente se rechaza siempre, y
+   * un botón que siempre acaba en «no se puede» no se enseña.
+   */
+  it('«Cerrar» va delante, y sólo en la fila que lo permite', () => {
+    const { fix, host } = createHost([
+      row({ startDate: '2025-06-17', canClose: true, canDelete: true }),
+      row({ startDate: '2024-01-01', isActive: false }),
+    ]);
+    const rows = Array.from(
+      fix.nativeElement.querySelectorAll('.temporal-section__row'),
+    ) as HTMLElement[];
+    const verbs = (r: HTMLElement) =>
+      Array.from(r.querySelectorAll('.temporal-section__actions button')).map((b) =>
+        b.textContent?.trim(),
+      );
+    expect(verbs(rows[0])).toEqual(['Cerrar', 'Corregir', 'Borrar']);
+    expect(verbs(rows[1])).toEqual(['Corregir']);
+    (
+      fix.nativeElement.querySelector(
+        '[aria-label="Cerrar el período del 17/06/2025"]',
+      ) as HTMLElement
+    ).click();
+    expect(host.closeIdx).toBe(0);
   });
 });

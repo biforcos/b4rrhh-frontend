@@ -50,7 +50,7 @@ import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/lo
  * medio se acepta y deja un hueco, que es un estado legal. El aviso lo dice con esas palabras y
  * no copia el de las verticales obligatorias, que dice lo contrario.
  */
-type CostCenterModalMode = 'add' | 'correct' | 'remove';
+type CostCenterModalMode = 'add' | 'correct' | 'close' | 'remove';
 
 interface CostCenterPeriodRow extends TemporalSectionRow {
   window: EmployeeCostCenterWindowModel;
@@ -91,6 +91,8 @@ export class EmployeeCostCenterSectionComponent {
   protected readonly endDateDraft = signal('');
   /** Las líneas con las que abre el editor; null para una ventana nueva. */
   protected readonly editorInitialValue = signal<CostCenterDistributionDraft | null>(null);
+  /** El reparto de la ventana que se cierra, que no cambia al cerrarla. */
+  private readonly closingItems = signal<ReadonlyArray<CostCenterDistributionItemDraft>>([]);
   protected readonly costCenterOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
 
   protected readonly texts = employeeTexts;
@@ -117,6 +119,8 @@ export class EmployeeCostCenterSectionComponent {
       isActive: !w.endDate,
       canEdit: true,
       canDelete: true,
+      // La cobertura de centro de coste es opcional (`backend#54`): cerrar la vigente es legal.
+      canClose: !w.endDate,
       window: w,
       totalPercentage: w.totalAllocationPercentage,
       itemsSummary: w.items
@@ -142,6 +146,7 @@ export class EmployeeCostCenterSectionComponent {
     const endDate = this.endDateDraft() || null;
 
     if (mode === 'add') return { operation: 'ADD', startDate, endDate };
+    if (mode === 'close' && endDate === null) return null;
     return windowStartDate === null
       ? null
       : { operation: 'CORRECT', windowStartDate, startDate, endDate };
@@ -190,6 +195,7 @@ export class EmployeeCostCenterSectionComponent {
     const mode = this.modalMode();
     if (mode === 'add') return this.texts.costCenterSectionAddTitle;
     if (mode === 'remove') return this.texts.costCenterSectionRemoveTitle;
+    if (mode === 'close') return this.texts.costCenterSectionCloseTitle;
     return this.texts.costCenterSectionCorrectTitle;
   });
 
@@ -197,6 +203,7 @@ export class EmployeeCostCenterSectionComponent {
     const mode = this.modalMode();
     if (mode === 'add') return this.texts.costCenterSectionAddSubmitAction;
     if (mode === 'remove') return this.texts.costCenterSectionRemoveSubmitAction;
+    if (mode === 'close') return this.texts.costCenterSectionCloseTitle;
     return this.texts.costCenterSectionCorrectSubmitAction;
   });
 
@@ -282,6 +289,25 @@ export class EmployeeCostCenterSectionComponent {
     this.modalVisible.set(true);
   }
 
+  /** Cerrar la vigente: el mismo inicio y el mismo reparto, con fin (`b4rrhh/frontend#91`). */
+  protected openClose(index: number): void {
+    const row = this.rows()[index];
+    if (!row) return;
+    this.costCenterStore.clearFeedback();
+    this.modalMode.set('close');
+    this.editingStartDate.set(row.startDate);
+    this.editingPeriod.set(this.describeDates(row.startDate, row.endDate));
+    this.startDateDraft.set(row.startDate);
+    this.endDateDraft.set(currentLocalDate());
+    this.closingItems.set(
+      row.window.items.map((item) => ({
+        costCenterCode: item.costCenterCode,
+        allocationPercentage: item.allocationPercentage,
+      })),
+    );
+    this.modalVisible.set(true);
+  }
+
   protected openRemove(index: number): void {
     const row = this.rows()[index];
     if (!row) return;
@@ -310,6 +336,17 @@ export class EmployeeCostCenterSectionComponent {
 
     if (mode === 'remove') {
       if (windowStartDate !== null) this.costCenterStore.deleteDistribution(key, windowStartDate);
+      return;
+    }
+
+    if (mode === 'close') {
+      if (windowStartDate !== null) {
+        this.costCenterStore.correctDistribution(key, windowStartDate, {
+          startDate: this.startDateDraft(),
+          endDate: this.endDateDraft(),
+          items: this.closingItems(),
+        });
+      }
       return;
     }
 

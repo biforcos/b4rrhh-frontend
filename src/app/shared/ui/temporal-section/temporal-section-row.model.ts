@@ -13,4 +13,10 @@ export interface TemporalSectionRow {
    * dice si se puede.
    */
   canDelete?: boolean;
+  /**
+   * Por defecto false: se ofrece cerrar. Sólo en la vigente de una serie de cobertura opcional
+   * (`b4rrhh/frontend#91`): en las obligatorias cerrar la vigente sin nada detrás se rechaza
+   * siempre, y el botón no se enseña.
+   */
+  canClose?: boolean;
 }

@@ -141,6 +141,7 @@ export const employeeTexts = {
   costCenterSectionAddAction: 'Añadir distribución',
   costCenterSectionAddTitle: 'Añadir distribución',
   costCenterSectionCorrectTitle: 'Corregir distribución',
+  costCenterSectionCloseTitle: 'Cerrar distribución',
   costCenterSectionRemoveTitle: 'Borrar distribución',
   costCenterSectionAddSubmitAction: 'Añadir distribución',
   costCenterSectionCorrectSubmitAction: 'Guardar corrección',

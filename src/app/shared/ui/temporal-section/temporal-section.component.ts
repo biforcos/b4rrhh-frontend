@@ -71,6 +71,7 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly addClicked = output<void>();
   readonly editClicked = output<number>();
   readonly deleteClicked = output<number>();
+  readonly closeClicked = output<number>();
 
   @ContentChild('columnHeaders') readonly columnHeadersTemplate: TemplateRef<unknown> | null = null;
   @ContentChild('cellContent') readonly cellContentTemplate: TemplateRef<{
@@ -95,14 +96,20 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
    * Los verbos de la fila, los de las ausencias (`b4rrhh/frontend#84`, `b4rrhh/frontend#91`), con la
    * fecha en la etiqueta accesible para que dos filas no se lean igual.
    *
-   * No hay «Cerrar» en la fila, y no es un olvido: las series que usan este contenedor exigen que
-   * la presencia quede cubierta (ADR-057), así que cerrar la vigente sin nada detrás se rechaza
-   * siempre. Lo que termina una vigencia es **añadir la siguiente**, que la cierra; el plan lo
-   * enseña antes de confirmar. Y el inicio se corrige, a diferencia de en las ausencias, porque
+   * «Cerrar» sólo sale en la fila que lo declara (`canClose`): la mayoría de las series que usan
+   * este contenedor exigen que la presencia quede cubierta (ADR-057), y ahí cerrar la vigente sin
+   * nada detrás se rechaza siempre. Lo que termina una vigencia de ésas es **añadir la siguiente**,
+   * que la cierra; el plan lo enseña antes de confirmar. En una de cobertura opcional (centro de
+   * coste) cerrar es legal, y ahí se ofrece. Y el inicio se corrige, a diferencia de en las ausencias, porque
    * aquí la clave es el número de la ocurrencia y no la fecha en que empieza.
    */
+  protected readonly closeVerb = 'Cerrar';
   protected readonly correctVerb = 'Corregir';
   protected readonly deleteVerb = 'Borrar';
+
+  protected closeLabel(row: T): string {
+    return `${this.closeVerb} el período del ${formatDisplayDate(row.startDate)}`;
+  }
 
   protected correctLabel(row: T): string {
     return `${this.correctVerb} el período del ${formatDisplayDate(row.startDate)}`;
@@ -114,6 +121,10 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
 
   protected showEdit(row: T): boolean {
     return row.canEdit !== false;
+  }
+
+  protected showClose(row: T): boolean {
+    return row.canClose === true;
   }
 
   protected showDelete(row: T): boolean {

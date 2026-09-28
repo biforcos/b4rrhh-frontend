@@ -6,6 +6,7 @@
   (addClicked)="openAdd()"
   (editClicked)="openCorrect($event)"
   (deleteClicked)="openRemove($event)"
+  (closeClicked)="openClose($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">Centros</th>
@@ -42,7 +43,14 @@
   (cancelled)="closeModal()"
   (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalVisible() && modalMode() !== 'remove') {
+  @if (modalVisible() && modalMode() === 'close') {
+    <!-- Cerrar pide sólo lo que cambia: el fin. El reparto se queda como está (frontend#91). -->
+    <app-ui-date-input
+      [ariaLabel]="texts.costCenterSectionEndDateLabel"
+      [value]="endDateDraft()"
+      (valueChanged)="endDateDraft.set($event)"
+    />
+  } @else if (modalVisible() && modalMode() !== 'remove') {
     <app-ui-date-input
       [ariaLabel]="texts.costCenterSectionStartDateLabel"
       [value]="startDateDraft()"

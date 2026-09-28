@@ -265,4 +265,37 @@ describe('EmployeeCostCenterSectionComponent', () => {
     editor.items.at(0).setValue({ costCenterCode: 'OTRO', allocationPercentage: 100 });
     expect(c.noteLines().join(' ')).not.toContain('en vigor desde');
   }, 15000);
+
+  /**
+   * La distribución en vigor se puede cerrar (`b4rrhh/frontend#91`): la cobertura de centro de
+   * coste es opcional (`backend#54`), así que cerrar sin nada detrás es legal. Es el verbo de las
+   * ausencias, y el modal sólo pide lo que cambia: el fin.
+   */
+  it('ofrece cerrar la vigente, y cerrar pide sólo el fin y conserva el reparto', () => {
+    store.currentDistributionState.set(currentWindow);
+    store.historyState.set([currentWindow, closedWindow]);
+    fix.detectChanges();
+    const c = fix.componentInstance as any;
+    expect(c.rows().map((r: { canClose?: boolean }) => r.canClose === true)).toEqual([true, false]);
+
+    c.openClose(0);
+    c.endDateDraft.set('2026-09-30');
+    fix.detectChanges();
+    expect(c.modalTitle()).toBe('Cerrar distribución');
+    expect(store.planChange).toHaveBeenLastCalledWith(employeeKey, {
+      operation: 'CORRECT',
+      windowStartDate: '2024-07-01',
+      startDate: '2024-07-01',
+      endDate: '2026-09-30',
+    });
+
+    store.planState.set(plan({ operation: 'CORRECT', accepted: true }));
+    fix.detectChanges();
+    c.submit();
+    expect(store.correctDistribution).toHaveBeenCalledWith(employeeKey, '2024-07-01', {
+      startDate: '2024-07-01',
+      endDate: '2026-09-30',
+      items: [{ costCenterCode: 'CC2', allocationPercentage: 100 }],
+    });
+  }, 15000);
 });
