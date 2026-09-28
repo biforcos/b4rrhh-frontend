@@ -7,6 +7,7 @@ import { RuleSystemGateway } from '../gateway/rule-system.gateway';
 import { RuleSystemFormModel } from '../models/rule-system-form.model';
 import { RuleSystem } from '../models/rule-system.model';
 import { ruleSystemTexts } from '../rule-system.texts';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Injectable({
   providedIn: 'root',
@@ -65,7 +66,9 @@ export class RuleSystemStore {
           }
 
           this.loadingState.set(false);
-          this.errorState.set(this.formatError(error));
+          this.errorState.set(
+            describeFailure('No se pudieron cargar los sistemas de reglas', toHttpFailure(error)),
+          );
         },
       });
   }
@@ -101,7 +104,9 @@ export class RuleSystemStore {
           }
 
           this.loadingState.set(false);
-          this.errorState.set(this.formatError(error));
+          this.errorState.set(
+            describeFailure('No se pudo cargar el sistema de reglas', toHttpFailure(error)),
+          );
         },
       });
   }
@@ -128,7 +133,9 @@ export class RuleSystemStore {
         },
         error: (error: unknown) => {
           this.savingState.set(false);
-          this.errorState.set(this.formatError(error));
+          this.errorState.set(
+            describeFailure('No se pudo crear el sistema de reglas', toHttpFailure(error)),
+          );
         },
       });
   }
@@ -160,28 +167,10 @@ export class RuleSystemStore {
         },
         error: (error: unknown) => {
           this.savingState.set(false);
-          this.errorState.set(this.formatError(error));
+          this.errorState.set(
+            describeFailure('No se pudo guardar el sistema de reglas', toHttpFailure(error)),
+          );
         },
       });
-  }
-
-  private formatError(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (
-        typeof error.error === 'object' &&
-        error.error &&
-        typeof error.error.message === 'string'
-      ) {
-        return error.error.message;
-      }
-
-      if (typeof error.error === 'string' && error.error.trim().length > 0) {
-        return error.error;
-      }
-
-      return `Request failed with status ${error.status}.`;
-    }
-
-    return 'Unexpected error while processing rule systems.';
   }
 }

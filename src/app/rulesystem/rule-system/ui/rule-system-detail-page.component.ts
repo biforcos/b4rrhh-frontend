@@ -15,6 +15,7 @@ import { RuleSystemFormModel } from '../models/rule-system-form.model';
 import { RuleSystemStore } from '../store/rule-system.store';
 import { ruleSystemTexts } from '../rule-system.texts';
 import { RuleSystemFormComponent } from './rule-system-form.component';
+import { describeFailure } from '../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-rule-system-detail-page',
@@ -40,6 +41,10 @@ export class RuleSystemDetailPageComponent {
   );
 
   protected readonly texts = ruleSystemTexts;
+
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+
+  protected readonly describeFailure = describeFailure;
   protected readonly selected = this.store.selected;
   protected readonly loading = this.store.loading;
   protected readonly error = this.store.error;

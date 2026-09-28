@@ -22,6 +22,7 @@ import {
   WorkingTimeUpdateDraft,
 } from './employee-working-time.mapper';
 import { EmployeeWorkingTimeGateway } from './employee-working-time.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +34,7 @@ export class EmployeeWorkingTimeStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeWorkingTimeErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly errorConflictState = signal<EmployeeWorkingTimeConflictModel | null>(null);
   private readonly successState = signal<'created' | 'updated' | 'deleted' | null>(null);
   private readonly planState = signal<EmployeeWorkingTimePlanModel | null>(null);
@@ -45,6 +47,8 @@ export class EmployeeWorkingTimeStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   /** Las fechas que acompañan al último error de invariante; null si el error no las trae. */
   readonly errorConflict = this.errorConflictState.asReadonly();
   readonly success = this.successState.asReadonly();
@@ -54,6 +58,7 @@ export class EmployeeWorkingTimeStore {
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }
@@ -82,6 +87,7 @@ export class EmployeeWorkingTimeStore {
           this.planningState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (planRequestId !== this.planRequestId) {
             return;
           }
@@ -111,6 +117,7 @@ export class EmployeeWorkingTimeStore {
 
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
 
@@ -124,6 +131,7 @@ export class EmployeeWorkingTimeStore {
           this.loadWorkingTimesByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -143,6 +151,7 @@ export class EmployeeWorkingTimeStore {
 
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
 
@@ -156,6 +165,7 @@ export class EmployeeWorkingTimeStore {
           this.loadWorkingTimesByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -171,6 +181,7 @@ export class EmployeeWorkingTimeStore {
 
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
 
@@ -184,6 +195,7 @@ export class EmployeeWorkingTimeStore {
           this.loadWorkingTimesByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -219,6 +231,7 @@ export class EmployeeWorkingTimeStore {
     }
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (hasKeyChanged || !forceReload) {
       this.successState.set(null);
     }
@@ -238,6 +251,7 @@ export class EmployeeWorkingTimeStore {
           this.loadingState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (requestId !== this.requestId) {
             return;
           }
@@ -256,6 +270,7 @@ export class EmployeeWorkingTimeStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }

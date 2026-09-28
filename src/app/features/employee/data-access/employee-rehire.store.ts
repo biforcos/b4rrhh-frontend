@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 import { RehireEmployeeDraft, RehireEmployeeResult } from '../models/employee-rehire.model';
 import { EmployeeRehireGateway } from './employee-rehire.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type RehireEmployeeErrorCode =
   | 'employee-not-found'
@@ -22,10 +23,13 @@ export class EmployeeRehireStore {
 
   private readonly rehireState = signal(false);
   private readonly errorState = signal<RehireEmployeeErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly resultState = signal<RehireEmployeeResult | null>(null);
 
   readonly rehiring = this.rehireState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly result = this.resultState.asReadonly();
 
   rehire(draft: RehireEmployeeDraft): void {
@@ -33,6 +37,7 @@ export class EmployeeRehireStore {
 
     this.rehireState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.resultState.set(null);
 
     this.gateway
@@ -44,6 +49,7 @@ export class EmployeeRehireStore {
           this.resultState.set(result);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.rehireState.set(false);
           this.errorState.set(this.mapError(error));
         },
@@ -133,6 +139,7 @@ export class EmployeeRehireStore {
   reset(): void {
     this.rehireState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.resultState.set(null);
   }
 }

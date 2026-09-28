@@ -12,7 +12,7 @@
 
   @if (mode() === 'edit' && error()) {
     <p class="rule-system-detail-page__feedback rule-system-detail-page__feedback--error">
-      {{ error() || texts.editRequestFailedMessage }}
+      {{ error() || describeFailure(texts.editRequestFailedMessage, null) }}
     </p>
   }
 

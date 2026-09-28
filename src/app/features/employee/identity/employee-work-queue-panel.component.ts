@@ -7,6 +7,7 @@ import {
 } from '../data-access/employee-work-queue.store';
 import { employeeTexts } from '../employee.texts';
 import { EmployeeWorkQueueCriteria } from '../models/employee-work-queue.model';
+import { HttpFailure, describeFailure } from '../../../shared/utils/http-failure.util';
 
 /**
  * La cola en el raíl (frontend#20, ADR-050 §3): «7 de 103 · «Sanchez» · de baja», anterior y
@@ -51,7 +52,7 @@ export class EmployeeWorkQueuePanelComponent {
 
   protected readonly noticeMessage = computed(() => {
     const notice = this.queueStore.notice();
-    return notice ? noticeText(notice, this.texts) : null;
+    return notice ? noticeText(notice, this.texts, this.queueStore.failure()) : null;
   });
 
   protected readonly atEnd = computed(() => this.queueStore.active() && !this.hasNext());
@@ -76,7 +77,11 @@ export function describeCriteria(
   return parts.length > 0 ? parts.join(' · ') : texts.workQueueCriteriaAll;
 }
 
-function noticeText(notice: EmployeeWorkQueueNotice, texts: typeof employeeTexts): string {
+function noticeText(
+  notice: EmployeeWorkQueueNotice,
+  texts: typeof employeeTexts,
+  failure: HttpFailure | null,
+): string {
   switch (notice) {
     case 'last':
       return texts.workQueueEndMessage;
@@ -87,6 +92,6 @@ function noticeText(notice: EmployeeWorkQueueNotice, texts: typeof employeeTexts
     case 'empty':
       return texts.workQueueEmptyMessage;
     case 'request-failed':
-      return texts.workQueueFailedMessage;
+      return describeFailure(texts.workQueueFailedMessage, failure);
   }
 }

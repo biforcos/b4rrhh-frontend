@@ -18,7 +18,7 @@
         <div class="journey-timeline__skeleton"></div>
       </div>
     } @else if (error()) {
-      <p class="journey-timeline__error">{{ texts.timelineLoadFailedMessage }}</p>
+      <p class="journey-timeline__error">{{ errorText() }}</p>
     } @else if (!hasEvents()) {
       <p class="journey-timeline__empty">{{ texts.timelineNoEventsMessage }}</p>
     } @else {

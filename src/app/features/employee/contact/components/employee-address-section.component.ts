@@ -37,6 +37,7 @@ import { TemporalSectionRow } from '../../../../shared/ui/temporal-section/tempo
 import { TemporalSectionComponent } from '../../../../shared/ui/temporal-section/temporal-section.component';
 import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * Las tres cosas que se pueden hacer con la serie de direcciones de un tipo (ADR-057): añadir
@@ -396,7 +397,7 @@ export class EmployeeAddressSectionComponent {
           this.catalogLoading.set(false);
           this.addressTypeOptions.set(options);
         },
-        error: () => {
+        error: (err: unknown) => {
           if (requestId !== this.catalogRequestId) return;
           this.catalogLoading.set(false);
           this.globalMessageService.setSourceMessages(
@@ -405,7 +406,7 @@ export class EmployeeAddressSectionComponent {
               {
                 id: 'employee-address-section-local-error',
                 level: 'error',
-                text: this.texts.catalogLoadFailedMessage,
+                text: describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
                 sectionId: 'personal',
                 sectionLabel: this.texts.personalAreaLabel,
                 sticky: true,

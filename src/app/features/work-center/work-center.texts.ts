@@ -6,7 +6,7 @@ export const workCenterTexts = {
   listTitle: 'Centros',
   listSubtitle: '',
   listSearchPlaceholder: 'Buscar por código, nombre, empresa o ubicación',
-  listLoadFailedMessage: 'No se pudo cargar el listado de centros.',
+  listLoadFailedMessage: 'No se pudo cargar el listado de centros',
   listEmptyMessage: 'No hay centros de trabajo registrados.',
 
   listMetaCompanyLabel: 'Empresa',
@@ -19,7 +19,7 @@ export const workCenterTexts = {
 
   detailPanelTitle: 'Ficha de centro',
   detailLoadingMessage: 'Cargando detalle... ',
-  detailLoadFailedMessage: 'No se pudo cargar el detalle del centro.',
+  detailLoadFailedMessage: 'No se pudo cargar el detalle del centro',
   detailNotFoundMessage: 'No se encontró el centro seleccionado.',
   emptyDetailDescription: 'Selecciona un centro o crea uno nuevo.',
 
@@ -54,7 +54,7 @@ export const workCenterTexts = {
   fieldCountryCodeLabel: 'País',
 
   contactsLoadingMessage: 'Cargando contactos... ',
-  contactsLoadFailedMessage: 'No se pudieron cargar los contactos.',
+  contactsLoadFailedMessage: 'No se pudieron cargar los contactos',
   contactsEmptyMessage: 'No hay contactos registrados para este centro.',
   contactsCreateHint: 'Guarda el centro para poder gestionar contactos.',
   contactsNewAction: 'Nuevo contacto',
@@ -69,7 +69,7 @@ export const workCenterTexts = {
   contactsCreateTitle: 'Nuevo contacto',
   contactsEditTitle: 'Editar contacto',
   contactsCatalogLoadingMessage: 'Cargando tipos de contacto... ',
-  contactsCatalogLoadFailedMessage: 'No se pudieron cargar los tipos de contacto.',
+  contactsCatalogLoadFailedMessage: 'No se pudieron cargar los tipos de contacto',
   contactsCatalogEmptyMessage: 'No hay tipos de contacto disponibles para este centro.',
   contactsSubmitSuccessCreated: 'Contacto creado correctamente.',
   contactsSubmitSuccessUpdated: 'Contacto actualizado correctamente.',

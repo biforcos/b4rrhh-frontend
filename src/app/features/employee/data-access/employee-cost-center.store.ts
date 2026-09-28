@@ -20,6 +20,7 @@ import {
   EmployeeCostCenterErrorCode,
   mapEmployeeCostCenterErrorCode,
 } from './employee-cost-center-error.mapper';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +35,7 @@ export class EmployeeCostCenterStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeCostCenterErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly errorConflictState = signal<TimelineConflict | null>(null);
   private readonly successState = signal<'created' | 'corrected' | 'deleted' | null>(null);
   private readonly planState = signal<EmployeeCostCenterPlanModel | null>(null);
@@ -47,6 +49,8 @@ export class EmployeeCostCenterStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   /** Las fechas que acompañan al último error de invariante; null si el error no las trae. */
   readonly errorConflict = this.errorConflictState.asReadonly();
   readonly success = this.successState.asReadonly();
@@ -56,6 +60,7 @@ export class EmployeeCostCenterStore {
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }
@@ -88,6 +93,7 @@ export class EmployeeCostCenterStore {
           this.planningState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (planRequestId !== this.planRequestId) {
             return;
           }
@@ -156,6 +162,7 @@ export class EmployeeCostCenterStore {
   private startMutation(): void {
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }
@@ -197,6 +204,7 @@ export class EmployeeCostCenterStore {
 
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (hasKeyChanged || !forceReload) {
       this.successState.set(null);
     }
@@ -213,7 +221,8 @@ export class EmployeeCostCenterStore {
           this.historyState.set(historyModel.distributionHistory);
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -230,6 +239,7 @@ export class EmployeeCostCenterStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }

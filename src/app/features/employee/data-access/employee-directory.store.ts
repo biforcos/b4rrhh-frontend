@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 
 import { EmployeeDirectoryQuery, EmployeeListItemModel } from '../models/employee-list-item.model';
 import { EmployeeDirectoryReadGateway } from './employee-directory-read.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type EmployeeDirectoryErrorCode = 'request-failed';
 
@@ -28,6 +29,7 @@ export class EmployeeDirectoryStore {
   private readonly totalState = signal<number | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<EmployeeDirectoryErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly queryState = signal<EmployeeDirectoryQuery>({
     q: '',
     status: null,
@@ -50,6 +52,8 @@ export class EmployeeDirectoryStore {
   readonly total = this.totalState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
 
   constructor() {
     this.loadDirectory();
@@ -106,6 +110,7 @@ export class EmployeeDirectoryStore {
     this.inFlight?.unsubscribe();
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
 
     this.inFlight = this.employeeDirectoryReadGateway.readDirectory(this.queryState()).subscribe({
       next: (page) => {
@@ -118,7 +123,8 @@ export class EmployeeDirectoryStore {
         }
         this.loadingState.set(false);
       },
-      error: () => {
+      error: (err: unknown) => {
+        this.failureState.set(toHttpFailure(err));
         this.loadingState.set(false);
         this.errorState.set('request-failed');
       },

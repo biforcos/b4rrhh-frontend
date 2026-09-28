@@ -11,6 +11,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { EmployeeContactReadGateway } from './employee-contact-read.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type EmployeeContactErrorCode = 'request-failed';
 
@@ -25,6 +26,7 @@ export class EmployeeContactStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeContactErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly errorMessageState = signal<string | null>(null);
   private readonly successState = signal<'created' | 'updated' | 'deleted' | null>(null);
   private requestId = 0;
@@ -35,11 +37,14 @@ export class EmployeeContactStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly errorMessage = this.errorMessageState.asReadonly();
   readonly success = this.successState.asReadonly();
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorMessageState.set(null);
     this.successState.set(null);
   }
@@ -73,6 +78,7 @@ export class EmployeeContactStore {
           this.loadContactsByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.errorState.set('request-failed');
           void this.applyResolvedErrorMessage(error, errorResolutionToken);
@@ -105,6 +111,7 @@ export class EmployeeContactStore {
           this.loadContactsByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.errorState.set('request-failed');
           void this.applyResolvedErrorMessage(error, errorResolutionToken);
@@ -133,6 +140,7 @@ export class EmployeeContactStore {
           this.loadContactsByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.errorState.set('request-failed');
           void this.applyResolvedErrorMessage(error, errorResolutionToken);
@@ -183,6 +191,7 @@ export class EmployeeContactStore {
           this.loadingState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (requestId !== this.requestId) {
             return;
           }
@@ -202,6 +211,7 @@ export class EmployeeContactStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorMessageState.set(null);
     this.successState.set(null);
   }
@@ -210,6 +220,7 @@ export class EmployeeContactStore {
     const nextToken = this.errorResolutionSequence + 1;
     this.errorResolutionSequence = nextToken;
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorMessageState.set(null);
     return nextToken;
   }

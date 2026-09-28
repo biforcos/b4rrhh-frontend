@@ -10,6 +10,12 @@ import { WorkCenterDetailModel } from '../models/work-center-detail.model';
 import { WorkCenterFormValue } from '../models/work-center-form-value.model';
 import { WorkCenterListItemModel } from '../models/work-center-list-item.model';
 import { WorkCenterBusinessKey, WorkCenterUiMode } from '../models/work-center-ui-state.model';
+import {
+  HttpFailure,
+  describeFailure,
+  toHttpFailure,
+} from '../../../shared/utils/http-failure.util';
+import { workCenterTexts } from '../work-center.texts';
 
 export type WorkCenterErrorCode =
   | 'request-failed'
@@ -26,11 +32,13 @@ export class WorkCenterStore {
   private readonly listState = signal<ReadonlyArray<WorkCenterListItemModel>>([]);
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<WorkCenterErrorCode | null>(null);
+  private readonly listFailureState = signal<HttpFailure | null>(null);
 
   private readonly selectedKeyState = signal<WorkCenterBusinessKey | null>(null);
   private readonly selectedDetailState = signal<WorkCenterDetailModel | null>(null);
   private readonly detailLoadingState = signal(false);
   private readonly detailErrorState = signal<WorkCenterErrorCode | null>(null);
+  private readonly detailFailureState = signal<HttpFailure | null>(null);
   private readonly draftState = signal<EditableWorkCenterDraftModel | null>(null);
 
   private readonly contactsState = signal<ReadonlyArray<WorkCenterContactModel>>([]);
@@ -51,10 +59,13 @@ export class WorkCenterStore {
   readonly workCenters = this.listState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
+  /** Por qué falló la última carga, para decirlo (`b4rrhh/frontend#92`). */
+  readonly listFailure = this.listFailureState.asReadonly();
   readonly selectedKey = this.selectedKeyState.asReadonly();
   readonly selectedDetail = this.selectedDetailState.asReadonly();
   readonly detailLoading = this.detailLoadingState.asReadonly();
   readonly detailError = this.detailErrorState.asReadonly();
+  readonly detailFailure = this.detailFailureState.asReadonly();
   readonly draft = this.draftState.asReadonly();
   readonly contacts = this.contactsState.asReadonly();
   readonly contactsLoading = this.contactsLoadingState.asReadonly();
@@ -93,8 +104,9 @@ export class WorkCenterStore {
           this.listState.set(workCenters);
           this.listLoadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.listLoadingState.set(false);
+          this.listFailureState.set(toHttpFailure(err));
           this.listErrorState.set('request-failed');
         },
       });
@@ -334,6 +346,7 @@ export class WorkCenterStore {
         error: (err: HttpErrorResponse) => {
           this.detailLoadingState.set(false);
           this.modeState.set(err.status === 404 ? 'error' : this.modeState());
+          this.detailFailureState.set(toHttpFailure(err));
           this.detailErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
@@ -352,9 +365,12 @@ export class WorkCenterStore {
           this.contactsState.set(contacts);
           this.contactsLoadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.contactsLoadingState.set(false);
-          this.contactsErrorState.set('request-failed');
+          // El texto ya redactado: el panel lo enseña tal cual (`b4rrhh/frontend#92`).
+          this.contactsErrorState.set(
+            describeFailure(workCenterTexts.contactsLoadFailedMessage, toHttpFailure(err)),
+          );
         },
       });
   }
@@ -373,7 +389,7 @@ export class WorkCenterStore {
     if (err.status === 400) {
       return err.error?.message ?? 'Los datos enviados no son válidos.';
     }
-    return 'No se pudo guardar el centro. Inténtalo de nuevo.';
+    return describeFailure('No se pudo guardar el centro', toHttpFailure(err));
   }
 
   private mapContactSubmitError(err: HttpErrorResponse): string {
@@ -383,9 +399,6 @@ export class WorkCenterStore {
     if (err.status === 400) {
       return err.error?.message ?? 'Los datos del contacto no son válidos.';
     }
-    if (err.status === 409) {
-      return 'Existe un conflicto funcional al gestionar el contacto.';
-    }
-    return 'No se pudo guardar el contacto. Inténtalo de nuevo.';
+    return describeFailure('No se pudo guardar el contacto', toHttpFailure(err));
   }
 }

@@ -16,7 +16,7 @@
 
   @if (error()) {
     <p class="rule-system-list-page__feedback rule-system-list-page__feedback--error">
-      {{ error() || texts.listRequestFailedMessage }}
+      {{ error() || describeFailure(texts.listRequestFailedMessage, null) }}
     </p>
   }
 

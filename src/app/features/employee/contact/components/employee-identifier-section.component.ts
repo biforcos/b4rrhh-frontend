@@ -29,6 +29,7 @@ import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-i
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-section.component';
+import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 interface IdentifierRowViewModel {
   key: string;
@@ -508,13 +509,15 @@ export class EmployeeIdentifierSectionComponent {
           this.availableKeysState.set(options);
           this.syncDraftKeyWithAvailableOptions(options);
         },
-        error: () => {
+        error: (err: unknown) => {
           if (requestId !== this.catalogRequestId) {
             return;
           }
 
           this.catalogLoadingState.set(false);
-          this.publishGlobalFeedback(this.texts.catalogLoadFailedMessage);
+          this.publishGlobalFeedback(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          );
         },
       });
   }

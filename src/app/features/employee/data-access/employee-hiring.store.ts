@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 import { HireEmployeeDraft, HireEmployeeResult } from '../models/employee-hiring.model';
 import { EmployeeHiringGateway } from './employee-hiring.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type HireEmployeeErrorCode =
   | 'already-exists'
@@ -17,10 +18,13 @@ export class EmployeeHiringStore {
 
   private readonly hiringState = signal(false);
   private readonly errorState = signal<HireEmployeeErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly resultState = signal<HireEmployeeResult | null>(null);
 
   readonly hiring = this.hiringState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly result = this.resultState.asReadonly();
 
   hire(draft: HireEmployeeDraft): void {
@@ -28,6 +32,7 @@ export class EmployeeHiringStore {
 
     this.hiringState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.resultState.set(null);
 
     this.gateway
@@ -39,6 +44,7 @@ export class EmployeeHiringStore {
           this.resultState.set(result);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.hiringState.set(false);
           this.errorState.set(this.mapError(error));
         },
@@ -54,6 +60,7 @@ export class EmployeeHiringStore {
   reset(): void {
     this.hiringState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.resultState.set(null);
   }
 }

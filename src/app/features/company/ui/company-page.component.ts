@@ -10,6 +10,7 @@ import { DisplayNameFormatCardComponent } from './display-name-format-card.compo
 import { EmployeeNumberingConfigCardComponent } from './employee-numbering-config-card.component';
 import { MasterDetailPageShellComponent } from '../../../shared/ui/master-detail-page-shell/master-detail-page-shell.component';
 import { SectionCardComponent } from '../../../shared/ui/section-card/section-card.component';
+import { describeFailure } from '../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-company-page',
@@ -29,6 +30,8 @@ import { SectionCardComponent } from '../../../shared/ui/section-card/section-ca
 export class CompanyPageComponent {
   protected readonly store = inject(CompanyStore);
   protected readonly texts = companyTexts;
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+  protected readonly describeFailure = describeFailure;
 
   protected onNewCompany(): void {
     this.store.startCreate();

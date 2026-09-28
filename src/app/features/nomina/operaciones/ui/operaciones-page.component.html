@@ -156,7 +156,7 @@
       }
 
       @if (store.invalidateError()) {
-        <p class="ops-page__error">No se pudo procesar la invalidación. Reintenta.</p>
+        <p class="ops-page__error">{{ store.invalidateError() }}</p>
       }
 
       @if (store.invalidateResult(); as result) {
@@ -293,7 +293,7 @@
 
       @if (store.launchError()) {
         <p class="ops-page__error">
-          {{ store.launchErrorMessage() ?? 'No se pudo lanzar el cálculo. Reintenta.' }}
+          {{ store.launchErrorMessage() }}
         </p>
       }
     </div>
@@ -341,7 +341,7 @@
       }
 
       @if (store.finalizeError()) {
-        <p class="ops-page__error">No se pudo procesar el cierre. Reintenta.</p>
+        <p class="ops-page__error">{{ store.finalizeError() }}</p>
       }
 
       @if (store.finalizeResult(); as result) {

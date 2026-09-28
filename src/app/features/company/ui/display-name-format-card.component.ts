@@ -18,6 +18,7 @@ import {
   EmployeeDisplayNameFormatResponseFormatCodeEnum,
   UpsertEmployeeDisplayNameFormatRequestFormatCodeEnum,
 } from '../../../core/api/generated/model/models';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 /**
  * Cómo se llama y cómo se ve cada formato. Esto sí es de aquí: el contrato
@@ -142,7 +143,7 @@ export class DisplayNameFormatCardComponent implements OnChanges {
           setTimeout(() => this.saveSuccess.set(false), 3000);
         },
         error: (err: HttpErrorResponse) => {
-          this.saveError.set('No se pudo guardar el formato. Código: ' + err.status);
+          this.saveError.set(describeFailure('No se pudo guardar el formato', toHttpFailure(err)));
           this.saving.set(false);
         },
       });

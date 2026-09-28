@@ -5,7 +5,7 @@
 
   @if (store.error()) {
     <p class="ejecucion-page__note ejecucion-page__note--error">
-      No se pudo leer la ejecución #{{ runId }}. Recarga la página o vuelve a operaciones.
+      {{ describeFailure('No se pudo leer la ejecución #' + runId, store.failure()) }}
     </p>
   }
 

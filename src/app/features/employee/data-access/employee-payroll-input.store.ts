@@ -12,6 +12,7 @@ import {
   PayrollInputCreateDraft,
   PayrollInputItem,
 } from './employee-payroll-input.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type PayrollInputErrorCode = 'request-failed' | 'duplicate' | 'not-found';
 
@@ -24,6 +25,7 @@ export class EmployeePayrollInputStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<PayrollInputErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly successState = signal<'created' | 'updated' | 'deleted' | null>(null);
   private requestId = 0;
 
@@ -31,10 +33,13 @@ export class EmployeePayrollInputStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly success = this.successState.asReadonly();
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 
@@ -47,6 +52,7 @@ export class EmployeePayrollInputStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -59,6 +65,7 @@ export class EmployeePayrollInputStore {
           this.loadInputsInternal(normalizedKey, this.selectedPeriodState(), true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 409 ? 'duplicate' : 'request-failed');
         },
@@ -75,6 +82,7 @@ export class EmployeePayrollInputStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -87,6 +95,7 @@ export class EmployeePayrollInputStore {
           this.loadInputsInternal(normalizedKey, this.selectedPeriodState(), true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
@@ -98,6 +107,7 @@ export class EmployeePayrollInputStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -110,6 +120,7 @@ export class EmployeePayrollInputStore {
           this.loadInputsInternal(normalizedKey, this.selectedPeriodState(), true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
@@ -148,6 +159,7 @@ export class EmployeePayrollInputStore {
     }
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (hasContextChanged || !forceReload) {
       this.successState.set(null);
     }
@@ -163,7 +175,8 @@ export class EmployeePayrollInputStore {
           this.inputsState.set(items);
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -179,6 +192,7 @@ export class EmployeePayrollInputStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 }

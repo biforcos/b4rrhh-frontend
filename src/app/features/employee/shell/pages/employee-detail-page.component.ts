@@ -60,6 +60,7 @@ import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
 import { seniorityDateFromPresences } from '../../utils/seniority-date.util';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-employee-detail-page',
@@ -113,6 +114,7 @@ export class EmployeeDetailPageComponent {
   protected readonly journey = this.journeyStore.journey;
   protected readonly loadingJourney = this.journeyStore.loading;
   protected readonly journeyError = this.journeyStore.error;
+  protected readonly journeyFailure = this.journeyStore.failure;
   protected readonly contacts = this.contactStore.contacts;
   protected readonly presences = this.presenceStore.presences;
   protected readonly workCenters = this.workCenterStore.workCenters;
@@ -574,7 +576,7 @@ export class EmployeeDetailPageComponent {
       messages.push({
         id: 'employee-detail-load-error',
         level: 'error',
-        text: this.texts.detailLoadFailedMessage,
+        text: describeFailure(this.texts.detailLoadFailedMessage, this.detailStore.detailFailure()),
         sectionId: 'relacion',
         sectionLabel: this.texts.detailPanelTitle,
         sticky: true,
@@ -584,7 +586,10 @@ export class EmployeeDetailPageComponent {
       messages.push({
         id: 'employee-identity-update-error',
         level: 'error',
-        text: this.texts.detailHeaderUpdateErrorMessage,
+        text: describeFailure(
+          this.texts.detailHeaderUpdateErrorMessage,
+          this.detailStore.mutationFailure(),
+        ),
         sectionId: 'relacion',
         sectionLabel: this.texts.detailPanelTitle,
         sticky: true,

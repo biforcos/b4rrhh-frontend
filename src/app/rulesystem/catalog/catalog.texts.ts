@@ -63,6 +63,6 @@ export const catalogTexts = {
   conflictGenericErrorMessage:
     'No se pudo completar la operación porque los datos entraron en conflicto.',
   createSuccessMessage: 'Rule entity creada correctamente.',
-  genericErrorMessage: 'No se pudo completar la operación. Reintenta.',
+  genericErrorMessage: 'No se pudo completar la operación',
   creatingMessage: 'Creando rule entity...',
 } as const;

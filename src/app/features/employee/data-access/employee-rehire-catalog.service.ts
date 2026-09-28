@@ -9,6 +9,7 @@ import {
 import { EmployeeFieldCatalogService } from './employee-field-catalog.service';
 import { SlotKeyOption } from '../shared/ui/section/editable-slot-section.model';
 import { employeeTexts } from '../employee.texts';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Injectable({
   providedIn: 'root',
@@ -76,7 +77,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.workCenters.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -92,7 +96,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.companies.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -104,7 +111,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.entryReasons.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -116,7 +126,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.contractTypes.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -139,7 +152,10 @@ export class EmployeeRehireCatalogService {
             items.map((i) => ({ value: i.code, label: `${i.name ?? ''} · ${i.code}` })),
           );
         },
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -151,7 +167,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.agreements.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -174,7 +193,10 @@ export class EmployeeRehireCatalogService {
             items.map((i) => ({ value: i.code, label: `${i.name ?? ''} · ${i.code}` })),
           );
         },
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }
@@ -186,7 +208,10 @@ export class EmployeeRehireCatalogService {
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.costCenterOptions.set([...opts]),
-        error: () => this.error.set(employeeTexts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.error.set(
+            describeFailure(employeeTexts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
         complete: () => this.finishRequest(),
       });
   }

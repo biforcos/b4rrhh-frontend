@@ -9,6 +9,7 @@ import { WorkCenterStore } from '../store/work-center.store';
 import { workCenterTexts } from '../work-center.texts';
 import { WorkCenterDetailPanelComponent } from './work-center-detail-panel.component';
 import { WorkCenterListComponent } from './work-center-list.component';
+import { describeFailure } from '../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-work-center-page',
@@ -25,6 +26,8 @@ import { WorkCenterListComponent } from './work-center-list.component';
 export class WorkCenterPageComponent {
   protected readonly store = inject(WorkCenterStore);
   protected readonly texts = workCenterTexts;
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+  protected readonly describeFailure = describeFailure;
 
   protected onNewWorkCenter(): void {
     this.store.startCreate();

@@ -13,6 +13,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { EmployeeTaxInformationGateway } from './employee-tax-information.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type TaxInformationErrorCode = 'request-failed' | 'conflict' | 'not-found';
 
@@ -26,6 +27,7 @@ export class EmployeeTaxInformationStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<TaxInformationErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly successState = signal<'created' | 'corrected' | 'deleted' | null>(null);
   private requestId = 0;
 
@@ -33,11 +35,14 @@ export class EmployeeTaxInformationStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly success = this.successState.asReadonly();
   readonly latest = computed(() => this.recordsState()[0] ?? null);
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 
@@ -50,6 +55,7 @@ export class EmployeeTaxInformationStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -62,6 +68,7 @@ export class EmployeeTaxInformationStore {
           this.loadInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 409 ? 'conflict' : 'request-failed');
         },
@@ -77,6 +84,7 @@ export class EmployeeTaxInformationStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -89,6 +97,7 @@ export class EmployeeTaxInformationStore {
           this.loadInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
@@ -100,6 +109,7 @@ export class EmployeeTaxInformationStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -112,6 +122,7 @@ export class EmployeeTaxInformationStore {
           this.loadInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
@@ -138,6 +149,7 @@ export class EmployeeTaxInformationStore {
     }
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (hasKeyChanged || !forceReload) {
       this.successState.set(null);
     }
@@ -153,7 +165,8 @@ export class EmployeeTaxInformationStore {
           this.recordsState.set(records);
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -168,6 +181,7 @@ export class EmployeeTaxInformationStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 }

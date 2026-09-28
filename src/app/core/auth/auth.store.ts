@@ -5,6 +5,7 @@ import { appTexts } from '../i18n/app-texts';
 import { AuthSessionState } from './auth.models';
 import { DemoAuthGateway } from './demo-auth.gateway';
 import { LocalDevAuthGateway } from './local-dev-auth.gateway';
+import { describeFailure, toHttpFailure } from '../../shared/utils/http-failure.util';
 
 const AUTH_STORAGE_KEY = 'b4rrhh.auth.session';
 
@@ -98,12 +99,12 @@ export class AuthStore {
       this.enterSession(nextState);
       this.persistSession(nextState);
       return true;
-    } catch {
+    } catch (err: unknown) {
       this.clearPersistedSession();
       this.sessionState.set({
         ...initialAuthSessionState,
         loading: false,
-        error: appTexts.authLoginErrorMessage,
+        error: loginFailureText(appTexts.authLoginErrorMessage, err),
       });
       return false;
     }
@@ -143,12 +144,12 @@ export class AuthStore {
       this.enterSession(nextState);
       this.persistSession(nextState);
       return true;
-    } catch {
+    } catch (err: unknown) {
       this.clearPersistedSession();
       this.sessionState.set({
         ...initialAuthSessionState,
         loading: false,
-        error: appTexts.demoLoginErrorMessage,
+        error: loginFailureText(appTexts.demoLoginErrorMessage, err),
       });
       return false;
     }
@@ -271,4 +272,16 @@ export class AuthStore {
   private getStorage(): Storage | null {
     return typeof localStorage === 'undefined' ? null : localStorage;
   }
+}
+
+/**
+ * Al entrar, un 401 o un 403 son credenciales que no valen, y eso ya lo dice el texto de la
+ * pantalla. Lo demás —el servidor caído, sin conexión— lo redacta el molde (`b4rrhh/frontend#92`):
+ * antes las dos cosas se leían igual, y quien se equivocaba de contraseña con el backend parado
+ * buscaba el error en la contraseña.
+ */
+function loginFailureText(credentialsText: string, err: unknown): string {
+  const failure = toHttpFailure(err);
+  if (failure.status === 401 || failure.status === 403) return credentialsText;
+  return describeFailure(credentialsText.split('.')[0], failure);
 }

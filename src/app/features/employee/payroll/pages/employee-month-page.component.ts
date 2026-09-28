@@ -21,6 +21,7 @@ import { PayrollPeriod, currentPayrollPeriod } from '../../../../shared/utils/pa
 import { EmployeeMonthNavigatorComponent } from '../components/employee-month-navigator.component';
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
 import { EmployeeRetroMarkSectionComponent } from '../components/employee-retro-mark-section.component';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * Lo que pasa cada mes (`b4rrhh/frontend#90`): ausencias, entradas de nómina y correcciones a meses
@@ -151,7 +152,8 @@ export class EmployeeMonthPageComponent {
     if (code === 'outside-presence') return t.absencesOutsidePresenceMessage;
     if (code === 'invalid-range') return t.absencesInvalidRangeMessage;
     if (code === 'not-found') return t.absencesNotFoundMessage;
-    if (code === 'request-failed') return t.absencesRequestFailedMessage;
+    if (code === 'request-failed')
+      return describeFailure(t.absencesRequestFailedMessage, this.absenceStore.failure());
     return null;
   }
 
@@ -165,7 +167,8 @@ export class EmployeeMonthPageComponent {
     if (code === 'not-active') return t.retroMarksNotActiveMessage;
     if (code === 'not-found') return t.retroMarksNotFoundMessage;
     if (code === 'reason-required') return t.retroMarksReasonRequiredMessage;
-    if (code === 'request-failed') return t.retroMarksLoadFailedMessage;
+    if (code === 'request-failed')
+      return describeFailure(t.retroMarksLoadFailedMessage, this.retroMarkStore.failure());
     return null;
   }
 }

@@ -10,6 +10,7 @@ import {
 } from '../routing/employee-route-key.util';
 import { EmployeeDetailGateway } from './employee-detail.gateway';
 import { EmployeeDetailReadGateway } from './employee-detail-read.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type EmployeeDetailErrorCode = 'not-found' | 'request-failed';
 export type EmployeeDetailMutationErrorCode = 'request-failed';
@@ -26,6 +27,8 @@ export class EmployeeDetailStore {
   private readonly detailErrorState = signal<EmployeeDetailErrorCode | null>(null);
   private readonly mutatingState = signal(false);
   private readonly mutationErrorState = signal<EmployeeDetailMutationErrorCode | null>(null);
+  private readonly detailFailureState = signal<HttpFailure | null>(null);
+  private readonly mutationFailureState = signal<HttpFailure | null>(null);
   private readonly mutationSuccessState = signal<'updated' | null>(null);
   private requestId = 0;
 
@@ -35,6 +38,9 @@ export class EmployeeDetailStore {
   readonly detailError = this.detailErrorState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly mutationError = this.mutationErrorState.asReadonly();
+  /** Lo que se sabe de los fallos, para contarlos y no sólo clasificarlos (`b4rrhh/frontend#92`). */
+  readonly detailFailure = this.detailFailureState.asReadonly();
+  readonly mutationFailure = this.mutationFailureState.asReadonly();
   readonly mutationSuccess = this.mutationSuccessState.asReadonly();
 
   clearMutationFeedback(): void {
@@ -73,8 +79,9 @@ export class EmployeeDetailStore {
           this.mutationSuccessState.set('updated');
           this.loadEmployeeDetailByBusinessKeyInternal(normalizedEmployeeKey, true);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.mutatingState.set(false);
+          this.mutationFailureState.set(toHttpFailure(err));
           this.mutationErrorState.set('request-failed');
         },
       });
@@ -133,12 +140,13 @@ export class EmployeeDetailStore {
 
           this.selectedEmployeeDetailState.set(employeeDetail);
         },
-        error: () => {
+        error: (err: unknown) => {
           if (requestId !== this.requestId) {
             return;
           }
 
           this.loadingDetailState.set(false);
+          this.detailFailureState.set(toHttpFailure(err));
           this.detailErrorState.set('request-failed');
         },
       });

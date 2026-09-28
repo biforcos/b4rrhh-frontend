@@ -67,7 +67,7 @@
   <!-- DataTable -->
   <div class="employee-directory__table-wrapper">
     @if (error()) {
-      <p class="employee-directory__error">{{ texts.directoryLoadFailedMessage }}</p>
+      <p class="employee-directory__error">{{ directoryErrorText() }}</p>
     }
 
     <p-table

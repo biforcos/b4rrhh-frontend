@@ -177,9 +177,7 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
           @if (stepsLoading) {
             <div class="loading-msg">Cargando los pasos del cálculo…</div>
           } @else if (stepsError) {
-            <div class="loading-msg">
-              No se han podido cargar los pasos del cálculo. Inténtalo de nuevo.
-            </div>
+            <div class="loading-msg">{{ stepsError }}</div>
           } @else if (thisPayrollHasNoSteps()) {
             <!--
               Vacío con motivo. Un panel vacío y mudo es indistinguible de «no hay nada que
@@ -352,7 +350,8 @@ export class RecibosValorizacionPanelComponent {
 
   @Input() loading = false;
   @Input() stepsLoading = false;
-  @Input() stepsError = false;
+  /** Por qué no se cargaron los pasos, ya redactado (`b4rrhh/frontend#92`); `null` si cargaron. */
+  @Input() stepsError: string | null = null;
 
   /**
    * Si los pasos de este recibo ya se han pedido y han vuelto.

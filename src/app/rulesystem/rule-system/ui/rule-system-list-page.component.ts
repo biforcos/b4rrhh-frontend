@@ -5,6 +5,7 @@ import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component
 import { UiTagComponent } from '../../../shared/ui/tag/ui-tag.component';
 import { RuleSystemStore } from '../store/rule-system.store';
 import { ruleSystemTexts } from '../rule-system.texts';
+import { describeFailure } from '../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-rule-system-list-page',
@@ -18,6 +19,10 @@ export class RuleSystemListPageComponent {
   private readonly store = inject(RuleSystemStore);
 
   protected readonly texts = ruleSystemTexts;
+
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+
+  protected readonly describeFailure = describeFailure;
   protected readonly items = this.store.items;
   protected readonly loading = this.store.loading;
   protected readonly error = this.store.error;

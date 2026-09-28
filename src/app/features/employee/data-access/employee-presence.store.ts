@@ -8,6 +8,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { EmployeePresenceReadGateway } from './employee-presence-read.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type EmployeePresenceErrorCode = 'request-failed';
 
@@ -20,12 +21,15 @@ export class EmployeePresenceStore {
   private readonly presencesState = signal<ReadonlyArray<EmployeePresenceModel>>([]);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<EmployeePresenceErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private requestId = 0;
 
   readonly selectedEmployeeKey = this.selectedEmployeeKeyState.asReadonly();
   readonly presences = this.presencesState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
 
   loadPresencesByBusinessKey(key: EmployeeBusinessKey | null): void {
     this.loadPresencesByBusinessKeyInternal(key, false);
@@ -55,6 +59,7 @@ export class EmployeePresenceStore {
     this.presencesState.set([]);
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
 
     const requestId = ++this.requestId;
 
@@ -70,7 +75,8 @@ export class EmployeePresenceStore {
           this.presencesState.set(presences);
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) {
             return;
           }
@@ -87,5 +93,6 @@ export class EmployeePresenceStore {
     this.presencesState.set([]);
     this.loadingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
   }
 }

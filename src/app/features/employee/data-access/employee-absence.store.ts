@@ -9,6 +9,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { AbsenceUpsertDraft, EmployeeAbsenceGateway } from './employee-absence.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 /**
  * Los códigos de error que esta sección sabe contar con palabras.
@@ -36,6 +37,7 @@ export class EmployeeAbsenceStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<AbsenceErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly successState = signal<AbsenceSuccessCode | null>(null);
   private requestId = 0;
 
@@ -43,10 +45,13 @@ export class EmployeeAbsenceStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly success = this.successState.asReadonly();
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 
@@ -76,6 +81,7 @@ export class EmployeeAbsenceStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -88,6 +94,7 @@ export class EmployeeAbsenceStore {
           this.loadAbsencesInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(this.mapError(err));
         },
@@ -99,6 +106,7 @@ export class EmployeeAbsenceStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -111,6 +119,7 @@ export class EmployeeAbsenceStore {
           this.loadAbsencesInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(this.mapError(err));
         },
@@ -152,6 +161,7 @@ export class EmployeeAbsenceStore {
     if (!isSameKey) this.absencesState.set([]);
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (!isSameKey || !forceReload) this.successState.set(null);
 
     const requestId = ++this.requestId;
@@ -180,7 +190,8 @@ export class EmployeeAbsenceStore {
           );
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -195,6 +206,7 @@ export class EmployeeAbsenceStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 }

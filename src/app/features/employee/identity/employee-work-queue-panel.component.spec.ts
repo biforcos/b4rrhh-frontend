@@ -28,6 +28,7 @@ describe('EmployeeWorkQueuePanelComponent', () => {
     hasNext: signal(true).asReadonly(),
     loading: signal(false).asReadonly(),
     notice: notice.asReadonly(),
+    failure: signal(null).asReadonly(),
   };
 
   beforeEach(async () => {

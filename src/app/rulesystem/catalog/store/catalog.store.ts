@@ -11,6 +11,7 @@ import { RuleEntityTypeModel } from '../models/rule-entity-type.model';
 import { RuleSystemModel } from '../models/rule-system.model';
 import { catalogTexts } from '../catalog.texts';
 import { currentLocalDate } from '../../../shared/utils/local-date.util';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 type CatalogMutation = 'creating' | 'correcting' | 'closing' | 'deleting';
 
@@ -438,14 +439,10 @@ export class CatalogStore {
         return backendMessage;
       }
 
-      if (typeof error.error === 'string' && error.error.trim().length > 0) {
-        return error.error;
-      }
-
-      return catalogTexts.genericErrorMessage;
+      return describeFailure(catalogTexts.genericErrorMessage, toHttpFailure(error));
     }
 
-    return catalogTexts.genericErrorMessage;
+    return describeFailure(catalogTexts.genericErrorMessage, toHttpFailure(error));
   }
 
   private selectedCorrectingOccurrence(): RuleEntityModel | null {

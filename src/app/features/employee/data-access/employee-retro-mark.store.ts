@@ -10,6 +10,7 @@ import {
 } from '../routing/employee-route-key.util';
 import { EmployeeRetroMarkGateway } from './employee-retro-mark.gateway';
 import { EmployeeWritesNotifier } from './employee-writes.interceptor';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 /**
  * Lo que esta sección sabe contar con palabras.
@@ -32,6 +33,7 @@ export class EmployeeRetroMarkStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<RetroMarkErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly successState = signal<RetroMarkSuccessCode | null>(null);
   private requestId = 0;
 
@@ -39,6 +41,8 @@ export class EmployeeRetroMarkStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly success = this.successState.asReadonly();
 
   constructor() {
@@ -53,6 +57,7 @@ export class EmployeeRetroMarkStore {
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 
@@ -65,6 +70,7 @@ export class EmployeeRetroMarkStore {
     const normalizedKey = toEmployeeBusinessKey(key);
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
 
     this.gateway
@@ -79,6 +85,7 @@ export class EmployeeRetroMarkStore {
           this.loadMarksInternal(normalizedKey, true);
         },
         error: (err: HttpErrorResponse) => {
+          this.failureState.set(toHttpFailure(err));
           this.mutatingState.set(false);
           this.errorState.set(this.mapError(err));
         },
@@ -109,6 +116,7 @@ export class EmployeeRetroMarkStore {
     if (!isSameKey) this.marksState.set([]);
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (!isSameKey || !forceReload) this.successState.set(null);
 
     const requestId = ++this.requestId;
@@ -147,7 +155,8 @@ export class EmployeeRetroMarkStore {
           );
           this.loadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.requestId) return;
           this.loadingState.set(false);
           this.errorState.set('request-failed');
@@ -162,6 +171,7 @@ export class EmployeeRetroMarkStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.successState.set(null);
   }
 }

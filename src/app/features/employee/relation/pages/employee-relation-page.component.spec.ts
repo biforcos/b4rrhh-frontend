@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 
 import { BASE_PATH } from '../../../../core/api/generated/variables';
 import { EmployeeRelationPageComponent } from './employee-relation-page.component';
+import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 
 describe('EmployeeRelationPageComponent', () => {
   let fixture: ComponentFixture<EmployeeRelationPageComponent>;
@@ -85,5 +86,28 @@ describe('EmployeeRelationPageComponent', () => {
     }
 
     expect(laterRounds).toEqual([]);
+  });
+
+  /**
+   * El molde del mensaje global (`b4rrhh/frontend#92`): un fallo de una sección de la relación que
+   * el servidor explica llega explicado al raíl de mensajes, y no como «No se pudo procesar la
+   * operación de contrato. Reintenta.».
+   */
+  it('lo que dice el servidor al fallar llega al mensaje de la sección', () => {
+    const requests = pendingRequests();
+    const contracts = requests.find((r) => r.request.url.endsWith('/contracts'))!;
+    contracts.flush(
+      { message: 'El catálogo de tipos de contrato de ESP no responde' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    for (const other of requests.filter((r) => r !== contracts)) other.flush([]);
+    fixture.detectChanges();
+
+    const texts = TestBed.inject(GlobalMessageService)
+      .messages()
+      .map((m) => m.text);
+    expect(texts).toContain(
+      'No se pudo procesar la operación de contrato: El catálogo de tipos de contrato de ESP no responde.',
+    );
   });
 });

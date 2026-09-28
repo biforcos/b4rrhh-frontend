@@ -3,6 +3,7 @@ import { take } from 'rxjs';
 
 import { EmployeeLaborClassificationCatalogItemModel } from '../models/employee-labor-classification-catalog-item.model';
 import { EmployeeLaborClassificationCatalogGateway } from './employee-labor-classification-catalog.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type EmployeeLaborClassificationCatalogErrorCode = 'request-failed';
 
@@ -25,6 +26,7 @@ export class EmployeeLaborClassificationCatalogStore {
   private readonly loadingAgreementsState = signal(false);
   private readonly loadingCategoriesState = signal(false);
   private readonly errorState = signal<EmployeeLaborClassificationCatalogErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
 
   private agreementsRequestId = 0;
   private categoriesRequestId = 0;
@@ -38,6 +40,8 @@ export class EmployeeLaborClassificationCatalogStore {
   readonly loadingAgreements = this.loadingAgreementsState.asReadonly();
   readonly loadingCategories = this.loadingCategoriesState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
 
   loadAgreements(ruleSystemCode: string, effectiveDate?: string | null): void {
     const normalizedRuleSystemCode = this.normalizeRequiredValue(ruleSystemCode);
@@ -50,6 +54,7 @@ export class EmployeeLaborClassificationCatalogStore {
     this.agreementCategoriesState.set([]);
     this.loadingCategoriesState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
 
     this.loadingAgreementsState.set(true);
     const requestId = ++this.agreementsRequestId;
@@ -66,7 +71,8 @@ export class EmployeeLaborClassificationCatalogStore {
           this.agreementsState.set(agreements);
           this.loadingAgreementsState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.agreementsRequestId) {
             return;
           }
@@ -85,6 +91,7 @@ export class EmployeeLaborClassificationCatalogStore {
     this.agreementCategoriesState.set([]);
     this.loadingCategoriesState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
 
     const ruleSystemCode = this.ruleSystemCodeState();
     if (!ruleSystemCode || !normalizedAgreementCode) {
@@ -106,7 +113,8 @@ export class EmployeeLaborClassificationCatalogStore {
           this.agreementCategoriesState.set(categories);
           this.loadingCategoriesState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
           if (requestId !== this.categoriesRequestId) {
             return;
           }

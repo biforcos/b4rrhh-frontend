@@ -37,6 +37,7 @@ import {
 } from '../../../shared/utils/working-time-preview.util';
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
+import { describeFailure, toHttpFailure } from '../../../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-hire-employee-page',
@@ -211,7 +212,10 @@ export class HireEmployeePageComponent {
             (rss || []).map((rs) => ({ value: rs.code, label: `${rs.name} · ${rs.code}` })),
           );
         },
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
   }
 
@@ -227,23 +231,35 @@ export class HireEmployeePageComponent {
       .loadPresenceCompanyOptions(ruleSystemCode, referenceDate)
       .subscribe({
         next: (opts: any) => this.companies.set([...opts]),
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
     (this.catalogService as any)
       .loadPresenceEntryReasonOptions(ruleSystemCode, referenceDate)
       .subscribe({
         next: (opts: any) => this.entryReasons.set([...opts]),
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
     (this.catalogService as any).loadContractTypeOptions(ruleSystemCode, referenceDate).subscribe({
       next: (opts: any) => this.contractTypes.set([...opts]),
-      error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+      error: (err: unknown) =>
+        this.catalogError.set(
+          describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+        ),
     });
     (this.catalogService as any)
       .loadLaborClassificationAgreementOptions(ruleSystemCode, referenceDate)
       .subscribe({
         next: (opts: any) => this.agreements.set([...opts]),
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
   }
 
@@ -262,7 +278,10 @@ export class HireEmployeePageComponent {
             this.form.get('workCenterCode')?.setValue('');
           }
         },
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
   }
 
@@ -273,7 +292,10 @@ export class HireEmployeePageComponent {
           (resp || []).map((i) => ({ value: i.code, label: `${i.name} · ${i.code}` })),
         );
       },
-      error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+      error: (err: unknown) =>
+        this.catalogError.set(
+          describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+        ),
     });
   }
 
@@ -286,7 +308,10 @@ export class HireEmployeePageComponent {
             (resp || []).map((i) => ({ value: i.code, label: `${i.name} · ${i.code}` })),
           );
         },
-        error: () => this.catalogError.set(this.texts.catalogLoadFailedMessage),
+        error: (err: unknown) =>
+          this.catalogError.set(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          ),
       });
   }
 
@@ -391,6 +416,6 @@ export class HireEmployeePageComponent {
       return this.texts.hireEmployeeInvalidCatalogMessage;
     }
 
-    return this.texts.hireEmployeeErrorMessage;
+    return describeFailure(this.texts.hireEmployeeErrorMessage, this.hiringStore.failure());
   }
 }

@@ -12,6 +12,7 @@ import {
   runProgressPercent,
   unitsWithoutPayslip,
 } from '../models/calculation-run.model';
+import { HttpFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * Cada cuanto se vuelve a preguntar por la ejecucion mientras corre. Tres segundos es lo que usaba
@@ -49,12 +50,15 @@ export class EjecucionStore implements OnDestroy {
   private readonly messagesState = signal<ReadonlyArray<CalculationRunMessage>>([]);
   private readonly loadingState = signal<boolean>(false);
   private readonly errorState = signal<boolean>(false);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly filterState = signal<EjecucionMessageFilter>('ALL');
   private pollSubscription: Subscription | null = null;
 
   readonly run = this.runState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Por qué no se pudo leer, para decirlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   readonly filter = this.filterState.asReadonly();
 
   readonly attentionMessages = computed(() => this.messagesState().filter(messageNeedsAttention));
@@ -102,8 +106,9 @@ export class EjecucionStore implements OnDestroy {
         this.loadingState.set(false);
         this.followWhileUnfinished(run);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.loadingState.set(false);
+        this.failureState.set(toHttpFailure(err));
         this.errorState.set(true);
       },
     });
@@ -136,14 +141,20 @@ export class EjecucionStore implements OnDestroy {
         },
         // Un sondeo que falla no borra lo que ya se esta viendo: la ejecucion sigue su curso en el
         // backend y la pantalla lo dice para que se pueda recargar.
-        error: () => this.errorState.set(true),
+        error: (err: unknown) => {
+          this.failureState.set(toHttpFailure(err));
+          this.errorState.set(true);
+        },
       });
   }
 
   private reloadMessages(runId: number): void {
     this.gateway.listCalculationRunMessages(runId).subscribe({
       next: (messages) => this.messagesState.set(messages),
-      error: () => this.errorState.set(true),
+      error: (err: unknown) => {
+        this.failureState.set(toHttpFailure(err));
+        this.errorState.set(true);
+      },
     });
   }
 

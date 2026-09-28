@@ -29,6 +29,7 @@ import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
 import { DISPLAY_DATE_FORMAT } from '../../../../shared/utils/local-date.util';
 import { employeeTexts } from '../../employee.texts';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
+import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-employee-terminate-panel',
@@ -208,7 +209,9 @@ export class EmployeeTerminatePanelComponent {
         error: (e) => {
           this.options.set([]);
           this.optionsLoading.set(false);
-          this.errorMsg.set(this.texts.terminatePanelLoadExitReasonsErrorMessage);
+          this.errorMsg.set(
+            describeFailure(this.texts.terminatePanelLoadExitReasonsErrorMessage, toHttpFailure(e)),
+          );
           if (isDevMode()) {
             console.warn('[TerminatePanel] failed loading exit reasons', e);
           }

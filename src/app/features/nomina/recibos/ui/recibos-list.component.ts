@@ -10,6 +10,7 @@ import {
   arePayrollBusinessKeysEqual,
   buildPayrollDetailRouteCommands,
 } from '../routing/payroll-route-key.util';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 const STATUS_LABELS: Record<string, string> = {
   CALCULATED: 'CALCULADA',
@@ -85,7 +86,9 @@ const STATUS_LABELS: Record<string, string> = {
         @if (store.listLoading()) {
           <div class="list-msg">Buscando...</div>
         } @else if (store.listError()) {
-          <div class="list-msg error">Error al cargar las nóminas.</div>
+          <div class="list-msg error">
+            {{ describeFailure('No se pudieron cargar los recibos', store.listFailure()) }}
+          </div>
         } @else if (sinResultados()) {
           <!--
             Vacio con motivo. Se llega aqui desde la ficha de un empleado con el filtro ya
@@ -112,6 +115,8 @@ const STATUS_LABELS: Record<string, string> = {
 })
 export class RecibosListComponent {
   protected readonly store = inject(RecibosStore);
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+  protected readonly describeFailure = describeFailure;
   private readonly route = inject(ActivatedRoute);
 
   protected readonly filters = signal<RecibosFilters>({

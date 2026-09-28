@@ -42,6 +42,7 @@ import {
 } from '../../shared/utils/timeline-plan-message.util';
 import { EmployeeLifelineComponent } from '../components/employee-lifeline.component';
 import { EmployeeTodayStripComponent } from '../components/employee-today-strip.component';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * La relación laboral en una sola página (ADR-051): la línea de vida arriba y, debajo, sus
@@ -173,7 +174,7 @@ export class EmployeeRelationPageComponent {
     if (this.presenceStore.error() === 'request-failed') {
       sticky(
         'presence-load-error',
-        t.presenceLoadFailedMessage,
+        describeFailure(t.presenceLoadFailedMessage, this.presenceStore.failure()),
         'presence',
         t.lifelineLanePresence,
       );
@@ -325,7 +326,7 @@ export class EmployeeRelationPageComponent {
       case 'CONTRACT_INVALID_REQUEST':
         return t.contractSectionInvalidRequestMessage;
       case 'request-failed':
-        return t.contractSectionRequestFailedMessage;
+        return describeFailure(t.contractSectionRequestFailedMessage, this.contractStore.failure());
       default:
         return null;
     }
@@ -358,7 +359,10 @@ export class EmployeeRelationPageComponent {
       case 'WORKING_TIME_NUMBER_CONFLICT':
         return t.workingTimeSectionNumberConflictMessage;
       case 'request-failed':
-        return t.workingTimeSectionRequestFailedMessage;
+        return describeFailure(
+          t.workingTimeSectionRequestFailedMessage,
+          this.workingTimeStore.failure(),
+        );
       default:
         return null;
     }
@@ -394,7 +398,10 @@ export class EmployeeRelationPageComponent {
       case 'AGREEMENT_CATEGORY_RELATION_INVALID':
         return t.laborClassificationSectionAgreementCategoryRelationInvalidMessage;
       case 'request-failed':
-        return t.laborClassificationSectionRequestFailedMessage;
+        return describeFailure(
+          t.laborClassificationSectionRequestFailedMessage,
+          this.laborClassificationStore.failure(),
+        );
       default:
         return null;
     }
@@ -431,7 +438,10 @@ export class EmployeeRelationPageComponent {
       case 'WORK_CENTER_DELETE_FORBIDDEN_AT_PRESENCE_START':
         return t.workCenterSectionDeleteForbiddenAtPresenceStartMessage;
       case 'request-failed':
-        return t.workCenterSectionRequestFailedMessage;
+        return describeFailure(
+          t.workCenterSectionRequestFailedMessage,
+          this.workCenterStore.failure(),
+        );
       default:
         return null;
     }
@@ -460,7 +470,10 @@ export class EmployeeRelationPageComponent {
       case null:
         return null;
       default:
-        return t.costCenterSectionRequestFailedMessage;
+        return describeFailure(
+          t.costCenterSectionRequestFailedMessage,
+          this.costCenterStore.failure(),
+        );
     }
   }
 }

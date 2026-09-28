@@ -7,7 +7,7 @@ export const companyTexts = {
   listSubtitle: '',
   listSearchPlaceholder: 'Buscar por código, nombre o razón social',
   listLoadingMessage: 'Cargando empresas...',
-  listLoadFailedMessage: 'No se pudo cargar el listado de empresas. Reintenta.',
+  listLoadFailedMessage: 'No se pudo cargar el listado de empresas',
   listEmptyMessage: 'No hay empresas registradas. Crea la primera empresa.',
   listEmptySearchMessage: 'No hay empresas que coincidan con la búsqueda actual.',
 
@@ -64,7 +64,7 @@ export const companyTexts = {
   fieldCountryCodeLabel: 'País (ISO 3166-1 alpha-3)',
 
   detailLoadingMessage: 'Cargando detalle...',
-  detailLoadFailedMessage: 'No se pudo cargar el detalle de la empresa.',
+  detailLoadFailedMessage: 'No se pudo cargar el detalle de la empresa',
   detailNotFoundMessage: 'No se encontró la empresa seleccionada.',
 
   submitSuccessCreated: 'Empresa creada correctamente.',

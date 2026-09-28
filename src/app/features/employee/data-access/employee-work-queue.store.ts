@@ -9,6 +9,7 @@ import {
   toEmployeeBusinessKey,
 } from '../routing/employee-route-key.util';
 import { EmployeeDirectoryReadGateway } from './employee-directory-read.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 /** Clave de `localStorage`: la cola sobrevive a recargar la página. */
 export const EMPLOYEE_WORK_QUEUE_STORAGE_KEY = 'b4rrhh.employee-work-queue';
@@ -36,6 +37,7 @@ export class EmployeeWorkQueueStore {
   private readonly rawQueue = signal<EmployeeWorkQueue | null>(this.readStorage());
   private readonly loadingState = signal(false);
   private readonly noticeState = signal<EmployeeWorkQueueNotice | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
 
   /** La cola vigente, o `null` si no la hay o se abrió en otro ámbito. */
   readonly queue = computed<EmployeeWorkQueue | null>(() => {
@@ -56,6 +58,8 @@ export class EmployeeWorkQueueStore {
   });
   readonly loading = this.loadingState.asReadonly();
   readonly notice = this.noticeState.asReadonly();
+  /** Por qué falló la última petición de la cola (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
 
   /**
    * Abre la cola con este criterio, en la primera posición. Devuelve la clave del primero, o
@@ -179,7 +183,8 @@ export class EmployeeWorkQueueStore {
         firstValueFrom(this.gateway.readDirectory({ ...criteria, page: index + 1, size: 1 })),
       ]);
       return { items: [...current.items, ...following.items], total: current.total };
-    } catch {
+    } catch (err: unknown) {
+      this.failureState.set(toHttpFailure(err));
       this.noticeState.set('request-failed');
       return null;
     } finally {

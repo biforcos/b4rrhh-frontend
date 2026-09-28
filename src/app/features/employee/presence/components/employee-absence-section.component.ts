@@ -31,6 +31,7 @@ import {
   rangeTouchesPayrollPeriod,
 } from '../../../../shared/utils/payroll-period.util';
 import { EmployeeOtherMonthsComponent } from '../../payroll/components/employee-other-months.component';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * Las ausencias del empleado (`b4rrhh/frontend#84`, `b4rrhh/backend#127`, `b4rrhh/backend#129`).
@@ -325,7 +326,8 @@ export class EmployeeAbsenceSectionComponent {
     if (code === 'outside-presence') return t.absencesOutsidePresenceMessage;
     if (code === 'invalid-range') return t.absencesInvalidRangeMessage;
     if (code === 'not-found') return t.absencesNotFoundMessage;
-    if (code === 'request-failed') return t.absencesRequestFailedMessage;
+    if (code === 'request-failed')
+      return describeFailure(t.absencesRequestFailedMessage, this.store.failure());
     return null;
   }
 

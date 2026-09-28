@@ -90,8 +90,9 @@ describe('Operaciones: el tipo de empleado', () => {
 
     store.launch();
 
+    // Desde `b4rrhh/frontend#92` lo pinta el molde común: lo que se intentaba y lo que dijo.
     expect(store.launchErrorMessage()).toBe(
-      'No existe el empleado «EMP999» de tipo INTERNAL en el sistema de reglas ESP',
+      'No se pudo lanzar el cálculo: No existe el empleado «EMP999» de tipo INTERNAL en el sistema de reglas ESP.',
     );
   });
 });

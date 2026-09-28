@@ -11,6 +11,7 @@ import {
 } from '../../models/employee-journey.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { DISPLAY_DATE_FORMAT, formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import { HttpFailure, describeFailure } from '../../../../shared/utils/http-failure.util';
 
 interface JourneyDetailEntryViewModel {
   id: string;
@@ -114,6 +115,11 @@ export class EmployeeJourneyTimelineComponent {
   readonly presences = input<ReadonlyArray<EmployeePresenceModel> | null>(null);
   readonly loading = input(false);
   readonly error = input<EmployeeJourneyErrorCode | null>(null);
+  /** Lo que se sabe del fallo, para decir por qué no cargó (`b4rrhh/frontend#92`). */
+  readonly failure = input<HttpFailure | null>(null);
+  protected readonly errorText = computed(() =>
+    describeFailure(this.texts.timelineLoadFailedMessage, this.failure()),
+  );
   protected readonly expandedPresences = signal<Record<string, boolean>>({});
 
   protected readonly texts = employeeTexts;

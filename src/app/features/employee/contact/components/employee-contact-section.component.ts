@@ -23,6 +23,7 @@ import { SlotSectionComponent } from '../../../../shared/ui/slot-section/slot-se
 import { UiCatalogLabelComponent } from '../../../../shared/ui/catalog-label/ui-catalog-label.component';
 import { SlotDraft, SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
+import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 interface ContactRowViewModel {
   key: string;
@@ -376,13 +377,15 @@ export class EmployeeContactSectionComponent {
           this.availableContactTypeOptionsState.set(options);
           this.syncDraftKeyWithAvailableOptions(options);
         },
-        error: () => {
+        error: (err: unknown) => {
           if (requestId !== this.catalogRequestId) {
             return;
           }
 
           this.catalogLoadingState.set(false);
-          this.publishGlobalFeedback(this.texts.catalogLoadFailedMessage);
+          this.publishGlobalFeedback(
+            describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
+          );
         },
       });
   }

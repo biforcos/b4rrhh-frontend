@@ -20,6 +20,7 @@ import {
   WorkCenterPlanDraft,
 } from './employee-work-center.mapper';
 import { EmployeeWorkCenterGateway } from './employee-work-center.gateway';
+import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class EmployeeWorkCenterStore {
   private readonly loadingState = signal(false);
   private readonly mutatingState = signal(false);
   private readonly errorState = signal<EmployeeWorkCenterErrorCode | null>(null);
+  private readonly failureState = signal<HttpFailure | null>(null);
   private readonly errorConflictState = signal<TimelineConflict | null>(null);
   private readonly successState = signal<'created' | 'corrected' | 'deleted' | null>(null);
   private readonly planState = signal<EmployeeWorkCenterPlanModel | null>(null);
@@ -43,6 +45,8 @@ export class EmployeeWorkCenterStore {
   readonly loading = this.loadingState.asReadonly();
   readonly mutating = this.mutatingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
+  readonly failure = this.failureState.asReadonly();
   /** Las fechas que acompañan al último error de invariante; null si el error no las trae. */
   readonly errorConflict = this.errorConflictState.asReadonly();
   readonly success = this.successState.asReadonly();
@@ -52,6 +56,7 @@ export class EmployeeWorkCenterStore {
 
   clearFeedback(): void {
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }
@@ -88,6 +93,7 @@ export class EmployeeWorkCenterStore {
           this.planningState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (planRequestId !== this.planRequestId) {
             return;
           }
@@ -118,6 +124,7 @@ export class EmployeeWorkCenterStore {
       .subscribe({
         next: () => this.finishMutation('created', normalizedEmployeeKey),
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -142,6 +149,7 @@ export class EmployeeWorkCenterStore {
       .subscribe({
         next: () => this.finishMutation('corrected', normalizedEmployeeKey),
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -162,6 +170,7 @@ export class EmployeeWorkCenterStore {
       .subscribe({
         next: () => this.finishMutation('deleted', normalizedEmployeeKey),
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           this.mutatingState.set(false);
           this.failWith(error);
         },
@@ -171,6 +180,7 @@ export class EmployeeWorkCenterStore {
   private startMutation(): void {
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }
@@ -213,6 +223,7 @@ export class EmployeeWorkCenterStore {
     }
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.failureState.set(null);
     if (hasKeyChanged || !forceReload) {
       this.successState.set(null);
     }
@@ -232,6 +243,7 @@ export class EmployeeWorkCenterStore {
           this.loadingState.set(false);
         },
         error: (error) => {
+          this.failureState.set(toHttpFailure(error));
           if (requestId !== this.requestId) {
             return;
           }
@@ -250,6 +262,7 @@ export class EmployeeWorkCenterStore {
     this.loadingState.set(false);
     this.mutatingState.set(false);
     this.errorState.set(null);
+    this.failureState.set(null);
     this.errorConflictState.set(null);
     this.successState.set(null);
   }

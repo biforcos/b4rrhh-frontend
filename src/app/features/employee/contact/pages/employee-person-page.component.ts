@@ -25,6 +25,7 @@ import {
   ADDRESS_PLAN_VOCABULARY,
   describeTimelineConflict,
 } from '../../shared/utils/timeline-plan-message.util';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
  * La persona (`b4rrhh/frontend#90`): lo que no tiene período —contactos, identificadores,
@@ -104,7 +105,10 @@ export class EmployeePersonPageComponent {
       messages.push({
         id: 'contact-load-error',
         level: 'error',
-        text: this.texts.contactLoadFailedMessage,
+        text: describeFailure(
+          this.texts.contactLoadFailedMessage,
+          this.employeeContactStore.failure(),
+        ),
         sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
@@ -127,7 +131,10 @@ export class EmployeePersonPageComponent {
       messages.push({
         id: 'identifier-error',
         level: 'error',
-        text: this.texts.identifiersSectionRequestFailedMessage,
+        text: describeFailure(
+          this.texts.identifiersSectionRequestFailedMessage,
+          this.employeeIdentifierStore.failure(),
+        ),
         sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
@@ -227,7 +234,10 @@ export class EmployeePersonPageComponent {
       case 'ADDRESS_INVALID_REQUEST':
         return t.addressesSectionInvalidRequestMessage;
       case 'request-failed':
-        return t.addressesSectionRequestFailedMessage;
+        return describeFailure(
+          t.addressesSectionRequestFailedMessage,
+          this.employeeAddressStore.failure(),
+        );
       default:
         return null;
     }

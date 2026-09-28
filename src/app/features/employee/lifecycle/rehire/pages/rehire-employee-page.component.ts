@@ -38,6 +38,7 @@ import {
 } from '../../../shared/utils/working-time-preview.util';
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
+import { describeFailure } from '../../../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-rehire-employee-page',
@@ -283,7 +284,10 @@ export class RehireEmployeePageComponent {
       case 'invalid-catalog-value':
         return this.texts.rehireEmployeeInvalidCatalogMessage;
       default:
-        return this.texts.rehireEmployeeRequestFailedMessage;
+        return describeFailure(
+          this.texts.rehireEmployeeRequestFailedMessage,
+          this.rehireStore.failure(),
+        );
     }
   }
 

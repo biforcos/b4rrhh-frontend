@@ -24,6 +24,7 @@ import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/s
 import { SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { PayrollPeriod, currentPayrollPeriod } from '../../../../shared/utils/payroll-period.util';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 interface CreateDraft {
   conceptCode: string;
@@ -213,7 +214,8 @@ export class EmployeePayrollInputSectionComponent {
   private mapError(code: string | null): string | null {
     if (code === 'duplicate') return this.texts.payrollInputsDuplicateMessage;
     if (code === 'not-found') return this.texts.payrollInputsNotFoundMessage;
-    if (code === 'request-failed') return this.texts.payrollInputsRequestFailedMessage;
+    if (code === 'request-failed')
+      return describeFailure(this.texts.payrollInputsRequestFailedMessage, this.store.failure());
     return null;
   }
 

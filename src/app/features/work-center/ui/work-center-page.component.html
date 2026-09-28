@@ -4,7 +4,9 @@
       [workCenters]="store.workCenters()"
       [selectedKey]="store.selectedKey()"
       [loading]="store.listLoading()"
-      [errorMessage]="store.listError() ? texts.listLoadFailedMessage : null"
+      [errorMessage]="
+        store.listError() ? describeFailure(texts.listLoadFailedMessage, store.listFailure()) : null
+      "
       (newRequested)="onNewWorkCenter()"
       (workCenterSelected)="onWorkCenterSelected($event)"
     />
@@ -30,7 +32,7 @@
       } @else if (store.detailError()) {
         <app-section-card [title]="texts.detailPanelTitle">
           <p class="work-center-page__feedback work-center-page__feedback--error">
-            {{ texts.detailLoadFailedMessage }}
+            {{ describeFailure(texts.detailLoadFailedMessage, store.detailFailure()) }}
           </p>
         </app-section-card>
       } @else {

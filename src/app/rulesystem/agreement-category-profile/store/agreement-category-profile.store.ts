@@ -8,6 +8,7 @@ import {
   AgreementCategoryWithProfileModel,
   SimpleOption,
 } from '../models/agreement-category-profile.model';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 type LoadingState = 'idle' | 'rule-systems' | 'agreements' | 'categories';
 
@@ -70,8 +71,10 @@ export class AgreementCategoryProfileStore {
           this.ruleSystemsState.set(items);
           this.loadingState.set('idle');
         },
-        error: () => {
-          this.errorMessageState.set('Error al cargar los sistemas de reglas.');
+        error: (err: unknown) => {
+          this.errorMessageState.set(
+            describeFailure('No se pudieron cargar los sistemas de reglas', toHttpFailure(err)),
+          );
           this.loadingState.set('idle');
         },
       });
@@ -150,10 +153,9 @@ export class AgreementCategoryProfileStore {
         },
         error: (err: HttpErrorResponse) => {
           this.savingState.set(false);
-          const message =
-            (err.error as { message?: string })?.message ??
-            'Error al guardar. Comprueba el grupo de cotización.';
-          this.errorMessageState.set(message);
+          this.errorMessageState.set(
+            describeFailure('No se pudo guardar el perfil', toHttpFailure(err)),
+          );
         },
       });
   }
@@ -173,8 +175,10 @@ export class AgreementCategoryProfileStore {
           this.agreementsState.set(items);
           this.loadingState.set('idle');
         },
-        error: () => {
-          this.errorMessageState.set('Error al cargar los convenios.');
+        error: (err: unknown) => {
+          this.errorMessageState.set(
+            describeFailure('No se pudieron cargar los convenios', toHttpFailure(err)),
+          );
           this.loadingState.set('idle');
         },
       });
@@ -197,8 +201,10 @@ export class AgreementCategoryProfileStore {
           this.categoriesState.set(items);
           this.loadingState.set('idle');
         },
-        error: () => {
-          this.errorMessageState.set('Error al cargar las categorías.');
+        error: (err: unknown) => {
+          this.errorMessageState.set(
+            describeFailure('No se pudieron cargar las categorías', toHttpFailure(err)),
+          );
           this.loadingState.set('idle');
         },
       });

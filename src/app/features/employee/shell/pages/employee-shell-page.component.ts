@@ -22,6 +22,7 @@ import { buildEmployeeDetailRouteCommands } from '../../routing/employee-route-b
 import { toEmployeeBusinessKey } from '../../routing/employee-route-key.util';
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
 import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-skeleton.component';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /** `ui-select` reserva `''` para su placeholder: «Todos» necesita un valor propio. */
 const ALL_STATUSES = 'ALL';
@@ -71,6 +72,9 @@ export class EmployeeShellPageComponent {
     });
 
   protected readonly texts = employeeTexts;
+  protected readonly directoryErrorText = computed(() =>
+    describeFailure(this.texts.directoryLoadFailedMessage, this.directoryStore.failure()),
+  );
   /** Lo que hay escrito; al volver de una ficha, lo que había (el store lo recuerda). */
   protected readonly searchValue = signal(this.directoryStore.query());
   /** La cola viva, si la hay (frontend#20): volver a la lista no la pierde; aquí se puede continuar. */

@@ -22,6 +22,7 @@ import {
   runTotalWorkUnits,
 } from '../models/calculation-run.model';
 import { EjecucionMessageFilter, EjecucionStore } from '../store/ejecucion.store';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 interface CounterView {
   readonly label: string;
@@ -57,6 +58,8 @@ interface CounterView {
 })
 export class EjecucionPageComponent {
   protected readonly store = inject(EjecucionStore);
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+  protected readonly describeFailure = describeFailure;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 

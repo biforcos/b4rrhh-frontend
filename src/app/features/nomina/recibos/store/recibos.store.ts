@@ -18,6 +18,11 @@ import {
 } from '../models/payroll-summary.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { arePayrollBusinessKeysEqual } from '../routing/payroll-route-key.util';
+import {
+  HttpFailure,
+  describeFailure,
+  toHttpFailure,
+} from '../../../../shared/utils/http-failure.util';
 
 export type RecibosErrorCode = 'request-failed' | 'not-found' | 'transition-failed';
 
@@ -72,6 +77,7 @@ export class RecibosStore {
   private readonly payrollsState = signal<ReadonlyArray<PayrollSummaryModel>>([]);
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<RecibosErrorCode | null>(null);
+  private readonly listFailureState = signal<HttpFailure | null>(null);
 
   /**
    * Con qué filtros volvió la última búsqueda, o `null` si todavía no ha vuelto ninguna.
@@ -145,6 +151,7 @@ export class RecibosStore {
   private readonly recalculoSeqState = signal(0);
   private readonly conceptsLoadingState = signal(false);
   private readonly conceptsErrorState = signal<RecibosErrorCode | null>(null);
+  private readonly conceptsFailureState = signal<HttpFailure | null>(null);
   /**
    * Los bloques declarados del recibo (`b4rrhh/backend#109`).
    *
@@ -171,6 +178,7 @@ export class RecibosStore {
   private readonly stepsState = signal<ReadonlyArray<PayrollCalculationStepModel>>([]);
   private readonly stepsLoadingState = signal(false);
   private readonly stepsErrorState = signal<RecibosErrorCode | null>(null);
+  private readonly stepsFailureState = signal<HttpFailure | null>(null);
   private readonly stepsLoadedKeyState = signal<PayrollBusinessKey | null>(null);
 
   private readonly transitioningState = signal(false);
@@ -201,6 +209,10 @@ export class RecibosStore {
   readonly payrolls = this.payrollsState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
+  /** Por qué falló cada carga, para decirlo (`b4rrhh/frontend#92`). */
+  readonly listFailure = this.listFailureState.asReadonly();
+  readonly conceptsFailure = this.conceptsFailureState.asReadonly();
+  readonly stepsFailure = this.stepsFailureState.asReadonly();
   readonly searchedFilters = this.searchedFiltersState.asReadonly();
   readonly selectedKey = this.selectedKeyState.asReadonly();
   readonly selectedPayroll = this.selectedPayrollState.asReadonly();
@@ -252,8 +264,9 @@ export class RecibosStore {
           this.searchedFiltersState.set(filters);
           this.listLoadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.listLoadingState.set(false);
+          this.listFailureState.set(toHttpFailure(err));
           this.listErrorState.set('request-failed');
         },
       });
@@ -356,6 +369,7 @@ export class RecibosStore {
           this.stepsLoadingState.set(false);
           // Aqui un 404 es el recibo que no existe, no unos pasos que falten: un recibo que si
           // existe y no tiene ninguno responde 200 con lista vacia.
+          this.stepsFailureState.set(toHttpFailure(err));
           this.stepsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
@@ -509,7 +523,10 @@ export class RecibosStore {
     // Y el único que sí se reintenta.
     if (err.status === 503)
       return 'El almacén de documentos no responde. Vuelve a intentarlo en un momento.';
-    return 'No se ha podido descargar el documento. Inténtalo de nuevo.';
+    return describeFailure('No se ha podido descargar el documento', {
+      status: err.status,
+      serverMessage: null,
+    });
   }
 
   recalculateFrom(key: PayrollBusinessKey, status: PayrollSummaryModel['status']): void {
@@ -621,6 +638,7 @@ export class RecibosStore {
           this.conceptsLoadingState.set(false);
           // Un 404 no es un fallo de red: es una dirección que no nombra ningún recibo, y la
           // pantalla tiene que decir eso y no quedarse en blanco (`frontend#64`, criterio 4).
+          this.conceptsFailureState.set(toHttpFailure(err));
           this.conceptsErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
@@ -699,6 +717,6 @@ export class RecibosStore {
     if (err.status === 422)
       return err.error?.message ?? 'El cálculo falló por la reglamentación configurada.';
     if (err.status === 404) return 'Nómina no encontrada.';
-    return 'Error al cambiar el estado. Inténtalo de nuevo.';
+    return describeFailure('No se pudo cambiar el estado del recibo', toHttpFailure(err));
   }
 }

@@ -283,7 +283,7 @@
           <p
             class="work-center-detail-panel__empty-copy work-center-detail-panel__empty-copy--error"
           >
-            {{ texts.contactsLoadFailedMessage }}
+            {{ contactsError() }}
           </p>
         } @else if (contacts().length === 0) {
           <p class="work-center-detail-panel__empty-copy">{{ texts.contactsEmptyMessage }}</p>

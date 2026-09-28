@@ -14,6 +14,7 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
 import { EmployeePhotoService } from '../data-access/employee-photo.service';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 @Component({
   selector: 'app-employee-photo-upload-dialog',
@@ -71,9 +72,9 @@ export class EmployeePhotoUploadDialogComponent {
         this.croppedBlob.set(null);
         this.photoConfirmed.emit(employee.photoUrl ?? '');
       },
-      error: () => {
+      error: (err: unknown) => {
         this.uploading.set(false);
-        this.uploadError.set('Error al subir la foto. Inténtalo de nuevo.');
+        this.uploadError.set(describeFailure('No se pudo subir la foto', toHttpFailure(err)));
       },
     });
   }

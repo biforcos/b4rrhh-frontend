@@ -14,6 +14,7 @@ import { RecibosStore } from '../store/recibos.store';
 import { readPayrollBusinessKeyFromParamMap } from '../routing/payroll-route-key.util';
 import { RecibosFolioComponent } from './recibos-folio.component';
 import { RecibosValorizacionPanelComponent } from './recibos-valorizacion-panel.component';
+import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 const STATUS_LABELS: Record<string, string> = {
   CALCULATED: 'CALCULADA',
@@ -349,7 +350,14 @@ const STATUS_LABELS: Record<string, string> = {
           [loading]="store.conceptsLoading()"
           [steps]="store.steps()"
           [stepsLoading]="store.stepsLoading()"
-          [stepsError]="store.stepsError() !== null"
+          [stepsError]="
+            store.stepsError() === null
+              ? null
+              : describeFailure(
+                  'No se han podido cargar los pasos del cálculo',
+                  store.stepsFailure()
+                )
+          "
           [stepsLoaded]="store.stepsLoaded() !== null"
           [payrollKey]="payroll.employeeNumber + ' · Período ' + payroll.payrollPeriodCode"
           [payrollAddress]="store.selectedKey()"
@@ -365,7 +373,9 @@ const STATUS_LABELS: Record<string, string> = {
         <p>{{ addressLabel() }}</p>
       </div>
     } @else if (store.conceptsError()) {
-      <div class="no-selection">No se ha podido cargar el recibo. Inténtalo de nuevo.</div>
+      <div class="no-selection">
+        {{ describeFailure('No se ha podido cargar el recibo', store.conceptsFailure()) }}
+      </div>
     } @else if (badAddress()) {
       <div class="no-selection">
         <p class="no-selection-title">Esta dirección no es la de ningún recibo.</p>
@@ -382,6 +392,8 @@ const STATUS_LABELS: Record<string, string> = {
 })
 export class RecibosDetailComponent {
   protected readonly store = inject(RecibosStore);
+  /** El molde de un error en pantalla (`b4rrhh/frontend#92`), para la plantilla. */
+  protected readonly describeFailure = describeFailure;
   private readonly route = inject(ActivatedRoute);
 
   readonly drawerOpen = signal(false);

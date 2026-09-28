@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -6,6 +5,7 @@ import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { TargetSelectionMode, buildTargetSelectionPayload } from '../models/target-selection.model';
+import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 
 function currentPeriod(): number {
   const now = new Date();
@@ -351,9 +351,11 @@ export class OperacionesStore {
           this.invalidatingState.set(false);
           this.invalidateResultState.set(result);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.invalidatingState.set(false);
-          this.invalidateErrorState.set('request-failed');
+          this.invalidateErrorState.set(
+            describeFailure('No se pudo invalidar', toHttpFailure(err)),
+          );
         },
       });
   }
@@ -402,9 +404,9 @@ export class OperacionesStore {
           this.finalizingState.set(false);
           this.finalizeResultState.set(result);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.finalizingState.set(false);
-          this.finalizeErrorState.set('request-failed');
+          this.finalizeErrorState.set(describeFailure('No se pudo cerrar', toHttpFailure(err)));
         },
       });
   }
@@ -450,16 +452,10 @@ export class OperacionesStore {
         error: (err: unknown) => {
           this.launchingState.set(false);
           this.launchErrorState.set('launch-failed');
-          this.launchErrorMessageState.set(serverMessage(err));
+          this.launchErrorMessageState.set(
+            describeFailure('No se pudo lanzar el cálculo', toHttpFailure(err)),
+          );
         },
       });
   }
-}
-
-/** El mensaje del cuerpo de un 4xx del servidor, si lo trae. */
-function serverMessage(err: unknown): string | null {
-  if (err instanceof HttpErrorResponse && err.error && typeof err.error.message === 'string') {
-    return err.error.message;
-  }
-  return null;
 }

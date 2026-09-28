@@ -8,6 +8,11 @@ import { CompanyListItemModel } from '../models/company-list-item.model';
 import { EditableCompanyDraftModel } from '../models/editable-company-draft.model';
 import { CompanyFormValue } from '../models/company-form-value.model';
 import { CompanyBusinessKey, CompanyUiMode } from '../models/company-ui-state.model';
+import {
+  HttpFailure,
+  describeFailure,
+  toHttpFailure,
+} from '../../../shared/utils/http-failure.util';
 
 export type CompanyErrorCode = 'request-failed' | 'not-found' | 'already-exists' | 'not-applicable';
 
@@ -20,11 +25,13 @@ export class CompanyStore {
   private readonly listState = signal<ReadonlyArray<CompanyListItemModel>>([]);
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<CompanyErrorCode | null>(null);
+  private readonly listFailureState = signal<HttpFailure | null>(null);
 
   private readonly selectedKeyState = signal<CompanyBusinessKey | null>(null);
   private readonly selectedDetailState = signal<CompanyDetailModel | null>(null);
   private readonly detailLoadingState = signal(false);
   private readonly detailErrorState = signal<CompanyErrorCode | null>(null);
+  private readonly detailFailureState = signal<HttpFailure | null>(null);
   private readonly draftState = signal<EditableCompanyDraftModel | null>(null);
 
   private readonly modeState = signal<CompanyUiMode>('idle');
@@ -36,11 +43,14 @@ export class CompanyStore {
   readonly companies = this.listState.asReadonly();
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
+  /** Por qué falló la última carga, para decirlo (`b4rrhh/frontend#92`). */
+  readonly listFailure = this.listFailureState.asReadonly();
 
   readonly selectedKey = this.selectedKeyState.asReadonly();
   readonly selectedDetail = this.selectedDetailState.asReadonly();
   readonly detailLoading = this.detailLoadingState.asReadonly();
   readonly detailError = this.detailErrorState.asReadonly();
+  readonly detailFailure = this.detailFailureState.asReadonly();
   readonly draft = this.draftState.asReadonly();
 
   readonly mode = this.modeState.asReadonly();
@@ -74,8 +84,9 @@ export class CompanyStore {
           this.listState.set(companies);
           this.listLoadingState.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.listLoadingState.set(false);
+          this.listFailureState.set(toHttpFailure(err));
           this.listErrorState.set('request-failed');
         },
       });
@@ -220,6 +231,7 @@ export class CompanyStore {
         error: (err: HttpErrorResponse) => {
           this.detailLoadingState.set(false);
           this.modeState.set(err.status === 404 ? 'error' : this.modeState());
+          this.detailFailureState.set(toHttpFailure(err));
           this.detailErrorState.set(err.status === 404 ? 'not-found' : 'request-failed');
         },
       });
@@ -240,6 +252,6 @@ export class CompanyStore {
       const message: string | undefined = err.error?.message;
       return message ?? 'Los datos enviados no son válidos. Revisa el formulario.';
     }
-    return 'No se pudo guardar la empresa. Inténtalo de nuevo.';
+    return describeFailure('No se pudo guardar la empresa', toHttpFailure(err));
   }
 }

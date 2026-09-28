@@ -39,6 +39,7 @@ import { WorkCenterContactModel } from '../models/work-center-contact.model';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
 import { WorkCenterFormValue } from '../models/work-center-form-value.model';
 import { workCenterTexts } from '../work-center.texts';
+import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
 
 export type WorkCenterDetailMode = 'create' | 'view' | 'edit';
 
@@ -460,13 +461,15 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
           this.contactTypeOptionsState.set(options);
           this.syncCreateSelectionWithAvailableOptions(options);
         },
-        error: () => {
+        error: (err: unknown) => {
           if (requestId !== this.contactTypeRequestId) {
             return;
           }
 
           this.contactTypeOptionsLoadingState.set(false);
-          this.contactTypeOptionsErrorState.set(this.texts.contactsCatalogLoadFailedMessage);
+          this.contactTypeOptionsErrorState.set(
+            describeFailure(this.texts.contactsCatalogLoadFailedMessage, toHttpFailure(err)),
+          );
           if (this.isContactCreateMode()) {
             this.contactForm.get('contactTypeCode')?.setValue('');
           }

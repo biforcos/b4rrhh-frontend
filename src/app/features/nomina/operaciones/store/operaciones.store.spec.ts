@@ -199,7 +199,10 @@ describe('OperacionesStore', () => {
       store.armFinalize();
       store.finalize();
 
-      expect(store.finalizeError()).toBe('request-failed');
+      // Sin respuesta del servidor el molde lo dice, y ahí reintentar sí sirve (`frontend#92`).
+      expect(store.finalizeError()).toBe(
+        'No se pudo cerrar: no hay conexión con el servidor. Reintenta cuando vuelva.',
+      );
       expect(store.finalizeResult()).toBeNull();
       expect(store.finalizing()).toBe(false);
     });
