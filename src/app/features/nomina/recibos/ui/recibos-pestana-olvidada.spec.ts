@@ -63,6 +63,9 @@ describe('Volver a la pestaña del recibo', () => {
             runId: signal(1),
             rulesChanged: signal(false),
             lineasMovidas: signal(new Set<number>()),
+            // De la línea a su explicación (frontend#93): ninguna explicada.
+            explainedLine: signal(null),
+            explainedArrear: signal(null),
             recalculoSeq: signal(0),
             concepts: signal([]),
             payslipSections: signal([]),

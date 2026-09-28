@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import { formatValor } from '../format/recibos.format';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
@@ -198,7 +198,15 @@ const MONTH_NAMES_ES = [
                   <td>{{ periodo(fila.concept) }}</td>
                   <td>{{ fila.concept.conceptCode }}</td>
                   <td>
-                    {{ fila.concept.conceptLabel }}
+                    <!-- De la línea a su explicación, en un clic (frontend#93). -->
+                    <button
+                      type="button"
+                      class="concepto-explicable"
+                      [attr.aria-label]="'De dónde sale ' + fila.concept.conceptLabel"
+                      (click)="lineRequested.emit(fila.concept)"
+                    >
+                      {{ fila.concept.conceptLabel }}
+                    </button>
                     @if (fila.concept.mergedStepCount > 1) {
                       <span
                         class="concept-merged"
@@ -309,7 +317,14 @@ const MONTH_NAMES_ES = [
                     <td>{{ periodo(concept) }}</td>
                     <td>{{ concept.conceptCode }}</td>
                     <td>
-                      {{ concept.conceptLabel }}
+                      <button
+                        type="button"
+                        class="concepto-explicable"
+                        [attr.aria-label]="'De dónde sale ' + concept.conceptLabel"
+                        (click)="lineRequested.emit(concept)"
+                      >
+                        {{ concept.conceptLabel }}
+                      </button>
                       <!--
                   La marca de fusión (b4rrhh/backend#103). Sólo aparece cuando la línea viene de
                   más de un paso: una marca que saliera en todas no marcaría nada. Dice cuántos
@@ -357,6 +372,8 @@ const MONTH_NAMES_ES = [
 })
 export class RecibosFolioComponent {
   @Input() concepts: ReadonlyArray<PayrollConceptModel> = [];
+  /** Se ha pedido de dónde sale una línea (`b4rrhh/frontend#93`). */
+  @Output() lineRequested = new EventEmitter<PayrollConceptModel>();
   /**
    * Los bloques declarados del recibo, tal y como los sirve la API (`b4rrhh/frontend#76`).
    *

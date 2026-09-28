@@ -93,7 +93,7 @@ describe('RecibosStore', () => {
   });
 
   it('loads payrolls on search', () => {
-    gatewayMock.search.mockReturnValue(of([MOCK_SUMMARY]));
+    gatewayMock.search.mockReturnValue(of({ items: [MOCK_SUMMARY], page: 0, size: 50, total: 1 }));
 
     store.search({ payrollPeriodCode: '202604', employeeNumber: '', status: '' });
 

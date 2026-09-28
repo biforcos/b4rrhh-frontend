@@ -372,6 +372,14 @@ export class RecibosValorizacionPanelComponent {
   @Input() payrollAddress: PayrollBusinessKey | null = null;
 
   @Output() close = new EventEmitter<void>();
+  /**
+   * Abrirse en «Cálculo» con los pasos de un concepto señalados: es el «ver sus pasos» de la
+   * explicación de una línea (`b4rrhh/frontend#93`). Lleva un número de pedido para que pedir dos
+   * veces el mismo concepto vuelva a centrarlo.
+   */
+  @Input() set focusConcept(request: { conceptCode: string; seq: number } | null) {
+    if (request) this.onNodeClicked(request.conceptCode);
+  }
 
   /** La primera vez que alguien abre «Cálculo». Quien sólo mira el recibo no pide los 35 pasos. */
   @Output() stepsRequested = new EventEmitter<void>();

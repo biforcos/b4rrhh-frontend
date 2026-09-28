@@ -5,22 +5,42 @@ import { Observable } from 'rxjs';
 import { PayrollService } from '../../../../core/api/generated/api/payroll.service';
 import { PayrollEngineService } from '../../../../core/api/generated/api/payroll-engine.service';
 import { PayslipSectionResponse } from '../../../../core/api/generated/model/payslip-section-response';
-import { PayrollSummaryResponse } from '../../../../core/api/generated/model/payroll-summary-response';
+import { PayrollSearchPageResponse } from '../../../../core/api/generated/model/payroll-search-page-response';
 import { PayrollResponse } from '../../../../core/api/generated/model/payroll-response';
 import { PayrollCalculationStepResponse } from '../../../../core/api/generated/model/payroll-calculation-step-response';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
+import { ArrearExplanationResponse } from '../../../../core/api/generated/model/arrear-explanation-response';
 
 @Injectable({ providedIn: 'root' })
 export class RecibosClient {
   private readonly api = inject(PayrollService);
   private readonly engineApi = inject(PayrollEngineService);
 
-  search(filters: RecibosFilters): Observable<Array<PayrollSummaryResponse>> {
+  /** Una página de la búsqueda, con el total (`b4rrhh/frontend#93`). */
+  search(
+    filters: RecibosFilters,
+    page: number,
+    size: number,
+  ): Observable<PayrollSearchPageResponse> {
     return this.api.searchPayrolls({
       payrollPeriodCode: filters.payrollPeriodCode || undefined,
       employeeNumber: filters.employeeNumber || undefined,
       status: filters.status || undefined,
+      page,
+      size,
+    });
+  }
+
+  /** De dónde sale cada línea de atraso del recibo (`backend#134`). */
+  explainArrears(key: PayrollBusinessKey): Observable<Array<ArrearExplanationResponse>> {
+    return this.api.explainPayrollArrears({
+      ruleSystemCode: key.ruleSystemCode,
+      employeeTypeCode: key.employeeTypeCode,
+      employeeNumber: key.employeeNumber,
+      payrollPeriodCode: key.payrollPeriodCode,
+      payrollTypeCode: key.payrollTypeCode,
+      presenceNumber: key.presenceNumber,
     });
   }
 

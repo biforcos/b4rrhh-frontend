@@ -15,6 +15,7 @@ import { readPayrollBusinessKeyFromParamMap } from '../routing/payroll-route-key
 import { RecibosFolioComponent } from './recibos-folio.component';
 import { RecibosValorizacionPanelComponent } from './recibos-valorizacion-panel.component';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
+import { RecibosLineaExplicadaComponent } from './recibos-linea-explicada.component';
 
 const STATUS_LABELS: Record<string, string> = {
   CALCULATED: 'CALCULADA',
@@ -27,7 +28,13 @@ const STATUS_LABELS: Record<string, string> = {
   selector: 'app-recibos-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RouterLink, RecibosFolioComponent, RecibosValorizacionPanelComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RecibosFolioComponent,
+    RecibosValorizacionPanelComponent,
+    RecibosLineaExplicadaComponent,
+  ],
   template: `
     @if (store.selectedPayroll(); as payroll) {
       <div class="action-bar">
@@ -323,6 +330,15 @@ const STATUS_LABELS: Record<string, string> = {
       }
 
       <div class="folio-wrapper">
+        @if (store.explainedLine(); as line) {
+          <app-recibos-linea-explicada
+            [concept]="line"
+            [payrollPeriodCode]="payroll.payrollPeriodCode"
+            [arrear]="store.explainedArrear()"
+            (stepsRequested)="verPasos(line.conceptCode)"
+            (closed)="store.clearExplainedLine()"
+          />
+        }
         @if (store.conceptsLoading()) {
           <div class="loading-msg">Cargando conceptos...</div>
         } @else {
@@ -340,6 +356,7 @@ const STATUS_LABELS: Record<string, string> = {
             [seniorityDate]="store.seniorityDate()"
             [workCenterCode]="store.workCenterCode()"
             [workCenterName]="store.workCenterName()"
+            (lineRequested)="store.explainLine($event)"
           />
         }
       </div>
@@ -361,6 +378,7 @@ const STATUS_LABELS: Record<string, string> = {
           [stepsLoaded]="store.stepsLoaded() !== null"
           [payrollKey]="payroll.employeeNumber + ' · Período ' + payroll.payrollPeriodCode"
           [payrollAddress]="store.selectedKey()"
+          [focusConcept]="pasosPedidos()"
           (stepsRequested)="loadCalculationSteps()"
           (close)="drawerOpen.set(false)"
         />
@@ -397,6 +415,16 @@ export class RecibosDetailComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly drawerOpen = signal(false);
+  /** El concepto cuyos pasos se han pedido desde su explicación (`b4rrhh/frontend#93`). */
+  protected readonly pasosPedidos = signal<{ conceptCode: string; seq: number } | null>(null);
+  private pasosSeq = 0;
+
+  /** «Ver sus pasos»: abre la valorización en «Cálculo» con los de ese concepto señalados. */
+  protected verPasos(conceptCode: string): void {
+    this.drawerOpen.set(true);
+    this.pasosSeq += 1;
+    this.pasosPedidos.set({ conceptCode, seq: this.pasosSeq });
+  }
   /** La URL nombra un recibo imposible: el tipo o el número de presencia no valen. */
   protected readonly badAddress = signal(false);
   protected readonly addressLabel = signal('');

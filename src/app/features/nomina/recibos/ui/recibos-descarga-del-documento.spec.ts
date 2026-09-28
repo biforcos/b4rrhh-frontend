@@ -70,6 +70,9 @@ describe('Descargar el documento desde la pantalla del recibo', () => {
             runId: signal(1),
             rulesChanged,
             lineasMovidas: signal(new Set<number>([1, 2])),
+            // De la línea a su explicación (frontend#93): ninguna explicada.
+            explainedLine: signal(null),
+            explainedArrear: signal(null),
             recalculoSeq,
             concepts: signal([]),
             payslipSections: signal([]),

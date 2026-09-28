@@ -4827,17 +4827,38 @@ paths:
           schema:
             type: string
             enum: [NOT_VALID, CALCULATED, EXPLICIT_VALIDATED, DEFINITIVE]
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: Zero-based page index. Defaults to 0.
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 200
+          description: Page size. Defaults to 50.
+      description: >-
+        One page of the payrolls that match the filters, with the total (b4rrhh/frontend#93). Before,
+        this returned a bare list cut at 500 without saying so. Ordered by period, most recent first;
+        within a period, the ones not yet closed (not DEFINITIVE) come before the closed ones, then by
+        employee number, presence and payroll type. So the first payroll of an unfiltered search belongs
+        to the open period, and one employee's list starts with the month in progress.
       responses:
         "200":
-          description: List of matching payrolls
+          description: One page of matching payrolls, with the total across all pages
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PayrollSummaryResponse"
+                $ref: "#/components/schemas/PayrollSearchPageResponse"
         "400":
-          description: Invalid query parameters
+          description: Invalid query parameters (an unknown status, or a page or size out of bounds)
 
   /payrolls/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/{payrollPeriodCode}/{payrollTypeCode}/{presenceNumber}:
     get:
@@ -8794,6 +8815,37 @@ components:
         displayName:
           type: string
           description: Computed display name based on the rule system's configured format.
+
+    PayrollSearchPageResponse:
+      type: object
+      description: >-
+        One page of the payroll search (b4rrhh/frontend#93), shaped like the employee directory page.
+        `total` counts every payroll that matches the same filters, not the rows on the page.
+      required:
+        - items
+        - page
+        - size
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayrollSummaryResponse"
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Zero-based index of this page.
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Page size that was applied (the default when none was requested).
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Payrolls matching the filters, across all pages.
 
     EmployeeDirectoryPageResponse:
       type: object

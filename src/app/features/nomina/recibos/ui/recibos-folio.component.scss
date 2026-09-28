@@ -302,3 +302,23 @@
   white-space: nowrap;
   cursor: help;
 }
+
+/*
+ * El concepto de cada línea es el botón que lleva a su explicación (frontend#93). Se lee como el
+ * texto que era; sólo el subrayado al pasar dice que se puede pulsar.
+ */
+.concepto-explicable {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.concepto-explicable:hover,
+.concepto-explicable:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

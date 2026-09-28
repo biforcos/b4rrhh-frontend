@@ -58,9 +58,11 @@ describe('La lista de recibos filtrada por un empleado', () => {
           provide: RecibosGateway,
           useValue: {
             getPayslipSections: () => of([]),
-            search: vi.fn((filtros: RecibosFilters) => {
-              buscados.push(filtros);
-              return of(resultado);
+            // Una página (frontend#93). La consulta de tamaño 1 es la del período abierto, que
+            // la lista hace sola al abrirse sin filtros: no es una búsqueda del usuario.
+            search: vi.fn((filtros: RecibosFilters, page = 0, size = 50) => {
+              if (size !== 1) buscados.push(filtros);
+              return of({ items: resultado, page, size, total: resultado.length });
             }),
           },
         },

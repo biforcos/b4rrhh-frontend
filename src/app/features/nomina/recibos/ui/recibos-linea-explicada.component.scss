@@ -1,0 +1,79 @@
+/* «De dónde sale esta línea» (frontend#93): una nota encima del folio, no una caja más dentro. */
+.linea-explicada {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent-strong, var(--border-strong));
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.linea-explicada__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.linea-explicada__titulo {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.linea-explicada__origen {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.linea-explicada__cerrar {
+  border: 0;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.linea-explicada__cuenta {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.linea-explicada__resultado,
+.linea-explicada__cuenta-simple {
+  font-family: var(--font-mono);
+}
+
+.linea-explicada__cuenta-simple {
+  margin: 8px 0;
+}
+
+.linea-explicada__aviso {
+  margin: 8px 0 0;
+  color: var(--warning-text);
+}
+
+.linea-explicada__nota {
+  margin: 8px 0 0;
+  color: var(--text-tertiary);
+}
+
+.linea-explicada__pasos {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.linea-explicada__pasos:hover {
+  background: var(--surface-hover);
+}

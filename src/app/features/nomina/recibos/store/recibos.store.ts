@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { take } from 'rxjs';
+import { firstValueFrom, take } from 'rxjs';
 
 import { GuardarFicheroService } from '../descarga/guardar-fichero.service';
 import { RecibosGateway } from '../gateway/recibos.gateway';
@@ -23,6 +23,8 @@ import {
   describeFailure,
   toHttpFailure,
 } from '../../../../shared/utils/http-failure.util';
+import { RECIBOS_PAGE_SIZE } from '../models/recibos-page.model';
+import { ArrearExplanationModel } from '../models/arrear-explanation.model';
 
 export type RecibosErrorCode = 'request-failed' | 'not-found' | 'transition-failed';
 
@@ -78,6 +80,14 @@ export class RecibosStore {
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<RecibosErrorCode | null>(null);
   private readonly listFailureState = signal<HttpFailure | null>(null);
+  private readonly totalState = signal(0);
+  /** La línea del folio cuya explicación se está enseñando (`b4rrhh/frontend#93`). */
+  private readonly explainedLineState = signal<PayrollConceptModel | null>(null);
+  /** Las explicaciones de los atrasos del recibo abierto, pedidas la primera vez que hacen falta. */
+  private readonly arrearsState = signal<ReadonlyArray<ArrearExplanationModel> | null>(null);
+  private arrearsRequestedFor: PayrollBusinessKey | null = null;
+  private readonly pageState = signal(0);
+  private readonly pageSizeState = signal(RECIBOS_PAGE_SIZE);
 
   /**
    * Con qué filtros volvió la última búsqueda, o `null` si todavía no ha vuelto ninguna.
@@ -207,6 +217,25 @@ export class RecibosStore {
   private readonly descargaErrorState = signal<string | null>(null);
 
   readonly payrolls = this.payrollsState.asReadonly();
+  /** Cuántos cumplen los filtros en todas las páginas (`b4rrhh/frontend#93`). */
+  readonly total = this.totalState.asReadonly();
+  /** La página que se está viendo, desde 0. */
+  readonly page = this.pageState.asReadonly();
+  readonly explainedLine = this.explainedLineState.asReadonly();
+  /** La explicación de la línea explicada, si es de atraso y ya ha llegado. */
+  readonly explainedArrear = computed(() => {
+    const line = this.explainedLineState();
+    const all = this.arrearsState();
+    if (line === null || all === null) return null;
+    return (
+      all.find(
+        (a) => a.conceptCode === line.conceptCode && a.originPeriodCode === line.originPeriodCode,
+      ) ?? null
+    );
+  });
+  readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.totalState() / this.pageSizeState())),
+  );
   readonly listLoading = this.listLoadingState.asReadonly();
   readonly listError = this.listErrorState.asReadonly();
   /** Por qué falló cada carga, para decirlo (`b4rrhh/frontend#92`). */
@@ -251,16 +280,19 @@ export class RecibosStore {
    */
   readonly reciboDesaparecido = computed(() => this.desincronizadoState() === 'desaparecido');
 
-  search(filters: RecibosFilters): void {
+  search(filters: RecibosFilters, page = 0): void {
     this.listLoadingState.set(true);
     this.listErrorState.set(null);
 
     this.gateway
-      .search(filters)
+      .search(filters, page)
       .pipe(take(1))
       .subscribe({
-        next: (payrolls) => {
-          this.payrollsState.set(payrolls);
+        next: (result) => {
+          this.payrollsState.set(result.items);
+          this.totalState.set(result.total);
+          this.pageState.set(result.page);
+          this.pageSizeState.set(result.size);
           this.searchedFiltersState.set(filters);
           this.listLoadingState.set(false);
         },
@@ -272,7 +304,70 @@ export class RecibosStore {
       });
   }
 
+  /** La misma búsqueda, otra página. */
+  goToPage(page: number): void {
+    const filters = this.searchedFiltersState();
+    if (filters === null || page < 0 || page >= this.pageCount()) return;
+    this.search(filters, page);
+  }
+
+  /**
+   * El período abierto, para abrir la lista con él (`b4rrhh/frontend#93`).
+   *
+   * <p>Es el del primer recibo de una búsqueda sin filtros, que el backend ordena con el período más
+   * reciente primero y, dentro de él, lo no cerrado antes que lo cerrado. Si ese primero ya está
+   * cerrado es que el mes más reciente se cerró entero, y el abierto es el siguiente, aunque todavía
+   * no tenga recibos. Sin ningún recibo no hay nada que proponer: `null`.
+   */
+  async findOpenPeriod(): Promise<string | null> {
+    try {
+      const first = await firstValueFrom(
+        this.gateway.search({ payrollPeriodCode: '', employeeNumber: '', status: '' }, 0, 1),
+      );
+      const latest = first.items[0];
+      if (!latest) return null;
+      return latest.status === 'DEFINITIVE'
+        ? nextPeriodCode(latest.payrollPeriodCode)
+        : latest.payrollPeriodCode;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * «De dónde sale esta línea» (`b4rrhh/frontend#93`). Si es de atraso, sus tres números se piden
+   * al backend la primera vez y valen para todas las del mismo recibo.
+   */
+  explainLine(line: PayrollConceptModel): void {
+    this.explainedLineState.set(line);
+    const key = this.selectedKeyState();
+    const isArrear =
+      line.originPeriodCode !== null && line.originPeriodCode !== key?.payrollPeriodCode;
+    if (!key || !isArrear || arePayrollBusinessKeysEqual(this.arrearsRequestedFor, key)) return;
+    this.arrearsRequestedFor = key;
+    this.gateway
+      .explainArrears(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (items) => {
+          if (arePayrollBusinessKeysEqual(this.selectedKeyState(), key))
+            this.arrearsState.set(items);
+        },
+        error: () => {
+          // Sin explicación la línea sigue diciendo lo que dice; se deja pedirla otra vez.
+          this.arrearsRequestedFor = null;
+        },
+      });
+  }
+
+  clearExplainedLine(): void {
+    this.explainedLineState.set(null);
+  }
+
   selectPayroll(key: PayrollBusinessKey): void {
+    this.explainedLineState.set(null);
+    this.arrearsState.set(null);
+    this.arrearsRequestedFor = null;
     // Al cambiar de recibo se suelta el anterior: lo que se enseña mientras carga es «cargando»
     // y no la cabecera del recibo de antes con los conceptos del nuevo debajo. Al recalcular el
     // mismo, en cambio, la cabecera se queda y sólo parpadea el folio.
@@ -719,4 +814,11 @@ export class RecibosStore {
     if (err.status === 404) return 'Nómina no encontrada.';
     return describeFailure('No se pudo cambiar el estado del recibo', toHttpFailure(err));
   }
+}
+
+/** `202612` → `202701`: el mes siguiente a un período `yyyyMM`. */
+function nextPeriodCode(period: string): string {
+  const year = Number(period.slice(0, 4));
+  const month = Number(period.slice(4, 6));
+  return month === 12 ? `${year + 1}01` : `${year}${String(month + 1).padStart(2, '0')}`;
 }

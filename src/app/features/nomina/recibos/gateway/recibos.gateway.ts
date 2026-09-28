@@ -29,6 +29,8 @@ import {
   PayrollAgreementProfileModel,
 } from '../models/payroll-summary.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
+import { RECIBOS_PAGE_SIZE, RecibosPageModel } from '../models/recibos-page.model';
+import { ArrearExplanationModel } from '../models/arrear-explanation.model';
 
 export interface PayrollDetailModel {
   /**
@@ -88,10 +90,42 @@ export interface PayrollDetailModel {
 export class RecibosGateway {
   private readonly client = inject(RecibosClient);
 
-  search(filters: RecibosFilters): Observable<ReadonlyArray<PayrollSummaryModel>> {
-    return this.client
-      .search(filters)
-      .pipe(map((items) => items.map(mapPayrollSummaryResponseToModel)));
+  search(
+    filters: RecibosFilters,
+    page = 0,
+    size = RECIBOS_PAGE_SIZE,
+  ): Observable<RecibosPageModel> {
+    return this.client.search(filters, page, size).pipe(
+      map((response) => ({
+        items: response.items.map(mapPayrollSummaryResponseToModel),
+        page: response.page,
+        size: response.size,
+        total: response.total,
+      })),
+    );
+  }
+
+  /** De dónde sale cada línea de atraso del recibo (`backend#134`, `b4rrhh/frontend#93`). */
+  explainArrears(key: PayrollBusinessKey): Observable<ReadonlyArray<ArrearExplanationModel>> {
+    return this.client.explainArrears(key).pipe(
+      map((items) =>
+        items.map((a) => ({
+          originPeriodCode: a.originPeriodCode,
+          conceptCode: a.conceptCode,
+          conceptLabel: a.conceptLabel,
+          lineAmount: Number(a.lineAmount),
+          currentValue: Number(a.currentValue),
+          currentValueCalculatedAt: a.currentValueCalculatedAt ?? null,
+          alreadyPaid: Number(a.alreadyPaid),
+          paidIn: a.paidIn.map((p) => ({
+            payrollPeriodCode: p.payrollPeriodCode,
+            amount: Number(p.amount),
+          })),
+          difference: Number(a.difference),
+          addsUp: a.addsUp,
+        })),
+      ),
+    );
   }
 
   getDetail(key: PayrollBusinessKey): Observable<PayrollDetailModel> {

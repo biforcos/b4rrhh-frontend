@@ -29,11 +29,17 @@ const STATUS_LABELS: Record<string, string> = {
       <div class="filters">
         <div class="filter-row">
           <div class="filter-field">
-            <label>PERÍODO</label>
+            <label for="recibos-filtro-periodo">PERÍODO</label>
+            <!--
+              Sin un mes de ejemplo en el hueco: «202604» parecía un filtro puesto y no era nada
+              (frontend#93). La lista abre ya con el período abierto escrito aquí.
+            -->
             <input
+              id="recibos-filtro-periodo"
+              aria-label="Período"
               [ngModel]="filters().payrollPeriodCode"
               (ngModelChange)="patchFilter('payrollPeriodCode', $event)"
-              placeholder="202604"
+              placeholder="aaaamm"
             />
           </div>
           <div class="filter-field">
@@ -108,7 +114,38 @@ const STATUS_LABELS: Record<string, string> = {
         }
       </div>
 
-      <div class="list-footer">{{ store.payrolls().length }} nóminas encontradas</div>
+      <!--
+        El total es el de todas las páginas, no el de las filas que hay en pantalla (frontend#93):
+        antes decía «500 nóminas encontradas» de 7.908, porque la búsqueda cortaba en 500.
+      -->
+      <div class="list-footer">
+        @if (store.searchedFilters() !== null) {
+          <span>{{ store.total() }} {{ store.total() === 1 ? 'recibo' : 'recibos' }}</span>
+          @if (store.pageCount() > 1) {
+            <span class="list-footer__pager">
+              <button
+                type="button"
+                class="list-footer__prev"
+                aria-label="Página anterior"
+                [disabled]="store.page() === 0 || store.listLoading()"
+                (click)="store.goToPage(store.page() - 1)"
+              >
+                &#8249;
+              </button>
+              página {{ store.page() + 1 }} de {{ store.pageCount() }}
+              <button
+                type="button"
+                class="list-footer__next"
+                aria-label="Página siguiente"
+                [disabled]="store.page() + 1 >= store.pageCount() || store.listLoading()"
+                (click)="store.goToPage(store.page() + 1)"
+              >
+                &#8250;
+              </button>
+            </span>
+          }
+        }
+      </div>
     </div>
   `,
   styleUrl: './recibos-list.component.scss',
@@ -149,9 +186,28 @@ export class RecibosListComponent {
      */
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const employeeNumber = params.get('employeeNumber')?.trim() ?? '';
-      if (!employeeNumber) return;
+      if (!employeeNumber) {
+        this.openWithTheOpenPeriod();
+        return;
+      }
 
       this.filters.set({ payrollPeriodCode: '', employeeNumber, status: '' });
+      this.search();
+    });
+  }
+
+  /**
+   * Sin nada pedido, la lista abre con el período abierto ya puesto y buscado (`frontend#93`).
+   * Una sola vez: volver a esta dirección sin filtros no pisa lo que alguien haya escrito.
+   */
+  private openedWithTheOpenPeriod = false;
+
+  private openWithTheOpenPeriod(): void {
+    if (this.openedWithTheOpenPeriod || this.store.searchedFilters() !== null) return;
+    this.openedWithTheOpenPeriod = true;
+    void this.store.findOpenPeriod().then((period) => {
+      if (period === null) return;
+      this.filters.update((f) => ({ ...f, payrollPeriodCode: period }));
       this.search();
     });
   }
