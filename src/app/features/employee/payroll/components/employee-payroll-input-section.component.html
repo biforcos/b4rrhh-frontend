@@ -1,36 +1,14 @@
 <section class="employee-payroll-input-section" [attr.aria-label]="texts.payrollInputsSectionTitle">
   <!--
-    Rótulo de sección y no cabecera de card (`frontend#56`). El período va en la ranura del dato
-    que resume la sección, que es exactamente lo que es: de qué mes habla lo de debajo.
+    Rótulo de sección y no cabecera de card (`frontend#56`). El navegador de período que iba en la
+    ranura del dato es ahora de la página, uno para las tres secciones del mes (`frontend#90`).
   -->
   <app-section-heading
     [title]="texts.payrollInputsSectionTitle"
     [addLabel]="texts.payrollInputsAddAction"
     [addDisabled]="sectionState().busy || creating()"
     (addClicked)="startCreate()"
-  >
-    <div sectionHeadingMeta class="employee-payroll-input-section__period-nav">
-      <button
-        type="button"
-        class="employee-payroll-input-section__period-btn"
-        [attr.aria-label]="texts.payrollInputsPrevPeriodAriaLabel"
-        [disabled]="sectionState().busy"
-        (click)="prevPeriod()"
-      >
-        &#8249;
-      </button>
-      <span class="employee-payroll-input-section__period-label">{{ periodLabel() }}</span>
-      <button
-        type="button"
-        class="employee-payroll-input-section__period-btn"
-        [attr.aria-label]="texts.payrollInputsNextPeriodAriaLabel"
-        [disabled]="sectionState().busy"
-        (click)="nextPeriod()"
-      >
-        &#8250;
-      </button>
-    </div>
-  </app-section-heading>
+  />
 
   <p class="employee-payroll-input-section__subtitle">
     {{ texts.payrollInputsSectionSubtitle }}

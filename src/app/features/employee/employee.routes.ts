@@ -37,18 +37,27 @@ export const employeeRoutes: Routes = [
             (m) => m.EmployeeRelationPageComponent,
           ),
       },
+      // La ficha en cuatro grupos (`b4rrhh/frontend#90`): la persona, la relación, lo que pasa cada
+      // mes y lo que sale.
       {
-        path: 'contact',
+        path: 'persona',
         loadComponent: () =>
-          import('./contact/pages/employee-contact-page.component').then(
-            (m) => m.EmployeeContactPageComponent,
+          import('./contact/pages/employee-person-page.component').then(
+            (m) => m.EmployeePersonPageComponent,
           ),
       },
       {
-        path: 'payroll',
+        path: 'mes',
         loadComponent: () =>
-          import('./payroll/pages/employee-payroll-page.component').then(
-            (m) => m.EmployeePayrollPageComponent,
+          import('./payroll/pages/employee-month-page.component').then(
+            (m) => m.EmployeeMonthPageComponent,
+          ),
+      },
+      {
+        path: 'recibos',
+        loadComponent: () =>
+          import('./payroll/pages/employee-receipts-page.component').then(
+            (m) => m.EmployeeReceiptsPageComponent,
           ),
       },
       {
@@ -58,7 +67,8 @@ export const employeeRoutes: Routes = [
             (m) => m.RehireEmployeePageComponent,
           ),
       },
-      // Las rutas de antes de #18 siguen vivas: la demo y los enlaces guardados apuntan a ellas.
+      // Las rutas de antes de #18 y de #90 siguen vivas: la demo y los enlaces guardados apuntan a
+      // ellas.
       ...Object.entries(employeeLegacySections).map(([legacy, section]) => ({
         path: legacy,
         pathMatch: 'full' as const,

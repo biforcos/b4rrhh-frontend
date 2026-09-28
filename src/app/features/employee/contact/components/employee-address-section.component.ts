@@ -406,7 +406,7 @@ export class EmployeeAddressSectionComponent {
                 id: 'employee-address-section-local-error',
                 level: 'error',
                 text: this.texts.catalogLoadFailedMessage,
-                sectionId: 'contact',
+                sectionId: 'personal',
                 sectionLabel: this.texts.personalAreaLabel,
                 sticky: true,
               },

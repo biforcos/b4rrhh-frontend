@@ -1,0 +1,48 @@
+<section class="employee-area" [attr.aria-label]="texts.monthAreaLabel">
+  <!--
+    Lo que pasa cada mes (`frontend#90`): los hechos con fecha que alimentan el cálculo. Un solo
+    navegador de período arriba, y las tres secciones hablan de ese mes. Antes sólo lo tenían las
+    entradas, y las ausencias y las correcciones enseñaban todo lo del empleado sin decir de cuándo.
+  -->
+  <div class="employee-area__month">
+    <span class="employee-area__month-label">{{ texts.monthNavigatorLabel }}</span>
+    <app-employee-month-navigator [(period)]="period" />
+  </div>
+
+  <!--
+    Los bloques de esta página son secciones, no cajas (`frontend#56`): van con rótulo, filete y
+    aire, como las de la relación. Caja dentro de caja es justo lo que el ADR-051 §3 dice que no se
+    haga.
+  -->
+  <div class="employee-area__modules">
+    <app-employee-absence-section
+      id="employee-section-absence"
+      [employeeBusinessKey]="activeEmployeeKey()"
+      [period]="period()"
+      (periodRequested)="period.set($event)"
+    />
+
+    <app-employee-payroll-input-section
+      id="employee-section-payroll-inputs"
+      [employeeKey]="activeEmployeeKey()"
+      [period]="period()"
+    />
+
+    <!--
+      Las correcciones a meses ya entregados van con lo mensual y no en la relación laboral
+      (`b4rrhh/frontend#86`), aunque las generen verticales de la relación. Lo que la fila dice no es
+      qué le pasó al empleado —eso ya está en su carril— sino que hay un mes de nómina entregado que
+      dejó de cuadrar y que alguien va a cobrar la diferencia. Su unidad es el período de nómina, y
+      el sitio donde eso se lee es éste.
+
+      Y va después de «Entradas de nómina» a propósito: meter horas a un mes cerrado es lo que deja
+      una fila ahí abajo, así que la causa queda justo encima del efecto.
+    -->
+    <app-employee-retro-mark-section
+      id="employee-section-retro-marks"
+      [employeeBusinessKey]="activeEmployeeKey()"
+      [period]="period()"
+      (periodRequested)="period.set($event)"
+    />
+  </div>
+</section>

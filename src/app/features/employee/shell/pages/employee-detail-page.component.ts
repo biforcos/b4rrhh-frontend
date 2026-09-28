@@ -42,10 +42,12 @@ import {
   buildEmployeeDetailRouteCommands,
   EmployeeRelationAnchor,
   EmployeeRouteSection,
+  EmployeeSectionAnchor,
   employeeLegacySections,
   employeeRouteBaseSegment,
   employeeRouteSections,
-  isEmployeeRelationAnchor,
+  employeeSectionOfAnchor,
+  isEmployeeSectionAnchor,
   resolveEmployeeSectionRoute,
 } from '../../routing/employee-route-builder.util';
 import {
@@ -102,8 +104,8 @@ export class EmployeeDetailPageComponent {
   protected readonly texts = employeeTexts;
   protected readonly activeEmployeeKey = signal<EmployeeBusinessKey | null>(null);
   protected readonly activeDetailSection = signal<EmployeeRouteSection>('relacion');
-  /** El ancla activa dentro de la relación (el fragmento de la URL). */
-  protected readonly activeAnchor = signal<EmployeeRelationAnchor | null>(null);
+  /** El ancla activa dentro de la sección (el fragmento de la URL). */
+  protected readonly activeAnchor = signal<EmployeeSectionAnchor | null>(null);
   protected readonly actionsMenuRef = viewChild<Menu>('actionsMenu');
   protected readonly selectedEmployeeDetail = this.detailStore.selectedEmployeeDetail;
   protected readonly loadingDetail = this.detailStore.loadingDetail;
@@ -182,6 +184,7 @@ export class EmployeeDetailPageComponent {
         this.activeDetailSection.set(this.resolveActiveDetailSection());
         this.activeAnchor.set(this.resolveActiveAnchor());
         this.isRehireWorkflow.set(this.resolveIsRehireWorkflow());
+        this.scrollToAnchorOutsideRelation();
 
         if (shouldForceRefresh) {
           this.detailStore.refreshEmployeeDetailByBusinessKey(activeKey);
@@ -283,7 +286,7 @@ export class EmployeeDetailPageComponent {
     try {
       const target = await step();
       if (!target || areEmployeeBusinessKeysEqual(target, this.activeEmployeeKey())) return;
-      const anchor = this.activeDetailSection() === 'relacion' ? this.activeAnchor() : null;
+      const anchor = this.activeAnchor();
       await this.router.navigate(
         buildEmployeeDetailRouteCommands(target, this.activeDetailSection()),
         {
@@ -331,7 +334,7 @@ export class EmployeeDetailPageComponent {
     if (routeSection && this.activeDetailSection() !== routeSection) {
       void this.router
         .navigate(buildEmployeeDetailRouteCommands(activeKey, routeSection), {
-          fragment: isEmployeeRelationAnchor(sectionId) ? sectionId : undefined,
+          fragment: isEmployeeSectionAnchor(sectionId) ? sectionId : undefined,
         })
         .then((navigated) => {
           if (navigated) window.setTimeout(() => this.focusSection(sectionId), 120);
@@ -413,9 +416,29 @@ export class EmployeeDetailPageComponent {
     return employeeLegacySections[routeSection] ?? 'relacion';
   }
 
-  private resolveActiveAnchor(): EmployeeRelationAnchor | null {
+  /** El ancla de la URL, si es de la sección en la que se está. */
+  private resolveActiveAnchor(): EmployeeSectionAnchor | null {
     const fragment = this.router.parseUrl(this.router.url).fragment ?? '';
-    return isEmployeeRelationAnchor(fragment) ? fragment : null;
+    return isEmployeeSectionAnchor(fragment) &&
+      employeeSectionOfAnchor(fragment) === this.activeDetailSection()
+      ? fragment
+      : null;
+  }
+
+  /**
+   * Las anclas de la persona y de «cada mes» (`b4rrhh/frontend#90`). Las de la relación las
+   * resuelve su propia página, que además las pide desde la línea de vida y el bloque «Hoy».
+   */
+  private scrollToAnchorOutsideRelation(): void {
+    const anchor = this.activeAnchor();
+    if (anchor === null || this.activeDetailSection() === 'relacion') return;
+    window.setTimeout(
+      () =>
+        document
+          .getElementById(`employee-section-${anchor}`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      80,
+    );
   }
 
   /* ── Acciones de página (ADR-050 §1: en la identidad, nunca dentro de una card) ── */

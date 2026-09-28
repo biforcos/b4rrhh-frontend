@@ -13,6 +13,7 @@ import { map } from 'rxjs';
 import { EmployeeAddressSectionComponent } from '../components/employee-address-section.component';
 import { EmployeeContactSectionComponent } from '../components/employee-contact-section.component';
 import { EmployeeIdentifierSectionComponent } from '../components/employee-identifier-section.component';
+import { EmployeeTaxInformationSectionComponent } from '../../tax-information/components/employee-tax-information-section.component';
 import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
@@ -25,18 +26,24 @@ import {
   describeTimelineConflict,
 } from '../../shared/utils/timeline-plan-message.util';
 
+/**
+ * La persona (`b4rrhh/frontend#90`): lo que no tiene período —contactos, identificadores,
+ * direcciones— y la información fiscal (el modelo 145), que estaba en «Nómina» porque la usa el
+ * cálculo, pero que es un dato de la persona: lo firma ella y describe su situación, no un mes.
+ */
 @Component({
-  selector: 'app-employee-contact-page',
+  selector: 'app-employee-person-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     EmployeeContactSectionComponent,
     EmployeeAddressSectionComponent,
     EmployeeIdentifierSectionComponent,
+    EmployeeTaxInformationSectionComponent,
   ],
-  templateUrl: './employee-contact-page.component.html',
-  styleUrl: './employee-contact-page.component.scss',
+  templateUrl: './employee-person-page.component.html',
+  styleUrl: './employee-person-page.component.scss',
 })
-export class EmployeeContactPageComponent {
+export class EmployeePersonPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly employeeAddressStore = inject(EmployeeAddressStore);
   private readonly employeeContactStore = inject(EmployeeContactStore);
@@ -89,7 +96,7 @@ export class EmployeeContactPageComponent {
         id: 'contact-operation-error',
         level: 'error',
         text: contactErrorMessage,
-        sectionId: 'contact',
+        sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
       });
@@ -98,7 +105,7 @@ export class EmployeeContactPageComponent {
         id: 'contact-load-error',
         level: 'error',
         text: this.texts.contactLoadFailedMessage,
-        sectionId: 'contact',
+        sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
       });
@@ -110,7 +117,7 @@ export class EmployeeContactPageComponent {
         id: 'address-error',
         level: 'error',
         text: addressErrorMessage,
-        sectionId: 'contact',
+        sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
       });
@@ -121,7 +128,7 @@ export class EmployeeContactPageComponent {
         id: 'identifier-error',
         level: 'error',
         text: this.texts.identifiersSectionRequestFailedMessage,
-        sectionId: 'contact',
+        sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
         sticky: true,
       });
@@ -167,7 +174,7 @@ export class EmployeeContactPageComponent {
     untracked(() => {
       this.globalMessageService.success(text, {
         id: `employee-contact-page-success-${idSuffix}`,
-        sectionId: 'contact',
+        sectionId: 'personal',
         sectionLabel: this.texts.personalAreaLabel,
       });
     });

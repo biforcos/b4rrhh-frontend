@@ -1,19 +1,22 @@
 <!-- La persona (ADR-051, frontend#19): la mitad tranquila de la ficha. Dos listas cortas de
      huecos al lado —contactos e identificadores— y, debajo, a ancho completo, las direcciones,
-     que sí son vigencias y se leen como un carril. Un contenedor por lista, ninguno dentro de otro. -->
-<section
-  id="employee-section-contact"
-  class="employee-person"
-  [attr.aria-label]="texts.personalAreaLabel"
->
+     que sí son vigencias y se leen como un carril. Un contenedor por lista, ninguno dentro de otro.
+     Y al final la información fiscal, que vino de «Nómina» (frontend#90). -->
+<section class="employee-person" [attr.aria-label]="texts.personAreaLabel">
   @if (loadingPersonals()) {
     <p class="employee-person__state">{{ texts.personalLoadingMessage }}</p>
   }
 
-  <div class="employee-person__pair">
+  <div id="employee-section-personal" class="employee-person__pair">
     <app-employee-contact-section [employeeKey]="activeEmployeeKey()" />
     <app-employee-identifier-section [employeeKey]="activeEmployeeKey()" />
   </div>
 
   <app-employee-address-section class="employee-person__lane" [employeeKey]="activeEmployeeKey()" />
+
+  <app-employee-tax-information-section
+    id="employee-section-tax-information"
+    class="employee-person__lane"
+    [employeeKey]="activeEmployeeKey()"
+  />
 </section>

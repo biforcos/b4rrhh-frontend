@@ -235,3 +235,59 @@ describe('EmployeeRetroMarkSectionComponent', () => {
     expect(acciones).toEqual(['Descartar']);
   });
 });
+
+/**
+ * Las correcciones en «lo que pasa cada mes» (`b4rrhh/frontend#90`): con el mes de la página, las
+ * que van a ese mes o se pagaron en él. Una pendiente de otro mes no se esconde: se dice dónde está.
+ */
+describe('EmployeeRetroMarkSectionComponent con el mes de la página', () => {
+  let fix: ComponentFixture<EmployeeRetroMarkSectionComponent>;
+  let store: MockRetroMarkStore;
+
+  beforeEach(async () => {
+    store = new MockRetroMarkStore();
+    await TestBed.configureTestingModule({
+      imports: [EmployeeRetroMarkSectionComponent],
+      providers: [{ provide: EmployeeRetroMarkStore, useValue: store }],
+    }).compileComponents();
+    fix = TestBed.createComponent(EmployeeRetroMarkSectionComponent);
+    fix.componentRef.setInput('employeeBusinessKey', employeeKey);
+    store.marksState.set([
+      mark({ id: 1, fromPeriodCode: '202608' }),
+      mark({
+        id: 2,
+        fromPeriodCode: '202607',
+        status: 'CONSUMED',
+        consumedPeriodCode: '202608',
+        consumedRunId: 8,
+      }),
+      mark({ id: 3, fromPeriodCode: '202603' }),
+    ]);
+  });
+
+  const rows = () => fix.nativeElement.querySelectorAll('.employee-retro-mark-section__row').length;
+
+  it('sin mes, las enseña todas, como antes', () => {
+    fix.detectChanges();
+    expect(rows()).toBe(3);
+  });
+
+  it('con un mes, las que van a él y las que se pagaron en él', () => {
+    fix.componentRef.setInput('period', 202608);
+    fix.detectChanges();
+    expect(rows()).toBe(2);
+  });
+
+  it('la pendiente de otro mes se dice, y a un clic', () => {
+    const pedidos: number[] = [];
+    fix.componentRef.setInput('period', 202608);
+    fix.componentRef.instance.periodRequested.subscribe((p: number) => pedidos.push(p));
+    fix.detectChanges();
+    const botones: HTMLButtonElement[] = Array.from(
+      fix.nativeElement.querySelectorAll('.other-months__month'),
+    );
+    expect(botones.map((b) => b.textContent?.trim())).toEqual(['03/2026']);
+    botones[0].click();
+    expect(pedidos).toEqual([202603]);
+  });
+});

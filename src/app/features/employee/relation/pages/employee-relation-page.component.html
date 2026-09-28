@@ -37,10 +37,6 @@
     class="employee-relation__lane"
     [employeeBusinessKey]="activeEmployeeKey()"
   />
-  <app-employee-extra-payment-regime-section
-    class="employee-relation__lane"
-    [employeeBusinessKey]="activeEmployeeKey()"
-  />
   <app-employee-labor-classification-section
     class="employee-relation__lane"
     [employeeBusinessKey]="activeEmployeeKey()"
@@ -55,12 +51,11 @@
   />
 
   <!--
-    Las ausencias van al final y no junto a la presencia, aunque cuelguen de ella: son las únicas
-    que no son una vigencia continua sino huecos dentro de una. Poniéndolas entre los carriles se
-    leerían como un tramo más del eje, y no lo son (`b4rrhh/frontend#84`).
+    El régimen de pagas extras va al final y no entre la jornada y el convenio, que es donde estaba
+    (`b4rrhh/frontend#90`): es una vigencia del vínculo, pero no tiene carril en el eje de la línea
+    de vida, y en medio de los que sí lo tienen se leía como uno más.
   -->
-  <app-employee-absence-section
-    id="employee-section-absence"
+  <app-employee-extra-payment-regime-section
     class="employee-relation__lane"
     [employeeBusinessKey]="activeEmployeeKey()"
   />

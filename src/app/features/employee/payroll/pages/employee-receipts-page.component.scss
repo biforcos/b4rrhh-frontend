@@ -1,17 +1,6 @@
-.employee-area {
+/* Lo que sale (frontend#90): de momento, el salto a sus recibos. */
+.employee-receipts {
   display: grid;
-  gap: 0.54rem;
-  margin-top: 0.14rem;
-}
-
-/*
- * Sin `gap`: el aire entre secciones lo pone el filete de `app-section-heading`, que es de donde
- * sale también en la relación. Un `gap` aquí lo sumaría al suyo y esta página se separaría más que
- * las demás por una razón que nadie podría deducir (`frontend#56`).
- */
-.employee-area__modules {
-  display: grid;
-  grid-template-columns: 1fr;
 }
 
 /*

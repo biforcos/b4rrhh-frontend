@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -24,6 +25,12 @@ import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.compon
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import {
+  PayrollPeriod,
+  payrollPeriodOfDate,
+  rangeTouchesPayrollPeriod,
+} from '../../../../shared/utils/payroll-period.util';
+import { EmployeeOtherMonthsComponent } from '../../payroll/components/employee-other-months.component';
 
 /**
  * Las ausencias del empleado (`b4rrhh/frontend#84`, `b4rrhh/backend#127`, `b4rrhh/backend#129`).
@@ -70,12 +77,20 @@ interface AbsenceDraft {
     UiDateInputComponent,
     UiSelectComponent,
     FormsModule,
+    EmployeeOtherMonthsComponent,
   ],
   templateUrl: './employee-absence-section.component.html',
   styleUrl: './employee-absence-section.component.scss',
 })
 export class EmployeeAbsenceSectionComponent {
   readonly employeeBusinessKey = input<EmployeeBusinessKey | null>(null);
+  /**
+   * El mes de la página de «lo que pasa cada mes» (`b4rrhh/frontend#90`): con él, la sección enseña
+   * las ausencias que lo tocan. Sin él, todas.
+   */
+  readonly period = input<PayrollPeriod | null>(null);
+  /** Llevar la página a otro mes, que es de quien es el navegador. */
+  readonly periodRequested = output<PayrollPeriod>();
 
   private readonly store = inject(EmployeeAbsenceStore);
   private readonly catalog = inject(EmployeeFieldCatalogService);
@@ -113,8 +128,32 @@ export class EmployeeAbsenceSectionComponent {
   protected readonly deletingKey = this.deletingKeyState.asReadonly();
   protected readonly draft = this.draftState.asReadonly();
 
-  protected readonly rows = computed(() => this.store.absences());
+  protected readonly rows = computed(() => {
+    const period = this.period();
+    const all = this.store.absences();
+    return period === null
+      ? all
+      : all.filter((row) => rangeTouchesPayrollPeriod(row.startDate, row.endDate, period));
+  });
   protected readonly hasRows = computed(() => this.rows().length > 0);
+
+  /** Los meses en que empiezan las que no se ven, del más reciente al más antiguo. */
+  protected readonly otherMonths = computed<ReadonlyArray<PayrollPeriod>>(() => {
+    if (this.period() === null) return [];
+    const visible = new Set(this.rows());
+    const months = this.store
+      .absences()
+      .filter((row) => !visible.has(row))
+      .map((row) => payrollPeriodOfDate(row.startDate));
+    return [...new Set(months)].sort((a, b) => b - a);
+  });
+
+  /** «En este mes no hay» no es «no tiene ninguna», y decir lo segundo cuando es lo primero engaña. */
+  protected readonly emptyMessage = computed(() =>
+    this.period() === null
+      ? this.texts.absencesEmptyMessage
+      : this.texts.absencesEmptyInMonthMessage,
+  );
 
   /** Si el tipo que se está declarando o corrigiendo admite el testigo de derecho. */
   protected readonly draftHasEntitlement = computed(() =>

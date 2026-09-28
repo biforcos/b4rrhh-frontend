@@ -527,7 +527,7 @@ export class EmployeeIdentifierSectionComponent {
           id: 'employee-identifier-section-local-error',
           level: 'error',
           text: message,
-          sectionId: 'contact',
+          sectionId: 'personal',
           sectionLabel: this.texts.personalAreaLabel,
           sticky: true,
         },

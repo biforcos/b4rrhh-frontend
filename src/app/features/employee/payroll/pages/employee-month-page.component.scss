@@ -1,0 +1,27 @@
+.employee-area {
+  display: grid;
+  gap: 0.54rem;
+  margin-top: 0.14rem;
+}
+
+/*
+ * Sin `gap`: el aire entre secciones lo pone el filete de `app-section-heading`, que es de donde
+ * sale también en la relación. Un `gap` aquí lo sumaría al suyo y esta página se separaría más que
+ * las demás por una razón que nadie podría deducir (`frontend#56`).
+ */
+.employee-area__modules {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/* El navegador de período de la página, uno para las tres secciones (frontend#90). */
+.employee-area__month {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.employee-area__month-label {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}

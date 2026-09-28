@@ -395,7 +395,7 @@ export class EmployeeContactSectionComponent {
           id: 'employee-contact-section-local-error',
           level: 'error',
           text: message,
-          sectionId: 'contact',
+          sectionId: 'personal',
           sectionLabel: this.texts.personalAreaLabel,
           sticky: true,
         },

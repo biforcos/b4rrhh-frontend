@@ -97,8 +97,9 @@
         }
       </ul>
     } @else {
-      <p class="employee-retro-mark-section__empty">{{ texts.retroMarksEmptyMessage }}</p>
+      <p class="employee-retro-mark-section__empty">{{ emptyMessage() }}</p>
     }
+    <app-employee-other-months [months]="otherMonths()" (picked)="periodRequested.emit($event)" />
   </div>
 
   <!--

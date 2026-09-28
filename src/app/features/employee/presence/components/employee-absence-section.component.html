@@ -208,8 +208,9 @@
         }
       </ul>
     } @else if (!declaring()) {
-      <p class="employee-absence-section__empty">{{ texts.absencesEmptyMessage }}</p>
+      <p class="employee-absence-section__empty">{{ emptyMessage() }}</p>
     }
+    <app-employee-other-months [months]="otherMonths()" (picked)="periodRequested.emit($event)" />
   </div>
 
   <!--

@@ -335,3 +335,76 @@ describe('EmployeeAbsenceSectionComponent', () => {
     expect(otra.nativeElement.querySelectorAll('.employee-absence-section__row').length).toBe(1);
   });
 });
+
+/**
+ * Las ausencias en «lo que pasa cada mes» (`b4rrhh/frontend#90`): con el navegador de período de la
+ * página, la sección enseña las que tocan ese mes. Las de otros meses no desaparecen en silencio:
+ * se dicen, y a un clic.
+ */
+describe('EmployeeAbsenceSectionComponent con el mes de la página', () => {
+  let fix: ComponentFixture<EmployeeAbsenceSectionComponent>;
+  let store: MockAbsenceStore;
+
+  beforeEach(async () => {
+    store = new MockAbsenceStore();
+    await TestBed.configureTestingModule({
+      imports: [EmployeeAbsenceSectionComponent],
+      providers: [
+        { provide: EmployeeAbsenceStore, useValue: store },
+        { provide: EmployeeFieldCatalogService, useValue: new MockCatalog() },
+      ],
+    }).compileComponents();
+    fix = TestBed.createComponent(EmployeeAbsenceSectionComponent);
+    fix.componentRef.setInput('employeeBusinessKey', employeeKey);
+    store.absencesState.set([
+      absence({ startDate: '2026-05-14', endDate: '2026-05-18' }),
+      absence({ absenceTypeCode: 'IT_COMMON', startDate: '2026-03-01', endDate: '2026-03-05' }),
+      absence({
+        absenceTypeCode: 'UNPAID_LEAVE',
+        startDate: '2026-04-20',
+        endDate: null,
+        isOpen: true,
+      }),
+      absence({ startDate: '2026-04-28', endDate: '2026-05-02' }),
+    ]);
+  });
+
+  const rowsText = () =>
+    Array.from(fix.nativeElement.querySelectorAll('.employee-absence-section__row')).map(
+      (row) => (row as HTMLElement).textContent ?? '',
+    );
+
+  it('sin mes, las enseña todas, como antes', () => {
+    fix.detectChanges();
+    expect(rowsText().length).toBe(4);
+  });
+
+  it('con un mes, sólo las que lo tocan: las que caen dentro, las que lo cruzan y las abiertas', () => {
+    fix.componentRef.setInput('period', 202605);
+    fix.detectChanges();
+    const rows = rowsText();
+    expect(rows.length).toBe(3);
+    expect(rows.some((r) => r.includes('01/03/2026'))).toBe(false);
+  });
+
+  it('dice en qué otros meses hay, y llevarle a uno es pedírselo a la página', () => {
+    const pedidos: number[] = [];
+    fix.componentRef.setInput('period', 202605);
+    fix.componentRef.instance.periodRequested.subscribe((p: number) => pedidos.push(p));
+    fix.detectChanges();
+    const botones: HTMLButtonElement[] = Array.from(
+      fix.nativeElement.querySelectorAll('.other-months__month'),
+    );
+    expect(botones.map((b) => b.textContent?.trim())).toEqual(['03/2026']);
+    botones[0].click();
+    expect(pedidos).toEqual([202603]);
+  });
+
+  it('un mes sin ninguna dice que en ese mes no hay, no que no haya ninguna', () => {
+    fix.componentRef.setInput('period', 202601);
+    fix.detectChanges();
+    expect(rowsText().length).toBe(0);
+    const vacio = fix.nativeElement.querySelector('.employee-absence-section__empty');
+    expect(vacio.textContent).toContain('este mes');
+  });
+});

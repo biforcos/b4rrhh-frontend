@@ -65,8 +65,8 @@ describe('messageUnit', () => {
 });
 
 describe('messageDestinationSection', () => {
-  it('si la unidad acabo en recibo, lleva a su nomina', () =>
-    expect(messageDestinationSection(executed)).toBe('payroll'));
+  it('si la unidad acabo en recibo, lleva a lo que sale: sus recibos (frontend#90)', () =>
+    expect(messageDestinationSection(executed)).toBe('recibos'));
 
   it('si no, lleva a la relacion laboral, que es donde se arregla lo que faltaba', () =>
     expect(messageDestinationSection(skipped)).toBe('relacion'));

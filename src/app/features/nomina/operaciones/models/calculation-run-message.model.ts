@@ -64,14 +64,15 @@ export function messageUnit(message: CalculationRunMessage): CalculationRunMessa
 /**
  * A qué sección de la ficha lleva la línea.
  *
- * Si la unidad acabó en recibo, a su nómina. Si no, a la relación laboral, que es donde se
- * arregla lo que faltaba —la clasificación de quien cesa a mitad de mes, por ejemplo—.
+ * Si la unidad acabó en recibo, a sus recibos («lo que sale», desde el frontend#90). Si no, a
+ * la relación laboral, que es donde se arregla lo que faltaba —la clasificación de quien cesa a
+ * mitad de mes, por ejemplo—.
  *
  * No lleva al recibo en sí porque la pantalla de recibos no tiene ruta para uno concreto: es una
  * búsqueda con selección dentro de la página. El issue pide enlazar «cuando se pueda».
  */
 export function messageDestinationSection(message: CalculationRunMessage): EmployeeRouteSection {
-  return message.messageCode === EXECUTED_MESSAGE_CODE ? 'payroll' : 'relacion';
+  return message.messageCode === EXECUTED_MESSAGE_CODE ? 'recibos' : 'relacion';
 }
 
 /** Si la línea pide algo: la unidad no acabó en recibo. */

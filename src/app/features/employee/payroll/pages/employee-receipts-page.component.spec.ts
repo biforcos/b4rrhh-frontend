@@ -4,10 +4,11 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
-import { EmployeePayrollPageComponent } from './employee-payroll-page.component';
+import { EmployeeReceiptsPageComponent } from './employee-receipts-page.component';
 
 /**
- * El salto de la ficha del empleado a sus recibos (`b4rrhh/frontend#68`), que es el paso 1.
+ * El salto de la ficha del empleado a sus recibos (`b4rrhh/frontend#68`), que es el paso 1. Vive en
+ * «Lo que sale» desde el `b4rrhh/frontend#90`; antes estaba al pie de «Nómina».
  *
  * Es un enlace y no una pantalla, y lo que este test sujeta es **adónde apunta**: a la lista de
  * recibos con el número del empleado como filtro, y a nada más concreto.
@@ -20,7 +21,7 @@ import { EmployeePayrollPageComponent } from './employee-payroll-page.component'
 describe('El salto de la ficha a sus recibos', () => {
   function enlaceDe(employeeNumber: string): HTMLAnchorElement | null {
     TestBed.configureTestingModule({
-      imports: [EmployeePayrollPageComponent],
+      imports: [EmployeeReceiptsPageComponent],
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
@@ -34,7 +35,7 @@ describe('El salto de la ficha a sus recibos', () => {
       ],
     });
 
-    const fixture = TestBed.createComponent(EmployeePayrollPageComponent);
+    const fixture = TestBed.createComponent(EmployeeReceiptsPageComponent);
     fixture.detectChanges();
     return (fixture.nativeElement as HTMLElement).querySelector('.receipts-link__action');
   }

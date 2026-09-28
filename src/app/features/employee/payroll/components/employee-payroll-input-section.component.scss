@@ -24,49 +24,6 @@
   min-width: 5.6rem;
 }
 
-.employee-payroll-input-section__period-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-}
-
-.employee-payroll-input-section__period-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border: 1px solid var(--border-default);
-  border-radius: 0.38rem;
-  background: var(--surface-hover);
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  transition:
-    background 0.1s,
-    border-color 0.1s;
-}
-
-.employee-payroll-input-section__period-btn:hover:not(:disabled) {
-  background: var(--surface-muted);
-  border-color: var(--border-strong);
-}
-
-.employee-payroll-input-section__period-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.employee-payroll-input-section__period-label {
-  min-width: 5rem;
-  text-align: center;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
 .employee-payroll-input-section__body {
   display: grid;
   gap: 0.7rem;

@@ -23,40 +23,7 @@ import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import { SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
-
-function currentPeriod(): number {
-  const now = new Date();
-  return now.getFullYear() * 100 + now.getMonth() + 1;
-}
-
-function formatPeriod(period: number): string {
-  const month = period % 100;
-  const year = Math.floor(period / 100);
-  const names = [
-    'Ene',
-    'Feb',
-    'Mar',
-    'Abr',
-    'May',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dic',
-  ];
-  return `${names[month - 1]} ${year}`;
-}
-
-function movePeriod(period: number, delta: 1 | -1): number {
-  const month = period % 100;
-  const year = Math.floor(period / 100);
-  if (delta === -1) {
-    return month === 1 ? (year - 1) * 100 + 12 : period - 1;
-  }
-  return month === 12 ? (year + 1) * 100 + 1 : period + 1;
-}
+import { PayrollPeriod, currentPayrollPeriod } from '../../../../shared/utils/payroll-period.util';
 
 interface CreateDraft {
   conceptCode: string;
@@ -77,6 +44,11 @@ interface InputRow {
 })
 export class EmployeePayrollInputSectionComponent {
   readonly employeeKey = input<EmployeeBusinessKey | null>(null);
+  /**
+   * El mes del que habla la sección. Lo lleva la página de «lo que pasa cada mes», que tiene un
+   * solo navegador para sus tres secciones (`b4rrhh/frontend#90`); antes el navegador era de ésta.
+   */
+  readonly period = input<PayrollPeriod>(currentPayrollPeriod());
 
   private readonly store = inject(EmployeePayrollInputStore);
   private readonly gateway = inject(EmployeePayrollInputGateway);
@@ -89,7 +61,6 @@ export class EmployeePayrollInputSectionComponent {
     ),
     { initialValue: [] as EmployeeInputConcept[] },
   );
-  private readonly periodState = signal<number>(currentPeriod());
   private readonly creatingState = signal(false);
   private readonly editingCodeState = signal<string | null>(null);
   private readonly deletingCodeState = signal<string | null>(null);
@@ -97,7 +68,6 @@ export class EmployeePayrollInputSectionComponent {
   private readonly editQuantityState = signal<string>('');
 
   protected readonly texts = employeeTexts;
-  protected readonly periodLabel = computed(() => formatPeriod(this.periodState()));
   protected readonly creating = this.creatingState.asReadonly();
   protected readonly editingCode = this.editingCodeState.asReadonly();
   protected readonly deletingCode = this.deletingCodeState.asReadonly();
@@ -134,7 +104,7 @@ export class EmployeePayrollInputSectionComponent {
   constructor() {
     effect(() => {
       const key = this.employeeKey();
-      const period = this.periodState();
+      const period = this.period();
       untracked(() => {
         this.store.loadInputs(key, period);
         this.resetLocal();
@@ -145,14 +115,6 @@ export class EmployeePayrollInputSectionComponent {
       if (!this.store.success()) return;
       untracked(() => this.resetLocal());
     });
-  }
-
-  protected prevPeriod(): void {
-    this.periodState.update((p) => movePeriod(p, -1));
-  }
-
-  protected nextPeriod(): void {
-    this.periodState.update((p) => movePeriod(p, 1));
   }
 
   protected startCreate(): void {
@@ -178,7 +140,7 @@ export class EmployeePayrollInputSectionComponent {
     if (!normalizedCode || isNaN(parsedQty) || parsedQty < 0) return;
     this.store.createInput(key, {
       conceptCode: normalizedCode,
-      period: this.periodState(),
+      period: this.period(),
       quantity: parsedQty,
     });
   }
@@ -204,7 +166,7 @@ export class EmployeePayrollInputSectionComponent {
     if (!key || this.store.mutating()) return;
     const qty = parseFloat(this.editQuantityState());
     if (isNaN(qty) || qty < 0) return;
-    this.store.updateInput(key, conceptCode, this.periodState(), qty);
+    this.store.updateInput(key, conceptCode, this.period(), qty);
   }
 
   protected requestDelete(conceptCode: string): void {
@@ -223,7 +185,7 @@ export class EmployeePayrollInputSectionComponent {
   protected confirmDelete(conceptCode: string): void {
     const key = this.employeeKey();
     if (!key || this.store.mutating()) return;
-    this.store.deleteInput(key, conceptCode, this.periodState());
+    this.store.deleteInput(key, conceptCode, this.period());
   }
 
   protected updateCreateConceptCode(value: string): void {

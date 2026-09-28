@@ -105,6 +105,18 @@ export const employeeTexts = {
   relationAreaLabel: 'La relación',
   personAreaLabel: 'La persona',
   personalAreaLabel: 'Personales',
+  // La ficha en cuatro grupos (frontend#90). Los nombres definitivos los decide la sesión de
+  // workspace#18 si alguien tropieza con ellos.
+  monthAreaLabel: 'Lo que pasa cada mes',
+  receiptsAreaLabel: 'Lo que sale',
+  taxInformationNavLabel: 'Información fiscal',
+  extraPaymentRegimeNavLabel: 'Pagas extras',
+  retroMarksNavLabel: 'Correcciones',
+  monthNavigatorLabel: 'Mes',
+  monthNavigatorAriaLabel: 'Mes del que habla la página',
+  otherMonthsLabel: 'También en:',
+  absencesEmptyInMonthMessage: 'Ninguna ausencia toca este mes.',
+  retroMarksEmptyInMonthMessage: 'Ninguna corrección va a este mes ni se pagó en él.',
   organizationCostCenterAreaLabel: 'Cost center',
   organizationAssignmentAreaLabel: 'Assignment',
   organizationLocationAreaLabel: 'Location',
@@ -149,7 +161,6 @@ export const employeeTexts = {
     'Ya hay una distribución que empieza ese día: es una corrección suya, no un alta.',
   costCenterSectionNotFoundMessage:
     'No se encontró la distribución seleccionada para este empleado.',
-  payrollAreaLabel: 'Nómina',
   // --- El salto a sus recibos (frontend#68) ---
   payrollReceiptsTitle: 'Recibos de nómina',
   payrollReceiptsBody:

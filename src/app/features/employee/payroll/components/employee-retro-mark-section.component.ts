@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -19,6 +20,8 @@ import {
 } from '../../models/employee-retro-mark.model';
 import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { PayrollPeriod } from '../../../../shared/utils/payroll-period.util';
+import { EmployeeOtherMonthsComponent } from './employee-other-months.component';
 
 /**
  * Las correcciones a meses ya entregados de este empleado (`b4rrhh/frontend#86`,
@@ -47,12 +50,19 @@ import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.compon
 @Component({
   selector: 'app-employee-retro-mark-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, SectionHeadingComponent, UiButtonComponent],
+  imports: [DatePipe, SectionHeadingComponent, UiButtonComponent, EmployeeOtherMonthsComponent],
   templateUrl: './employee-retro-mark-section.component.html',
   styleUrl: './employee-retro-mark-section.component.scss',
 })
 export class EmployeeRetroMarkSectionComponent {
   readonly employeeBusinessKey = input<EmployeeBusinessKey | null>(null);
+  /**
+   * El mes de la página de «lo que pasa cada mes» (`b4rrhh/frontend#90`): con él, las marcas que
+   * van a ese mes y las que se pagaron en él. Sin él, todas.
+   */
+  readonly period = input<PayrollPeriod | null>(null);
+  /** Llevar la página a otro mes, que es de quien es el navegador. */
+  readonly periodRequested = output<PayrollPeriod>();
 
   private readonly store = inject(EmployeeRetroMarkStore);
 
@@ -64,8 +74,29 @@ export class EmployeeRetroMarkSectionComponent {
   protected readonly discardingId = this.discardingIdState.asReadonly();
   protected readonly discardReason = this.discardReasonState.asReadonly();
 
-  protected readonly rows = computed(() => this.store.marks());
+  protected readonly rows = computed(() => {
+    const period = this.period();
+    const all = this.store.marks();
+    return period === null ? all : all.filter((row) => touchesPeriod(row, period));
+  });
   protected readonly hasRows = computed(() => this.rows().length > 0);
+
+  /** Los meses a los que van las que no se ven, del más reciente al más antiguo. */
+  protected readonly otherMonths = computed<ReadonlyArray<PayrollPeriod>>(() => {
+    if (this.period() === null) return [];
+    const visible = new Set(this.rows());
+    const months = this.store
+      .marks()
+      .filter((row) => !visible.has(row))
+      .map((row) => Number(row.fromPeriodCode));
+    return [...new Set(months)].sort((a, b) => b - a);
+  });
+
+  protected readonly emptyMessage = computed(() =>
+    this.period() === null
+      ? this.texts.retroMarksEmptyMessage
+      : this.texts.retroMarksEmptyInMonthMessage,
+  );
   protected readonly busy = computed(() => this.store.loading() || this.store.mutating());
 
   protected readonly canDiscard = computed(() => this.discardReasonState().trim().length > 0);
@@ -180,6 +211,12 @@ export class EmployeeRetroMarkSectionComponent {
     this.discardingIdState.set(null);
     this.discardReasonState.set('');
   }
+}
+
+/** Una marca toca un mes si la escritura fue a él o si el recibo de ese mes la pagó. */
+function touchesPeriod(row: EmployeeRetroMarkModel, period: PayrollPeriod): boolean {
+  const code = String(period);
+  return row.fromPeriodCode === code || row.consumedPeriodCode === code;
 }
 
 /** `202608` como `08/2026`: el mes se lee así en el recibo y aquí se lee igual. */
