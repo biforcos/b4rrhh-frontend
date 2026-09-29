@@ -240,6 +240,7 @@
 
         <p class="ops-page__retro-reason" data-testid="retro-limit-reason">
           {{ store.retroLimitProposalReason() }}
+          <app-ui-more>{{ store.retroLimitProposalDetail() }}</app-ui-more>
           @if (store.retroLimitPeriod() !== store.retroLimitProposal()) {
             <button
               type="button"
@@ -252,14 +253,13 @@
         </p>
 
         <p class="ops-page__retro-note">
-          El suelo recalcula desde ese mes a <strong>todos</strong> los empleados del lanzamiento,
-          tengan corrección o no. Vacío es lo normal: entonces sólo recalcula quien tiene alguna.
+          Vacío es lo normal. Con un mes, recalcula desde él a <strong>todos</strong>, tengan
+          corrección o no.
         </p>
 
         @if (store.retroLimitPeriod() === null) {
           <p class="ops-page__error" data-testid="retro-limit-error">
-            Falta el límite. Una corrida sin límite no recalcula ningún mes cerrado, y desde aquí
-            eso no se decide con un campo en blanco: pon hasta dónde atrás puede llegar.
+            Falta el límite: pon hasta qué mes atrás puede recalcular.
           </p>
         }
 
@@ -267,18 +267,14 @@
           <p class="ops-page__error" data-testid="retro-floor-error">
             El suelo ({{ store.retroFloorLabel() }}) es más antiguo que el límite ({{
               store.retroLimitLabel()
-            }}): son dos cosas contrarias y no hay forma de cumplir las dos. Sube el suelo o baja el
-            límite.
+            }}): sube el suelo o baja el límite.
           </p>
         }
       </div>
 
       <app-ui-button label="Lanzar" [disabled]="!store.canLaunch()" (pressed)="store.launch()" />
 
-      <p class="ops-page__status-text">
-        El cálculo no se espera aquí: al lanzar se abre la pantalla de la ejecución, que cuenta por
-        dónde va mientras corre.
-      </p>
+      <p class="ops-page__status-text">Al lanzar se abre la ejecución, que cuenta por dónde va.</p>
 
       @if (store.launching()) {
         <p class="ops-page__status-text">Pidiendo la ejecución…</p>
@@ -296,8 +292,8 @@
       <h2 class="ops-page__panel-title ops-page__panel-title--finalize">Cerrar el período</h2>
 
       <p class="ops-page__status-text">
-        Cerrar dice que estas nóminas ya no se tocan, y no se deshace: lo que venga después es otro
-        recibo. Los recibos inválidos no se cierran y se cuentan aparte.
+        Cerrar no se deshace. Los recibos inválidos no se cierran y se cuentan aparte.
+        <app-ui-more>Lo que venga después de cerrar es otro recibo.</app-ui-more>
       </p>
 
       @if (!store.finalizeArmed()) {

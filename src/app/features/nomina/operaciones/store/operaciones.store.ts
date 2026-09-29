@@ -60,9 +60,15 @@ export const RETRO_LIMIT_MONTHS_BACK = 12;
  * raton no esta escrito para quien lanza, esta escrito para quien escribio el formulario.
  */
 export const RETRO_LIMIT_PROPOSAL_REASON =
-  'Doce meses atrás: dentro de ese año la corrección se arregla con una liquidación complementaria' +
-  ' a la Seguridad Social y con la retención del mes en que se paga. Más atrás entra el ejercicio' +
-  ' fiscal ya declarado, y eso no lo resuelve una nómina. Cámbialo si este lanzamiento tiene otra' +
+  'Doce meses: más atrás entra un ejercicio fiscal ya declarado, y eso no lo arregla una nómina.';
+
+/**
+ * El resto del porqué, detrás del «?» (`b4rrhh/frontend#108`): la línea de arriba se queda a la
+ * vista como pidió el #85, y lo que la explica se abre a petición.
+ */
+export const RETRO_LIMIT_PROPOSAL_DETAIL =
+  'Dentro de ese año la corrección se arregla con una liquidación complementaria a la Seguridad' +
+  ' Social y con la retención del mes en que se paga. Cámbialo si este lanzamiento tiene otra' +
   ' razón: es una propuesta, no un tope del sistema.';
 
 /** Un periodo `yyyyMM` como el texto que quiere un `<input type="month">`, y de vuelta. */
@@ -173,6 +179,7 @@ export class OperacionesStore {
   readonly retroLimitPeriod = this.retroLimitPeriodState.asReadonly();
   readonly retroFloorPeriod = this.retroFloorPeriodState.asReadonly();
   readonly retroLimitProposalReason = computed(() => RETRO_LIMIT_PROPOSAL_REASON);
+  readonly retroLimitProposalDetail = computed(() => RETRO_LIMIT_PROPOSAL_DETAIL);
 
   readonly periodLabel = computed(() => formatPeriod(this.periodState()));
   readonly retroLimitProposal = computed(() =>

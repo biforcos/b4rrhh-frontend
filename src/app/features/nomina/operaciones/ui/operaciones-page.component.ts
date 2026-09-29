@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { TargetSelectionMode } from '../models/target-selection.model';
 import {
   OperacionesStore,
@@ -19,7 +20,7 @@ import {
 @Component({
   selector: 'app-operaciones-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButtonComponent],
+  imports: [UiButtonComponent, UiMoreComponent],
   templateUrl: './operaciones-page.component.html',
   styleUrl: './operaciones-page.component.scss',
 })

@@ -101,8 +101,8 @@
            llena, y quien lo distingue es el mensaje de abajo (ADR-060). -->
       <p class="ejecucion-page__verdict ejecucion-page__verdict--attention">
         @if (run.totalCandidates === 0) {
-          La ejecución no llegó a empezar: murió antes de seleccionar una sola unidad, así que no
-          hay nada calculado ni nada que rehacer. El motivo está abajo, en los mensajes.
+          La ejecución no llegó a empezar: no hay nada calculado ni nada que rehacer. El motivo está
+          abajo, en los mensajes.
         } @else {
           La ejecución no llegó al final: resolvió {{ processedUnits(run) }} de las
           {{ run.totalCandidates }} unidades que había seleccionado. Lo que calculó se queda; el
