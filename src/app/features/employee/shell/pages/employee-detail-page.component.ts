@@ -64,6 +64,15 @@ import { PanelComponent } from '../../../../shared/ui/panel/panel.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
 import { seniorityDateFromPresences } from '../../utils/seniority-date.util';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
+import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import { lifecycleActionFor } from '../../lifecycle/employee-lifecycle-action';
+
+/** Lo que ya está grabado, dicho con su fecha en lugar de la acción (frontend#111). */
+const PLANNED_PREFIX = {
+  TERMINATION: employeeTexts.pageActionPlannedTerminationPrefix,
+  REHIRE: employeeTexts.pageActionPlannedRehirePrefix,
+  HIRE: employeeTexts.pageActionPlannedHirePrefix,
+} as const;
 
 @Component({
   selector: 'app-employee-detail-page',
@@ -480,28 +489,47 @@ export class EmployeeDetailPageComponent {
     return item.icon as B4IconName;
   }
 
+  /**
+   * La acción del ciclo de vida, decidida en `lifecycleActionFor` con el estado y las fechas
+   * previstas (`b4rrhh/frontend#111`): lo que ya está grabado no se ofrece otra vez, se dice cuándo
+   * pasa y lleva a la presencia.
+   */
+  private readonly lifecycleMenuItem = computed<MenuItem | null>(() => {
+    const t = this.texts;
+    const employee = this.selectedEmployee();
+    const action = lifecycleActionFor(this.headerStatus(), {
+      plannedTerminationDate: employee?.plannedTerminationDate ?? null,
+      plannedHireDate: employee?.plannedHireDate ?? null,
+    });
+    switch (action.kind) {
+      case 'TERMINATE':
+        return {
+          label: t.pageActionTerminate,
+          icon: 'detener',
+          command: () => this.openTerminatePanel(),
+        };
+      case 'REHIRE':
+        return {
+          label: t.pageActionRehire,
+          icon: 'readmision',
+          command: () => this.onRehireRequested(),
+        };
+      case 'PLANNED':
+        return {
+          label: `${PLANNED_PREFIX[action.event]} ${formatDisplayDate(action.date)}`,
+          icon: 'periodo',
+          command: () => this.navigateToAnchor('presence'),
+        };
+      case 'NONE':
+        return null;
+    }
+  });
+
   protected readonly actionMenuItems = computed<MenuItem[]>(() => {
     const t = this.texts;
-    const isActive = this.headerStatus() === 'ACTIVE';
+    const lifecycle = this.lifecycleMenuItem();
     return [
-      {
-        label: t.pageActionsLifecycleGroup,
-        items: isActive
-          ? [
-              {
-                label: t.pageActionTerminate,
-                icon: 'detener',
-                command: () => this.openTerminatePanel(),
-              },
-            ]
-          : [
-              {
-                label: t.pageActionRehire,
-                icon: 'readmision',
-                command: () => this.onRehireRequested(),
-              },
-            ],
-      },
+      ...(lifecycle ? [{ label: t.pageActionsLifecycleGroup, items: [lifecycle] }] : []),
       {
         label: t.relationAreaLabel,
         items: [

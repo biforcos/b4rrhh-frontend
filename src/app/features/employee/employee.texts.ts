@@ -210,6 +210,10 @@ export const employeeTexts = {
   pageLaunchRunning: 'Lanzando el cálculo…',
   pageActionTerminate: 'Iniciar cese',
   pageActionRehire: 'Recontratación',
+  // Lo ya grabado, en el sitio de la acción que ya no cabe (frontend#111).
+  pageActionPlannedTerminationPrefix: 'Cese previsto el',
+  pageActionPlannedRehirePrefix: 'Readmisión prevista el',
+  pageActionPlannedHirePrefix: 'Alta prevista el',
   pageActionChangeWorkCenter: 'Cambiar centro de trabajo',
   pageActionNewContract: 'Nuevo contrato',
   pageActionSalaryReview: 'Registrar revisión salarial',
