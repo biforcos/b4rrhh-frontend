@@ -431,23 +431,13 @@ describe('EmployeeFieldCatalogService', () => {
     expect(exitReasonResult).toEqual([]);
   });
 
-  it('loads DIRECT options for employee.work_center workCenterCode', () => {
-    let result: ReadonlyArray<{ value: string; label: string }> = [];
-
-    service.loadWorkCenterOptions('PA-ES').subscribe((options) => {
-      result = options;
-    });
-
-    expect(apiMock.getCatalogBindingsByResourceCode).toHaveBeenCalledWith({
-      resourceCode: 'employee.work_center',
-    });
-    expect(apiMock.getDirectCatalogOptions).toHaveBeenCalledWith({
-      ruleSystemCode: 'PA-ES',
-      ruleEntityTypeCode: 'WORK_CENTER',
-    });
-    expect(result).toEqual([
-      { value: 'MADRID-01', label: 'Madrid Centro · MADRID-01', effective: true, note: null },
-    ]);
+  // b4rrhh/backend#146: el centro de un empleado se elige por empresa (binding CUSTOM desde la V41
+  // del backend). Aquí había un test del camino DIRECT, montado sobre un binding que el servidor no
+  // tiene; el servicio ya no lo ofrece, y la sección de centro pide los de la empresa.
+  it('no ofrece un camino directo para el centro del empleado', () => {
+    expect(
+      (service as unknown as Record<string, unknown>)['loadWorkCenterOptions'],
+    ).toBeUndefined();
   });
 
   it('loads work center options filtered by company for hire workflows', () => {

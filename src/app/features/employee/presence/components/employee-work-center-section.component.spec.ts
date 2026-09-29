@@ -1,3 +1,5 @@
+import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
+import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
@@ -62,12 +64,37 @@ class MockWorkCenterStore {
 describe('EmployeeWorkCenterSectionComponent', () => {
   let fix: ComponentFixture<EmployeeWorkCenterSectionComponent>;
   let store: MockWorkCenterStore;
-  let fieldCatalog: { loadWorkCenterOptions: ReturnType<typeof vi.fn> };
+  let fieldCatalog: { loadWorkCenterOptionsByCompany: ReturnType<typeof vi.fn> };
+  const presences = signal<ReadonlyArray<EmployeePresenceModel>>([
+    {
+      presenceNumber: 1,
+      companyCode: 'ES01',
+      entryReasonCode: 'HIRING',
+      exitReasonCode: 'TERMINATION',
+      startDate: '2024-01-01',
+      endDate: '2024-12-31',
+      isActive: false,
+    },
+    {
+      presenceNumber: 2,
+      companyCode: 'ES02',
+      entryReasonCode: 'REHIRE',
+      exitReasonCode: null,
+      startDate: '2025-03-01',
+      endDate: null,
+      isActive: true,
+    },
+  ]);
 
   beforeEach(async () => {
     store = new MockWorkCenterStore();
+    // El binding de employee.work_center.workCenterCode es CUSTOM por empresa desde la V41 del
+    // backend: el doble ofrece lo que el servidor sirve, y no un camino DIRECT que no existe y que
+    // durante meses dejó el desplegable vacío sin que ningún spec lo viera (b4rrhh/backend#146).
     fieldCatalog = {
-      loadWorkCenterOptions: vi.fn().mockReturnValue(of([{ value: 'WC1', label: 'Centro 1' }])),
+      loadWorkCenterOptionsByCompany: vi
+        .fn()
+        .mockReturnValue(of([{ value: 'WC1', label: 'Centro 1' }])),
     };
 
     await TestBed.configureTestingModule({
@@ -75,6 +102,7 @@ describe('EmployeeWorkCenterSectionComponent', () => {
       providers: [
         { provide: EmployeeWorkCenterStore, useValue: store },
         { provide: EmployeeFieldCatalogService, useValue: fieldCatalog },
+        { provide: EmployeePresenceStore, useValue: { presences } },
       ],
     }).compileComponents();
     fix = TestBed.createComponent(EmployeeWorkCenterSectionComponent);
@@ -232,6 +260,36 @@ describe('EmployeeWorkCenterSectionComponent', () => {
       expect(c.noteLines().join(' ')).toContain('mismo que está en vigor desde el 01/01/2024');
       c.workCenterCodeDraft.set('WC2');
       expect(c.noteLines().join(' ')).not.toContain('en vigor desde');
+    });
+  });
+
+  // b4rrhh/backend#146: los centros son los de la empresa de la presencia que cubre la fecha.
+  describe('los centros que se ofrecen', () => {
+    it('son los de la empresa de la presencia en la fecha del cambio', () => {
+      const c = fix.componentInstance as any;
+      c.openAdd();
+      c.updateStartDate('2025-06-01');
+
+      expect(fieldCatalog.loadWorkCenterOptionsByCompany).toHaveBeenLastCalledWith('RS1', 'ES02');
+      expect(c.workCenterOptions()).toEqual([{ value: 'WC1', label: 'Centro 1' }]);
+    });
+
+    it('una fecha de la presencia anterior pide los de su empresa', () => {
+      const c = fix.componentInstance as any;
+      c.openAdd();
+      c.updateStartDate('2024-06-01');
+
+      expect(fieldCatalog.loadWorkCenterOptionsByCompany).toHaveBeenLastCalledWith('RS1', 'ES01');
+    });
+
+    it('sin presencia en la fecha no se ofrece ninguno', () => {
+      const c = fix.componentInstance as any;
+      c.openAdd();
+      fieldCatalog.loadWorkCenterOptionsByCompany.mockClear();
+      c.updateStartDate('2025-01-15');
+
+      expect(fieldCatalog.loadWorkCenterOptionsByCompany).not.toHaveBeenCalled();
+      expect(c.workCenterOptions()).toEqual([]);
     });
   });
 });

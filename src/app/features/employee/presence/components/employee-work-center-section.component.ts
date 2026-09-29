@@ -12,6 +12,7 @@ import { take } from 'rxjs';
 
 import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.store';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
+import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
 import { WorkCenterPlanDraft } from '../../data-access/employee-work-center.mapper';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { employeeTexts } from '../../employee.texts';
@@ -68,6 +69,7 @@ export class EmployeeWorkCenterSectionComponent {
 
   private readonly workCenterStore = inject(EmployeeWorkCenterStore);
   private readonly fieldCatalogService = inject(EmployeeFieldCatalogService);
+  private readonly presenceStore = inject(EmployeePresenceStore);
 
   protected readonly modalVisible = signal(false);
   protected readonly modalMode = signal<WorkCenterModalMode>('add');
@@ -314,16 +316,40 @@ export class EmployeeWorkCenterSectionComponent {
       : `Desde el ${start}, en vigor`;
   }
 
+  /**
+   * Los centros de la empresa de la presencia que cubre la fecha (`b4rrhh/backend#146`).
+   *
+   * <p>Un centro es de una empresa, y el catálogo lo dice así desde la V41 del backend: el campo se
+   * resuelve por empresa, no directo. Esta sección seguía pidiéndolo directo, el servicio de
+   * catálogos no encontraba ese binding y lanzaba «Missing active DIRECT binding for
+   * employee.work_center.workCenterCode» en cada ficha; sin manejador de error, el desplegable se
+   * quedaba vacío y el error salía por consola como si fuera ruido. Es el mismo camino que usan el
+   * alta y la readmisión.
+   */
   private loadWorkCenterOptions(ruleSystemCode: string | null, referenceDate: string): void {
-    if (!ruleSystemCode) {
+    const companyCode = this.companyOn(referenceDate);
+    if (!ruleSystemCode || !companyCode) {
       this.workCenterOptions.set([]);
       return;
     }
     this.fieldCatalogService
-      .loadWorkCenterOptions(ruleSystemCode, referenceDate)
+      .loadWorkCenterOptionsByCompany(ruleSystemCode, companyCode)
       .pipe(take(1))
       .subscribe({
         next: (opts) => this.workCenterOptions.set(opts),
+        error: () => this.workCenterOptions.set([]),
       });
+  }
+
+  /** La empresa de la presencia que incluye la fecha; sin fecha, la de la presencia vigente. */
+  private companyOn(date: string): string | null {
+    const presences = this.presenceStore.presences();
+    const covering = date
+      ? presences.find(
+          (presence) =>
+            presence.startDate <= date && (presence.endDate === null || presence.endDate >= date),
+        )
+      : presences.find((presence) => presence.endDate === null);
+    return covering?.companyCode ?? null;
   }
 }

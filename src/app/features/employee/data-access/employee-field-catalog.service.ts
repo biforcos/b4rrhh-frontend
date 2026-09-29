@@ -15,7 +15,6 @@ const employeeCatalogFields = {
   contactType: { resourceCode: 'employee.contact', fieldCode: 'contactTypeCode' },
   identifierType: { resourceCode: 'employee.identifier', fieldCode: 'identifierTypeCode' },
   addressType: { resourceCode: 'employee.address', fieldCode: 'addressTypeCode' },
-  workCenter: { resourceCode: 'employee.work_center', fieldCode: 'workCenterCode' },
   contractType: { resourceCode: 'employee.contract', fieldCode: 'contractTypeCode' },
   laborClassificationAgreement: {
     resourceCode: 'employee.labor_classification',
@@ -124,17 +123,6 @@ export class EmployeeFieldCatalogService {
       );
     this.coveragesCache.set(cacheKey, request);
     return request;
-  }
-
-  loadWorkCenterOptions(
-    ruleSystemCode: string,
-    referenceDate?: string | null,
-  ): Observable<ReadonlyArray<SlotKeyOption<string>>> {
-    return this.loadDirectOptionsByField(
-      ruleSystemCode,
-      employeeCatalogFields.workCenter,
-      referenceDate,
-    );
   }
 
   loadWorkCenterOptionsByCompany(
