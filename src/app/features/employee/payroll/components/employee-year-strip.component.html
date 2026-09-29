@@ -1,0 +1,115 @@
+<section class="year-strip" aria-label="El año de un vistazo">
+  <div class="year-strip__head">
+    <button
+      type="button"
+      class="year-strip__year-btn"
+      aria-label="Año anterior"
+      (click)="yearRequested.emit(year() - 1)"
+    >
+      &#8249;
+    </button>
+    <span class="year-strip__year" aria-live="polite">{{ year() }}</span>
+    <button
+      type="button"
+      class="year-strip__year-btn"
+      aria-label="Año siguiente"
+      (click)="yearRequested.emit(year() + 1)"
+    >
+      &#8250;
+    </button>
+  </div>
+
+  <div class="year-strip__grid" [style.--lanes]="lanes()">
+    <!--
+      El fondo va debajo de los tres carriles: sombreado donde no estaba, gris lo entregado y el
+      mes elegido marcado. Es lo que dice «esto ya se entregó» sin una palabra.
+    -->
+    @for (m of months(); track m.period; let i = $index) {
+      <div
+        class="year-strip__column"
+        aria-hidden="true"
+        [style.grid-column]="i + 2"
+        [class.year-strip__column--absent]="!m.present"
+        [class.year-strip__column--closed]="m.closed"
+        [class.year-strip__column--selected]="m.period === selectedPeriod()"
+      ></div>
+    }
+
+    <span class="year-strip__corner" aria-hidden="true"></span>
+    @for (m of months(); track m.period; let i = $index) {
+      <button
+        type="button"
+        class="year-strip__month"
+        [style.grid-column]="i + 2"
+        [class.year-strip__month--selected]="m.period === selectedPeriod()"
+        [attr.aria-pressed]="m.period === selectedPeriod()"
+        [attr.aria-label]="monthLabel(m)"
+        (click)="periodPicked.emit(m.period)"
+      >
+        {{ m.short }}
+      </button>
+    }
+
+    <span class="year-strip__lane-label year-strip__lane-label--absences">Ausencias</span>
+    <div class="year-strip__absences">
+      @for (bar of bars(); track bar.absence.absenceTypeCode + bar.absence.startDate) {
+        <button
+          type="button"
+          class="year-strip__bar"
+          [class]="'year-strip__bar year-strip__bar--' + barKind(bar.absence)"
+          [class.year-strip__bar--open]="bar.open"
+          [class.year-strip__bar--from-before]="bar.startsBeforeYear"
+          [class.year-strip__bar--to-after]="bar.endsAfterYear"
+          [style.left.%]="bar.left"
+          [style.width.%]="bar.width"
+          [style.--lane]="bar.lane"
+          [attr.aria-label]="barLabel(bar)"
+          [attr.title]="barLabel(bar)"
+          (click)="pickBar(bar)"
+        ></button>
+      }
+    </div>
+
+    <span class="year-strip__lane-label year-strip__lane-label--inputs">Entradas</span>
+    @for (m of months(); track m.period; let i = $index) {
+      <div class="year-strip__cell year-strip__cell--inputs" [style.grid-column]="i + 2">
+        @if (m.inputs > 0) {
+          <button
+            type="button"
+            class="year-strip__dot"
+            [attr.aria-label]="inputsLabel(m.inputs, m.name)"
+            (click)="inputsPicked.emit(m.period)"
+          >
+            {{ m.inputs }}
+          </button>
+        }
+      </div>
+    }
+
+    <span class="year-strip__lane-label year-strip__lane-label--marks">Correcciones</span>
+    @for (m of months(); track m.period; let i = $index) {
+      <div class="year-strip__cell year-strip__cell--marks" [style.grid-column]="i + 2">
+        @if (m.activeMarks > 0) {
+          <button
+            type="button"
+            class="year-strip__mark year-strip__mark--active"
+            [attr.aria-label]="marksLabel(m.activeMarks, 'active', m.name)"
+            (click)="marksPicked.emit(m.period)"
+          >
+            <span aria-hidden="true">&#9670;</span>{{ m.activeMarks }}
+          </button>
+        }
+        @if (m.consumedMarks > 0) {
+          <button
+            type="button"
+            class="year-strip__mark year-strip__mark--consumed"
+            [attr.aria-label]="marksLabel(m.consumedMarks, 'consumed', m.name)"
+            (click)="marksPicked.emit(m.period)"
+          >
+            <span aria-hidden="true">&#9671;</span>{{ m.consumedMarks }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+</section>
