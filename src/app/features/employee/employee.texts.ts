@@ -93,7 +93,7 @@ export const employeeTexts = {
   unknownEmployeeWorkCenter: 'Centro no informado',
   unknownEmployeeStatus: 'Estado no informado',
   detailLoadingMessage: 'Cargando detalle del empleado...',
-  detailNotFoundMessage: 'No se encontro detalle para la clave de negocio seleccionada.',
+  employeeNotFoundPrefix: 'No existe el empleado',
   detailLoadFailedMessage: 'No se pudo cargar el detalle del empleado',
   directoryLoadingMessage: 'Cargando listado de empleados...',
   directoryLoadFailedMessage: 'No se pudo cargar el listado de empleados',

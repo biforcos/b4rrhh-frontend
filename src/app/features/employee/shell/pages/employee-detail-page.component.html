@@ -8,9 +8,11 @@
 <app-page-skeleton
   class="employee-detail"
   storageKey="employee-detail"
-  [rail]="activeEmployeeKey() !== null"
+  [rail]="activeEmployeeKey() !== null && !employeeNotFound()"
   [contextualTitle]="
-    activeEmployeeKey() !== null && !isRehireWorkflow() ? texts.timelineTitle : null
+    activeEmployeeKey() !== null && !isRehireWorkflow() && !employeeNotFound()
+      ? texts.timelineTitle
+      : null
   "
   [railToggleLabel]="texts.railToggleLabel"
 >
@@ -23,6 +25,7 @@
       [employee]="selectedEmployee()"
       [hireDate]="headerHireDate()"
       [status]="headerStatus()"
+      [notFound]="employeeNotFound()"
       [isAdmin]="isAdmin()"
       (editIdentityRequested)="openIdentityEditorFromHeader()"
     >
@@ -32,10 +35,10 @@
         }}</a>
         <span class="employee-detail__breadcrumb-sep" aria-hidden="true">›</span>
         <span class="employee-detail__breadcrumb-current">{{
-          selectedEmployee()?.displayName ?? '...'
+          selectedEmployee()?.displayName ?? (employeeNotFound() ? key.employeeNumber : '...')
         }}</span>
       </nav>
-      @if (!isRehireWorkflow()) {
+      @if (!isRehireWorkflow() && !employeeNotFound()) {
         <div
           identityActions
           class="employee-detail__actions"
@@ -142,7 +145,9 @@
 
   <!-- El raíl: la cola de trabajo si se llegó desde una (frontend#20) y el índice. Un solo nodo
        raíz para que el @if se proyecte al hueco; los dos se pliegan juntos (ADR-050 §3). -->
-  @if (activeEmployeeKey(); as key) {
+  <!-- De una clave que no es de nadie no hay raíl, ni secciones, ni historial: solo la cabecera
+       que lo dice (b4rrhh/frontend#101). -->
+  @if (!employeeNotFound() && activeEmployeeKey(); as key) {
     <div slot="rail" class="employee-detail__rail">
       @if (workQueueActive()) {
         <app-employee-work-queue-panel
@@ -163,7 +168,7 @@
   }
 
   <!-- Content area (principal) -->
-  @if (activeEmployeeKey()) {
+  @if (activeEmployeeKey() && !employeeNotFound()) {
     <div class="employee-detail__content">
       <!-- Hidden identity editor drawer -->
       @if (selectedEmployee(); as employee) {
@@ -205,7 +210,7 @@
   }
 
   <!-- Journey timeline (contextual, kept intact) -->
-  @if (activeEmployeeKey(); as key) {
+  @if (!employeeNotFound() && activeEmployeeKey(); as key) {
     <div slot="contextual" class="employee-detail__timeline-area" id="employee-section-journey">
       <app-employee-journey-timeline
         [journey]="journey()"

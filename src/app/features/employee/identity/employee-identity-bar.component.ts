@@ -40,7 +40,10 @@ export class EmployeeIdentityBarComponent {
   readonly employeeKey = input.required<EmployeeBusinessKey>();
   readonly employee = input<EmployeeDetailModel | null>(null);
   readonly hireDate = input<string | null>(null);
-  readonly status = input<'ACTIVE' | 'TERMINATED'>('TERMINATED');
+  /** Sin detalle no hay estado que decir: `null` calla, y no «Baja» (`b4rrhh/frontend#101`). */
+  readonly status = input<'ACTIVE' | 'TERMINATED' | null>(null);
+  /** La clave no es de nadie: la barra lo dice y no enseña nada de una persona que no hay. */
+  readonly notFound = input(false);
   readonly isAdmin = input(false);
   /** Hoy, inyectable para que los tests no dependan del reloj. */
   readonly today = input<string | null>(null);
@@ -64,10 +67,15 @@ export class EmployeeIdentityBarComponent {
 
   protected readonly photoUrl = computed(() => this.employee()?.photoUrl ?? null);
 
-  /** Solo cuando dice algo: activo es lo normal. */
+  /** Solo cuando dice algo: activo es lo normal, y sin estado no se dice nada. */
   protected readonly statusLabel = computed(() =>
-    this.status() === 'ACTIVE' ? null : this.texts.employeeStatusInactiveLabel,
+    this.status() === 'TERMINATED' ? this.texts.employeeStatusInactiveLabel : null,
   );
+
+  protected readonly notFoundMessage = computed(() => {
+    const key = this.employeeKey();
+    return `${this.texts.employeeNotFoundPrefix} ${key.ruleSystemCode}/${key.employeeTypeCode}/${key.employeeNumber}`;
+  });
 
   protected readonly hireDateLabel = computed(() => {
     const hireDate = this.hireDate();

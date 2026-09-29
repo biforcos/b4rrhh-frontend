@@ -27,7 +27,8 @@ describe('EmployeeIdentityBarComponent', () => {
   function render(
     overrides: Partial<{
       employee: EmployeeDetailModel | null;
-      status: 'ACTIVE' | 'TERMINATED';
+      status: 'ACTIVE' | 'TERMINATED' | null;
+      notFound: boolean;
       hireDate: string | null;
       isAdmin: boolean;
     }> = {},
@@ -38,7 +39,13 @@ describe('EmployeeIdentityBarComponent', () => {
       'employee',
       overrides.employee === undefined ? EMPLOYEE : overrides.employee,
     );
-    fixture.componentRef.setInput('status', overrides.status ?? 'ACTIVE');
+    fixture.componentRef.setInput(
+      'status',
+      overrides.status === undefined ? 'ACTIVE' : overrides.status,
+    );
+    if (overrides.notFound !== undefined) {
+      fixture.componentRef.setInput('notFound', overrides.notFound);
+    }
     fixture.componentRef.setInput(
       'hireDate',
       overrides.hireDate === undefined ? '2023-10-02' : overrides.hireDate,
@@ -135,5 +142,29 @@ describe('EmployeeIdentityBarComponent', () => {
     await Promise.resolve();
     expect(writeText).toHaveBeenCalledWith('EMP000003');
     vi.unstubAllGlobals();
+  });
+
+  // Un empleado que no existe no está de baja (`b4rrhh/frontend#101`): la cabecera lo dice con
+  // una frase y no le pone estado ni acciones sobre la persona.
+  it('de un empleado que no existe dice que no existe y no le inventa estado', () => {
+    const el: HTMLElement = render({
+      employee: null,
+      status: null,
+      hireDate: null,
+      notFound: true,
+      isAdmin: true,
+    }).nativeElement;
+    expect(el.querySelector('h1.identity-bar__name')?.textContent?.trim()).toBe(
+      'No existe el empleado ESP/INTERNAL/EMP000003',
+    );
+    expect(el.querySelector('.identity-bar__status')).toBeNull();
+    expect(el.querySelector('.identity-bar__meta')).toBeNull();
+    expect(el.querySelector('.identity-bar__portrait')).toBeNull();
+    expect(el.querySelector('.identity-bar__icon-btn')).toBeNull();
+  });
+
+  it('mientras no hay detalle no dice «Baja»', () => {
+    const el: HTMLElement = render({ employee: null, status: null }).nativeElement;
+    expect(el.querySelector('.identity-bar__status')).toBeNull();
   });
 });

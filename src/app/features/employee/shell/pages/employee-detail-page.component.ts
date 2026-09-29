@@ -161,9 +161,16 @@ export class EmployeeDetailPageComponent {
     return null;
   });
 
-  protected readonly headerStatus = computed<'ACTIVE' | 'TERMINATED'>(() => {
+  /**
+   * La clave no es de nadie (`b4rrhh/frontend#101`): la ficha lo dice en la cabecera y no enseña
+   * secciones de una persona que no hay.
+   */
+  protected readonly employeeNotFound = computed(() => this.detailError() === 'not-found');
+
+  /** Sin detalle no hay estado: `null`, y no una «Baja» inventada (`b4rrhh/frontend#101`). */
+  protected readonly headerStatus = computed<'ACTIVE' | 'TERMINATED' | null>(() => {
     const employee = this.selectedEmployee();
-    if (!employee) return 'TERMINATED';
+    if (!employee) return null;
     const n = employee.statusLabel.trim().toLowerCase();
     return n.includes('active') || n.includes('alta') ? 'ACTIVE' : 'TERMINATED';
   });
@@ -589,16 +596,6 @@ export class EmployeeDetailPageComponent {
 
   private buildShellMessages(): ReadonlyArray<Omit<GlobalUiMessage, 'createdAt'>> {
     const messages: Array<Omit<GlobalUiMessage, 'createdAt'>> = [];
-    if (this.detailError() === 'not-found') {
-      messages.push({
-        id: 'employee-detail-not-found',
-        level: 'warning',
-        text: this.texts.detailNotFoundMessage,
-        sectionId: 'relacion',
-        sectionLabel: this.texts.detailPanelTitle,
-        sticky: true,
-      });
-    }
     if (this.detailError() === 'request-failed') {
       messages.push({
         id: 'employee-detail-load-error',
