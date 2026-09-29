@@ -130,7 +130,7 @@ describe('RehireEmployeePageComponent', () => {
 
   it('blocks submit and shows a local error when working time percentage is missing', () => {
     component.form.patchValue({
-      rehireDate: new Date(2026, 3, 15),
+      rehireDate: '2026-04-15',
       companyCode: 'ES01',
       entryReasonCode: 'REHIRE',
       workCenterCode: 'MADRID_01',
@@ -153,7 +153,7 @@ describe('RehireEmployeePageComponent', () => {
 
   it('includes only workingTime.workingTimePercentage in the outgoing draft', () => {
     component.form.patchValue({
-      rehireDate: new Date(2026, 3, 15),
+      rehireDate: '2026-04-15',
       companyCode: 'ES01',
       entryReasonCode: 'REHIRE',
       workCenterCode: 'MADRID_01',
@@ -193,7 +193,7 @@ describe('RehireEmployeePageComponent', () => {
     expect(submitButton?.disabled).toBe(true);
 
     component.form.patchValue({
-      rehireDate: new Date(2026, 3, 15),
+      rehireDate: '2026-04-15',
       companyCode: 'ES01',
       entryReasonCode: 'REHIRE',
       workCenterCode: 'MADRID_01',

@@ -135,14 +135,7 @@
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="hireDate">{{ texts.employeePageHeaderHireDateLabel }} *</label>
-            <p-datepicker
-              id="hireDate"
-              formControlName="hireDate"
-              dateFormat="yy-mm-dd"
-              [fluid]="true"
-              appendTo="body"
-              [showIcon]="true"
-            ></p-datepicker>
+            <app-ui-date-input inputId="hireDate" formControlName="hireDate" />
           </div>
 
           <div class="flex flex-column gap-2">

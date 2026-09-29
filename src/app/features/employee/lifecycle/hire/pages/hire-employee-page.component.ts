@@ -7,6 +7,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { UiDateInputComponent } from '../../../../../shared/ui/date-input/ui-date-input.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -23,20 +24,18 @@ import { CatalogsService } from '../../../../../core/api/generated/api/catalogs.
 import { map, startWith, take } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
-import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { MessageModule } from 'primeng/message';
 import { HIRE_EMPLOYEE_DEFAULTS } from '../../../models/hire-employee.defaults';
 import { HireIdentifierOwner } from '../../../models/employee-hiring.model';
-import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
 import { GlobalMessageRailComponent } from '../../../shell/components/global-message-rail.component';
 import {
   buildWorkingTimePreview,
   formatWorkingTimeHours,
 } from '../../../shared/utils/working-time-preview.util';
-import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
+import { DISPLAY_DATE_FORMAT, currentLocalDate } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 import { describeFailure, toHttpFailure } from '../../../../../shared/utils/http-failure.util';
 
@@ -54,7 +53,7 @@ type HireDependencyReasons = Record<string, string | null>;
     ReactiveFormsModule,
     SelectModule,
     InputTextModule,
-    DatePickerModule,
+    UiDateInputComponent,
     InputNumberModule,
     ButtonModule,
     B4IconComponent,
@@ -92,7 +91,7 @@ export class HireEmployeePageComponent {
     preferredName: [''],
     identifierTypeCode: [HIRE_IDENTIFIER_DEFAULT_TYPE, Validators.required],
     identifierValue: ['', Validators.required],
-    hireDate: [new Date(), Validators.required],
+    hireDate: [currentLocalDate(), Validators.required],
     companyCode: ['', Validators.required],
     workCenterCode: ['', Validators.required],
     contractTypeCode: ['', Validators.required],
@@ -251,8 +250,8 @@ export class HireEmployeePageComponent {
     this.workCenters.set([]);
     this.form.get('workCenterCode')?.setValue('');
 
-    const hireDateValue = this.form.get('hireDate')?.value;
-    const referenceDate = hireDateValue instanceof Date ? formatLocalDate(hireDateValue) : null;
+    // El selector de fecha habla en texto `yyyy-MM-dd` (b4rrhh/frontend#96).
+    const referenceDate = this.form.get('hireDate')?.value || null;
 
     (this.catalogService as any)
       .loadPresenceCompanyOptions(ruleSystemCode, referenceDate)
@@ -363,7 +362,7 @@ export class HireEmployeePageComponent {
     const draft: any = {
       ...val,
       employeeTypeCode: HIRE_EMPLOYEE_DEFAULTS.employeeTypeCode,
-      hireDate: formatLocalDate(val.hireDate as Date),
+      hireDate: val.hireDate,
       identifier: {
         identifierTypeCode,
         identifierValue: val.identifierValue ?? '',

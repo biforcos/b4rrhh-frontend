@@ -12,14 +12,7 @@
       <div class="rehire-fields">
         <div class="rehire-field">
           <label for="rehireDate">Fecha de reincorporación *</label>
-          <p-datepicker
-            id="rehireDate"
-            formControlName="rehireDate"
-            dateFormat="yy-mm-dd"
-            [fluid]="true"
-            appendTo="body"
-            [showIcon]="true"
-          ></p-datepicker>
+          <app-ui-date-input inputId="rehireDate" formControlName="rehireDate" />
         </div>
         <div class="rehire-field">
           <label for="companyCode">Empresa *</label>

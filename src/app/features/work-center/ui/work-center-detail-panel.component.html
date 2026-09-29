@@ -126,14 +126,7 @@
               {{ texts.fieldStartDateLabel }}
               <span class="work-center-detail-panel__required">*</span>
             </label>
-            <p-datepicker
-              inputId="startDate"
-              formControlName="startDate"
-              [showIcon]="true"
-              dateFormat="yy-mm-dd"
-              appendTo="body"
-              [fluid]="true"
-            />
+            <app-ui-date-input inputId="startDate" formControlName="startDate" />
           </div>
 
           <div class="work-center-detail-panel__field">

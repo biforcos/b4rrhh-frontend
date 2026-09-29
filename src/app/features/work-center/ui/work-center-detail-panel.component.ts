@@ -9,9 +9,9 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take } from 'rxjs';
-import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { TextareaModule } from 'primeng/textarea';
@@ -49,7 +49,7 @@ export type WorkCenterDetailMode = 'create' | 'view' | 'edit';
   imports: [
     ReactiveFormsModule,
     InputTextModule,
-    DatePickerModule,
+    UiDateInputComponent,
     TextareaModule,
     MessageModule,
     UiButtonComponent,

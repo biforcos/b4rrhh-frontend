@@ -7,6 +7,7 @@ import {
   untracked,
   ViewChild,
 } from '@angular/core';
+import { UiDateInputComponent } from '../../../../../shared/ui/date-input/ui-date-input.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -22,7 +23,6 @@ import { buildEmployeeDetailRouteCommands } from '../../../routing/employee-rout
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -31,12 +31,11 @@ import { EmployeeCostCenterDistributionEditorComponent } from '../../../organiza
 import { EmployeeDetailStore } from '../../../data-access/employee-detail.store';
 import { RehireEmployeeDraft } from '../../../models/employee-rehire.model';
 import { readEmployeeBusinessKeyFromParamMap } from '../../../routing/employee-route-key.util';
-import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
 import {
   buildWorkingTimePreview,
   formatWorkingTimeHours,
 } from '../../../shared/utils/working-time-preview.util';
-import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
+import { DISPLAY_DATE_FORMAT, currentLocalDate } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 import { describeFailure } from '../../../../../shared/utils/http-failure.util';
 
@@ -48,7 +47,7 @@ import { describeFailure } from '../../../../../shared/utils/http-failure.util';
     FormsModule,
     ReactiveFormsModule,
     SelectModule,
-    DatePickerModule,
+    UiDateInputComponent,
     InputNumberModule,
     ButtonModule,
     B4IconComponent,
@@ -75,7 +74,7 @@ export class RehireEmployeePageComponent {
   protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
 
   readonly form = this.fb.group({
-    rehireDate: [new Date(), Validators.required],
+    rehireDate: [currentLocalDate(), Validators.required],
     companyCode: ['', Validators.required],
     entryReasonCode: ['', Validators.required],
     workCenterCode: ['', Validators.required],
@@ -148,8 +147,9 @@ export class RehireEmployeePageComponent {
     // Load all top-level catalogs for the rule system, con la fecha de reincorporación:
     // la vigencia de un código se pregunta respecto al día que se está dando de alta, no
     // respecto a hoy (b4rrhh/frontend#32). Y se vuelve a pedir si esa fecha cambia.
+    // El selector de fecha habla en texto `yyyy-MM-dd` (b4rrhh/frontend#96).
     const rehireDateOf = (value: unknown): string | null =>
-      value instanceof Date ? formatLocalDate(value) : null;
+      typeof value === 'string' && value.length > 0 ? value : null;
 
     this.rehireCatalog.loadForRuleSystem(
       ruleSystemCode,
@@ -235,7 +235,7 @@ export class RehireEmployeePageComponent {
       ruleSystemCode: key.ruleSystemCode,
       employeeTypeCode: key.employeeTypeCode,
       employeeNumber: key.employeeNumber,
-      rehireDate: formatLocalDate(val.rehireDate as Date),
+      rehireDate: val.rehireDate as string,
       entryReasonCode: val.entryReasonCode ?? '',
       companyCode: val.companyCode ?? '',
       workCenterCode: val.workCenterCode ?? '',

@@ -122,12 +122,15 @@ describe('CompanyDetailPanelComponent', () => {
    * `ValueAccessor`— y que el valor del detalle haya llegado hasta la caja de texto que el
    * datepicker pinta.
    */
-  it('wires the datepicker to the startDate control', () => {
+  // El selector único de fecha (b4rrhh/frontend#96) enseña dd/mm/aaaa, como todos.
+  it('wires the datepicker to the startDate control', async () => {
     fixture.componentRef.setInput('mode', 'edit');
     fixture.componentRef.setInput('detail', detailFixture);
     fixture.componentRef.setInput('submitting', false);
     fixture.componentRef.setInput('submitError', null);
     fixture.componentRef.setInput('submitSuccess', null);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const datepicker = fixture.nativeElement.querySelector('p-datepicker');
@@ -135,7 +138,7 @@ describe('CompanyDetailPanelComponent', () => {
 
     const caja = datepicker?.querySelector('input') as HTMLInputElement | null;
     expect(caja).not.toBeNull();
-    expect(caja?.value).toBe('2026-01-01');
+    expect(caja?.value).toBe('01/01/2026');
   });
 
   it('emits submitted form value in create mode', () => {

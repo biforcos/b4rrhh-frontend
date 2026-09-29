@@ -135,15 +135,7 @@
             <label for="startDate" class="company-detail-panel__label">
               {{ texts.fieldStartDateLabel }} <span class="company-detail-panel__required">*</span>
             </label>
-            <p-datepicker
-              inputId="startDate"
-              formControlName="startDate"
-              [showIcon]="true"
-              dateFormat="yy-mm-dd"
-              [class.ng-invalid]="hasError('startDate')"
-              appendTo="body"
-              [fluid]="true"
-            />
+            <app-ui-date-input inputId="startDate" formControlName="startDate" />
             @if (hasError('startDate')) {
               <small class="company-detail-panel__error"
                 >{{ texts.fieldStartDateLabel }} es obligatoria.</small

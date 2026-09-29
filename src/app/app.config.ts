@@ -3,6 +3,7 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withRouterConfig } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
+import { PRIMENG_ES } from './core/i18n/primeng-es';
 
 import { b4rrhhPrimeNgThemePreset } from './core/theme/b4rrhh-primeng-theme.preset';
 import { BASE_PATH } from './core/api/generated/variables';
@@ -30,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors(appHttpInterceptors)),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),
     providePrimeNG({
+      translation: PRIMENG_ES,
       theme: {
         preset: b4rrhhPrimeNgThemePreset,
         options: {
