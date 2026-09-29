@@ -323,7 +323,9 @@ export class EmployeeAbsenceSectionComponent {
   private mapError(code: string | null): string | null {
     const t = this.texts;
     if (code === 'overlap') return t.absencesOverlapMessage;
-    if (code === 'outside-presence') return t.absencesOutsidePresenceMessage;
+    // El servidor nombra la presencia en la que empieza y cuándo acaba (b4rrhh/backend#147).
+    if (code === 'outside-presence')
+      return this.store.failure()?.serverMessage ?? t.absencesOutsidePresenceMessage;
     if (code === 'invalid-range') return t.absencesInvalidRangeMessage;
     if (code === 'not-found') return t.absencesNotFoundMessage;
     if (code === 'request-failed')

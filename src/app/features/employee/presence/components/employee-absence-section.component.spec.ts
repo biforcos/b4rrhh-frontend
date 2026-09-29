@@ -7,6 +7,7 @@ import { EmployeeFieldCatalogService } from '../../data-access/employee-field-ca
 import { EmployeeAbsenceModel } from '../../models/employee-absence.model';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { currentLocalDate } from '../../../../shared/utils/local-date.util';
+import { HttpFailure } from '../../../../shared/utils/http-failure.util';
 import { EmployeeAbsenceSectionComponent } from './employee-absence-section.component';
 
 const employeeKey = { ruleSystemCode: 'ESP', employeeTypeCode: 'INTERNAL', employeeNumber: '0001' };
@@ -22,6 +23,8 @@ class MockAbsenceStore {
   readonly error = this.errorState.asReadonly();
   readonly successState = signal<AbsenceSuccess>(null);
   readonly success = this.successState.asReadonly();
+  readonly failureState = signal<HttpFailure | null>(null);
+  readonly failure = this.failureState.asReadonly();
   readonly loadAbsences = vi.fn();
   readonly saveAbsence = vi.fn();
   readonly deleteAbsence = vi.fn();
@@ -406,5 +409,32 @@ describe('EmployeeAbsenceSectionComponent con el mes de la página', () => {
     expect(rowsText().length).toBe(0);
     const vacio = fix.nativeElement.querySelector('.employee-absence-section__empty');
     expect(vacio.textContent).toContain('este mes');
+  });
+
+  // El servidor dice en qué presencia empieza y cuándo acaba (`b4rrhh/backend#147`): eso es lo que
+  // hay que corregir, y una frase fija lo taparía.
+  describe('fuera de la presencia', () => {
+    const sectionError = () =>
+      (
+        fix.componentInstance as unknown as { sectionState: () => { errorMessage: string | null } }
+      ).sectionState().errorMessage;
+
+    it('enseña lo que dice el servidor', () => {
+      store.errorState.set('outside-presence');
+      store.failureState.set({
+        status: 422,
+        serverMessage: 'La ausencia empieza en la presencia 1 (del 14/11/2025 al 13/05/2026)',
+      } as HttpFailure);
+      expect(sectionError()).toBe(
+        'La ausencia empieza en la presencia 1 (del 14/11/2025 al 13/05/2026)',
+      );
+    });
+
+    it('y si el servidor no dice nada, la frase de siempre', () => {
+      store.errorState.set('outside-presence');
+      expect(sectionError()).toBe(
+        'Esas fechas caen fuera del período en que el empleado estuvo en la empresa.',
+      );
+    });
   });
 });
