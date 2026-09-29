@@ -5,8 +5,7 @@ export const appTexts = {
   authCurrentSubjectLabel: 'Sesión local',
   authLogoutAction: 'Cerrar sesión',
   authLoginTitle: 'Acceso local de desarrollo',
-  authLoginDescription:
-    'Introduce un subject local para solicitar un token dev y seguir trabajando contra el backend securizado.',
+  authLoginDescription: 'Pon un subject local para pedir un token de desarrollo.',
   authSubjectLabel: 'Subject',
   authSubjectPlaceholder: 'bifor',
   authSubjectHelpPrefix: 'Subjects locales disponibles de ejemplo:',
@@ -19,8 +18,9 @@ export const appTexts = {
 
   // --- Demo publica ---
   demoLoginTitle: 'B4RRHH · demo',
+  // Una línea bajo el titular (frontend#108): que se puede entrar y tocar ya lo dice el formulario.
   demoLoginIntro:
-    'Un ERP de nómina y recursos humanos. Cada concepto de la nómina declara de qué otros depende; el motor resuelve ese grafo y calcula. Esta es una demostración abierta: entra, toca y mira cómo se recalcula.',
+    'Un ERP de nómina: cada concepto declara de qué otros depende y el motor resuelve ese grafo.',
   // La portada (frontend#40): el bloque de tinta.
   demoCoverKicker: 'Demo pública',
   demoCoverHeadline: 'Detrás de cada nómina hay',
@@ -53,11 +53,11 @@ export const appTexts = {
     },
   },
   demoLoginInviteTitle: 'Puedes tocar lo que quieras',
-  demoLoginInvite:
-    'Contrata, da de baja, recontrata, cambia contratos. Los datos se regeneran periódicamente, así que no hay nada que romper.',
+  // Que se regeneran lo dice el aviso de la tinta, «cada noche»: aquí no se repite (frontend#108).
+  demoLoginInvite: 'Contrata, da de baja, recontrata, cambia contratos: no hay nada que romper.',
   demoProfileLabel: 'Perfil',
   demoPasswordLabel: 'Contraseña',
-  demoPasswordHint: 'Ya está puesta. Está a la vista a propósito: la demo es para que entres.',
+  demoPasswordHint: 'Ya está puesta: la demo es para entrar.',
   demoLoginSubmitAction: 'Entrar en la demo',
   demoLoginSubmittingAction: 'Entrando...',
   demoLoginErrorMessage: 'No se pudo entrar. Revisa el perfil y la contraseña.',
@@ -92,8 +92,6 @@ export const appTexts = {
   sectionOperaciones: 'Operaciones',
   sectionDesigner: 'Diseñador de nómina',
   homeTitle: 'Inicio',
-  homeDescription:
-    'Aplicación de administración de personal preparada para crecer por secciones funcionales.',
   homeEmployeesShortcut: 'Ir a Empleados',
   placeholderTitleSuffix: 'en construcción',
 } as const;

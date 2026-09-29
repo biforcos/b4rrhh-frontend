@@ -45,6 +45,6 @@ export class SectionPlaceholderPageComponent {
       return rawDescription;
     }
 
-    return 'Contenido inicial pendiente de implementacion en siguientes iteraciones.';
+    return 'Esta sección todavía no está hecha.';
   }
 }

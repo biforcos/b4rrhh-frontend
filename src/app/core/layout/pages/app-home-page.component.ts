@@ -11,7 +11,6 @@ import { appTexts } from '../../i18n/app-texts';
     <section class="home-page">
       <header class="home-page__header">
         <h2>{{ texts.homeTitle }}</h2>
-        <p>{{ texts.homeDescription }}</p>
       </header>
 
       <div class="home-page__actions">
