@@ -1,5 +1,10 @@
+/*
+ * Sin caja propia: el «?» y lo que despliega son piezas de quien lo contiene. En un párrafo es lo
+ * mismo que `inline`; en una línea flex que se parte, la explicación baja a la suya en vez de
+ * meterse como una columna más (frontend#108, el recibo sin ejecución).
+ */
 :host {
-  display: inline;
+  display: contents;
 }
 
 /* Un círculo pequeño a continuación de la línea: se ve que hay más, y no compite con ella. */
@@ -39,6 +44,7 @@
 /* Debajo de la línea, con su mismo tono. */
 .ui-more__body {
   display: block;
+  flex-basis: 100%;
   margin-top: 4px;
 }
 

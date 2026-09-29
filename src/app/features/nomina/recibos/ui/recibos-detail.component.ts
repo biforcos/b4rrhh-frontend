@@ -18,6 +18,7 @@ import { RecibosFolioComponent } from './recibos-folio.component';
 import { RecibosValorizacionPanelComponent } from './recibos-valorizacion-panel.component';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
 import { RecibosLineaExplicadaComponent } from './recibos-linea-explicada.component';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 
 const STATUS_LABELS: Record<string, string> = {
   CALCULATED: 'CALCULADA',
@@ -36,6 +37,7 @@ const STATUS_LABELS: Record<string, string> = {
     RecibosFolioComponent,
     RecibosValorizacionPanelComponent,
     RecibosLineaExplicadaComponent,
+    UiMoreComponent,
   ],
   template: `
     @if (store.selectedPayroll(); as payroll) {
@@ -91,10 +93,15 @@ const STATUS_LABELS: Record<string, string> = {
                 un enlace que no lleva a ninguna parte. Desde b4rrhh/backend#99 el recalculo
                 suelto ya abre su ejecucion, asi que aqui solo caen los recibos del calculo
                 provisional; cuando ese endpoint se retire (b4rrhh/backend#90), esta rama deja
-                de tener quien la pise y se quita entonces, no antes.
+                de tener quien la pise y se quita entonces, no antes. El porque va detras del «?»
+                y no en un title (frontend#108).
               -->
               <span class="calc-sep">·</span>
-              <span class="calc-run-none" [title]="noRunTitle">sin ejecución registrada</span>
+              <span class="calc-run-none">sin ejecución registrada</span>
+              <app-ui-more
+                >Es de un cálculo provisional, anterior a que el recálculo abriera su propia
+                ejecución.</app-ui-more
+              >
             }
           </span>
         </div>
@@ -487,10 +494,6 @@ export class RecibosDetailComponent {
   statusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
   }
-
-  protected readonly noRunTitle =
-    'Ninguna ejecución registrada produjo este recibo: es lo que pasa con los recibos del ' +
-    'cálculo provisional, anteriores a que el recálculo abriera su propia ejecución.';
 
   /**
    * La fecha de cálculo en castellano, no el ISO crudo que llega del backend.

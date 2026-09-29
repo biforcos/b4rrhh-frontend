@@ -140,11 +140,17 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
       );
     });
 
-    it('y explica por qué no la tiene, sin acusar al recibo de estar mal', () => {
-      const titulo = render(null).querySelector('.calc-run-none')?.getAttribute('title') ?? '';
+    /**
+     * El porqué va detrás del «?» y no en un `title` (`b4rrhh/frontend#108`): lo que hay que
+     * descubrir pasando el ratón no está escrito para quien usa la pantalla (`frontend#85`).
+     */
+    it('y explica por qué no la tiene detrás del «?», sin acusar al recibo de estar mal', () => {
+      const host = render(null);
+      const porque = host.querySelector('.calc-run-none + app-ui-more')?.textContent ?? '';
 
-      expect(titulo).toContain('cálculo provisional');
-      expect(titulo).not.toContain('error');
+      expect(porque).toContain('cálculo provisional');
+      expect(porque).not.toContain('error');
+      expect(host.querySelector('.calc-run-none')?.hasAttribute('title')).toBe(false);
     });
 
     /** Sin ejecución sigue habiendo fecha: son dos datos distintos y sólo falta uno. */

@@ -219,6 +219,7 @@
  */
 .calc-info {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   color: var(--text-soft);
@@ -248,7 +249,6 @@
 .calc-run-none {
   color: var(--text-soft);
   font-style: italic;
-  cursor: help;
 }
 
 /*
