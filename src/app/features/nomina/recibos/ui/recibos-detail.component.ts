@@ -49,7 +49,8 @@ const STATUS_LABELS: Record<string, string> = {
           </span>
           <!--
             La misma marca que la fila de la lista, en el mismo caso (frontend#104): la cabecera es
-            donde se acaba mirando. Las hermanas se buscan entre los recibos de la lista.
+            donde se acaba mirando. Si tiene hermana lo pregunta el store al servidor al abrirlo,
+            porque el recibo se puede abrir por su dirección sin lista.
           -->
           @if (marcaDePresencia(payroll); as marca) {
             <span class="presence-mark">{{ marca }}</span>
@@ -480,7 +481,7 @@ export class RecibosDetailComponent {
   }
 
   marcaDePresencia(payroll: PayrollSummaryModel): string | null {
-    return marcaDePresencia(payroll, this.store.payrolls());
+    return marcaDePresencia(payroll.presenceNumber, this.store.selectedHasPresenceSister());
   }
 
   statusLabel(status: string): string {

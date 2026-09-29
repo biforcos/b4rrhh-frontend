@@ -54,8 +54,8 @@ describe('Cerrar un recibo', () => {
         {
           provide: RecibosStore,
           useValue: {
-            // La marca de presencia busca hermanas en la lista (frontend#104): vacía.
-            payrolls: signal([]),
+            // Si tiene hermana de presencia lo contesta el servidor (frontend#104): no la tiene.
+            selectedHasPresenceSister: signal(false),
             selectedPayroll,
             runId: signal(1),
             rulesChanged: signal(false),

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
@@ -61,6 +61,7 @@ describe('RecibosStore', () => {
   let store: RecibosStore;
   let gatewayMock: {
     search: ReturnType<typeof vi.fn>;
+    sharesPeriodWithAnotherPresence: ReturnType<typeof vi.fn>;
     getDetail: ReturnType<typeof vi.fn>;
     getPayslipSections: ReturnType<typeof vi.fn>;
     invalidate: ReturnType<typeof vi.fn>;
@@ -71,6 +72,8 @@ describe('RecibosStore', () => {
   beforeEach(() => {
     gatewayMock = {
       search: vi.fn(),
+      // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+      sharesPeriodWithAnotherPresence: vi.fn(() => of(false)),
       getDetail: vi.fn(),
       getPayslipSections: vi.fn(() => of([])),
       invalidate: vi.fn(),
@@ -131,6 +134,34 @@ describe('RecibosStore', () => {
     expect(store.payrolls()).toEqual([]);
     expect(store.selectedPayroll()).toEqual(MOCK_SUMMARY);
     expect(store.concepts()).toHaveLength(1);
+  });
+
+  /**
+   * Si el recibo abierto tiene hermana de presencia lo contesta el servidor, también sin lista
+   * (`b4rrhh/frontend#104`): abierto por su dirección no hay lista a la que preguntar.
+   */
+  it('asks the server whether the opened payroll shares its month with another presence', () => {
+    gatewayMock.getDetail.mockReturnValue(of(detailWith([MOCK_CONCEPT])));
+    gatewayMock.sharesPeriodWithAnotherPresence.mockReturnValue(of(true));
+
+    store.selectPayroll(MOCK_KEY);
+
+    expect(gatewayMock.sharesPeriodWithAnotherPresence).toHaveBeenCalledWith(MOCK_KEY);
+    expect(store.selectedHasPresenceSister()).toBe(true);
+  });
+
+  it('a late answer about the previous payroll does not mark the one now open', () => {
+    const anterior = new Subject<boolean>();
+    gatewayMock.getDetail.mockReturnValue(of(detailWith([MOCK_CONCEPT])));
+    gatewayMock.sharesPeriodWithAnotherPresence
+      .mockReturnValueOnce(anterior)
+      .mockReturnValueOnce(of(false));
+
+    store.selectPayroll(MOCK_KEY);
+    store.selectPayroll({ ...MOCK_KEY, presenceNumber: 2 });
+    anterior.next(true);
+
+    expect(store.selectedHasPresenceSister()).toBe(false);
   });
 
   /** Criterio 3: las dos presencias del mismo periodo son dos recibos distintos. */

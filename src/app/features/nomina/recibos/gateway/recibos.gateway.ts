@@ -31,6 +31,7 @@ import {
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { RECIBOS_PAGE_SIZE, RecibosPageModel } from '../models/recibos-page.model';
 import { ArrearExplanationModel } from '../models/arrear-explanation.model';
+import { arePayrollBusinessKeysEqual } from '../routing/payroll-route-key.util';
 
 export interface PayrollDetailModel {
   /**
@@ -102,6 +103,28 @@ export class RecibosGateway {
         size: response.size,
         total: response.total,
       })),
+    );
+  }
+
+  /**
+   * Si otra presencia del mismo empleado tiene recibo del mismo período y tipo (`b4rrhh/frontend#104`).
+   *
+   * Lo contesta la búsqueda de ese empleado en ese mes, que son uno o dos recibos, y no la lista que
+   * haya a la vista: un recibo abierto por su dirección no tiene lista, y la de la pantalla puede
+   * estar en otra página o filtrada por estado. Si el recibo no sale en la búsqueda no hay hermana
+   * que decir.
+   */
+  sharesPeriodWithAnotherPresence(key: PayrollBusinessKey): Observable<boolean> {
+    return this.search(
+      { payrollPeriodCode: key.payrollPeriodCode, employeeNumber: key.employeeNumber, status: '' },
+      0,
+      RECIBOS_PAGE_SIZE,
+    ).pipe(
+      map(
+        (page) =>
+          page.items.find((item) => arePayrollBusinessKeysEqual(item, key))
+            ?.sharesPeriodWithAnotherPresence ?? false,
+      ),
     );
   }
 

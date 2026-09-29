@@ -55,6 +55,8 @@ describe('Un cálculo que no se puede hacer', () => {
           useValue: {
             invalidate: () => of({ ...KEY, status: 'NOT_VALID' as const, calculatedAt: null }),
             recalculate: () => recalculateDevuelve(),
+            // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+            sharesPeriodWithAnotherPresence: () => of(false),
             getDetail: () => throwError(() => new HttpErrorResponse({ status: 404 })),
             getPayslipSections: () => of([]),
           },

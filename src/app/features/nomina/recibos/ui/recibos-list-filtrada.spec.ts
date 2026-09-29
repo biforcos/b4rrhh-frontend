@@ -5,7 +5,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RecibosGateway } from '../gateway/recibos.gateway';
-import { PayrollSummaryModel } from '../models/payroll-summary.model';
+import { PayrollListItemModel } from '../models/payroll-summary.model';
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { RecibosListComponent } from './recibos-list.component';
 
@@ -25,10 +25,10 @@ import { RecibosListComponent } from './recibos-list.component';
 describe('La lista de recibos filtrada por un empleado', () => {
   let queryParams: BehaviorSubject<Map<string, string>>;
   let buscados: RecibosFilters[];
-  let resultado: PayrollSummaryModel[];
+  let resultado: PayrollListItemModel[];
   let fixture: ComponentFixture<RecibosListComponent>;
 
-  const RECIBO_DE_EMP1: PayrollSummaryModel = {
+  const RECIBO_DE_EMP1: PayrollListItemModel = {
     ruleSystemCode: 'ESP',
     employeeTypeCode: 'INTERNAL',
     employeeNumber: 'EMP000001',
@@ -37,6 +37,7 @@ describe('La lista de recibos filtrada por un empleado', () => {
     presenceNumber: 2,
     status: 'CALCULATED',
     calculatedAt: '2026-09-14T20:03:48Z',
+    sharesPeriodWithAnotherPresence: false,
   };
 
   function paramMapDe(valores: Record<string, string>): Map<string, string> {
@@ -97,14 +98,37 @@ describe('La lista de recibos filtrada por un empleado', () => {
     expect(buscados[0]).toEqual({ payrollPeriodCode: '', employeeNumber: 'EMP000001', status: '' });
   });
 
-  it('enseña el recibo que encuentra, con su presencia', () => {
+  /**
+   * La presencia 2 sola no lleva marca (`b4rrhh/frontend#104`): el número de presencia distingue
+   * recibos, no describe empleados, y aquí no hay otro recibo del mismo mes que distinguir.
+   */
+  it('enseña el recibo que encuentra, y su presencia 2 sola no lleva marca', () => {
     resultado = [RECIBO_DE_EMP1];
     montar({ employeeNumber: 'EMP000001' });
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('EMP000001');
-    // Como marca desde el frontend#104: la presencia 2 dice algo y se dice.
-    expect(texto).toContain('2.ª presencia');
+    expect(texto).not.toContain('presencia');
+  });
+
+  /** Cesado y readmitido en abril: dos recibos del mismo mes, y la marca en los dos. */
+  it('con dos presencias en el mismo mes, la marca va en las dos filas', () => {
+    const abril = {
+      ...RECIBO_DE_EMP1,
+      employeeNumber: 'EMP000467',
+      payrollPeriodCode: '202604',
+      sharesPeriodWithAnotherPresence: true,
+    };
+    resultado = [
+      { ...abril, presenceNumber: 1 },
+      { ...abril, presenceNumber: 2 },
+    ];
+    montar({ employeeNumber: 'EMP000467' });
+
+    const marcas = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.presence-mark'),
+    ).map((marca) => marca.textContent?.trim());
+    expect(marcas).toEqual(['1.ª presencia', '2.ª presencia']);
   });
 
   /** Sin número en la dirección no se busca: la pantalla abre como siempre, esperando. */

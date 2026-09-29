@@ -6,7 +6,7 @@ import { PayrollCompanyProfileResponse } from '../../../../core/api/generated/mo
 import { PayrollEmployeeProfileResponse } from '../../../../core/api/generated/model/payroll-employee-profile-response';
 import { PayrollAgreementProfileResponse } from '../../../../core/api/generated/model/payroll-agreement-profile-response';
 import {
-  PayrollSummaryModel,
+  PayrollListItemModel,
   PayrollCompanyProfileModel,
   PayrollEmployeeProfileModel,
   PayrollAgreementProfileModel,
@@ -17,7 +17,7 @@ import { PayslipSectionModel } from '../models/payslip-section.model';
 
 export function mapPayrollSummaryResponseToModel(
   response: PayrollSummaryResponse,
-): PayrollSummaryModel {
+): PayrollListItemModel {
   return {
     ruleSystemCode: response.ruleSystemCode,
     employeeTypeCode: response.employeeTypeCode,
@@ -27,6 +27,7 @@ export function mapPayrollSummaryResponseToModel(
     presenceNumber: response.presenceNumber,
     status: response.status,
     calculatedAt: response.calculatedAt,
+    sharesPeriodWithAnotherPresence: response.sharesPeriodWithAnotherPresence,
   };
 }
 

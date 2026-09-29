@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
 import { RecibosFilters } from '../models/recibos-filters.model';
-import { PayrollSummaryModel } from '../models/payroll-summary.model';
+import { PayrollListItemModel, PayrollSummaryModel } from '../models/payroll-summary.model';
 import { marcaDePresencia } from '../format/presencia.format';
 import {
   arePayrollBusinessKeysEqual,
@@ -228,8 +228,8 @@ export class RecibosListComponent {
     return buildPayrollDetailRouteCommands(payroll);
   }
 
-  marcaDePresencia(payroll: PayrollSummaryModel): string | null {
-    return marcaDePresencia(payroll, this.store.payrolls());
+  marcaDePresencia(payroll: PayrollListItemModel): string | null {
+    return marcaDePresencia(payroll.presenceNumber, payroll.sharesPeriodWithAnotherPresence);
   }
 
   isSelected(payroll: PayrollSummaryModel): boolean {

@@ -87,6 +87,8 @@ describe('Recalcular un recibo en un gesto', () => {
               llamadas.push('recalculate');
               return recalculateDevuelve();
             },
+            // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+            sharesPeriodWithAnotherPresence: () => of(false),
             getDetail: () => {
               llamadas.push('getDetail');
               return of({

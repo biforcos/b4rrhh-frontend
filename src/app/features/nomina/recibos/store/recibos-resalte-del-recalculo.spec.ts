@@ -62,6 +62,8 @@ describe('El resalte del recálculo', () => {
             getPayslipSections: () => of([]),
             invalidate: () => of(recibo('NOT_VALID')),
             recalculate: () => of(recibo('CALCULATED')),
+            // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+            sharesPeriodWithAnotherPresence: () => of(false),
             getDetail: () =>
               of({
                 summary: recibo('CALCULATED'),

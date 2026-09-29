@@ -12714,6 +12714,7 @@ components:
         - presenceNumber
         - status
         - calculatedAt
+        - sharesPeriodWithAnotherPresence
       properties:
         ruleSystemCode:
           type: string
@@ -12734,6 +12735,13 @@ components:
         calculatedAt:
           type: string
           format: date-time
+        sharesPeriodWithAnotherPresence:
+          type: boolean
+          description: >-
+            Whether another presence of the same employee has a payroll of the same period and
+            type (terminated and rehired within the month). Counted in the database, not in the
+            page: the sister payroll may be on another page or excluded by the status filter.
+            The presence number only tells payrolls apart when this is true (b4rrhh/frontend#104).
     PayrollErrorResponse:
       type: object
       required:

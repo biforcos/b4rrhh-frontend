@@ -33,6 +33,7 @@ function documento(definitive: boolean, fileName: string): PayslipDocumentModel 
 describe('Descargar el documento del recibo', () => {
   let store: RecibosStore;
   let gatewayMock: {
+    sharesPeriodWithAnotherPresence: ReturnType<typeof vi.fn>;
     getDetail: ReturnType<typeof vi.fn>;
     getPayslipSections: ReturnType<typeof vi.fn>;
     getDocument: ReturnType<typeof vi.fn>;
@@ -41,6 +42,8 @@ describe('Descargar el documento del recibo', () => {
 
   beforeEach(() => {
     gatewayMock = {
+      // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+      sharesPeriodWithAnotherPresence: vi.fn(() => of(false)),
       getDetail: vi.fn(),
       getPayslipSections: vi.fn(() => of([])),
       getDocument: vi.fn(),

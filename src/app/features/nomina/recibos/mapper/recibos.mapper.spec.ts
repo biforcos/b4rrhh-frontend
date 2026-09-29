@@ -21,6 +21,7 @@ describe('recibos.mapper', () => {
         presenceNumber: 1,
         status: PayrollSummaryResponseStatusEnum.Calculated,
         calculatedAt: '2026-04-24T10:00:00Z',
+        sharesPeriodWithAnotherPresence: true,
       };
 
       const model = mapPayrollSummaryResponseToModel(response);
@@ -29,6 +30,7 @@ describe('recibos.mapper', () => {
       expect(model.employeeNumber).toBe('MAS000001');
       expect(model.payrollPeriodCode).toBe('202604');
       expect(model.status).toBe('CALCULATED');
+      expect(model.sharesPeriodWithAnotherPresence).toBe(true);
     });
   });
 

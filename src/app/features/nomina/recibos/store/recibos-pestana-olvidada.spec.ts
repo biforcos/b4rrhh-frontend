@@ -90,6 +90,8 @@ describe('El recibo abierto deja de ser el que hay detrás', () => {
           provide: RecibosGateway,
           useValue: {
             getPayslipSections: () => of([]),
+            // Si tiene hermana de presencia (b4rrhh/frontend#104): no la tiene.
+            sharesPeriodWithAnotherPresence: () => of(false),
             getDetail: () => {
               llamadas.push('getDetail');
               return detalleDevuelve();

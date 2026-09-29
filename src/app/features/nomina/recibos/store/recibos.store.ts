@@ -11,6 +11,7 @@ import { PayrollConceptModel } from '../models/payroll-concept.model';
 import { PayslipDocumentModel } from '../models/payslip-document.model';
 import { PayslipSectionModel } from '../models/payslip-section.model';
 import {
+  PayrollListItemModel,
   PayrollSummaryModel,
   PayrollCompanyProfileModel,
   PayrollEmployeeProfileModel,
@@ -76,7 +77,7 @@ export class RecibosStore {
   private readonly gateway = inject(RecibosGateway);
   private readonly guardarFichero = inject(GuardarFicheroService);
 
-  private readonly payrollsState = signal<ReadonlyArray<PayrollSummaryModel>>([]);
+  private readonly payrollsState = signal<ReadonlyArray<PayrollListItemModel>>([]);
   private readonly listLoadingState = signal(false);
   private readonly listErrorState = signal<RecibosErrorCode | null>(null);
   private readonly listFailureState = signal<HttpFailure | null>(null);
@@ -110,6 +111,13 @@ export class RecibosStore {
    * vacía — y el recibo tiene que salir igual.
    */
   private readonly selectedPayrollState = signal<PayrollSummaryModel | null>(null);
+  /**
+   * Si el recibo abierto comparte período y tipo con otra presencia del empleado
+   * (`b4rrhh/frontend#104`). Se pregunta al servidor al abrirlo, no a la lista: se puede abrir por su
+   * dirección sin lista, y la lista puede no tener a la hermana. Mientras no contesta, `false`: la
+   * marca aparece cuando llega y no antes.
+   */
+  private readonly selectedHasPresenceSisterState = signal(false);
   private readonly conceptsState = signal<ReadonlyArray<PayrollConceptModel>>([]);
   private readonly companyProfileState = signal<PayrollCompanyProfileModel | null>(null);
   private readonly employeeProfileState = signal<PayrollEmployeeProfileModel | null>(null);
@@ -245,6 +253,7 @@ export class RecibosStore {
   readonly searchedFilters = this.searchedFiltersState.asReadonly();
   readonly selectedKey = this.selectedKeyState.asReadonly();
   readonly selectedPayroll = this.selectedPayrollState.asReadonly();
+  readonly selectedHasPresenceSister = this.selectedHasPresenceSisterState.asReadonly();
   readonly concepts = this.conceptsState.asReadonly();
   readonly companyProfile = this.companyProfileState.asReadonly();
   readonly employeeProfile = this.employeeProfileState.asReadonly();
@@ -371,19 +380,40 @@ export class RecibosStore {
     // Al cambiar de recibo se suelta el anterior: lo que se enseña mientras carga es «cargando»
     // y no la cabecera del recibo de antes con los conceptos del nuevo debajo. Al recalcular el
     // mismo, en cambio, la cabecera se queda y sólo parpadea el folio.
-    if (!arePayrollBusinessKeysEqual(this.selectedKeyState(), key)) {
+    const otroRecibo = !arePayrollBusinessKeysEqual(this.selectedKeyState(), key);
+    if (otroRecibo) {
       this.selectedPayrollState.set(null);
     }
     this.selectedKeyState.set(key);
+    if (otroRecibo) {
+      this.askForPresenceSister(key);
+    }
     this.transitionErrorState.set(null);
     this.olvidarDescarga();
     this.loadConcepts(key);
+  }
+
+  /** Una llamada pequeña por recibo abierto; si contesta tarde, sólo cuenta si sigue abierto. */
+  private askForPresenceSister(key: PayrollBusinessKey): void {
+    this.selectedHasPresenceSisterState.set(false);
+    this.gateway
+      .sharesPeriodWithAnotherPresence(key)
+      .pipe(take(1))
+      .subscribe({
+        next: (shares) => {
+          if (arePayrollBusinessKeysEqual(this.selectedKeyState(), key))
+            this.selectedHasPresenceSisterState.set(shares);
+        },
+        // Sin respuesta no se afirma que la tenga: la cabecera se queda sin marca.
+        error: () => undefined,
+      });
   }
 
   /** La dirección sin recibo: la pantalla vuelve a «elige uno de la lista». */
   clearSelection(): void {
     this.selectedKeyState.set(null);
     this.selectedPayrollState.set(null);
+    this.selectedHasPresenceSisterState.set(false);
     this.conceptsState.set([]);
     this.runIdState.set(null);
     this.rulesChangedState.set(false);
@@ -769,8 +799,9 @@ export class RecibosStore {
   }
 
   private updatePayrollInList(updated: PayrollSummaryModel): void {
+    // La transición no cambia si tiene hermana, y su respuesta no lo trae: se conserva el de la fila.
     this.payrollsState.update((list) =>
-      list.map((p) => (arePayrollBusinessKeysEqual(p, updated) ? updated : p)),
+      list.map((p) => (arePayrollBusinessKeysEqual(p, updated) ? { ...p, ...updated } : p)),
     );
     if (arePayrollBusinessKeysEqual(this.selectedKeyState(), updated)) {
       this.selectedPayrollState.set(updated);
