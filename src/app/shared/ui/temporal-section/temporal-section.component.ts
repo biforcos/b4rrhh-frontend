@@ -10,10 +10,18 @@ import {
   output,
 } from '@angular/core';
 
-import { formatDisplayDate } from '../../utils/local-date.util';
+import { currentLocalDate, formatDisplayDate } from '../../utils/local-date.util';
+import { PeriodStanding, periodStanding } from '../../utils/period-order.util';
 import { UiButtonComponent } from '../button/ui-button.component';
 import { SectionHeadingComponent } from '../section-heading/section-heading.component';
 import { TemporalSectionRow } from './temporal-section-row.model';
+
+/** La marca de cada fila (frontend#110): la decide `periodStanding`, aquí sólo se escribe. */
+const STANDING_LABELS: Record<PeriodStanding, string> = {
+  IN_FORCE: 'Vigente',
+  PLANNED: 'Prevista',
+  CLOSED: 'Cerrado',
+};
 
 /**
  * El contenedor de una sección `TEMPORAL_APPEND_CLOSE` (ADR-010, ADR-016, ADR-051): una lista
@@ -67,6 +75,8 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly boxed = input(false);
   /** Id del elemento anfitrión, para las anclas del índice (`employee-section-…`). */
   readonly anchorId = input<string | null>(null);
+  /** El día respecto al que se cuenta qué rige; hoy, salvo en los specs. */
+  readonly today = input<string>(currentLocalDate());
 
   readonly addClicked = output<void>();
   readonly editClicked = output<number>();
@@ -80,16 +90,32 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   }> | null = null;
 
   protected readonly count = computed(() => this.rows().length);
-  protected readonly activeCount = computed(() => this.rows().filter((row) => row.isActive).length);
+  /**
+   * Cuántas rigen hoy, con la regla común (`b4rrhh/frontend#110`): una prevista no está en vigor
+   * aunque no tenga fin, y una con fin mañana sí lo está (`frontend#100`).
+   */
+  protected readonly activeCount = computed(
+    () => this.rows().filter((row) => this.standing(row) === 'IN_FORCE').length,
+  );
+
+  /** Vigente, prevista o cerrada: la marca de la fila sale de `period-order.util` y de nadie más. */
+  protected standing(row: T): PeriodStanding {
+    return periodStanding(row, this.today());
+  }
+
+  protected standingLabel(row: T): string {
+    return STANDING_LABELS[this.standing(row)];
+  }
 
   /** «01/01/2024 —», la primera mitad del período. */
   protected periodStart(row: T): string {
     return `${formatDisplayDate(row.startDate)} —`;
   }
 
-  /** «31/12/2024» o «en vigor», la segunda. */
+  /** «31/12/2024», «en vigor» o, si todavía no ha empezado, «sin fin»: la segunda. */
   protected periodEnd(row: T): string {
-    return row.endDate ? formatDisplayDate(row.endDate) : 'en vigor';
+    if (row.endDate) return formatDisplayDate(row.endDate);
+    return this.standing(row) === 'PLANNED' ? 'sin fin' : 'en vigor';
   }
 
   /**

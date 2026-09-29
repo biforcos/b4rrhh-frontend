@@ -285,4 +285,56 @@ describe('period gateways of the employee record', () => {
       expect(ordering.sort()).toEqual(Object.keys(ownStartDateOrderOnPurpose).sort());
     });
   });
+
+  // La marca de cada período —vigente, prevista, cerrada— sale de periodStanding, contada respecto
+  // a hoy (frontend#110). Mirar `isActive` es mirar si tiene fin, y una readmisión que empieza el
+  // mes que viene no lo tiene: salía «Vigente» debajo de una cabecera que decía «readmisión el
+  // 08/10». Esto recorre la ficha y los componentes compartidos y se queja del que decida la marca
+  // por su cuenta. Los que lo hacen a propósito están aquí con su motivo.
+  describe('no table of the employee record decides its own period mark', () => {
+    const appDir = resolve(process.cwd(), 'src/app');
+    const scanned = ['features/employee', 'shared/ui'];
+
+    function filesUnder(dir: string): string[] {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const path = resolve(dir, entry.name);
+        if (entry.isDirectory()) return filesUnder(path);
+        return /\.(ts|html)$/.test(entry.name) && !entry.name.endsWith('.spec.ts') ? [path] : [];
+      });
+    }
+
+    const sources = scanned
+      .flatMap((dir) => filesUnder(resolve(appDir, dir)))
+      .map((path) => ({
+        file: path.slice(appDir.length + 1).replaceAll('\\', '/'),
+        text: readFileSync(path, 'utf8'),
+      }));
+
+    const markFromIsActiveOnPurpose: Record<string, string> = {
+      'features/employee/contact/components/employee-address-section.component.ts':
+        'ordena las direcciones con su propio criterio (frontend#37); la marca se la pone la tabla común',
+    };
+
+    const markLiteralOnPurpose: Record<string, string> = {
+      'shared/ui/temporal-section/temporal-section.component.ts':
+        'la tabla común: aquí se escribe la marca, una vez',
+      'features/employee/employee.texts.ts': 'los textos de la ficha, que no deciden nada',
+      'features/employee/shell/services/employee-pdf.service.ts':
+        'el PDF de la ficha, que no es una tabla de la pantalla',
+      'features/employee/tax-information/components/employee-tax-information-section.component.ts':
+        '«Vigente desde …» es el rótulo del registro fiscal, no una marca calculada',
+    };
+
+    it('nobody turns isActive into a mark but the files named here', () => {
+      const markFromIsActive = /\.isActive\s*\?(?![?.])/;
+      const found = sources.filter((s) => markFromIsActive.test(s.text)).map((s) => s.file);
+      expect(found.sort()).toEqual(Object.keys(markFromIsActiveOnPurpose).sort());
+    });
+
+    it('«Vigente» and «Prevista» are only written where the mark is decided', () => {
+      const markLiteral = /['"`>]\s*(Vigente|Prevista)\b/;
+      const found = sources.filter((s) => markLiteral.test(s.text)).map((s) => s.file);
+      expect(found.sort()).toEqual(Object.keys(markLiteralOnPurpose).sort());
+    });
+  });
 });

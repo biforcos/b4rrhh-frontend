@@ -358,7 +358,10 @@ export const employeeTexts = {
   timelineExpandActionLabel: 'Expandir historial',
   timelineCollapseActionLabel: 'Contraer historial',
   timelineCurrentPeriodLabel: 'vigente',
+  // Sin fin y sin empezar: no es «vigente» (frontend#110). Lo mismo que dice la tabla.
+  timelinePlannedOpenPeriodLabel: 'sin fin',
   timelineCurrentPresenceLabel: 'Vigente',
+  timelinePlannedPresenceLabel: 'Prevista',
   timelineClosedPresenceLabel: 'Cerrado',
   timelineEventHireLabel: 'Alta',
   timelineEventRehireLabel: 'Reactivación',

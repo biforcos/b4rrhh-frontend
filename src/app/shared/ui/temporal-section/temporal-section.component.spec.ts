@@ -20,6 +20,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
   template: `
     <app-temporal-section
       [rows]="rows()"
+      [today]="today()"
       title="Test"
       [governs]="governs()"
       [boxed]="boxed()"
@@ -40,6 +41,7 @@ const row = (o: Partial<TestRow> = {}): TestRow => ({
 })
 class Host {
   readonly rows = signal<TestRow[]>([]);
+  readonly today = signal('2026-09-29');
   readonly governs = signal(false);
   readonly boxed = signal(false);
   readonly addLabel = signal<string | null>('Nuevo período');
@@ -133,6 +135,47 @@ describe('TemporalSectionComponent', () => {
     expect(periods).toEqual(['01/01/2024 — en vigor', '01/01/2022 — 31/12/2023']);
     expect(fix.nativeElement.querySelector('.temporal-section__badge--active')).toBeTruthy();
     expect(fix.nativeElement.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+
+  /**
+   * Prevista no es vigente (`b4rrhh/frontend#110`): la readmisión del 08/10 salía «Vigente» el
+   * 29/09, debajo de una cabecera que decía «readmisión el 08/10». La marca la da la regla común de
+   * `period-order.util`, contada respecto a hoy, no el `isActive` del período.
+   */
+  it('un período que empieza después de hoy es «Prevista» y no cuenta en vigor', () => {
+    const { fix, host } = createHost([]);
+    host.today.set('2026-09-29');
+    host.rows.set([
+      row({ startDate: '2026-10-08', endDate: null, isActive: true }),
+      row({ startDate: '2025-04-25', endDate: '2026-09-15', isActive: false }),
+    ]);
+    fix.detectChanges();
+
+    const marcas = Array.from(fix.nativeElement.querySelectorAll('.temporal-section__badge')).map(
+      (b) => (b as HTMLElement).textContent?.trim(),
+    );
+    expect(marcas).toEqual(['Prevista', 'Cerrado']);
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row--planned').length).toBe(1);
+    expect(fix.nativeElement.querySelectorAll('.temporal-section__row--active').length).toBe(0);
+    expect(
+      fix.nativeElement
+        .querySelector('.section-heading__meta')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim(),
+    ).toBe('2 periodos');
+    const periodo = fix.nativeElement.querySelector('.temporal-section__td--period');
+    expect(periodo?.textContent?.trim()).toBe('08/10/2026 — sin fin');
+  });
+
+  it('uno que empezó y acaba después de hoy sigue en vigor (frontend#100)', () => {
+    const { fix, host } = createHost([]);
+    host.today.set('2026-09-29');
+    host.rows.set([row({ startDate: '2026-01-01', endDate: '2026-09-30', isActive: false })]);
+    fix.detectChanges();
+
+    expect(fix.nativeElement.querySelector('.temporal-section__badge')?.textContent?.trim()).toBe(
+      'Vigente',
+    );
   });
 
   it('borrar se ofrece en las filas que lo permiten, la vigente incluida (ADR-057)', () => {

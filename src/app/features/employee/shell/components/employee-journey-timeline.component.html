@@ -39,6 +39,8 @@
                     {{ presence.start | date: displayDateFormat }}
                     @if (presence.end) {
                       → {{ presence.end | date: displayDateFormat }}
+                    } @else if (presence.standing === 'PLANNED') {
+                      · {{ texts.timelinePlannedOpenPeriodLabel }}
                     } @else {
                       · {{ texts.timelineCurrentPeriodLabel }}
                     }
@@ -46,13 +48,16 @@
                 </div>
                 <span
                   class="journey-presence-card__badge"
-                  [class.journey-presence-card__badge--active]="presence.isActive"
-                  [class.journey-presence-card__badge--closed]="!presence.isActive"
+                  [class.journey-presence-card__badge--active]="presence.standing === 'IN_FORCE'"
+                  [class.journey-presence-card__badge--planned]="presence.standing === 'PLANNED'"
+                  [class.journey-presence-card__badge--closed]="presence.standing === 'CLOSED'"
                 >
                   {{
-                    presence.isActive
+                    presence.standing === 'IN_FORCE'
                       ? texts.timelineCurrentPresenceLabel
-                      : texts.timelineClosedPresenceLabel
+                      : presence.standing === 'PLANNED'
+                        ? texts.timelinePlannedPresenceLabel
+                        : texts.timelineClosedPresenceLabel
                   }}
                 </span>
               </div>

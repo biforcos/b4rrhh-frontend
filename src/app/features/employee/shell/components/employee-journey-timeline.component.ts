@@ -12,6 +12,7 @@ import {
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { DISPLAY_DATE_FORMAT, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import { HttpFailure, describeFailure } from '../../../../shared/utils/http-failure.util';
+import { PeriodStanding, periodStanding } from '../../../../shared/utils/period-order.util';
 
 interface JourneyDetailEntryViewModel {
   id: string;
@@ -51,6 +52,8 @@ interface PresenceGroupViewModel {
   start: string;
   end: string | null;
   isActive: boolean;
+  /** La marca, con la regla común de las tablas: prevista no es vigente (frontend#110). */
+  standing: PeriodStanding;
   events: ReadonlyArray<EmployeeJourneyEventModel>;
   groupedEvents: ReadonlyArray<PresenceDateGroupViewModel>;
 }
@@ -465,6 +468,10 @@ export class EmployeeJourneyTimelineComponent {
         start: (presence as any).startDate,
         end: (presence as any).endDate,
         isActive: (presence as any).isActive,
+        standing: periodStanding({
+          startDate: (presence as any).startDate,
+          endDate: (presence as any).endDate,
+        }),
         events: assigned,
         groupedEvents: dateGroups,
       });

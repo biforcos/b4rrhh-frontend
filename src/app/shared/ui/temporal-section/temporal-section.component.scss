@@ -73,6 +73,11 @@ app-temporal-section {
   font-weight: 600;
 }
 
+/* Lo previsto todavía no manda: sin el filo del acento, en su tono de siempre. */
+.temporal-section__row--planned .temporal-section__td {
+  color: var(--text-secondary);
+}
+
 /* Lo cerrado retrocede. */
 .temporal-section__row--closed .temporal-section__td {
   color: var(--text-tertiary);
@@ -130,6 +135,12 @@ app-temporal-section {
 .temporal-section__badge--active {
   background: var(--success-bg);
   color: var(--success-text);
+}
+
+/* Prevista: se distingue de la vigente sin parecer un aviso. */
+.temporal-section__badge--planned {
+  background: var(--accent-muted);
+  color: var(--text-accent);
 }
 
 /*

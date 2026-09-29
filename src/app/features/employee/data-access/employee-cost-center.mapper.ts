@@ -86,15 +86,11 @@ export function mapCostCenterResponsesToHistoryModel(
     });
   }
 
-  // La regla común de la ficha (frontend#105): la vigente —sin fin— arriba y, dentro de cada
-  // grupo, por inicio descendente. En una línea sin solapes es el mismo orden que había; el fin
+  // La regla común de la ficha (frontend#105, frontend#110): la que rige hoy arriba, luego la
+  // prevista, luego las acabadas, y dentro de cada grupo por inicio descendente. El fin
   // descendente se queda como desempate.
   const history = Array.from(windowsByPeriod.values()).sort((a, b) =>
-    compareByTimelineRecency(
-      { startDate: a.startDate, isActive: !a.endDate },
-      { startDate: b.startDate, isActive: !b.endDate },
-      () => (b.endDate ?? '').localeCompare(a.endDate ?? ''),
-    ),
+    compareByTimelineRecency(a, b, () => (b.endDate ?? '').localeCompare(a.endDate ?? '')),
   );
   const current = history.find((w) => !w.endDate) ?? null;
 

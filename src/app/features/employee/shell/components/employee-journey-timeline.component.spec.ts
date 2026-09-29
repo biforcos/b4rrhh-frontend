@@ -212,4 +212,32 @@ describe('EmployeeJourneyTimelineComponent', () => {
 
     expect(source).not.toMatch(/\.includes\(/);
   });
+
+  /**
+   * Prevista no es vigente (`b4rrhh/frontend#110`): una readmisión que empieza más adelante no
+   * tiene fin, y el historial la marcaba «Vigente · vigente» a un palmo de la cabecera que decía
+   * «readmisión el …». Lejos en el futuro para que no dependa del día en que corre.
+   */
+  it('marks a presence that has not started yet as planned, not in force', () => {
+    const planned: EmployeePresenceModel = {
+      ...activePresence,
+      presenceNumber: 2,
+      entryReasonCode: 'REHIRE',
+      startDate: '2999-01-04',
+    };
+    const closed: EmployeePresenceModel = {
+      ...activePresence,
+      endDate: '2024-06-30',
+      isActive: false,
+    };
+
+    const host = render(journeyOf([event('HIRE', '2024-01-01'), event('REHIRE', '2999-01-04')]), [
+      planned,
+      closed,
+    ]);
+
+    expect(textsOf(host, '.journey-presence-card__badge')).toEqual(['Prevista', 'Cerrado']);
+    expect(textsOf(host, '.journey-presence-card__period')[0]).toContain('sin fin');
+    expect(textsOf(host, '.journey-presence-card__period')[0]).not.toContain('vigente');
+  });
 });

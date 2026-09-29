@@ -186,14 +186,9 @@ export class EmployeeAbsenceStore {
               }))
               // La más reciente arriba: lo que se consulta de una ausencia es casi siempre la
               // última. El backend ya las sirve así, y ordenar aquí es lo que hace que la pantalla
-              // no dependa de que siga haciéndolo. Con la regla común de la ficha (frontend#105):
-              // la abierta arriba, que sin solapes es también la de inicio más reciente.
-              .sort((a, b) =>
-                compareByTimelineRecency(
-                  { startDate: a.startDate, isActive: a.isOpen },
-                  { startDate: b.startDate, isActive: b.isOpen },
-                ),
-              ),
+              // no dependa de que siga haciéndolo. Con la regla común de la ficha (frontend#105,
+              // frontend#110): la que rige hoy arriba, luego la prevista, luego las acabadas.
+              .sort((a, b) => compareByTimelineRecency(a, b)),
           );
           this.loadingState.set(false);
         },
