@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 
@@ -55,11 +54,8 @@ export class EmployeePayrollInputGateway {
         period,
       })
       .pipe(
+        // Sin empleado es un 404 que pasa: ya no se lee como «no tiene entradas» (b4rrhh/backend#144).
         map((res) => res.inputs.map((i) => ({ conceptCode: i.conceptCode, quantity: i.quantity }))),
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) return of([]);
-          throw err;
-        }),
       );
   }
 

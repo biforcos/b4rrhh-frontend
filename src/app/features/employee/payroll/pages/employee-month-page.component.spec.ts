@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { BASE_PATH } from '../../../../core/api/generated/variables';
+import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeAbsenceSectionComponent } from '../../presence/components/employee-absence-section.component';
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
 import { EmployeeRetroMarkSectionComponent } from '../components/employee-retro-mark-section.component';
@@ -99,5 +100,32 @@ describe('EmployeeMonthPageComponent', () => {
     ausencias.componentInstance.periodRequested.emit(202603);
     fixture.detectChanges();
     expect(periodosDeLasTres(fixture)).toEqual([202603, 202603, 202603]);
+  });
+
+  // b4rrhh/backend#144: la sección calculaba su mensaje de error y nadie lo enseñaba, así que la
+  // ficha de un empleado que no existe decía «no hay entradas». Ahora lo cuenta la página, como los
+  // de las otras dos secciones.
+  it('un fallo al cargar las entradas se cuenta, con lo que dijo el servidor', () => {
+    const fixture = montar();
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .match((req) => req.url.includes('/payroll-inputs'))
+      .forEach((req) =>
+        req.flush(
+          {
+            code: 'PAYROLL_INPUT_EMPLOYEE_NOT_FOUND',
+            message: 'No existe el empleado ESP/INTERNAL/EMP000025.',
+          },
+          { status: 404, statusText: 'Not Found' },
+        ),
+      );
+    fixture.detectChanges();
+
+    const textos = TestBed.inject(GlobalMessageService)
+      .messages()
+      .map((m) => m.text);
+    expect(textos.some((t) => t.includes('No existe el empleado ESP/INTERNAL/EMP000025.'))).toBe(
+      true,
+    );
   });
 });

@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
 import { EmployeeAbsenceStore } from '../../data-access/employee-absence.store';
+import { EmployeePayrollInputStore } from '../../data-access/employee-payroll-input.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeRetroMarkStore } from '../../data-access/employee-retro-mark.store';
 import { employeeTexts } from '../../employee.texts';
@@ -47,6 +48,7 @@ export class EmployeeMonthPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly absenceStore = inject(EmployeeAbsenceStore);
   private readonly retroMarkStore = inject(EmployeeRetroMarkStore);
+  private readonly payrollInputStore = inject(EmployeePayrollInputStore);
   private readonly globalMessageService = inject(GlobalMessageService);
 
   private previousAbsenceSuccess: 'saved' | 'deleted' | null = null;
@@ -62,8 +64,9 @@ export class EmployeeMonthPageComponent {
 
   /**
    * El feedback de las secciones lo publica la página al servicio global (ADR-022, ADR-023), que es
-   * donde vive el feedback en este frontend. Las secciones no pintan banderines propios. El de las
-   * entradas es la excepción que ya era: lo pinta su propia sección.
+   * donde vive el feedback en este frontend. Las secciones no pintan banderines propios. El fallo de
+   * cargar las entradas también: se decía que lo pintaba su sección y la sección no lo pintaba, así
+   * que la ficha de un empleado que no existe decía «no hay entradas» (b4rrhh/backend#144).
    */
   constructor() {
     effect((onCleanup) => {
@@ -88,6 +91,17 @@ export class EmployeeMonthPageComponent {
         text: absenceText,
         sectionId: 'absence',
         sectionLabel: t.absencesSectionTitle,
+        sticky: true,
+      });
+    }
+    const inputText = this.mapPayrollInputErrorMessage(this.payrollInputStore.error());
+    if (inputText) {
+      messages.push({
+        id: 'payroll-input-error',
+        level: 'error',
+        text: inputText,
+        sectionId: 'payroll-inputs',
+        sectionLabel: t.payrollInputsSectionTitle,
         sticky: true,
       });
     }
@@ -154,6 +168,16 @@ export class EmployeeMonthPageComponent {
     if (code === 'not-found') return t.absencesNotFoundMessage;
     if (code === 'request-failed')
       return describeFailure(t.absencesRequestFailedMessage, this.absenceStore.failure());
+    return null;
+  }
+
+  /** Los mismos textos que la sección calculaba y no enseñaba. */
+  private mapPayrollInputErrorMessage(code: string | null): string | null {
+    const t = this.texts;
+    if (code === 'duplicate') return t.payrollInputsDuplicateMessage;
+    if (code === 'not-found') return t.payrollInputsNotFoundMessage;
+    if (code === 'request-failed')
+      return describeFailure(t.payrollInputsRequestFailedMessage, this.payrollInputStore.failure());
     return null;
   }
 

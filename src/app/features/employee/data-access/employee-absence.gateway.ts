@@ -1,6 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { EmployeeAbsencesService } from '../../../core/api/generated/api/employee-absences.service';
 import { AbsenceResponse } from '../../../core/api/generated/model/absence-response';
@@ -28,24 +27,17 @@ export class EmployeeAbsenceGateway {
   /**
    * Las ausencias del empleado, las que sean.
    *
-   * <p>Un 404 se contesta con la lista vacía: «este empleado no tiene ausencias» no es un error de
-   * la pantalla, es el caso normal de casi todo el mundo. Es lo mismo que hace el gateway de
-   * entradas de nómina.
+   * <p>Sin empleado, 404; sin ausencias, 200 con la lista vacía. Hasta el `b4rrhh/backend#144` se
+   * convertía aquí el 404 en «no tiene ausencias»; ahora que el servidor distingue las dos cosas, el
+   * 404 pasa y la pantalla dice que el empleado no existe.
    */
   listAbsences(key: EmployeeBusinessKey): Observable<ReadonlyArray<AbsenceResponse>> {
     const k = toEmployeeBusinessKey(key);
-    return this.api
-      .listEmployeeAbsences({
-        ruleSystemCode: k.ruleSystemCode,
-        employeeTypeCode: k.employeeTypeCode,
-        employeeNumber: k.employeeNumber,
-      })
-      .pipe(
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) return of([] as AbsenceResponse[]);
-          throw err;
-        }),
-      );
+    return this.api.listEmployeeAbsences({
+      ruleSystemCode: k.ruleSystemCode,
+      employeeTypeCode: k.employeeTypeCode,
+      employeeNumber: k.employeeNumber,
+    });
   }
 
   /**

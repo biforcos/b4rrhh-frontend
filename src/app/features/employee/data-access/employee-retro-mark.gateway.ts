@@ -1,6 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { EmployeeRetroMarksService } from '../../../core/api/generated/api/employee-retro-marks.service';
 import { RetroMarkResponse } from '../../../core/api/generated/model/retro-mark-response';
@@ -14,24 +13,16 @@ export class EmployeeRetroMarkGateway {
   /**
    * Las marcas del empleado, **todas y en su estado**.
    *
-   * <p>Un 404 se contesta con la lista vacía, como el de ausencias y por lo mismo: «este empleado no
-   * tiene ninguna corrección a pasado» no es un error de la pantalla, es el caso de casi todo el
-   * mundo.
+   * <p>Sin empleado, 404; sin marcas, 200 con la lista vacía (`b4rrhh/backend#144`). El 404 ya no se
+   * convierte aquí en «no tiene correcciones»: era decir eso de un empleado que no existe.
    */
   listRetroMarks(key: EmployeeBusinessKey): Observable<ReadonlyArray<RetroMarkResponse>> {
     const k = toEmployeeBusinessKey(key);
-    return this.api
-      .listEmployeeRetroMarks({
-        ruleSystemCode: k.ruleSystemCode,
-        employeeTypeCode: k.employeeTypeCode,
-        employeeNumber: k.employeeNumber,
-      })
-      .pipe(
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) return of([] as RetroMarkResponse[]);
-          throw err;
-        }),
-      );
+    return this.api.listEmployeeRetroMarks({
+      ruleSystemCode: k.ruleSystemCode,
+      employeeTypeCode: k.employeeTypeCode,
+      employeeNumber: k.employeeNumber,
+    });
   }
 
   /**
