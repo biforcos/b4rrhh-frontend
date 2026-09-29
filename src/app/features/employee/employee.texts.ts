@@ -55,6 +55,8 @@ export const employeeTexts = {
   terminatePanelEmptyOptionsMessage: 'No hay motivos de baja disponibles para este sistema.',
   terminatePanelCancelAction: 'Cancelar',
   terminatePanelSubmitAction: 'Dar de baja',
+  terminatePanelSubtitlePrefix: 'Cierra la presencia y todo lo que cuelga de ella para',
+  terminatePanelDoneMessage: 'Baja registrada con fecha',
   terminatePanelSummaryTitle: 'Resultado de la terminación',
   terminatePanelSummaryDateLabel: 'Fecha',
   terminatePanelSummaryReasonLabel: 'Motivo',

@@ -9,113 +9,80 @@ import {
   signal,
   isDevMode,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { CardModule } from 'primeng/card';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { TerminateEmployeeResponse } from '../../../../core/api/generated/model/terminate-employee-response';
 import { BASE_PATH } from '../../../../core/api/generated/variables';
-import { PanelComponent } from '../../../../shared/ui/panel/panel.component';
-import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
-import { DISPLAY_DATE_FORMAT } from '../../../../shared/utils/local-date.util';
+import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
+import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
+import { PeriodModalComponent } from '../../shared/ui/period-modal/period-modal.component';
 import { employeeTexts } from '../../employee.texts';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
+import { formatDisplayDate } from '../../../../shared/utils/local-date.util';
 
 @Component({
   selector: 'app-employee-terminate-panel',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PanelComponent, CardModule, UiTagComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    PeriodModalComponent,
+    UiDateInputComponent,
+    UiSelectComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // El cese es un modal como los demás de la ficha, con su molde y sus verbos (b4rrhh/frontend#98):
+  // antes era un panel plano en el hueco del historial, «ahí tirado», y sin estilos.
   template: `
-    <app-panel [title]="texts.terminatePanelTitle">
-      <form [formGroup]="form" (ngSubmit)="submit()" class="employee-terminate__form">
-        <label>{{ texts.terminatePanelTerminationDateLabel }}</label>
-        <input type="date" formControlName="terminationDate" />
+    <app-period-modal
+      [title]="texts.terminatePanelTitle"
+      [subtitle]="subtitle()"
+      [visible]="true"
+      [saving]="submitting()"
+      [submitEnabled]="canSubmit()"
+      [submitLabel]="texts.terminatePanelSubmitAction"
+      [note]="errorMsg()"
+      noteTone="error"
+      (visibleChange)="$event || cancel()"
+      (submitted)="submit()"
+      (cancelled)="cancel()"
+    >
+      <label class="employee-terminate__field">
+        <span>{{ texts.terminatePanelTerminationDateLabel }}</span>
+        <app-ui-date-input
+          inputId="terminationDate"
+          [ariaLabel]="texts.terminatePanelTerminationDateLabel"
+          [value]="form.controls.terminationDate.value"
+          (valueChanged)="form.controls.terminationDate.setValue($event)"
+        />
+      </label>
 
-        <label>{{ texts.terminatePanelExitReasonLabel }}</label>
-        <select formControlName="exitReasonCode" [attr.aria-busy]="optionsLoading()">
-          <option value="" disabled>
-            {{
-              optionsLoading()
-                ? texts.terminatePanelLoadingExitReasonsPlaceholder
-                : texts.terminatePanelSelectExitReasonPlaceholder
-            }}
-          </option>
-          @for (opt of options(); track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-        @if (!optionsLoading() && options().length === 0) {
-          <p class="employee-terminate__empty">{{ texts.terminatePanelEmptyOptionsMessage }}</p>
-        }
-
-        <div class="employee-terminate__actions">
-          <button type="button" (click)="cancel()">{{ texts.terminatePanelCancelAction }}</button>
-          <button
-            type="submit"
-            [disabled]="submitting() || form.invalid || optionsLoading() || options().length === 0"
-          >
-            {{ texts.terminatePanelSubmitAction }}
-          </button>
-        </div>
-      </form>
-
-      @if (terminationResult(); as result) {
-        <p-card
-          [header]="texts.terminatePanelSummaryTitle"
-          styleClass="employee-terminate__summary"
-        >
-          <div class="employee-terminate__summary-grid">
-            <div class="employee-terminate__summary-row">
-              <span class="employee-terminate__summary-label">{{
-                texts.terminatePanelSummaryDateLabel
-              }}</span>
-              <span>{{ result.terminationDate | date: displayDateFormat }}</span>
-            </div>
-            <div class="employee-terminate__summary-row">
-              <span class="employee-terminate__summary-label">{{
-                texts.terminatePanelSummaryReasonLabel
-              }}</span>
-              <span>{{ getExitReasonLabel(result.exitReasonCode) }}</span>
-            </div>
-            <div class="employee-terminate__summary-row">
-              <span class="employee-terminate__summary-label">{{
-                texts.terminatePanelSummaryStatusLabel
-              }}</span>
-              <app-ui-tag [value]="mapStatus(result.status)" severity="success" />
-            </div>
-          </div>
-
-          @if (result.closedWorkingTime; as closedWorkingTime) {
-            <div
-              class="employee-terminate__working-time"
-              data-testid="termination-working-time-summary"
-            >
-              <h4 class="employee-terminate__working-time-title">
-                {{ texts.terminatePanelSummaryWorkingTimeTitle }}
-              </h4>
-              <p class="employee-terminate__working-time-primary">
-                {{ formatHours(closedWorkingTime.workingTimePercentage) }}% jornada
-              </p>
-              <p>
-                {{ formatHours(closedWorkingTime.weeklyHours) }}h/semana ·
-                {{ formatHours(closedWorkingTime.dailyHours) }}h/día ·
-                {{ formatHours(closedWorkingTime.monthlyHours) }}h/mes
-              </p>
-              <p>
-                {{ closedWorkingTime.startDate | date: displayDateFormat }} →
-                {{ closedWorkingTime.endDate | date: displayDateFormat }}
-              </p>
-            </div>
-          }
-        </p-card>
+      <label class="employee-terminate__field">
+        <span>{{ texts.terminatePanelExitReasonLabel }}</span>
+        <app-ui-select
+          inputId="exitReasonCode"
+          [ariaLabel]="texts.terminatePanelExitReasonLabel"
+          [options]="options()"
+          [value]="form.controls.exitReasonCode.value"
+          [disabled]="optionsLoading()"
+          [placeholder]="
+            optionsLoading()
+              ? texts.terminatePanelLoadingExitReasonsPlaceholder
+              : texts.terminatePanelSelectExitReasonPlaceholder
+          "
+          (valueChanged)="form.controls.exitReasonCode.setValue($event)"
+        />
+      </label>
+      @if (!optionsLoading() && options().length === 0) {
+        <p class="employee-terminate__empty">{{ texts.terminatePanelEmptyOptionsMessage }}</p>
       }
-    </app-panel>
+    </app-period-modal>
   `,
   styleUrl: './employee-terminate-panel.component.scss',
 })
@@ -123,12 +90,13 @@ export class EmployeeTerminatePanelComponent {
   private static readonly GLOBAL_FEEDBACK_SOURCE_KEY = 'employee-terminate-panel';
 
   protected readonly texts = employeeTexts;
-  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   /** Single required business key input. The panel expects a populated key when opened. */
   readonly employeeKey = input<
     import('../../models/employee-business-key.model').EmployeeBusinessKey | undefined
   >(undefined);
   readonly closed = output<void>();
+  /** A quién se da de baja, para el subtítulo del modal. */
+  readonly employeeName = input<string | null>(null);
 
   private readonly http = inject(HttpClient);
   private readonly basePath = inject(BASE_PATH);
@@ -141,10 +109,12 @@ export class EmployeeTerminatePanelComponent {
   });
 
   readonly options = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
   readonly optionsLoading = signal(false);
   readonly submitting = signal(false);
   readonly errorMsg = signal<string | null>(null);
-  readonly terminationResult = signal<TerminateEmployeeResponse | null>(null);
 
   /** La fecha del cese, como señal, para que el catálogo se rehaga cuando cambie. */
   private readonly terminationDateSignal = signal('');
@@ -272,7 +242,6 @@ export class EmployeeTerminatePanelComponent {
 
     this.submitting.set(true);
     this.errorMsg.set(null);
-    this.terminationResult.set(null);
 
     const url = `${this.basePath}/employees/${encodeURIComponent(rs)}/${encodeURIComponent(et)}/${encodeURIComponent(en)}/terminate`;
 
@@ -281,7 +250,18 @@ export class EmployeeTerminatePanelComponent {
       .subscribe({
         next: (response) => {
           this.submitting.set(false);
-          this.terminationResult.set(response.body ?? null);
+          const result = response.body;
+          this.globalMessageService.success(
+            result
+              ? `${this.texts.terminatePanelDoneMessage} ${formatDisplayDate(result.terminationDate)}.`
+              : `${this.texts.terminatePanelDoneMessage}.`,
+            {
+              id: 'employee-terminate-done',
+              sectionId: 'journey',
+              sectionLabel: this.texts.timelineTitle,
+            },
+          );
+          this.closed.emit();
           // La ficha se relee sola: el POST del cese pasa por el interceptor de escrituras y
           // EmployeeFichaRefresher relee cabecera, presencia y línea de vida (b4rrhh/frontend#99).
           // Aquí se pedían con los load…, que no hacen nada si la clave es la misma: por eso hacía
@@ -293,6 +273,12 @@ export class EmployeeTerminatePanelComponent {
             this.errorMsg.set(this.texts.terminatePanelInvalidPayloadMessage);
           } else if (err.status === 404) {
             this.errorMsg.set(this.texts.terminatePanelEmployeeNotFoundMessage);
+          } else if (toHttpFailure(err).serverMessage) {
+            // El servidor dice por qué no (un solape, un motivo no vigente): eso vale más que el
+            // genérico (b4rrhh/frontend#92).
+            this.errorMsg.set(
+              describeFailure(this.texts.terminatePanelSubmitAction, toHttpFailure(err)),
+            );
           } else if (err.status === 409) {
             this.errorMsg.set(this.texts.terminatePanelConflictMessage);
           } else if (err.status === 422) {
@@ -304,19 +290,16 @@ export class EmployeeTerminatePanelComponent {
       });
   }
 
-  protected formatHours(value: number): string {
-    return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(value);
-  }
+  protected readonly subtitle = computed(() => {
+    const name = this.employeeName();
+    return name ? `${this.texts.terminatePanelSubtitlePrefix} ${name}` : null;
+  });
 
-  protected mapStatus(status: string): string {
-    if (status === 'TERMINATED') {
-      return this.texts.employeeStatusInactiveLabel;
-    }
-
-    return status;
-  }
-
-  protected getExitReasonLabel(code: string): string {
-    return this.options().find((option) => option.value === code)?.label ?? code;
-  }
+  protected readonly canSubmit = computed(
+    () =>
+      !this.optionsLoading() &&
+      this.options().length > 0 &&
+      (this.formValue().terminationDate ?? '').length > 0 &&
+      (this.formValue().exitReasonCode ?? '').length > 0,
+  );
 }

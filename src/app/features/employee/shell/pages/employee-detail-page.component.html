@@ -12,7 +12,6 @@
   [contextualTitle]="
     activeEmployeeKey() !== null && !isRehireWorkflow() ? texts.timelineTitle : null
   "
-  [contextualForcedOpen]="terminatePanelOpen()"
   [railToggleLabel]="texts.railToggleLabel"
 >
   <!-- Identidad (ADR-050 §1 y §6): la barra a ancho completo, la misma en todas las secciones,
@@ -42,7 +41,9 @@
           class="employee-detail__actions"
           [attr.aria-label]="texts.pageActionsAriaLabel"
         >
-          <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()">
+          <!-- Colgado del body: así PrimeNG lo recoloca dentro de la ventana en vez de dejarlo cortado
+               por el borde derecho de la cabecera (b4rrhh/frontend#98). -->
+          <p-menu #actionsMenu [popup]="true" [model]="actionMenuItems()" appendTo="body">
             <ng-template #item let-item>
               <a class="p-menu-item-link" [class.p-disabled]="item.disabled">
                 <b4-icon [name]="menuIcon(item)" [size]="16" />
@@ -206,17 +207,23 @@
   <!-- Journey timeline (contextual, kept intact) -->
   @if (activeEmployeeKey(); as key) {
     <div slot="contextual" class="employee-detail__timeline-area" id="employee-section-journey">
-      @if (!terminatePanelOpen()) {
-        <app-employee-journey-timeline
-          [journey]="journey()"
-          [loading]="loadingJourney()"
-          [error]="journeyError()"
-          [failure]="journeyFailure()"
-          [presences]="presences()"
-        />
-      } @else {
-        <app-employee-terminate-panel [employeeKey]="key" (closed)="closeTerminatePanel()" />
-      }
+      <app-employee-journey-timeline
+        [journey]="journey()"
+        [loading]="loadingJourney()"
+        [error]="journeyError()"
+        [failure]="journeyFailure()"
+        [presences]="presences()"
+      />
     </div>
   }
 </app-page-skeleton>
+
+<!-- El cese es un modal (b4rrhh/frontend#98), y va fuera del esqueleto: dentro del hueco del
+     historial quedaba atrapado en su contexto de apilado y la línea de vida se le pintaba encima. -->
+@if (terminatePanelOpen() && activeEmployeeKey(); as key) {
+  <app-employee-terminate-panel
+    [employeeKey]="key"
+    [employeeName]="selectedEmployee()?.displayName ?? null"
+    (closed)="closeTerminatePanel()"
+  />
+}
