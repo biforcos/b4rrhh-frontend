@@ -8,25 +8,31 @@
   gap: 14px;
 }
 
-/* Cabecera del recibo: clave en mono, estado y acciones a la derecha. */
+/*
+ * Cabecera del recibo en dos filas (frontend#102): arriba lo que identifica —clave, estado,
+ * «Calculada el … · Ejecución …»—, abajo las acciones. En una sola fila con un tope de 820 px lo
+ * unico que podia encoger era la hora, y salia partida en tres renglones con los botones encima.
+ * Sin tope: la barra ocupa la columna, y no puede ser mas estrecha que sus botones.
+ */
 .action-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  max-width: 820px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border-default);
 }
 
+/* Si la columna no da para todo, se baja de linea entre piezas, nunca dentro de una. */
 .action-bar-info {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+  gap: 6px 10px;
 }
 
 .payroll-key {
+  white-space: nowrap;
   font-family: var(--font-mono);
   color: var(--text-primary);
   font-size: 12.5px;
@@ -66,14 +72,12 @@
 .action-bar-buttons {
   display: flex;
   gap: 8px;
-  flex-shrink: 0;
   /*
    * Envuelve para que lo que se dice de la descarga (frontend#78) caiga en su propia linea
    * debajo de los botones en vez de estrujarlos. La barra crece un renglon cuando hay algo que
    * decir, y ni un pixel cuando no.
    */
   flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 /*
@@ -105,6 +109,7 @@
 
 /* Una sola accion solida (validar); el resto, contorno. */
 .btn {
+  white-space: nowrap;
   padding: 7px 13px;
   border-radius: var(--radius-md);
   font-size: 12.5px;
@@ -206,6 +211,11 @@
   gap: 6px;
   color: var(--text-soft);
   font-size: 11.5px;
+}
+
+/* La hora nunca se parte ni se corta (frontend#102). */
+.calc-when {
+  white-space: nowrap;
 }
 
 .calc-sep {

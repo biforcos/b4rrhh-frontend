@@ -1,5 +1,7 @@
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -146,6 +148,46 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
     /** Sin ejecución sigue habiendo fecha: son dos datos distintos y sólo falta uno. */
     it('sin ejecución la fecha se sigue viendo', () => {
       expect(render(null).querySelector('.calc-when')?.textContent ?? '').toContain('14/09/2026');
+    });
+  });
+
+  /**
+   * La barra en dos filas (`b4rrhh/frontend#102`). Con la clave, el estado, la hora, la ejecución y
+   * seis botones en una sola fila de 820 px como mucho, lo único que encogía era la hora: «Calculada
+   * el 27/09/2026 a las 22:26» salía en tres renglones de 64 px, y a 1280 los botones se montaban
+   * encima. Arriba lo que identifica, abajo las acciones, y la hora nunca se parte.
+   *
+   * jsdom no maqueta, así que lo que se sujeta aquí es lo que sí puede leer: que el literal está
+   * entero en el DOM, y que los estilos no lo parten ni lo recortan. Las capturas a 1280 y 1024 van
+   * en el issue.
+   */
+  describe('la barra, en dos filas', () => {
+    const estilos = readFileSync(
+      resolve(process.cwd(), 'src/app/features/nomina/recibos/ui/recibos-detail.component.scss'),
+      'utf8',
+    );
+
+    function regla(selector: string): string {
+      const inicio = estilos.indexOf(`
+${selector} {`);
+      expect(inicio, `no encuentro la regla ${selector}`).toBeGreaterThanOrEqual(0);
+      return estilos.slice(inicio, estilos.indexOf('}', inicio));
+    }
+
+    it('la hora está entera en el DOM', () => {
+      expect(render(7).querySelector('.calc-when')?.textContent?.trim()).toBe(
+        'Calculada el 14/09/2026 a las 22:03',
+      );
+    });
+
+    it('la hora no se parte y nada la recorta', () => {
+      expect(regla('.calc-when')).toContain('white-space: nowrap');
+      expect(estilos).not.toMatch(/text-overflow/);
+    });
+
+    it('las acciones van en su propia fila, y la barra no tiene un tope más estrecho que ellas', () => {
+      expect(regla('.action-bar')).toContain('flex-direction: column');
+      expect(regla('.action-bar')).not.toMatch(/max-width/);
     });
   });
 });
