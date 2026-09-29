@@ -1,7 +1,9 @@
 <section class="rule-system-detail-page">
   <header class="rule-system-detail-page__header">
     <h2>{{ pageTitle() }}</h2>
-    <p>{{ pageSubtitle() }}</p>
+    @if (pageSubtitle(); as subtitle) {
+      <p>{{ subtitle }}</p>
+    }
   </header>
 
   @if (mode() === 'edit' && loading()) {

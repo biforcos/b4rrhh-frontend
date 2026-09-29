@@ -71,8 +71,9 @@ export class RuleSystemDetailPageComponent {
 
     return `${selected.code} · ${selected.name}`;
   });
+  // Sólo el alta lleva subtítulo: el de la lista era prosa sin contenido (frontend#108).
   protected readonly pageSubtitle = computed(() =>
-    this.mode() === 'create' ? this.texts.createSubtitle : this.texts.listSubtitle,
+    this.mode() === 'create' ? this.texts.createSubtitle : null,
   );
 
   constructor() {

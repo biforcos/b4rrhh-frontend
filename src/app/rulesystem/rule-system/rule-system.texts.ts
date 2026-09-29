@@ -1,6 +1,5 @@
 export const ruleSystemTexts = {
   listTitle: 'Rule systems',
-  listSubtitle: 'Business maintenance of rule systems for personnel administration.',
   listCreateAction: 'Crear rule system',
   listCodeHeader: 'Code',
   listNameHeader: 'Name',
@@ -13,7 +12,7 @@ export const ruleSystemTexts = {
   activeLabel: 'Yes',
   inactiveLabel: 'No',
   createTitle: 'Create rule system',
-  createSubtitle: 'Alta de un nuevo rule system por clave de negocio.',
+  createSubtitle: 'Alta de un sistema de reglas nuevo.',
   editTitlePrefix: 'Rule system',
   editLoadingMessage: 'Cargando detalle de rule system...',
   editRequestFailedMessage: 'No se pudo cargar el rule system solicitado',
