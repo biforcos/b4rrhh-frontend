@@ -1,6 +1,12 @@
+/*
+ * El relleno a los lados compensa el margen negativo de `.grid` (b4rrhh/frontend#112). Lo pedía la
+ * clase `p-4` de la plantilla, que no define nadie, y sin él la rejilla se salía 8 px por la
+ * derecha: scroll horizontal a 1280. El mismo relleno que la readmisión.
+ */
 .hire-employee-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding-inline: 1rem;
   position: relative;
 }
 
