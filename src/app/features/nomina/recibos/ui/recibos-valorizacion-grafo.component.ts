@@ -13,6 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Observable, Subscription, timer } from 'rxjs';
 
@@ -66,7 +67,7 @@ export const DESIGNER_FRAME_DEADLINE = new InjectionToken<Observable<unknown>>(
   selector: 'app-recibos-valorizacion-grafo',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UiMoreComponent],
   template: `
     <div class="grafo-wrap">
       <iframe
@@ -89,24 +90,25 @@ export const DESIGNER_FRAME_DEADLINE = new InjectionToken<Observable<unknown>>(
           } @else if (state() === 'unresponsive') {
             <p class="notice-title">El diseñador no responde.</p>
             <p class="notice-body">
-              El marco no ha acabado de cargar en {{ deadlineSeconds }} segundos. El grafo se sirve
-              en <code>/designer/</code> de este mismo origen: si nadie lo está sirviendo ahí, es
-              aquí donde se ve.
-            </p>
-            <p class="notice-note">
-              Esto no dice que el recibo no tenga grafo. Dice que no se ha podido preguntar.
+              No acabó de cargar en {{ deadlineSeconds }} segundos: no se ha podido preguntar por el
+              grafo.
+              <app-ui-more
+                >El grafo se sirve en <code>/designer/</code> de este mismo origen: si nadie lo está
+                sirviendo ahí, es aquí donde se ve. Que no responda no dice que el recibo no tenga
+                grafo.</app-ui-more
+              >
             </p>
             <button class="notice-retry" type="button" (click)="retry()">Reintentar</button>
           } @else {
             <p class="notice-title">El marco ha cargado, pero dentro no está el diseñador.</p>
             <p class="notice-body">
-              Suele ser que nadie sirve <code>/designer/</code> —un 500 o un 502 del proxy llegan
-              como una página vacía—, o que el navegador se ha negado a pintar el marco. Si el
-              backoffice va detrás de un nginx, mira la cabecera <code>X-Frame-Options</code>: con
-              <code>DENY</code> no se enmarca ni el mismo origen.
-            </p>
-            <p class="notice-note">
-              Esto no dice que el recibo no tenga grafo. Dice que no se ha podido preguntar.
+              El recibo no cambia: no se ha podido preguntar por el grafo.
+              <app-ui-more
+                >Suele ser que nadie sirve <code>/designer/</code> —un 500 o un 502 del proxy llegan
+                como una página vacía—, o que el navegador se ha negado a pintar el marco. Si el
+                backoffice va detrás de un nginx, mira la cabecera <code>X-Frame-Options</code>: con
+                <code>DENY</code> no se enmarca ni el mismo origen.</app-ui-more
+              >
             </p>
             <button class="notice-retry" type="button" (click)="retry()">Reintentar</button>
           }

@@ -210,10 +210,7 @@ const STATUS_LABELS: Record<string, string> = {
           <p id="confirm-close-title" class="confirm-close-title">
             Cerrar el recibo de {{ payroll.employeeNumber }}
           </p>
-          <p class="confirm-close-body">
-            Un recibo cerrado no se puede invalidar ni recalcular. Es lo que hace que cerrarlo
-            signifique algo, y es lo que no tiene vuelta.
-          </p>
+          <p class="confirm-close-body">Un recibo cerrado no se puede invalidar ni recalcular.</p>
           <div class="confirm-close-buttons">
             <button
               class="btn btn-cerrar"
@@ -263,8 +260,7 @@ const STATUS_LABELS: Record<string, string> = {
             @if (desincronizado === 'desaparecido') {
               <p class="recibo-rancio-title">Este recibo ya no existe.</p>
               <p class="recibo-rancio-body">
-                Al volver a esta pestaña se ha vuelto a pedir y no está: los datos de detrás se han
-                sustituido desde que se abrió. Lo de abajo es lo que había antes, y por eso no se
+                Al volver a esta pestaña ya no estaba. Lo de abajo es lo que había, y por eso no se
                 puede recalcular, invalidar, validar ni cerrar.
               </p>
             } @else {
@@ -303,9 +299,8 @@ const STATUS_LABELS: Record<string, string> = {
               Puede que este recibo ya no refleje las reglas actuales.
             </p>
             <p class="rules-changed-body">
-              La reglamentación se ha tocado después de calcularlo. El recibo sigue diciendo lo que
-              el motor calculó, que es lo correcto; para verlo con las reglas de ahora hay que
-              recalcularlo.
+              Se tocó la reglamentación después de calcularlo; el recibo dice lo que calculó el
+              motor. Recalcúlalo para verlo con las reglas de ahora.
               <!--
                 Sobre-avisa a proposito: la comparacion es contra el ultimo cambio del sistema de
                 reglas entero, asi que un cambio que no toque a este empleado la levanta igual. Es

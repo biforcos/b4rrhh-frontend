@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { formatValor } from '../format/recibos.format';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
 import { PayrollConceptModel } from '../models/payroll-concept.model';
@@ -61,7 +62,7 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
   selector: 'app-recibos-valorizacion-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RecibosValorizacionGrafoComponent],
+  imports: [CommonModule, RecibosValorizacionGrafoComponent, UiMoreComponent],
   template: `
     <div class="overlay" (click)="onClose()"></div>
 
@@ -303,9 +304,12 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
               incluyen bases y técnicos, y su suma no es nada. Los totales son los del recibo.
             -->
             <p class="steps-note">
-              {{ stepsOnPayslipCount() }} de {{ steps.length }} pasos llegaron al recibo, y son los
-              que llevan orden de folio. Los demás son bases y técnicos: su columna de importes no
-              se suma — los totales están en la pestaña «Recibo».
+              {{ stepsOnPayslipCount() }} de {{ steps.length }} pasos llegaron al recibo: son los
+              que llevan orden de folio.
+              <app-ui-more
+                >Los demás son bases y técnicos: su columna de importes no se suma — los totales
+                están en la pestaña «Recibo».</app-ui-more
+              >
             </p>
           }
         </div>
