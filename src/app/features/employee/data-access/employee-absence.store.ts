@@ -10,6 +10,7 @@ import {
 } from '../routing/employee-route-key.util';
 import { AbsenceUpsertDraft, EmployeeAbsenceGateway } from './employee-absence.gateway';
 import { HttpFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
+import { compareByTimelineRecency } from '../../../shared/utils/period-order.util';
 
 /**
  * Los códigos de error que esta sección sabe contar con palabras.
@@ -185,8 +186,14 @@ export class EmployeeAbsenceStore {
               }))
               // La más reciente arriba: lo que se consulta de una ausencia es casi siempre la
               // última. El backend ya las sirve así, y ordenar aquí es lo que hace que la pantalla
-              // no dependa de que siga haciéndolo.
-              .sort((a, b) => b.startDate.localeCompare(a.startDate)),
+              // no dependa de que siga haciéndolo. Con la regla común de la ficha (frontend#105):
+              // la abierta arriba, que sin solapes es también la de inicio más reciente.
+              .sort((a, b) =>
+                compareByTimelineRecency(
+                  { startDate: a.startDate, isActive: a.isOpen },
+                  { startDate: b.startDate, isActive: b.isOpen },
+                ),
+              ),
           );
           this.loadingState.set(false);
         },

@@ -22,6 +22,7 @@ import {
   EmployeeCostCenterItemModel,
   EmployeeCostCenterWindowModel,
 } from '../models/employee-cost-center.model';
+import { compareByTimelineRecency } from '../../../shared/utils/period-order.util';
 
 export interface CostCenterDistributionItemDraft {
   costCenterCode: string;
@@ -85,12 +86,16 @@ export function mapCostCenterResponsesToHistoryModel(
     });
   }
 
-  const history = Array.from(windowsByPeriod.values()).sort((a, b) => {
-    if (a.startDate !== b.startDate) return b.startDate.localeCompare(a.startDate);
-    const aEnd = a.endDate ?? '';
-    const bEnd = b.endDate ?? '';
-    return bEnd.localeCompare(aEnd);
-  });
+  // La regla común de la ficha (frontend#105): la vigente —sin fin— arriba y, dentro de cada
+  // grupo, por inicio descendente. En una línea sin solapes es el mismo orden que había; el fin
+  // descendente se queda como desempate.
+  const history = Array.from(windowsByPeriod.values()).sort((a, b) =>
+    compareByTimelineRecency(
+      { startDate: a.startDate, isActive: !a.endDate },
+      { startDate: b.startDate, isActive: !b.endDate },
+      () => (b.endDate ?? '').localeCompare(a.endDate ?? ''),
+    ),
+  );
   const current = history.find((w) => !w.endDate) ?? null;
 
   return {

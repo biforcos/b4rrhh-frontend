@@ -54,10 +54,10 @@ export class EmployeePresenceSectionComponent {
 
   protected readonly texts = employeeTexts;
 
+  // Sin ordenar: el orden es el del gateway, que aplica la regla común (frontend#37). Aquí se
+  // volvía a ordenar por inicio ascendente y la vigente salía abajo (frontend#105).
   protected readonly rows = computed<ReadonlyArray<PresencePeriodRow>>(() =>
-    [...this.presenceStore.presences()]
-      .sort((a, b) => a.startDate.localeCompare(b.startDate))
-      .map((p) => this.toRow(p)),
+    this.presenceStore.presences().map((p) => this.toRow(p)),
   );
 
   constructor() {

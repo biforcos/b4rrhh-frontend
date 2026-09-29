@@ -248,4 +248,39 @@ describe('period gateways of the employee record', () => {
       ).toContain("from '../../../shared/utils/period-order.util'");
     });
   });
+
+  // El candado de arriba recorre los gateways, y la presencia se desordenaba después: su
+  // componente volvía a ordenar por inicio ascendente antes de pintar, y la tabla salía con la
+  // vigente abajo (frontend#105). La regla estaba y alguien la pisaba. Esto recorre todo lo que
+  // hay en la ficha —componentes, mappers, stores— y se queja del que ordene por startDate a su
+  // manera. Los que lo hacen a propósito están aquí con su motivo.
+  describe('nothing else in the employee record orders periods by its own start date', () => {
+    const featureDir = resolve(process.cwd(), 'src/app/features/employee');
+
+    const ownStartDateOrderOnPurpose: Record<string, string> = {
+      'contact/components/employee-address-section.component.ts':
+        'las direcciones tienen su propio criterio (frontend#37, fuera de alcance)',
+      'relation/components/employee-lifeline.component.ts':
+        'la línea de vida es un dibujo cronológico de izquierda a derecha, no una tabla',
+      'shell/pages/employee-detail-page.component.ts':
+        'escoge el período más reciente para la cabecera; no ordena ninguna tabla',
+    };
+
+    function sourcesUnder(dir: string): string[] {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const path = resolve(dir, entry.name);
+        if (entry.isDirectory()) return sourcesUnder(path);
+        return entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts') ? [path] : [];
+      });
+    }
+
+    const ownOrder = /\.startDate\.localeCompare\(/;
+    const ordering = sourcesUnder(featureDir)
+      .filter((path) => ownOrder.test(readFileSync(path, 'utf8')))
+      .map((path) => path.slice(featureDir.length + 1).replaceAll('\\', '/'));
+
+    it('only the files named here with their reason', () => {
+      expect(ordering.sort()).toEqual(Object.keys(ownStartDateOrderOnPurpose).sort());
+    });
+  });
 });
