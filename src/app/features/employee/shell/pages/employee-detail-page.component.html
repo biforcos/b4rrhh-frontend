@@ -60,11 +60,80 @@
           <button
             class="employee-detail__btn-primary"
             type="button"
-            (click)="navigateToSection('mes')"
+            data-testid="employee-calculate-payroll"
+            [disabled]="launchBusy()"
+            (click)="prepareCalculation(key)"
           >
             <b4-icon name="nomina" [size]="16" />
             {{ texts.pageActionCalculatePayroll }}
           </button>
+          <!-- Una línea que dice qué va a hacer antes de hacerlo (b4rrhh/frontend#97). Anclada a la
+               derecha del botón y creciendo hacia dentro: nunca se sale de la ventana. -->
+          @switch (launchState().kind) {
+            @case ('armed') {
+              <app-panel
+                class="employee-detail__launch"
+                role="dialog"
+                data-testid="employee-launch"
+              >
+                <p class="employee-detail__launch-line">{{ launchLine() }}</p>
+                <div class="employee-detail__launch-actions">
+                  <button
+                    class="employee-detail__btn-secondary"
+                    type="button"
+                    (click)="launchStore.cancel()"
+                  >
+                    {{ texts.pageLaunchCancel }}
+                  </button>
+                  <button
+                    class="employee-detail__btn-primary"
+                    type="button"
+                    data-testid="employee-launch-confirm"
+                    (click)="launchStore.confirm()"
+                  >
+                    {{ texts.pageLaunchConfirm }}
+                  </button>
+                </div>
+              </app-panel>
+            }
+            @case ('launching') {
+              <app-panel
+                class="employee-detail__launch"
+                role="status"
+                data-testid="employee-launch"
+              >
+                <p class="employee-detail__launch-line">{{ texts.pageLaunchRunning }}</p>
+              </app-panel>
+            }
+            @case ('blocked') {
+              <app-panel class="employee-detail__launch" role="alert" data-testid="employee-launch">
+                <p class="employee-detail__launch-line">{{ launchReason() }}</p>
+                <div class="employee-detail__launch-actions">
+                  <button
+                    class="employee-detail__btn-secondary"
+                    type="button"
+                    (click)="launchStore.cancel()"
+                  >
+                    {{ texts.pageLaunchUnderstood }}
+                  </button>
+                </div>
+              </app-panel>
+            }
+            @case ('failed') {
+              <app-panel class="employee-detail__launch" role="alert" data-testid="employee-launch">
+                <p class="employee-detail__launch-line">{{ launchReason() }}</p>
+                <div class="employee-detail__launch-actions">
+                  <button
+                    class="employee-detail__btn-secondary"
+                    type="button"
+                    (click)="launchStore.cancel()"
+                  >
+                    {{ texts.pageLaunchUnderstood }}
+                  </button>
+                </div>
+              </app-panel>
+            }
+          }
         </div>
       }
     </app-employee-identity-bar>

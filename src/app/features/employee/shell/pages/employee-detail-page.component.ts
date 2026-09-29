@@ -31,6 +31,7 @@ import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
+import { EmployeePayrollLaunchStore } from '../../data-access/employee-payroll-launch.store';
 import { EmployeePdfService } from '../services/employee-pdf.service';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -58,6 +59,7 @@ import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { EmployeeDetailHeaderComponent } from '../components/employee-detail-header.component';
 import { PageSkeletonComponent } from '../../../../shared/ui/page-skeleton/page-skeleton.component';
 import { B4IconComponent } from '../../../../shared/ui/icon/b4-icon.component';
+import { PanelComponent } from '../../../../shared/ui/panel/panel.component';
 import { B4IconName } from '../../../../shared/ui/icon/icon-names';
 import { seniorityDateFromPresences } from '../../utils/seniority-date.util';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
@@ -79,9 +81,11 @@ import { describeFailure } from '../../../../shared/utils/http-failure.util';
     PageSkeletonComponent,
     MenuModule,
     B4IconComponent,
+    PanelComponent,
   ],
   templateUrl: './employee-detail-page.component.html',
   styleUrl: './employee-detail-page.component.scss',
+  providers: [EmployeePayrollLaunchStore],
 })
 export class EmployeeDetailPageComponent {
   protected readonly isRehireWorkflow = signal(false);
@@ -99,6 +103,20 @@ export class EmployeeDetailPageComponent {
   private readonly pdfService = inject(EmployeePdfService);
   private readonly globalMessageService = inject(GlobalMessageService);
   private readonly workQueueStore = inject(EmployeeWorkQueueStore);
+  protected readonly launchStore = inject(EmployeePayrollLaunchStore);
+  protected readonly launchState = this.launchStore.state;
+  protected readonly launchBusy = computed(() => {
+    const kind = this.launchState().kind;
+    return kind === 'preparing' || kind === 'launching';
+  });
+  protected readonly launchLine = computed(() => {
+    const state = this.launchState();
+    return state.kind === 'armed' ? state.plan.line : '';
+  });
+  protected readonly launchReason = computed(() => {
+    const state = this.launchState();
+    return state.kind === 'blocked' || state.kind === 'failed' ? state.reason : '';
+  });
   private highlightedSectionResetHandle: number | null = null;
   private previousIdentitySuccess: 'updated' | null = null;
 
@@ -493,6 +511,11 @@ export class EmployeeDetailPageComponent {
 
   protected showActionsMenu(event: MouseEvent): void {
     this.actionsMenuRef()?.toggle(event);
+  }
+
+  /** «Calcular nómina»: prepara el lanzamiento de este empleado y lo enseña para confirmar. */
+  protected prepareCalculation(key: EmployeeBusinessKey): void {
+    void this.launchStore.prepare(key, this.presenceStore.presences());
   }
 
   protected navigateToSection(section: EmployeeRouteSection): void {

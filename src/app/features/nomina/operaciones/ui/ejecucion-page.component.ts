@@ -101,8 +101,8 @@ export class EjecucionPageComponent {
   };
 
   protected readonly filters: ReadonlyArray<{ value: EjecucionMessageFilter; label: string }> = [
-    { value: 'ALL', label: 'Todas las unidades' },
     { value: 'ATTENTION', label: 'Solo las que piden algo' },
+    { value: 'ALL', label: 'Todas las unidades' },
   ];
 
   constructor() {

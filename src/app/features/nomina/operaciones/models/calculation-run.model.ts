@@ -78,15 +78,17 @@ export function isRunQueued(run: CalculationRun): boolean {
 }
 
 /**
- * Las unidades que la ejecucion selecciono y no acabaron en recibo.
+ * Las unidades que la ejecucion selecciono y se quedaron sin recibo.
  *
  * Se cuenta con los contadores y no con el `status`: «COMPLETED» significa que la ejecucion
  * termino, no que hayan cobrado todos. En la corrida del deploy#3 el estado era COMPLETED con
  * dos unidades saltadas (frontend#61).
+ *
+ * Las que ya tenian recibo no entran (`b4rrhh/frontend#97`): tienen recibo, el de antes, y no
+ * piden nada. Contarlas aqui decia «883 no acabaron en recibo» de un relanzamiento normal.
  */
 export function unitsWithoutPayslip(run: CalculationRun): number {
   return (
-    run.totalSkippedNotEligible +
     run.totalSkippedAlreadyClaimed +
     run.totalSkippedMissingInput +
     run.totalNotValid +
@@ -103,7 +105,8 @@ export function unitsWithoutPayslip(run: CalculationRun): number {
  * final y el recuento de las que no cobraron miente por debajo.
  */
 export function runProcessedUnits(run: CalculationRun): number {
-  return run.totalCalculated + unitsWithoutPayslip(run);
+  // La que ya tenia recibo esta resuelta aunque no se cuente como sin recibo (frontend#97).
+  return run.totalCalculated + run.totalSkippedNotEligible + unitsWithoutPayslip(run);
 }
 
 /** Si esta corrida recalculó pasado, y por tanto hay una terna de retro que contar. */

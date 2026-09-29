@@ -36,6 +36,31 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  position: relative;
+}
+
+// Lo que va a hacer «Calcular nómina», dicho en una línea antes de hacerlo (b4rrhh/frontend#97).
+// La caja es <app-panel>; aquí sólo se ancla al borde derecho de las acciones: crece hacia dentro
+// y no se sale de la ventana.
+.employee-detail__launch {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: block;
+  width: min(26rem, calc(100vw - 2rem));
+}
+
+.employee-detail__launch-line {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.employee-detail__launch-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .employee-detail__btn-primary,

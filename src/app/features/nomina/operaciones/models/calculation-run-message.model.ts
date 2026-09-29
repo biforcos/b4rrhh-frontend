@@ -35,6 +35,8 @@ export interface CalculationRunMessage {
 
 /** El código con el que el lanzador anota que la unidad sí acabó en recibo. */
 const EXECUTED_MESSAGE_CODE = 'UNIT_ELIGIBLE_REAL_EXECUTED';
+/** La unidad que se salta porque ya tenía recibo: lo esperable al relanzar, y nada que hacer. */
+const ALREADY_HAD_A_RECEIPT_MESSAGE_CODE = 'UNIT_NOT_ELIGIBLE';
 
 export interface CalculationRunMessageUnit {
   ruleSystemCode: string;
@@ -75,7 +77,18 @@ export function messageDestinationSection(message: CalculationRunMessage): Emplo
   return message.messageCode === EXECUTED_MESSAGE_CODE ? 'recibos' : 'relacion';
 }
 
-/** Si la línea pide algo: la unidad no acabó en recibo. */
+/**
+ * Si la unidad es una fila de la lista (`b4rrhh/frontend#97`).
+ *
+ * Las que ya tenían recibo no lo son: son un contador. Relanzar un mes con 883 recibos hechos
+ * dejaba 883 filas que no pedían nada, y la que sí pedía algo había que buscarla entre ellas
+ * («sobreinformación»). El contador de arriba ya las cuenta, con el mismo literal.
+ */
+export function messageIsListed(message: CalculationRunMessage): boolean {
+  return message.messageCode !== ALREADY_HAD_A_RECEIPT_MESSAGE_CODE;
+}
+
+/** Si la línea pide algo: la unidad no acabó en recibo, y no es porque ya lo tuviera. */
 export function messageNeedsAttention(message: CalculationRunMessage): boolean {
-  return message.messageCode !== EXECUTED_MESSAGE_CODE;
+  return message.messageCode !== EXECUTED_MESSAGE_CODE && messageIsListed(message);
 }

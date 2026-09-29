@@ -187,7 +187,8 @@ describe('el trabajo de la corrida cuenta empleado x mes', () => {
 });
 
 describe('unitsWithoutPayslip', () => {
-  it('cuenta las cinco clases de unidad que no acaba en recibo', () =>
+  // b4rrhh/frontend#97: la que ya tenia recibo lo tiene; no se cuenta como sin recibo.
+  it('cuenta las cuatro clases de unidad que se queda sin recibo, no la que ya lo tenia', () =>
     expect(
       unitsWithoutPayslip({
         ...base,
@@ -197,7 +198,7 @@ describe('unitsWithoutPayslip', () => {
         totalNotValid: 3,
         totalErrors: 4,
       }),
-    ).toBe(15));
+    ).toBe(13));
 
   // La clase nueva tiene que estar dentro de la suma. Si se queda fuera, la barra no llega al
   // final y el recuento de las que no cobraron miente por debajo (b4rrhh/backend#85).

@@ -4,6 +4,7 @@ import { Observable, Subscription, forkJoin, interval, switchMap, takeWhile } fr
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import {
   CalculationRunMessage,
+  messageIsListed,
   messageNeedsAttention,
 } from '../models/calculation-run-message.model';
 import {
@@ -51,7 +52,8 @@ export class EjecucionStore implements OnDestroy {
   private readonly loadingState = signal<boolean>(false);
   private readonly errorState = signal<boolean>(false);
   private readonly failureState = signal<HttpFailure | null>(null);
-  private readonly filterState = signal<EjecucionMessageFilter>('ALL');
+  // Lo primero que se ve es lo que pide algo; «todas» es la opción (`b4rrhh/frontend#97`).
+  private readonly filterState = signal<EjecucionMessageFilter>('ATTENTION');
   private pollSubscription: Subscription | null = null;
 
   readonly run = this.runState.asReadonly();
@@ -61,13 +63,21 @@ export class EjecucionStore implements OnDestroy {
   readonly failure = this.failureState.asReadonly();
   readonly filter = this.filterState.asReadonly();
 
-  readonly attentionMessages = computed(() => this.messagesState().filter(messageNeedsAttention));
+  /** Las unidades que son filas: todas menos las que ya tenían recibo, que son un contador. */
+  private readonly listedMessages = computed(() => this.messagesState().filter(messageIsListed));
+
+  readonly attentionMessages = computed(() => this.listedMessages().filter(messageNeedsAttention));
 
   readonly messages = computed(() =>
-    this.filterState() === 'ATTENTION' ? this.attentionMessages() : this.messagesState(),
+    this.filterState() === 'ATTENTION' ? this.attentionMessages() : this.listedMessages(),
   );
 
-  readonly totalMessages = computed(() => this.messagesState().length);
+  readonly totalMessages = computed(() => this.listedMessages().length);
+
+  /** Cuántas se quedaron fuera de la lista por tener ya recibo. */
+  readonly alreadyHadAReceipt = computed(
+    () => this.messagesState().length - this.listedMessages().length,
+  );
 
   /** Si la ejecucion sigue viva, y por tanto lo que se esta viendo cambia solo. */
   readonly live = computed(() => {

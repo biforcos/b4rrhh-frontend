@@ -119,6 +119,13 @@
         }
         Están nombradas abajo, con su motivo.
       </p>
+    } @else if (run.totalSkippedNotEligible > 0) {
+      <p class="ejecucion-page__verdict">
+        Las {{ run.totalCandidates }} unidades seleccionadas tienen recibo:
+        {{ run.totalCalculated }}
+        {{ run.totalCalculated === 1 ? 'calculada' : 'calculadas' }} ahora y
+        {{ run.totalSkippedNotEligible }} que ya lo tenían.
+      </p>
     } @else {
       <p class="ejecucion-page__verdict">
         Las {{ run.totalCandidates }} unidades seleccionadas acabaron en recibo.
@@ -188,6 +195,13 @@
           }
         </div>
       </div>
+
+      @if (store.alreadyHadAReceipt() > 0) {
+        <p class="ejecucion-page__note" data-testid="ejecucion-already-had-a-receipt">
+          {{ store.alreadyHadAReceipt() }} unidades ya tenían recibo: están en su contador, no en la
+          lista, porque no piden nada.
+        </p>
+      }
 
       <!-- La lista no viaja en cada vuelta del sondeo: son casi mil filas. Mientras la ejecucion
            corre, lo que se ve es la foto de cuando se abrio la pantalla, y eso se dice. -->

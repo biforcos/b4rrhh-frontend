@@ -77,9 +77,12 @@ describe('messageNeedsAttention', () => {
 
   it('la saltada si', () => expect(messageNeedsAttention(skipped)).toBe(true));
 
-  it('cualquier codigo que no sea el de ejecutada pide algo', () => {
+  // b4rrhh/frontend#97: ya tener recibo es lo esperable al relanzar; no pide nada de nadie.
+  it('la que ya tenia recibo no pide nada', () =>
+    expect(messageNeedsAttention({ ...executed, messageCode: 'UNIT_NOT_ELIGIBLE' })).toBe(false));
+
+  it('cualquier otro codigo que no sea el de ejecutada pide algo', () => {
     for (const code of [
-      'UNIT_NOT_ELIGIBLE',
       'UNIT_ALREADY_CLAIMED',
       'UNIT_CALCULATION_ERROR',
       'CODIGO_QUE_TODAVIA_NO_EXISTE',

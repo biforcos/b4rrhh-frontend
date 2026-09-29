@@ -40,15 +40,18 @@ function movePeriod(period: number, delta: 1 | -1): number {
 }
 
 /** Corre un periodo `yyyyMM` los meses que se le digan, hacia atras con negativo. */
-function shiftPeriod(period: number, months: number): number {
+export function shiftPeriod(period: number, months: number): number {
   const month = period % 100;
   const year = Math.floor(period / 100);
   const absolute = year * 12 + (month - 1) + months;
   return Math.floor(absolute / 12) * 100 + (absolute % 12) + 1;
 }
 
-/** Cuantos meses atras del periodo que se lanza se propone el limite de la retro. */
-const RETRO_LIMIT_MONTHS_BACK = 12;
+/**
+ * Cuantos meses atras del periodo que se lanza se propone el limite de la retro. Lo usa tambien
+ * el boton de la ficha (`b4rrhh/frontend#97`): es el limite por defecto del `b4rrhh/backend#136`.
+ */
+export const RETRO_LIMIT_MONTHS_BACK = 12;
 
 /**
  * Por que doce, escrito. **No es un 12 magico** y eso lo pide el issue con esas palabras.

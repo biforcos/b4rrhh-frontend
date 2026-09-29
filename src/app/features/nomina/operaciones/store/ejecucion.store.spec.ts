@@ -110,15 +110,35 @@ describe('EjecucionStore', () => {
 
   it('sin ejecucion cargada no cuenta nada', () => expect(store.unitsWithoutPayslip()).toBe(0));
 
-  it('el filtro de las que piden algo deja fuera las ejecutadas', () => {
+  // b4rrhh/frontend#97: lo primero que se ve es lo que pide algo; «todas» es la opción.
+  it('abre con las que piden algo, y todas quedan a un clic', () => {
     store.load(1);
 
-    expect(store.messages()).toHaveLength(3);
+    expect(store.filter()).toBe('ATTENTION');
+    expect(store.messages().map((m) => m.employeeNumber)).toEqual(['EMP000298', 'EMP000921']);
 
-    store.setFilter('ATTENTION');
+    store.setFilter('ALL');
+
+    expect(store.messages()).toHaveLength(3);
+    expect(store.totalMessages()).toBe(3);
+  });
+
+  // b4rrhh/frontend#97: la ejecucion #14 del revisor, 883 filas «ya tenia recibo» que no pedian nada.
+  it('las que ya tenian recibo son un contador, no filas, ni siquiera en «todas»', () => {
+    gatewayMock.listCalculationRunMessages.mockReturnValue(
+      of([
+        ...MESSAGES,
+        message('UNIT_NOT_ELIGIBLE', 'EMP000002', 'WARNING'),
+        message('UNIT_NOT_ELIGIBLE', 'EMP000003', 'WARNING'),
+      ]),
+    );
+    store.load(1);
 
     expect(store.messages().map((m) => m.employeeNumber)).toEqual(['EMP000298', 'EMP000921']);
+    store.setFilter('ALL');
+    expect(store.messages().map((m) => m.employeeNumber)).not.toContain('EMP000002');
     expect(store.totalMessages()).toBe(3);
+    expect(store.alreadyHadAReceipt()).toBe(2);
   });
 
   it('una ejecucion terminada no se sondea', () => {
