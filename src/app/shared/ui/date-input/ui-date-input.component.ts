@@ -22,6 +22,10 @@ import { DatePickerModule } from 'primeng/datepicker';
  * maneras: con `[value]` y `(valueChanged)`, como las secciones, o con `formControlName`. En un
  * formulario también acepta un `Date` al escribirle, y siempre devuelve el texto. Una fecha vacía
  * es `''`.
+ *
+ * <p>El calendario se abre con su icono y no al enfocar la caja: los modales enfocan el primer
+ * campo al abrirse, y el calendario tapaba el aviso del plan que hay debajo. La fecha se puede
+ * escribir igual.
  */
 @Component({
   selector: 'app-ui-date-input',
@@ -49,6 +53,7 @@ import { DatePickerModule } from 'primeng/datepicker';
       dateFormat="dd/mm/yy"
       placeholder="dd/mm/aaaa"
       [showIcon]="true"
+      [showOnFocus]="false"
       [fluid]="true"
       [showButtonBar]="true"
       appendTo="body"
