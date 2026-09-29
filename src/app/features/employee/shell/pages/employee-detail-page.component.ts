@@ -38,7 +38,7 @@ import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeContactModel } from '../../models/employee-contact.model';
 import { EmployeeCoreIdentityDraft } from '../../models/employee-core-identity-draft.model';
-import { EmployeeDetailModel } from '../../models/employee-detail.model';
+import { EmployeeDetailModel, EmployeeStatus } from '../../models/employee-detail.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import {
   buildEmployeeDetailRouteCommands,
@@ -167,13 +167,14 @@ export class EmployeeDetailPageComponent {
    */
   protected readonly employeeNotFound = computed(() => this.detailError() === 'not-found');
 
-  /** Sin detalle no hay estado: `null`, y no una «Baja» inventada (`b4rrhh/frontend#101`). */
-  protected readonly headerStatus = computed<'ACTIVE' | 'TERMINATED' | null>(() => {
-    const employee = this.selectedEmployee();
-    if (!employee) return null;
-    const n = employee.statusLabel.trim().toLowerCase();
-    return n.includes('active') || n.includes('alta') ? 'ACTIVE' : 'TERMINATED';
-  });
+  /**
+   * Sin detalle no hay estado: `null`, y no una «Baja» inventada (`b4rrhh/frontend#101`). Con
+   * detalle, el que dice el servidor, que lo lee de las presencias en la fecha de hoy: aquí no se
+   * adivina a partir de una etiqueta (`b4rrhh/backend#148`).
+   */
+  protected readonly headerStatus = computed<EmployeeStatus | null>(
+    () => this.selectedEmployee()?.status ?? null,
+  );
 
   protected readonly activePresence = computed(() => this.resolveActivePresence(this.presences()));
 

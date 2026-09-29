@@ -88,6 +88,9 @@ paths:
         - in: query
           name: status
           required: false
+          description: >-
+            Keeps the employees whose status today is this one. The status is read from the
+            presences on the current date, the same as the employee card (b4rrhh/backend#148).
           schema:
             type: string
             maxLength: 30
@@ -348,6 +351,15 @@ paths:
           schema:
             type: string
             maxLength: 15
+        - in: query
+          name: referenceDate
+          required: false
+          schema:
+            type: string
+            format: date
+          description: >-
+            Date the status is read on; today when omitted. The status is not stored: it is read
+            from the presences on this date (b4rrhh/backend#148).
       responses:
         "200":
           description: Employee found
@@ -8214,6 +8226,9 @@ components:
           maxLength: 300
         status:
           type: string
+          description: >-
+            The status today, read from the presences once the command is done
+            (b4rrhh/backend#148): a hire in the future leaves it at NOT_HIRED until its date.
         hireDate:
           type: string
           format: date
@@ -8523,6 +8538,9 @@ components:
         status:
           type: string
           maxLength: 30
+          description: >-
+            The status today, read from the presences once the command is done
+            (b4rrhh/backend#148): a rehire in the future leaves it at TERMINATED until its date.
         newPresence:
           $ref: "#/components/schemas/RehiredPresenceResponse"
         newContract:
@@ -8700,6 +8718,9 @@ components:
         status:
           type: string
           maxLength: 30
+          description: >-
+            The status today, read from the presences once the command is done
+            (b4rrhh/backend#148): a termination in the future leaves it at ACTIVE until its date.
         closedPresence:
           $ref: "#/components/schemas/ClosedPresenceResponse"
         closedContract:
@@ -8929,13 +8950,48 @@ components:
           type: string
           nullable: true
         status:
+          $ref: "#/components/schemas/EmployeeStatus"
+        statusDate:
           type: string
+          format: date
+          description: Date the status was read on (the requested referenceDate, or today).
+        statusSince:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            First day of the current status. ACTIVE: start of the run of presences that covers
+            statusDate. TERMINATED: the day after the last termination. Null for NOT_HIRED.
+        plannedTerminationDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Only for ACTIVE: last day of the run of presences that covers statusDate, when it has
+            one. It is still a working day; the employee is TERMINATED from the next one.
+        plannedHireDate:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Only for TERMINATED or NOT_HIRED: start of the next presence, when one is recorded
+            (a rehire or a hire in the future).
         photoUrl:
           type: string
           nullable: true
         displayName:
           type: string
           description: Computed display name based on the rule system's configured format.
+
+    EmployeeStatus:
+      type: string
+      enum: [ACTIVE, TERMINATED, NOT_HIRED]
+      description: >-
+        The employee's status on a date, read from the presences and never stored
+        (b4rrhh/backend#148). ACTIVE: a presence covers the date; the termination date is the last
+        day of the presence, so on that day the employee is still ACTIVE. TERMINATED: no presence
+        covers the date and one ended before it. NOT_HIRED: no presence covers the date and none
+        ended before it (the hire is in the future, or there is none).
 
     PayrollSearchPageResponse:
       type: object
@@ -9022,8 +9078,7 @@ components:
           type: string
           description: Preferred name when available, otherwise composed from first/last names.
         status:
-          type: string
-          maxLength: 30
+          $ref: "#/components/schemas/EmployeeStatus"
         workCenterCode:
           type: string
           maxLength: 30

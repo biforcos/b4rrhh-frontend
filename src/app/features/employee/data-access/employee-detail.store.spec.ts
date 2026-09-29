@@ -22,6 +22,10 @@ const employeeDetailFixture: EmployeeDetailModel = {
   preferredName: 'Lidia Lopez',
   displayName: 'Lidia Lopez',
   statusLabel: 'ACTIVE',
+  status: 'ACTIVE',
+  statusSince: '2024-01-01',
+  plannedTerminationDate: null,
+  plannedHireDate: null,
   workCenter: 'MAD-01',
   photoUrl: null,
 };

@@ -40,6 +40,10 @@ export class EmployeeDetailReadGateway {
       preferredName: source.preferredName,
       displayName: source.displayName,
       statusLabel: source.statusLabel,
+      status: source.status,
+      statusSince: source.statusSince,
+      plannedTerminationDate: source.plannedTerminationDate,
+      plannedHireDate: source.plannedHireDate,
       workCenter: source.workCenter,
       photoUrl: source.photoUrl,
     };

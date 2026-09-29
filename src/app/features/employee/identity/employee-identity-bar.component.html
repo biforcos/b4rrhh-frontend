@@ -36,7 +36,7 @@
         <div class="identity-bar__name-row">
           <h1 class="identity-bar__name">{{ displayName() }}</h1>
           @if (statusLabel(); as status) {
-            <p-tag class="identity-bar__status" [value]="status" severity="danger" />
+            <p-tag class="identity-bar__status" [value]="status" [severity]="statusSeverity()" />
           }
           <button
             class="identity-bar__icon-btn"

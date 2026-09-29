@@ -7,6 +7,7 @@ import {
   EmployeeDirectoryItemResponse,
   EmployeeDirectoryPageResponse,
   EmployeeResponse,
+  EmployeeStatus,
   UpdateEmployeeRequest,
 } from '../generated/model/models';
 
@@ -25,7 +26,10 @@ export interface EmployeeReadApiModel {
   lastName2: string | null;
   preferredName: string | null;
   displayName: string;
-  status: string;
+  status: EmployeeStatus;
+  statusSince: string | null;
+  plannedTerminationDate: string | null;
+  plannedHireDate: string | null;
   photoUrl: string | null;
 }
 
@@ -155,6 +159,9 @@ export class EmployeeReadClient {
       preferredName: source.preferredName ?? null,
       displayName: source.displayName,
       status: source.status,
+      statusSince: source.statusSince ?? null,
+      plannedTerminationDate: source.plannedTerminationDate ?? null,
+      plannedHireDate: source.plannedHireDate ?? null,
       photoUrl: source.photoUrl ?? null,
     };
   }

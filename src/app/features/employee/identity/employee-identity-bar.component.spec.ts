@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 import { EmployeePhotoService } from '../data-access/employee-photo.service';
-import { EmployeeDetailModel } from '../models/employee-detail.model';
+import { EmployeeDetailModel, EmployeeStatus } from '../models/employee-detail.model';
 import { EmployeeIdentityBarComponent } from './employee-identity-bar.component';
 
 const KEY = { ruleSystemCode: 'ESP', employeeTypeCode: 'INTERNAL', employeeNumber: 'EMP000003' };
@@ -17,6 +17,10 @@ const EMPLOYEE: EmployeeDetailModel = {
   preferredName: null,
   displayName: 'Elena Serrano Ibáñez',
   statusLabel: 'Active',
+  status: 'ACTIVE',
+  statusSince: '2023-10-02',
+  plannedTerminationDate: null,
+  plannedHireDate: null,
   workCenter: 'MAIN_OFFICE',
   photoUrl: null,
 };
@@ -27,7 +31,7 @@ describe('EmployeeIdentityBarComponent', () => {
   function render(
     overrides: Partial<{
       employee: EmployeeDetailModel | null;
-      status: 'ACTIVE' | 'TERMINATED' | null;
+      status: EmployeeStatus | null;
       notFound: boolean;
       hireDate: string | null;
       isAdmin: boolean;
@@ -91,10 +95,40 @@ describe('EmployeeIdentityBarComponent', () => {
   it('el estado calla cuando es activo y habla cuando es baja', () => {
     expect(render().nativeElement.querySelector('.identity-bar__status')).toBeNull();
     expect(
-      render({ status: 'TERMINATED' })
+      render({
+        employee: { ...EMPLOYEE, status: 'TERMINATED', statusSince: null },
+        status: 'TERMINATED',
+      })
         .nativeElement.querySelector('.identity-bar__status')
         ?.textContent?.trim(),
     ).toBe('Baja');
+  });
+
+  // b4rrhh/backend#148: el estado lo dice el servidor a partir de las presencias, con sus fechas.
+  function statusTag(employee: Partial<EmployeeDetailModel>, status: EmployeeStatus) {
+    return render({ employee: { ...EMPLOYEE, ...employee, status }, status })
+      .nativeElement.querySelector('.identity-bar__status')
+      ?.textContent?.trim();
+  }
+
+  it('un cese grabado a futuro no es una baja: dice el día del cese', () => {
+    expect(statusTag({ plannedTerminationDate: '2026-09-30' }, 'ACTIVE')).toBe(
+      'Cese el 30/09/2026',
+    );
+  });
+
+  it('la baja dice desde cuándo y, si la hay, cuándo vuelve', () => {
+    expect(statusTag({ statusSince: '2026-10-01' }, 'TERMINATED')).toBe('Baja desde el 01/10/2026');
+    expect(
+      statusTag({ statusSince: '2026-05-14', plannedHireDate: '2026-07-01' }, 'TERMINATED'),
+    ).toBe('Baja desde el 14/05/2026 · readmisión el 01/07/2026');
+  });
+
+  it('un alta a futuro todavía no es un empleado de alta', () => {
+    expect(statusTag({ statusSince: null, plannedHireDate: '2026-11-01' }, 'NOT_HIRED')).toBe(
+      'Alta el 01/11/2026',
+    );
+    expect(statusTag({ statusSince: null }, 'NOT_HIRED')).toBe('Sin alta');
   });
 
   it('sin foto, iniciales; con foto, la foto', () => {

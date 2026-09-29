@@ -59,6 +59,9 @@ export class EmployeePhotoService {
       preferredName: source.preferredName ?? null,
       displayName: source.displayName!,
       status: source.status!,
+      statusSince: source.statusSince ?? null,
+      plannedTerminationDate: source.plannedTerminationDate ?? null,
+      plannedHireDate: source.plannedHireDate ?? null,
       photoUrl: source.photoUrl ?? null,
     };
   }

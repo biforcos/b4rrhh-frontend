@@ -15,7 +15,7 @@ import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 import { EmployeePhotoService } from '../data-access/employee-photo.service';
 import { employeeTexts } from '../employee.texts';
 import { EmployeeBusinessKey } from '../models/employee-business-key.model';
-import { EmployeeDetailModel } from '../models/employee-detail.model';
+import { EmployeeDetailModel, EmployeeStatus } from '../models/employee-detail.model';
 import { EmployeePhotoUploadDialogComponent } from '../photo/employee-photo-upload-dialog.component';
 
 /**
@@ -41,7 +41,7 @@ export class EmployeeIdentityBarComponent {
   readonly employee = input<EmployeeDetailModel | null>(null);
   readonly hireDate = input<string | null>(null);
   /** Sin detalle no hay estado que decir: `null` calla, y no «Baja» (`b4rrhh/frontend#101`). */
-  readonly status = input<'ACTIVE' | 'TERMINATED' | null>(null);
+  readonly status = input<EmployeeStatus | null>(null);
   /** La clave no es de nadie: la barra lo dice y no enseña nada de una persona que no hay. */
   readonly notFound = input(false);
   readonly isAdmin = input(false);
@@ -67,9 +67,42 @@ export class EmployeeIdentityBarComponent {
 
   protected readonly photoUrl = computed(() => this.employee()?.photoUrl ?? null);
 
-  /** Solo cuando dice algo: activo es lo normal, y sin estado no se dice nada. */
-  protected readonly statusLabel = computed(() =>
-    this.status() === 'TERMINATED' ? this.texts.employeeStatusInactiveLabel : null,
+  /**
+   * Solo cuando dice algo: activo sin cese es lo normal, y sin estado no se dice nada. Las fechas
+   * son las del servidor, que lee el estado de las presencias (b4rrhh/backend#148): un cese grabado
+   * a futuro todavía es alta, y la etiqueta dice el día en vez de adelantar la baja.
+   */
+  protected readonly statusLabel = computed(() => {
+    const t = this.texts;
+    const employee = this.employee();
+    const on = (date: string | null | undefined) => (date ? formatDisplayDate(date) : null);
+    switch (this.status()) {
+      case 'ACTIVE': {
+        const cese = on(employee?.plannedTerminationDate);
+        return cese ? `${t.employeeStatusPlannedTerminationPrefix} ${cese}` : null;
+      }
+      case 'TERMINATED': {
+        const since = on(employee?.statusSince);
+        const back = on(employee?.plannedHireDate);
+        const label = since
+          ? `${t.employeeStatusInactiveLabel} ${t.employeeStatusSincePrefix} ${since}`
+          : t.employeeStatusInactiveLabel;
+        return back ? `${label} · ${t.employeeStatusPlannedRehirePrefix} ${back}` : label;
+      }
+      case 'NOT_HIRED': {
+        const hire = on(employee?.plannedHireDate);
+        return hire
+          ? `${t.employeeStatusPlannedHirePrefix} ${hire}`
+          : t.employeeStatusNotHiredLabel;
+      }
+      default:
+        return null;
+    }
+  });
+
+  /** La baja es la que alarma; lo previsto se avisa sin alarmar. */
+  protected readonly statusSeverity = computed(() =>
+    this.status() === 'TERMINATED' ? 'danger' : 'warn',
   );
 
   protected readonly notFoundMessage = computed(() => {

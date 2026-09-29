@@ -1,4 +1,5 @@
 import { EmployeeReadApiModel } from '../clients/employee-read.client';
+import { EmployeeStatus } from '../../../features/employee/models/employee-detail.model';
 
 export interface EmployeeDetailReadModel {
   ruleSystemCode: string;
@@ -10,6 +11,10 @@ export interface EmployeeDetailReadModel {
   preferredName: string | null;
   displayName: string;
   statusLabel: string;
+  status: EmployeeStatus;
+  statusSince: string | null;
+  plannedTerminationDate: string | null;
+  plannedHireDate: string | null;
   workCenter: string;
   photoUrl: string | null;
 }
@@ -29,6 +34,10 @@ export function mapEmployeeReadApiToDetailModel(
     preferredName: source.preferredName,
     displayName: source.displayName,
     statusLabel: source.status,
+    status: source.status as EmployeeStatus,
+    statusSince: source.statusSince,
+    plannedTerminationDate: source.plannedTerminationDate,
+    plannedHireDate: source.plannedHireDate,
     workCenter: pendingWorkCenterLabel,
     photoUrl: source.photoUrl ?? null,
   };
