@@ -56,6 +56,8 @@ tags:
     description: Launch and track bulk payroll calculation runs.
   - name: Employee Absences
     description: Employee absence occurrence management.
+  - name: Employee Year
+    description: The calendar year of one employee at a glance, for the year strip (b4rrhh/backend#151).
 
 paths:
   /employees:
@@ -7274,6 +7276,60 @@ paths:
             The employee does not exist (`RETRO_MARK_EMPLOYEE_NOT_FOUND`). An employee without
             marks answers 200 with an empty list: the two are no longer the same (b4rrhh/backend#144).
 
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/year-summary:
+    get:
+      summary: The calendar year of an employee, summarised
+      description: >-
+        What the year strip needs to paint twelve months at once (b4rrhh/backend#151), in one call
+        instead of one per month and lane. It composes what the presence, payroll, absence, payroll
+        input and retro mark queries already serve, and computes none of them differently: the
+        counters of a month are what the queries of that month return. A month is CLOSED when
+        every payroll of the employee in it is DEFINITIVE (the "delivered" of ADR-074), OPEN when
+        it has some payroll that is not, and has no state when it has none. Absences come whole
+        even when they start or end outside the year; discarded retro marks do not come.
+      operationId: getEmployeeYearSummary
+      tags:
+        - Employee Year
+      parameters:
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 10
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+        - in: query
+          name: year
+          required: true
+          description: Calendar year, January to December.
+          schema:
+            type: integer
+            format: int32
+            minimum: 2000
+            maximum: 9999
+      responses:
+        '200':
+          description: The year of the employee.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeYearSummaryResponse'
+        '400':
+          description: The year is missing or out of range.
+        '404':
+          description: The employee does not exist (`EMPLOYEE_YEAR_EMPLOYEE_NOT_FOUND`).
+
   /payroll/retro-marks/{id}/discard:
     post:
       summary: Discard a retroactivity mark, with a reason
@@ -8429,6 +8485,99 @@ components:
           type: object
           additionalProperties: true
           nullable: true
+
+    EmployeeYearSummaryResponse:
+      type: object
+      description: The calendar year of one employee (b4rrhh/backend#151).
+      required: [year, presences, months, absences]
+      properties:
+        year:
+          type: integer
+          format: int32
+        presences:
+          type: array
+          description: The presences that touch the year, whole, ordered by start date.
+          items:
+            $ref: '#/components/schemas/EmployeeYearPresenceResponse'
+        months:
+          type: array
+          description: Always twelve, January first.
+          items:
+            $ref: '#/components/schemas/EmployeeYearMonthResponse'
+        absences:
+          type: array
+          description: >-
+            The absences that touch the year, whole even when they start or end outside it,
+            ordered by start date.
+          items:
+            $ref: '#/components/schemas/EmployeeYearAbsenceResponse'
+
+    EmployeeYearPresenceResponse:
+      type: object
+      required: [presenceNumber, startDate]
+      properties:
+        presenceNumber:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null while the presence is open.
+
+    EmployeeYearMonthResponse:
+      type: object
+      required:
+        - payrollPeriodCode
+        - payrollInputCount
+        - payrollInputConceptCount
+        - activeRetroMarkCount
+        - consumedRetroMarkCount
+      properties:
+        payrollPeriodCode:
+          type: string
+          description: yyyyMM.
+        payrollState:
+          type: string
+          nullable: true
+          enum: [OPEN, CLOSED]
+          description: >-
+            CLOSED when every payroll of the employee in the month is DEFINITIVE, OPEN when some
+            is not, null when the month has no payroll.
+        payrollInputCount:
+          type: integer
+          format: int32
+        payrollInputConceptCount:
+          type: integer
+          format: int32
+        activeRetroMarkCount:
+          type: integer
+          format: int32
+          description: Marks on this month still waiting for a payroll to pay them.
+        consumedRetroMarkCount:
+          type: integer
+          format: int32
+          description: Marks on this month already paid as arrears.
+
+    EmployeeYearAbsenceResponse:
+      type: object
+      required: [absenceTypeCode, startDate, benefitEntitled]
+      properties:
+        absenceTypeCode:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          description: Null while the absence is open.
+        benefitEntitled:
+          type: boolean
 
     IdentifierOwnerResponse:
       type: object
