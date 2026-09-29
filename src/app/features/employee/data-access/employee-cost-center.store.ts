@@ -69,6 +69,11 @@ export class EmployeeCostCenterStore {
     this.loadCostCentersInternal(key, false);
   }
 
+  /** Aunque la clave sea la misma: otra acción ha cambiado al empleado (`b4rrhh/frontend#99`). */
+  refreshCostCenters(key: EmployeeBusinessKey | null): void {
+    this.loadCostCentersInternal(key, true);
+  }
+
   /**
    * Pide al backend qué haría el cambio sin aplicarlo (ADR-057). Cada petición invalida la
    * anterior: mientras llega la respuesta no hay plan, para que nadie confirme contra uno viejo.

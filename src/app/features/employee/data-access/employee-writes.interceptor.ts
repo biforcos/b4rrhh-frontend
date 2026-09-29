@@ -28,6 +28,13 @@ const ESCRITURAS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const RUTA_DE_EMPLEADO = /\/employees\/([^/?]+)\/([^/?]+)\/([^/?]+)\//;
 
 /**
+ * `…/plan` es un POST que no escribe: pregunta qué pasaría (`b4rrhh/backend#49`). Con la ficha
+ * releyéndose tras cada escritura (`b4rrhh/frontend#99`), contarlo relee la ficha a cada tecla del
+ * modal.
+ */
+const PREGUNTA_SIN_ESCRITURA = /\/plan(\?|$)/;
+
+/**
  * Un solo sitio para todas las secciones, y no una llamada en cada tienda: una sección nueva que guarde
  * queda cubierta sin que nadie se acuerde de avisar. Sólo cuando el guardado **ha ido bien**: un 4xx no
  * ha creado ninguna marca.
@@ -40,7 +47,7 @@ export const employeeWritesInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
   const ruta = RUTA_DE_EMPLEADO.exec(req.url);
-  if (!ruta) {
+  if (!ruta || PREGUNTA_SIN_ESCRITURA.test(req.url)) {
     return next(req);
   }
   const notifier = inject(EmployeeWritesNotifier);

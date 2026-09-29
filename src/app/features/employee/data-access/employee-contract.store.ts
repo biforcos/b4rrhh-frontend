@@ -145,6 +145,11 @@ export class EmployeeContractStore {
     this.loadContractsByBusinessKeyInternal(key, false);
   }
 
+  /** Aunque la clave sea la misma: otra acción ha cambiado al empleado (`b4rrhh/frontend#99`). */
+  refreshContractsByBusinessKey(key: EmployeeBusinessKey | null): void {
+    this.loadContractsByBusinessKeyInternal(key, true);
+  }
+
   correctOccurrence(
     employeeKey: EmployeeBusinessKey,
     startDate: string,

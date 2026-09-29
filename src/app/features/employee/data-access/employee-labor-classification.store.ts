@@ -154,6 +154,11 @@ export class EmployeeLaborClassificationStore {
     this.loadLaborClassificationsByBusinessKeyInternal(key, false);
   }
 
+  /** Aunque la clave sea la misma: otra acción ha cambiado al empleado (`b4rrhh/frontend#99`). */
+  refreshLaborClassificationsByBusinessKey(key: EmployeeBusinessKey | null): void {
+    this.loadLaborClassificationsByBusinessKeyInternal(key, true);
+  }
+
   correctOccurrence(
     employeeKey: EmployeeBusinessKey,
     startDate: string,

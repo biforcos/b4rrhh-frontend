@@ -32,6 +32,7 @@ import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
 import { EmployeePayrollLaunchStore } from '../../data-access/employee-payroll-launch.store';
+import { EmployeeFichaRefresher } from '../services/employee-ficha-refresher';
 import { EmployeePdfService } from '../services/employee-pdf.service';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
@@ -85,7 +86,7 @@ import { describeFailure } from '../../../../shared/utils/http-failure.util';
   ],
   templateUrl: './employee-detail-page.component.html',
   styleUrl: './employee-detail-page.component.scss',
-  providers: [EmployeePayrollLaunchStore],
+  providers: [EmployeePayrollLaunchStore, EmployeeFichaRefresher],
 })
 export class EmployeeDetailPageComponent {
   protected readonly isRehireWorkflow = signal(false);
@@ -187,6 +188,9 @@ export class EmployeeDetailPageComponent {
   );
 
   constructor() {
+    // Cualquier acción que toque al empleado relee la ficha, sin F5 (b4rrhh/frontend#99).
+    inject(EmployeeFichaRefresher).follow(this.activeEmployeeKey);
+
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),

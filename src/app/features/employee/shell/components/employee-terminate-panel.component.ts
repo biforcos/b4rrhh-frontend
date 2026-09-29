@@ -16,11 +16,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { CardModule } from 'primeng/card';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
-import { EmployeeDetailStore } from '../../data-access/employee-detail.store';
-import { EmployeeJourneyStore } from '../../data-access/employee-journey.store';
-import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
-import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.store';
-import { EmployeeCostCenterStore } from '../../data-access/employee-cost-center.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { TerminateEmployeeResponse } from '../../../../core/api/generated/model/terminate-employee-response';
 import { BASE_PATH } from '../../../../core/api/generated/variables';
@@ -138,11 +133,6 @@ export class EmployeeTerminatePanelComponent {
   private readonly http = inject(HttpClient);
   private readonly basePath = inject(BASE_PATH);
   private readonly fieldCatalog = inject(EmployeeFieldCatalogService);
-  private readonly detailStore = inject(EmployeeDetailStore);
-  private readonly journeyStore = inject(EmployeeJourneyStore);
-  private readonly presenceStore = inject(EmployeePresenceStore);
-  private readonly workCenterStore = inject(EmployeeWorkCenterStore);
-  private readonly costCenterStore = inject(EmployeeCostCenterStore);
   private readonly globalMessageService = inject(GlobalMessageService);
 
   readonly form = new FormGroup({
@@ -292,17 +282,10 @@ export class EmployeeTerminatePanelComponent {
         next: (response) => {
           this.submitting.set(false);
           this.terminationResult.set(response.body ?? null);
-          // refresh stores: detail, journey, presences and work centers
-          const key: EmployeeBusinessKey = {
-            ruleSystemCode: rs,
-            employeeTypeCode: et,
-            employeeNumber: en,
-          };
-          this.detailStore.loadEmployeeDetailByBusinessKey(key);
-          this.journeyStore.loadJourneyByBusinessKey(key);
-          this.presenceStore.loadPresencesByBusinessKey(key);
-          this.workCenterStore.loadWorkCenters(key);
-          this.costCenterStore.loadCostCenters(key);
+          // La ficha se relee sola: el POST del cese pasa por el interceptor de escrituras y
+          // EmployeeFichaRefresher relee cabecera, presencia y línea de vida (b4rrhh/frontend#99).
+          // Aquí se pedían con los load…, que no hacen nada si la clave es la misma: por eso hacía
+          // falta un F5.
         },
         error: (err: HttpErrorResponse) => {
           this.submitting.set(false);

@@ -108,6 +108,11 @@ export class EmployeeWorkingTimeStore {
     this.loadWorkingTimesByBusinessKeyInternal(key, false);
   }
 
+  /** Aunque la clave sea la misma: otra acción ha cambiado al empleado (`b4rrhh/frontend#99`). */
+  refreshWorkingTimesByBusinessKey(key: EmployeeBusinessKey | null): void {
+    this.loadWorkingTimesByBusinessKeyInternal(key, true);
+  }
+
   createWorkingTime(employeeKey: EmployeeBusinessKey, draft: WorkingTimeCreateDraft): void {
     if (this.mutatingState()) {
       return;
