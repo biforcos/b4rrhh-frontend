@@ -129,31 +129,24 @@
 
   <!-- Paneles paralelos -->
   <div class="ops-page__panels">
-    <!-- Panel invalidar -->
-    <div class="ops-page__panel ops-page__panel--invalidate">
+    <!--
+      Panel invalidar. Sin motivo (frontend#107, b4rrhh/backend#150): el texto que se pedía acababa
+      en una columna que nadie lee. Mientras invalida lo dice el propio botón, como «Recalculando…»
+      en el recibo, y el panel se ve ocupado; antes sólo salía un «Procesando…» en gris terciario.
+    -->
+    <div
+      class="ops-page__panel ops-page__panel--invalidate"
+      [class.ops-page__panel--busy]="store.invalidating()"
+      [attr.aria-busy]="store.invalidating()"
+    >
       <h2 class="ops-page__panel-title ops-page__panel-title--invalidate">Invalidar masivamente</h2>
 
-      <label class="ops-page__field">
-        <span class="ops-page__field-label">Motivo de invalidación</span>
-        <input
-          type="text"
-          class="ops-page__input"
-          [value]="store.statusReasonCode()"
-          [disabled]="store.invalidating()"
-          (input)="store.setStatusReasonCode($any($event.target).value)"
-        />
-      </label>
-
       <app-ui-button
-        label="Invalidar"
+        [label]="store.invalidating() ? 'Invalidando…' : 'Invalidar'"
         severity="danger"
         [disabled]="!store.canInvalidate()"
         (pressed)="store.invalidate()"
       />
-
-      @if (store.invalidating()) {
-        <p class="ops-page__status-text">Procesando…</p>
-      }
 
       @if (store.invalidateError()) {
         <p class="ops-page__error">{{ store.invalidateError() }}</p>

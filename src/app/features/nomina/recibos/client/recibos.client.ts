@@ -98,7 +98,7 @@ export class RecibosClient {
       payrollPeriodCode: key.payrollPeriodCode,
       payrollTypeCode: key.payrollTypeCode,
       presenceNumber: key.presenceNumber,
-      invalidatePayrollRequest: { statusReasonCode: 'MANUAL_INVALIDATION' },
+      // Sin motivo (b4rrhh/backend#150): el recibo guarda MANUAL_INVALIDATION y lo pone el servidor.
     });
   }
 

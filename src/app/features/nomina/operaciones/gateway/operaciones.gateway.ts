@@ -84,7 +84,6 @@ export class OperacionesGateway {
     ruleSystemCode: string;
     payrollPeriodCode: string;
     payrollTypeCode: PayrollTypeCode;
-    statusReasonCode: string;
     targetSelection: TargetSelectionPayload;
   }): Observable<BulkInvalidateResult> {
     const request = {
@@ -105,8 +104,8 @@ export class OperacionesGateway {
 
   /**
    * El tercer verbo del periodo (`b4rrhh/backend#102`). No lleva `statusReasonCode` y la ausencia es
-   * del contrato: cerrar no da un motivo, conserva el que el recibo tuviera. Invalidar sí lo pide,
-   * porque invalidar es una decisión sobre algo que estaba bien.
+   * del contrato: cerrar no da un motivo, conserva el que el recibo tuviera. Invalidar tampoco lo
+   * pide desde el `b4rrhh/backend#150`: el servidor guarda qué camino invalidó, no un texto libre.
    */
   bulkFinalize(params: {
     ruleSystemCode: string;

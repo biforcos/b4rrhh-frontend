@@ -187,6 +187,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/HireEmployeeErrorResponse"
 
+  /employees/identifier-owner:
+    get:
+      operationId: findIdentifierOwner
+      summary: Who already owns an identity document in a rule system
+      tags:
+        - Employee Lifecycle
+      description: >-
+        Read-only question the hire screen asks before the hire is sent (b4rrhh/backend#149):
+        the owner is the same one the hire's 409 `HIRE_IDENTIFIER_ALREADY_EXISTS` names, found
+        by the same lookup, so the value is compared without case or surrounding spaces. It is
+        a courtesy, not the guarantee: two hires at once with the same document are only told
+        apart by the hire itself.
+      parameters:
+        - in: query
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: query
+          name: identifierTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: query
+          name: identifierValue
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: The document already belongs to this employee.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentifierOwnerResponse"
+        "204":
+          description: No employee of the rule system has this document.
+        "400":
+          description: A query parameter is missing.
+
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/terminate:
     post:
       operationId: terminateEmployee
@@ -5132,6 +5175,10 @@ paths:
     post:
       tags: [Payroll]
       operationId: invalidatePayroll
+      description: >-
+        Invalidates one payroll. There is no reason to give (b4rrhh/backend#150): the free text
+        that used to be asked for was stored and never read. The payroll keeps
+        `MANUAL_INVALIDATION` as its statusReasonCode, which says which path invalidated it.
       parameters:
         - name: ruleSystemCode
           in: path
@@ -5157,12 +5204,6 @@ paths:
           in: path
           required: true
           schema: { type: integer }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InvalidatePayrollRequest"
       responses:
         "200":
           description: Payroll invalidated
@@ -5385,7 +5426,9 @@ paths:
         units. Protected payrolls (EXPLICIT_VALIDATED or DEFINITIVE) are skipped and counted
         separately. Already NOT_VALID payrolls are also skipped without error. targetSelection
         semantics mirror those of the payroll launch endpoint. totalCandidates represents expanded
-        presence-based units, not the raw number of target employees.
+        presence-based units, not the raw number of target employees. There is no reason to give
+        (b4rrhh/backend#150): every invalidated payroll keeps `BULK_INVALIDATION` as its
+        statusReasonCode.
       tags:
         - Payroll
       requestBody:
@@ -7901,8 +7944,8 @@ components:
         Request for the bulk close workflow. targetSelection semantics mirror those of the payroll
         launch endpoint. For ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD, both employee and employees
         must be null. There is no statusReasonCode: closing does not give a reason, it keeps the
-        one the payroll already had. Invalidation does ask for one, because invalidating is a
-        decision about something that was fine.
+        one the payroll already had. Invalidation does not ask for one either (b4rrhh/backend#150):
+        it records which path invalidated the payroll, never a free text.
       required:
         - ruleSystemCode
         - payrollPeriodCode
@@ -7994,7 +8037,6 @@ components:
         - ruleSystemCode
         - payrollPeriodCode
         - payrollTypeCode
-        - statusReasonCode
         - targetSelection
       properties:
         ruleSystemCode:
@@ -8006,10 +8048,6 @@ components:
         payrollTypeCode:
           type: string
           enum: [NORMAL, EXTRA]
-        statusReasonCode:
-          description: >-
-            Reason code applied to all invalidated payrolls.
-          type: string
         targetSelection:
           $ref: "#/components/schemas/PayrollLaunchTargetSelectionRequest"
 
@@ -8029,7 +8067,6 @@ components:
         - totalSkippedAlreadyNotValid
         - totalSkippedProtected
         - totalSkippedNotFound
-        - statusReasonCode
       properties:
         ruleSystemCode:
           type: string
@@ -8068,10 +8105,6 @@ components:
             Candidate units for which no payroll row was found in persistence.
           type: integer
           format: int32
-        statusReasonCode:
-          description: >-
-            Status reason code applied to all invalidated payrolls.
-          type: string
 
     HireEmployeeRequest:
       type: object
@@ -8396,6 +8429,33 @@ components:
           type: object
           additionalProperties: true
           nullable: true
+
+    IdentifierOwnerResponse:
+      type: object
+      description: >-
+        The employee who already owns a document (b4rrhh/backend#149), with the same fields
+        as the `details` of the hire's `HIRE_IDENTIFIER_ALREADY_EXISTS`, plus the sentence.
+      required:
+        - employeeTypeCode
+        - employeeNumber
+        - active
+        - message
+      properties:
+        employeeTypeCode:
+          type: string
+        employeeNumber:
+          type: string
+        active:
+          type: boolean
+          description: Has a presence open today or ending in the future.
+        ceasedOn:
+          type: string
+          format: date
+          nullable: true
+          description: The last day of his last presence, when ceased.
+        message:
+          type: string
+          description: '«Este DNI ya es EMP000123 (cesado el 13/05/2026)», or «…, que está de alta».'
 
     RehireEmployeeRequest:
       type: object
@@ -12311,13 +12371,6 @@ components:
         annualHours:
           type: string
         agreementCategoryCode:
-          type: string
-    InvalidatePayrollRequest:
-      type: object
-      required:
-        - statusReasonCode
-      properties:
-        statusReasonCode:
           type: string
     PayrollCalculationStepResponse:
       type: object

@@ -84,7 +84,6 @@ describe('Los contadores de los verbos masivos llegan a la pantalla sin cruzarse
           ruleSystemCode: 'ESP',
           payrollPeriodCode: '202609',
           payrollTypeCode: 'NORMAL',
-          statusReasonCode: 'BULK_RESET',
           targetSelection: { selectionType: 'ALL_EMPLOYEES_WITH_PRESENCE_IN_PERIOD' },
         })
         .subscribe(resolve),

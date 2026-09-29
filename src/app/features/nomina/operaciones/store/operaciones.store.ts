@@ -95,7 +95,6 @@ export class OperacionesStore {
   private readonly singleEmployeeTypeState = signal<string>('');
   private readonly singleEmployeeNumberState = signal<string>('');
 
-  private readonly statusReasonCodeState = signal<string>('RECALCULO');
   private readonly invalidatingState = signal<boolean>(false);
   private readonly invalidateResultState = signal<BulkInvalidateResult | null>(null);
   private readonly invalidateErrorState = signal<string | null>(null);
@@ -159,7 +158,6 @@ export class OperacionesStore {
   readonly listEmployeeType = this.listEmployeeTypeState.asReadonly();
   readonly singleEmployeeType = this.singleEmployeeTypeState.asReadonly();
   readonly singleEmployeeNumber = this.singleEmployeeNumberState.asReadonly();
-  readonly statusReasonCode = this.statusReasonCodeState.asReadonly();
   readonly invalidating = this.invalidatingState.asReadonly();
   readonly invalidateResult = this.invalidateResultState.asReadonly();
   readonly invalidateError = this.invalidateErrorState.asReadonly();
@@ -288,9 +286,6 @@ export class OperacionesStore {
     this.singleEmployeeNumberState.set(v);
     this.disarmFinalize();
   }
-  setStatusReasonCode(v: string): void {
-    this.statusReasonCodeState.set(v);
-  }
   setEngineCode(v: string): void {
     this.engineCodeState.set(v);
   }
@@ -340,7 +335,6 @@ export class OperacionesStore {
         ruleSystemCode: this.ruleSystemCodeState(),
         payrollPeriodCode: String(this.periodState()),
         payrollTypeCode: this.payrollTypeCodeState(),
-        statusReasonCode: this.statusReasonCodeState(),
         targetSelection: buildTargetSelectionPayload(
           this.targetModeState(),
           this.employeeListTextState(),
