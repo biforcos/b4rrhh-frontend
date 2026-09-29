@@ -14,6 +14,12 @@
   grid-template-columns: 1fr;
 }
 
+/* La tira del año arriba y el navegador de mes debajo, como atajo (frontend#109). */
+.employee-area__year {
+  display: grid;
+  gap: 8px;
+}
+
 /* El navegador de período de la página, uno para las tres secciones (frontend#90). */
 .employee-area__month {
   display: flex;

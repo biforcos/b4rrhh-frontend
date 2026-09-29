@@ -97,6 +97,7 @@
           <li
             class="employee-absence-section__row"
             [class.employee-absence-section__row--open]="row.isOpen"
+            [class.employee-absence-section__row--highlighted]="keyOf(row) === highlightedKey()"
           >
             <div class="employee-absence-section__row-main">
               <p class="employee-absence-section__row-type">{{ row.absenceTypeLabel }}</p>
@@ -214,7 +215,6 @@
     } @else if (!declaring()) {
       <p class="employee-absence-section__empty">{{ emptyMessage() }}</p>
     }
-    <app-employee-other-months [months]="otherMonths()" (picked)="periodRequested.emit($event)" />
   </div>
 
   <!--

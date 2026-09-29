@@ -11,6 +11,7 @@ import { GlobalMessageService } from '../../data-access/employee-global-message.
 import { EmployeeAbsenceSectionComponent } from '../../presence/components/employee-absence-section.component';
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
 import { EmployeeRetroMarkSectionComponent } from '../components/employee-retro-mark-section.component';
+import { EmployeeYearStripComponent } from '../components/employee-year-strip.component';
 import { EmployeeMonthPageComponent } from './employee-month-page.component';
 
 /**
@@ -100,6 +101,69 @@ describe('EmployeeMonthPageComponent', () => {
     ausencias.componentInstance.periodRequested.emit(202603);
     fixture.detectChanges();
     expect(periodosDeLasTres(fixture)).toEqual([202603, 202603, 202603]);
+  });
+
+  /**
+   * El año de un vistazo (`frontend#109`): la tira manda el mes, y lo que se pulsa en ella lleva a
+   * su mes y resalta su fila. El navegador de mes se queda como atajo.
+   */
+  describe('la tira del año', () => {
+    it('va arriba, con el año del mes elegido, y pide ese año de una vez', () => {
+      const fixture = montar();
+      const tira = fixture.debugElement.query(By.directive(EmployeeYearStripComponent));
+      expect(tira).not.toBeNull();
+      const periodo = periodosDeLasTres(fixture)[0];
+      expect(tira.componentInstance.year()).toBe(Math.floor(periodo / 100));
+      const http = TestBed.inject(HttpTestingController);
+      const pedidos = http.match((req) => req.url.includes('/year-summary'));
+      expect(pedidos.length).toBeGreaterThan(0);
+      expect(pedidos.at(-1)!.request.params.get('year')).toBe(String(Math.floor(periodo / 100)));
+    });
+
+    it('pulsar un mes de la tira mueve las tres secciones', () => {
+      const fixture = montar();
+      const tira = fixture.debugElement.query(By.directive(EmployeeYearStripComponent));
+      tira.componentInstance.periodPicked.emit(202607);
+      fixture.detectChanges();
+      expect(periodosDeLasTres(fixture)).toEqual([202607, 202607, 202607]);
+    });
+
+    it('pulsar una barra lleva a su mes y resalta esa ausencia', () => {
+      const fixture = montar();
+      const tira = fixture.debugElement.query(By.directive(EmployeeYearStripComponent));
+      tira.componentInstance.absencePicked.emit({
+        period: 202603,
+        absenceTypeCode: 'IT_COMMON',
+        startDate: '2026-03-28',
+      });
+      fixture.detectChanges();
+      const ausencias = fixture.debugElement.query(By.directive(EmployeeAbsenceSectionComponent));
+      expect(periodosDeLasTres(fixture)).toEqual([202603, 202603, 202603]);
+      expect(ausencias.componentInstance.highlightedKey()).toBe('IT_COMMON|2026-03-28');
+    });
+
+    it('pulsar una marca lleva a su mes y resalta sus correcciones', () => {
+      const fixture = montar();
+      const tira = fixture.debugElement.query(By.directive(EmployeeYearStripComponent));
+      tira.componentInstance.marksPicked.emit(202602);
+      fixture.detectChanges();
+      const marcas = fixture.debugElement.query(By.directive(EmployeeRetroMarkSectionComponent));
+      expect(marcas.componentInstance.highlightedPeriod()).toBe(202602);
+      // Y elegir otro mes quita el resalte.
+      tira.componentInstance.periodPicked.emit(202604);
+      fixture.detectChanges();
+      expect(marcas.componentInstance.highlightedPeriod()).toBeNull();
+    });
+
+    it('las flechas de la tira mueven el año, no el mes', () => {
+      const fixture = montar();
+      const tira = fixture.debugElement.query(By.directive(EmployeeYearStripComponent));
+      const antes = periodosDeLasTres(fixture);
+      tira.componentInstance.yearRequested.emit(tira.componentInstance.year() - 1);
+      fixture.detectChanges();
+      expect(tira.componentInstance.year()).toBe(Math.floor(antes[0] / 100) - 1);
+      expect(periodosDeLasTres(fixture)).toEqual(antes);
+    });
   });
 
   // b4rrhh/backend#144: la sección calculaba su mensaje de error y nadie lo enseñaba, así que la

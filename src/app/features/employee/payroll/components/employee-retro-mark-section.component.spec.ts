@@ -278,16 +278,24 @@ describe('EmployeeRetroMarkSectionComponent con el mes de la página', () => {
     expect(rows()).toBe(2);
   });
 
-  it('la pendiente de otro mes se dice, y a un clic', () => {
-    const pedidos: number[] = [];
+  // «También en: …» se fue con la tira del año (frontend#109): la tira lo dice mejor.
+  it('ya no dice a qué otros meses van: eso lo cuenta la tira del año', () => {
     fix.componentRef.setInput('period', 202608);
-    fix.componentRef.instance.periodRequested.subscribe((p: number) => pedidos.push(p));
     fix.detectChanges();
-    const botones: HTMLButtonElement[] = Array.from(
-      fix.nativeElement.querySelectorAll('.other-months__month'),
+    expect(fix.nativeElement.querySelector('.other-months__month')).toBeNull();
+  });
+
+  it('resalta las correcciones del mes que se pulsó en la tira', () => {
+    fix.componentRef.setInput('period', 202608);
+    fix.componentRef.setInput('highlightedPeriod', 202608);
+    fix.detectChanges();
+    const resaltadas = fix.nativeElement.querySelectorAll(
+      '.employee-retro-mark-section__row--highlighted',
     );
-    expect(botones.map((b) => b.textContent?.trim())).toEqual(['03/2026']);
-    botones[0].click();
-    expect(pedidos).toEqual([202603]);
+    const filas = fix.nativeElement.querySelectorAll('.employee-retro-mark-section__row');
+    expect(filas.length).toBe(2);
+    // Sólo la que va a agosto, no la de julio que se pagó en agosto.
+    expect(resaltadas.length).toBe(1);
+    expect(resaltadas[0].textContent).not.toContain('07/2026');
   });
 });

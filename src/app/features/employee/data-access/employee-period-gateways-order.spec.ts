@@ -264,6 +264,8 @@ describe('period gateways of the employee record', () => {
         'la línea de vida es un dibujo cronológico de izquierda a derecha, no una tabla',
       'shell/pages/employee-detail-page.component.ts':
         'escoge el período más reciente para la cabecera; no ordena ninguna tabla',
+      'payroll/components/employee-year-strip.layout.ts':
+        'la tira del año (frontend#109) reparte las ausencias en carriles de izquierda a derecha; es un dibujo, no una tabla',
     };
 
     function sourcesUnder(dir: string): string[] {

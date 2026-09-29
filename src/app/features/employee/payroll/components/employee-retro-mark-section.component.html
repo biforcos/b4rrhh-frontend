@@ -18,6 +18,7 @@
             class="employee-retro-mark-section__row"
             [class.employee-retro-mark-section__row--discarded]="row.status === 'DISCARDED'"
             [class.employee-retro-mark-section__row--consumed]="row.status === 'CONSUMED'"
+            [class.employee-retro-mark-section__row--highlighted]="isHighlighted(row)"
           >
             <div class="employee-retro-mark-section__row-main">
               <p class="employee-retro-mark-section__row-title">
@@ -102,7 +103,6 @@
     } @else {
       <p class="employee-retro-mark-section__empty">{{ emptyMessage() }}</p>
     }
-    <app-employee-other-months [months]="otherMonths()" (picked)="periodRequested.emit($event)" />
   </div>
 
   <!--

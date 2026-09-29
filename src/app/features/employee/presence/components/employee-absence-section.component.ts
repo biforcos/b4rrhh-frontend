@@ -1,6 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -28,10 +30,8 @@ import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.compon
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
 import {
   PayrollPeriod,
-  payrollPeriodOfDate,
   rangeTouchesPayrollPeriod,
 } from '../../../../shared/utils/payroll-period.util';
-import { EmployeeOtherMonthsComponent } from '../../payroll/components/employee-other-months.component';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
@@ -80,7 +80,6 @@ interface AbsenceDraft {
     UiDateInputComponent,
     UiSelectComponent,
     FormsModule,
-    EmployeeOtherMonthsComponent,
   ],
   templateUrl: './employee-absence-section.component.html',
   styleUrl: './employee-absence-section.component.scss',
@@ -94,8 +93,14 @@ export class EmployeeAbsenceSectionComponent {
   readonly period = input<PayrollPeriod | null>(null);
   /** Llevar la página a otro mes, que es de quien es el navegador. */
   readonly periodRequested = output<PayrollPeriod>();
+  /**
+   * La fila que se pidió desde la tira del año (`frontend#109`), `tipo|inicio`: se resalta y se
+   * baja hasta ella, como el recibo al saltar a una línea.
+   */
+  readonly highlightedKey = input<string | null>(null);
 
   private readonly store = inject(EmployeeAbsenceStore);
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly catalog = inject(EmployeeFieldCatalogService);
 
   protected readonly texts = employeeTexts;
@@ -140,17 +145,6 @@ export class EmployeeAbsenceSectionComponent {
   });
   protected readonly hasRows = computed(() => this.rows().length > 0);
 
-  /** Los meses en que empiezan las que no se ven, del más reciente al más antiguo. */
-  protected readonly otherMonths = computed<ReadonlyArray<PayrollPeriod>>(() => {
-    if (this.period() === null) return [];
-    const visible = new Set(this.rows());
-    const months = this.store
-      .absences()
-      .filter((row) => !visible.has(row))
-      .map((row) => payrollPeriodOfDate(row.startDate));
-    return [...new Set(months)].sort((a, b) => b - a);
-  });
-
   /** «En este mes no hay» no es «no tiene ninguna», y decir lo segundo cuando es lo primero engaña. */
   protected readonly emptyMessage = computed(() =>
     this.period() === null
@@ -183,6 +177,14 @@ export class EmployeeAbsenceSectionComponent {
   });
 
   constructor() {
+    // Bajar hasta la fila resaltada cuando ya está pintada en el mes al que llevó la tira.
+    afterRenderEffect(() => {
+      const key = this.highlightedKey();
+      if (!key || !this.rows().some((row) => this.keyOf(row) === key)) return;
+      this.host.nativeElement
+        .querySelector('.employee-absence-section__row--highlighted')
+        ?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    });
     effect(() => {
       const key = this.employeeBusinessKey();
       untracked(() => {

@@ -34,7 +34,7 @@
 }
 
 .year-strip__grid {
-  --lane-height: 12px;
+  --lane-height: 14px;
 
   position: relative;
   display: grid;
@@ -126,9 +126,9 @@
   min-width: 3px;
   height: var(--lane-height);
   padding: 0;
-  border: 1px solid var(--ink-line-strong);
+  border: 1px solid var(--accent-strong);
   border-radius: var(--radius-sm);
-  background: var(--ink-line);
+  background: var(--accent-primary);
   cursor: pointer;
 }
 
@@ -136,20 +136,20 @@
 .year-strip__bar--baja {
   background: repeating-linear-gradient(
     135deg,
-    var(--ink-line-strong) 0,
-    var(--ink-line-strong) 2px,
-    var(--ink-line) 2px,
-    var(--ink-line) 5px
+    var(--accent-primary) 0,
+    var(--accent-primary) 2px,
+    var(--accent-soft) 2px,
+    var(--accent-soft) 5px
   );
 }
 
 .year-strip__bar--permiso {
   background: repeating-radial-gradient(
     circle,
-    var(--ink-line-strong) 0,
-    var(--ink-line-strong) 1px,
-    var(--ink-line) 1px,
-    var(--ink-line) 3px
+    var(--accent-primary) 0,
+    var(--accent-primary) 1px,
+    var(--accent-soft) 1px,
+    var(--accent-soft) 3px
   );
 }
 

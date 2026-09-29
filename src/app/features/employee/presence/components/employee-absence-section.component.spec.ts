@@ -390,17 +390,29 @@ describe('EmployeeAbsenceSectionComponent con el mes de la página', () => {
     expect(rows.some((r) => r.includes('01/03/2026'))).toBe(false);
   });
 
-  it('dice en qué otros meses hay, y llevarle a uno es pedírselo a la página', () => {
-    const pedidos: number[] = [];
+  // «También en: …» se fue con la tira del año (frontend#109): la tira lo dice mejor. Lo que
+  // queda aquí es resaltar la ausencia que se pulsó en ella.
+  it('ya no dice en qué otros meses hay: eso lo cuenta la tira del año', () => {
     fix.componentRef.setInput('period', 202605);
-    fix.componentRef.instance.periodRequested.subscribe((p: number) => pedidos.push(p));
     fix.detectChanges();
-    const botones: HTMLButtonElement[] = Array.from(
-      fix.nativeElement.querySelectorAll('.other-months__month'),
+    expect(fix.nativeElement.querySelector('.other-months__month')).toBeNull();
+  });
+
+  it('resalta la ausencia que se pidió desde la tira, y sólo esa', () => {
+    fix.componentRef.setInput('period', 202605);
+    fix.detectChanges();
+    const filas: HTMLElement[] = Array.from(
+      fix.nativeElement.querySelectorAll('.employee-absence-section__row'),
     );
-    expect(botones.map((b) => b.textContent?.trim())).toEqual(['03/2026']);
-    botones[0].click();
-    expect(pedidos).toEqual([202603]);
+    const clave = (fix.componentInstance as unknown as { keyOf: (r: unknown) => string }).keyOf(
+      (fix.componentInstance as unknown as { rows: () => unknown[] }).rows()[1],
+    );
+    fix.componentRef.setInput('highlightedKey', clave);
+    fix.detectChanges();
+    const resaltadas = filas.filter((f) =>
+      f.classList.contains('employee-absence-section__row--highlighted'),
+    );
+    expect(resaltadas).toEqual([filas[1]]);
   });
 
   it('un mes sin ninguna dice que en ese mes no hay, no que no haya ninguna', () => {

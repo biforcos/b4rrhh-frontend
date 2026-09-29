@@ -184,3 +184,9 @@
     justify-content: flex-start;
   }
 }
+
+/* La fila que se pidió desde la tira del año: el mismo resalte que el salto a una línea del recibo. */
+.employee-absence-section__row--highlighted {
+  background: var(--surface-accent);
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}

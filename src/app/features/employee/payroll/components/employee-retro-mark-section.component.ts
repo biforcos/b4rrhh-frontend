@@ -2,6 +2,8 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -22,7 +24,6 @@ import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/s
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { PayrollPeriod } from '../../../../shared/utils/payroll-period.util';
-import { EmployeeOtherMonthsComponent } from './employee-other-months.component';
 
 /**
  * Las correcciones a meses ya entregados de este empleado (`b4rrhh/frontend#86`,
@@ -51,13 +52,7 @@ import { EmployeeOtherMonthsComponent } from './employee-other-months.component'
 @Component({
   selector: 'app-employee-retro-mark-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    DatePipe,
-    SectionHeadingComponent,
-    UiButtonComponent,
-    UiMoreComponent,
-    EmployeeOtherMonthsComponent,
-  ],
+  imports: [DatePipe, SectionHeadingComponent, UiButtonComponent, UiMoreComponent],
   templateUrl: './employee-retro-mark-section.component.html',
   styleUrl: './employee-retro-mark-section.component.scss',
 })
@@ -70,8 +65,11 @@ export class EmployeeRetroMarkSectionComponent {
   readonly period = input<PayrollPeriod | null>(null);
   /** Llevar la página a otro mes, que es de quien es el navegador. */
   readonly periodRequested = output<PayrollPeriod>();
+  /** Las correcciones de este mes, resaltadas al pulsar su marca en la tira del año (`frontend#109`). */
+  readonly highlightedPeriod = input<PayrollPeriod | null>(null);
 
   private readonly store = inject(EmployeeRetroMarkStore);
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   protected readonly texts = employeeTexts;
 
@@ -88,16 +86,9 @@ export class EmployeeRetroMarkSectionComponent {
   });
   protected readonly hasRows = computed(() => this.rows().length > 0);
 
-  /** Los meses a los que van las que no se ven, del más reciente al más antiguo. */
-  protected readonly otherMonths = computed<ReadonlyArray<PayrollPeriod>>(() => {
-    if (this.period() === null) return [];
-    const visible = new Set(this.rows());
-    const months = this.store
-      .marks()
-      .filter((row) => !visible.has(row))
-      .map((row) => Number(row.fromPeriodCode));
-    return [...new Set(months)].sort((a, b) => b - a);
-  });
+  protected isHighlighted(row: { fromPeriodCode: string }): boolean {
+    return Number(row.fromPeriodCode) === this.highlightedPeriod();
+  }
 
   protected readonly emptyMessage = computed(() =>
     this.period() === null
@@ -109,6 +100,13 @@ export class EmployeeRetroMarkSectionComponent {
   protected readonly canDiscard = computed(() => this.discardReasonState().trim().length > 0);
 
   constructor() {
+    afterRenderEffect(() => {
+      const period = this.highlightedPeriod();
+      if (period === null || !this.rows().some((row) => this.isHighlighted(row))) return;
+      this.host.nativeElement
+        .querySelector('.employee-retro-mark-section__row--highlighted')
+        ?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    });
     effect(() => {
       const key = this.employeeBusinessKey();
       untracked(() => {

@@ -1,12 +1,28 @@
 <section class="employee-area" [attr.aria-label]="texts.monthAreaLabel">
   <!--
-    Lo que pasa cada mes (`frontend#90`): los hechos con fecha que alimentan el cálculo. Un solo
-    navegador de período arriba, y las tres secciones hablan de ese mes. Antes sólo lo tenían las
-    entradas, y las ausencias y las correcciones enseñaban todo lo del empleado sin decir de cuándo.
+    Lo que pasa cada mes (`frontend#90`): los hechos con fecha que alimentan el cálculo, y las tres
+    secciones hablan del mes elegido.
+
+    Arriba, el año de un vistazo (`frontend#109`): el mes se elige en la tira, que no se filtra
+    nunca, y lo que se pulsa en ella lleva a su mes y resalta su fila. El navegador de mes se queda
+    como atajo al lado, no como único camino.
   -->
-  <div class="employee-area__month">
-    <span class="employee-area__month-label">{{ texts.monthNavigatorLabel }}</span>
-    <app-employee-month-navigator [(period)]="period" />
+  <div class="employee-area__year">
+    <app-employee-year-strip
+      [year]="stripYear()"
+      [data]="yearStore.year()"
+      [selectedPeriod]="period()"
+      [absenceTypeLabels]="absenceTypeLabels()"
+      (yearRequested)="stripYear.set($event)"
+      (periodPicked)="pickPeriod($event)"
+      (absencePicked)="pickAbsence($event)"
+      (inputsPicked)="pickInputs($event)"
+      (marksPicked)="pickMarks($event)"
+    />
+    <div class="employee-area__month">
+      <span class="employee-area__month-label">{{ texts.monthNavigatorLabel }}</span>
+      <app-employee-month-navigator [(period)]="period" />
+    </div>
   </div>
 
   <!--
@@ -19,6 +35,7 @@
       id="employee-section-absence"
       [employeeBusinessKey]="activeEmployeeKey()"
       [period]="period()"
+      [highlightedKey]="highlightedAbsenceKey()"
       (periodRequested)="period.set($event)"
     />
 
@@ -42,6 +59,7 @@
       id="employee-section-retro-marks"
       [employeeBusinessKey]="activeEmployeeKey()"
       [period]="period()"
+      [highlightedPeriod]="highlightedMarksPeriod()"
       (periodRequested)="period.set($event)"
     />
   </div>

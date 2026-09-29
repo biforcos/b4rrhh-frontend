@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
@@ -14,6 +15,7 @@ import { EmployeeAbsenceStore } from '../../data-access/employee-absence.store';
 import { EmployeePayrollInputStore } from '../../data-access/employee-payroll-input.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeRetroMarkStore } from '../../data-access/employee-retro-mark.store';
+import { EmployeeYearStore } from '../../data-access/employee-year.store';
 import { employeeTexts } from '../../employee.texts';
 import { GlobalUiMessage } from '../../models/global-ui-message.model';
 import { EmployeeAbsenceSectionComponent } from '../../presence/components/employee-absence-section.component';
@@ -22,6 +24,10 @@ import { PayrollPeriod, currentPayrollPeriod } from '../../../../shared/utils/pa
 import { EmployeeMonthNavigatorComponent } from '../components/employee-month-navigator.component';
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
 import { EmployeeRetroMarkSectionComponent } from '../components/employee-retro-mark-section.component';
+import {
+  AbsencePick,
+  EmployeeYearStripComponent,
+} from '../components/employee-year-strip.component';
 import { describeFailure } from '../../../../shared/utils/http-failure.util';
 
 /**
@@ -36,6 +42,7 @@ import { describeFailure } from '../../../../shared/utils/http-failure.util';
   selector: 'app-employee-month-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    EmployeeYearStripComponent,
     EmployeeMonthNavigatorComponent,
     EmployeeAbsenceSectionComponent,
     EmployeePayrollInputSectionComponent,
@@ -50,6 +57,7 @@ export class EmployeeMonthPageComponent {
   private readonly retroMarkStore = inject(EmployeeRetroMarkStore);
   private readonly payrollInputStore = inject(EmployeePayrollInputStore);
   private readonly globalMessageService = inject(GlobalMessageService);
+  protected readonly yearStore = inject(EmployeeYearStore);
 
   private previousAbsenceSuccess: 'saved' | 'deleted' | null = null;
   private previousRetroMarkSuccess: string | null = null;
@@ -68,7 +76,35 @@ export class EmployeeMonthPageComponent {
    * cargar las entradas también: se decía que lo pintaba su sección y la sección no lo pintaba, así
    * que la ficha de un empleado que no existe decía «no hay entradas» (b4rrhh/backend#144).
    */
+  /** El año que enseña la tira. Sigue al mes elegido; las flechas de la tira lo mueven solas. */
+  protected readonly stripYear = signal(Math.floor(this.period() / 100));
+  /** La fila de ausencia que resalta pulsar su barra: `tipo|inicio`, la clave de la sección. */
+  protected readonly highlightedAbsenceKey = signal<string | null>(null);
+  /** Las correcciones de este mes, resaltadas al pulsar su marca en la tira. */
+  protected readonly highlightedMarksPeriod = signal<PayrollPeriod | null>(null);
+  /** El nombre de cada tipo, del mismo sitio que la sección: sus filas. */
+  protected readonly absenceTypeLabels = computed<ReadonlyMap<string, string>>(
+    () => new Map(this.absenceStore.absences().map((a) => [a.absenceTypeCode, a.absenceTypeLabel])),
+  );
+
   constructor() {
+    // Un mes de otro año —por el atajo o desde una sección— se lleva la tira a su año.
+    effect(() => {
+      const year = Math.floor(this.period() / 100);
+      untracked(() => this.stripYear.set(year));
+    });
+
+    // El año se vuelve a pedir cuando cambia algo de lo que cuenta: una ausencia, una entrada o
+    // una corrección que se guarda o se descarta.
+    effect(() => {
+      const key = this.activeEmployeeKey();
+      const year = this.stripYear();
+      this.absenceStore.absences();
+      this.retroMarkStore.marks();
+      this.payrollInputStore.success();
+      untracked(() => this.yearStore.load(key, year));
+    });
+
     effect((onCleanup) => {
       const messages = this.buildGlobalMessages();
       untracked(() => this.globalMessageService.setSourceMessages('employee-month-page', messages));
@@ -78,6 +114,34 @@ export class EmployeeMonthPageComponent {
     });
 
     effect(() => this.publishSuccessFeedback());
+  }
+
+  protected pickPeriod(period: PayrollPeriod): void {
+    this.clearHighlights();
+    this.period.set(period);
+  }
+
+  protected pickAbsence(pick: AbsencePick): void {
+    this.clearHighlights();
+    this.period.set(pick.period);
+    this.highlightedAbsenceKey.set(`${pick.absenceTypeCode}|${pick.startDate}`);
+  }
+
+  protected pickInputs(period: PayrollPeriod): void {
+    this.clearHighlights();
+    this.period.set(period);
+    scrollToSection('employee-section-payroll-inputs');
+  }
+
+  protected pickMarks(period: PayrollPeriod): void {
+    this.clearHighlights();
+    this.period.set(period);
+    this.highlightedMarksPeriod.set(period);
+  }
+
+  private clearHighlights(): void {
+    this.highlightedAbsenceKey.set(null);
+    this.highlightedMarksPeriod.set(null);
   }
 
   private buildGlobalMessages(): ReadonlyArray<Omit<GlobalUiMessage, 'createdAt'>> {
@@ -197,4 +261,11 @@ export class EmployeeMonthPageComponent {
       return describeFailure(t.retroMarksLoadFailedMessage, this.retroMarkStore.failure());
     return null;
   }
+}
+
+/** Bajar hasta una sección de la página, después de que el mes nuevo se haya pintado. */
+function scrollToSection(id: string): void {
+  setTimeout(() =>
+    document.getElementById(id)?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }),
+  );
 }
