@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { EmployeeContractModel } from '../../models/employee-contract.model';
+import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { EmployeeWorkCenterModel } from '../../models/employee-work-center.model';
 import { EmployeeWorkingTimeModel } from '../../models/employee-working-time.model';
@@ -130,5 +131,88 @@ describe('EmployeeTodayStripComponent', () => {
     const fixture = render();
     (fixture.nativeElement.querySelectorAll('.today__link')[1] as HTMLElement).click();
     expect(fixture.componentInstance.requested()).toBe('contract');
+  });
+});
+
+/**
+ * «Hoy» dice lo que rige ese día, no lo que no tiene fin (`b4rrhh/frontend#100`). Con un cese
+ * registrado para el 30, el 29 el empleado sigue de alta, y todas sus vigencias también.
+ */
+@Component({
+  imports: [EmployeeTodayStripComponent],
+  template: `
+    <app-employee-today-strip
+      [referenceDate]="today()"
+      [presences]="presences"
+      [contracts]="contracts"
+      [workingTimes]="[]"
+      [workCenters]="[]"
+      [costCenters]="costCenters"
+    />
+  `,
+})
+class CeasedOnThe30thHost {
+  readonly today = signal('2026-09-29');
+  readonly presences: EmployeePresenceModel[] = [
+    {
+      presenceNumber: 1,
+      companyCode: 'ES02',
+      companyName: 'Spain Company 02',
+      entryReasonCode: 'HIRING',
+      exitReasonCode: 'TERMINATION',
+      startDate: '2025-10-16',
+      endDate: '2026-09-30',
+      isActive: false,
+    },
+  ];
+  readonly contracts: EmployeeContractModel[] = [
+    {
+      contractCode: '108',
+      contractTypeName: 'Indefinido ordinario (tiempo parcial)',
+      contractSubtypeCode: '01',
+      startDate: '2025-10-16',
+      endDate: '2026-09-30',
+      isActive: false,
+    },
+  ];
+  readonly costCenters: EmployeeCostCenterWindowModel[] = [
+    {
+      startDate: '2025-10-16',
+      endDate: '2026-09-30',
+      totalAllocationPercentage: 100,
+      items: [
+        {
+          costCenterCode: 'CC_IT',
+          costCenterName: 'Information Technology',
+          allocationPercentage: 100,
+        },
+      ],
+    },
+  ];
+}
+
+describe('EmployeeTodayStripComponent con un cese a fecha futura', () => {
+  function render(today: string) {
+    TestBed.configureTestingModule({ imports: [CeasedOnThe30thHost] });
+    const fixture = TestBed.createComponent(CeasedOnThe30thHost);
+    fixture.componentInstance.today.set(today);
+    fixture.detectChanges();
+    return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('.today__item')).map(
+      (item) => item.textContent ?? '',
+    );
+  }
+
+  it('el 29, víspera del cese, la presencia, el contrato y los centros de coste rigen', () => {
+    const [presence, contract, , , , cost] = render('2026-09-29');
+    expect(presence).toContain('Spain Company 02');
+    expect(contract).toContain('Indefinido ordinario');
+    expect(cost).toContain('Information Technology');
+  });
+
+  it('el 1 de octubre ya no rige nada', () => {
+    const [presence, contract, , , , cost] = render('2026-10-01');
+    expect(presence).toContain('sin vigencia');
+    expect(contract).toContain('sin vigencia');
+    expect(cost).toContain('sin asignar');
   });
 });

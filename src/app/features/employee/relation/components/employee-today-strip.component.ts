@@ -8,6 +8,7 @@ import {
   formatDisplayDate,
   formatLongDisplayDate,
 } from '../../../../shared/utils/local-date.util';
+import { inForceOn } from '../../../../shared/utils/in-force.util';
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeContractModel } from '../../models/employee-contract.model';
 import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center.model';
@@ -57,7 +58,10 @@ export class EmployeeTodayStripComponent {
   readonly workingTimes = input<ReadonlyArray<EmployeeWorkingTimeModel>>([]);
   readonly laborClassifications = input<ReadonlyArray<EmployeeLaborClassificationModel>>([]);
   readonly workCenters = input<ReadonlyArray<EmployeeWorkCenterModel>>([]);
-  readonly costCenter = input<EmployeeCostCenterWindowModel | null>(null);
+  /** Todas las ventanas de centros de coste: «Hoy» elige la que rige, como en las demás. */
+  readonly costCenters = input<ReadonlyArray<EmployeeCostCenterWindowModel>>([]);
+  /** El día del que se habla; hoy salvo en los specs, que no dependen del reloj. */
+  readonly referenceDate = input<string>(currentLocalDate());
 
   readonly laneRequested = output<EmployeeRelationAnchor>();
 
@@ -67,16 +71,21 @@ export class EmployeeTodayStripComponent {
    * «Hoy» es ambiguo en una ficha con histórico y dos etapas, así que se dice de qué día se
    * habla. La fecha se lee al pintar: la ficha no se deja abierta de un día para otro.
    */
-  protected readonly currentDateLabel = `${employeeTexts.todayCurrentAtLabel} ${formatLongDisplayDate(currentLocalDate())}`;
+  protected readonly currentDateLabel = computed(
+    () => `${employeeTexts.todayCurrentAtLabel} ${formatLongDisplayDate(this.referenceDate())}`,
+  );
 
   protected readonly items = computed<ReadonlyArray<TodayItem>>(() => {
     const t = this.texts;
-    const presence = open(this.presences());
-    const contract = open(this.contracts());
-    const workingTime = open(this.workingTimes());
-    const classification = open(this.laborClassifications());
-    const workCenter = open(this.workCenters());
-    const cost = this.costCenter();
+    // Lo que rige ese día, no lo que no tiene fin (`b4rrhh/frontend#100`): con un cese para el
+    // 30, el 29 todo sigue vigente.
+    const today = this.referenceDate();
+    const presence = inForceOn(this.presences(), today);
+    const contract = inForceOn(this.contracts(), today);
+    const workingTime = inForceOn(this.workingTimes(), today);
+    const classification = inForceOn(this.laborClassifications(), today);
+    const workCenter = inForceOn(this.workCenters(), today);
+    const cost = inForceOn(this.costCenters(), today);
     const since = (item: { startDate: string } | null) =>
       item ? formatDisplayDate(item.startDate) : null;
     return [
@@ -160,13 +169,4 @@ export class EmployeeTodayStripComponent {
   protected select(item: TodayItem): void {
     this.laneRequested.emit(item.anchor);
   }
-}
-
-/** La vigencia abierta hoy: la que no tiene fin; si hay varias, la más reciente. */
-function open<T extends { startDate: string; endDate?: string | null; isActive?: boolean }>(
-  items: ReadonlyArray<T>,
-): T | null {
-  const candidates = items.filter((item) => item.isActive ?? !item.endDate);
-  if (candidates.length === 0) return null;
-  return [...candidates].sort((a, b) => b.startDate.localeCompare(a.startDate))[0];
 }

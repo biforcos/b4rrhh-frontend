@@ -101,7 +101,8 @@ export class EmployeeRelationPageComponent {
   protected readonly workingTimes = this.workingTimeStore.workingTimes;
   protected readonly laborClassifications = this.laborClassificationStore.laborClassifications;
   protected readonly workCenters = this.workCenterStore.workCenters;
-  protected readonly currentCostCenter = this.costCenterStore.currentDistribution;
+  /** Todas las ventanas, la actual incluida: «Hoy» elige la que rige ese día (`b4rrhh/frontend#100`). */
+  protected readonly costCenterWindows = this.costCenterStore.history;
   protected readonly lifelineLoading = computed(
     () => this.presenceStore.loading() || this.contractStore.loading(),
   );

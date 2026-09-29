@@ -34,6 +34,7 @@ import {
 } from '../../shared/utils/timeline-plan-message.util';
 import { sameAsInForceNotice, withSameAsInForce } from '../../shared/utils/same-as-in-force.util';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
+import { inForceOn } from '../../../../shared/utils/in-force.util';
 
 /**
  * Las tres cosas que se pueden hacer con la serie de centros de trabajo (ADR-057): añadir una
@@ -341,15 +342,13 @@ export class EmployeeWorkCenterSectionComponent {
       });
   }
 
-  /** La empresa de la presencia que incluye la fecha; sin fecha, la de la presencia vigente. */
+  /**
+   * La empresa de la presencia que rige en la fecha; sin fecha, la que rige hoy. «Rige» y no
+   * «abierta»: con un cese a fin de mes la presencia de hoy ya tiene fin (`b4rrhh/frontend#100`).
+   */
   private companyOn(date: string): string | null {
-    const presences = this.presenceStore.presences();
-    const covering = date
-      ? presences.find(
-          (presence) =>
-            presence.startDate <= date && (presence.endDate === null || presence.endDate >= date),
-        )
-      : presences.find((presence) => presence.endDate === null);
-    return covering?.companyCode ?? null;
+    return (
+      inForceOn(this.presenceStore.presences(), date || currentLocalDate())?.companyCode ?? null
+    );
   }
 }

@@ -1,7 +1,7 @@
 <section class="today" [attr.aria-label]="texts.todayTitle">
   <app-section-heading [title]="texts.todayTitle" [boxed]="true">
     <!-- «Hoy» solo es ambiguo en una ficha con histórico: la fecha lo desambigua. -->
-    <p sectionHeadingMeta class="section-heading__meta">{{ currentDateLabel }}</p>
+    <p sectionHeadingMeta class="section-heading__meta">{{ currentDateLabel() }}</p>
   </app-section-heading>
   <dl class="today__grid">
     @for (item of items(); track item.anchor) {
