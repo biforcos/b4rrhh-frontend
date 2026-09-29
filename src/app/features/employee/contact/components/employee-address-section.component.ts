@@ -49,7 +49,7 @@ import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-fa
  * no (ADR-057, decisión 1). Aquí no se consulta cuál es cuál —lo dice el plan, que rechaza el
  * hueco del domicilio y acepta el de los demás contándolo—.
  */
-type AddressModalMode = 'add' | 'correct' | 'remove';
+type AddressModalMode = 'add' | 'correct' | 'close' | 'remove';
 
 interface AddressPeriodRow extends TemporalSectionRow {
   addressNumber: number;
@@ -106,10 +106,14 @@ export class EmployeeAddressSectionComponent {
   protected readonly draft = signal<AddressCreateDraft>(createEmptyAddressDraft());
   protected readonly addressTypeOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   protected readonly catalogLoading = signal(false);
+  /** Qué tipos son obligatorios y cuáles opcionales, según el catálogo (`b4rrhh/backend#145`). */
+  private readonly coverages = signal<Readonly<Record<string, 'MANDATORY' | 'OPTIONAL'>>>({});
   private catalogRequestId = 0;
 
   // Corregir y borrar se ofrecen en todas las filas: si el cambio deja un hueco o un solape lo
-  // dice el plan, con fechas, y no un botón escondido (ADR-057 §3).
+  // dice el plan, con fechas, y no un botón escondido (ADR-057 §3). Cerrar, sólo en las vigentes
+  // de un tipo opcional: la obligatoria no se cierra mientras haya presencia, y ofrecerlo sería
+  // ofrecer un rechazo (b4rrhh/backend#145).
   protected readonly rows = computed<ReadonlyArray<AddressPeriodRow>>(() =>
     [...this.addressStore.addresses()]
       .sort((left, right) => this.compareAddressOrder(left, right))
@@ -119,6 +123,7 @@ export class EmployeeAddressSectionComponent {
         isActive: address.isActive,
         canEdit: true,
         canDelete: true,
+        canClose: !address.endDate && this.coverages()[address.addressTypeCode] === 'OPTIONAL',
         addressNumber: address.addressNumber,
         addressTypeCode: address.addressTypeCode,
         addressTypeName: address.addressTypeName ?? null,
@@ -158,6 +163,9 @@ export class EmployeeAddressSectionComponent {
         : null;
     }
 
+    // Cerrar es corregir la fecha de fin de una que no la tenía.
+    if (mode === 'close' && endDate === null) return null;
+
     return addressNumber === null
       ? null
       : { operation: 'CORRECT', addressNumber, startDate: draft.startDate, endDate };
@@ -195,6 +203,7 @@ export class EmployeeAddressSectionComponent {
     const mode = this.modalMode();
     if (mode === 'add') return this.texts.addressesSectionAddAction;
     if (mode === 'remove') return this.texts.addressesSectionRemoveTitle;
+    if (mode === 'close') return this.texts.addressesSectionCloseTitle;
     return this.texts.addressesSectionCorrectTitle;
   });
 
@@ -202,6 +211,7 @@ export class EmployeeAddressSectionComponent {
     const mode = this.modalMode();
     if (mode === 'add') return this.texts.addressesSectionAddSubmitAction;
     if (mode === 'remove') return this.texts.addressesSectionRemoveSubmitAction;
+    if (mode === 'close') return this.texts.addressesSectionCloseSubmitAction;
     return this.texts.addressesSectionCorrectSubmitAction;
   });
 
@@ -224,6 +234,7 @@ export class EmployeeAddressSectionComponent {
       untracked(() => {
         this.addressStore.loadAddresses(key);
         this.loadCatalogOptions(key?.ruleSystemCode ?? null, this.draft().startDate);
+        this.loadCoverages(key?.ruleSystemCode ?? null);
         this.closeModal();
       });
     });
@@ -291,6 +302,15 @@ export class EmployeeAddressSectionComponent {
     this.modalVisible.set(true);
   }
 
+  /** Cerrar una opcional: su fecha de fin, hoy por defecto; el resto no cambia. */
+  protected openClose(index: number): void {
+    const address = this.addressAt(index);
+    if (!address) return;
+    this.openCorrect(index);
+    this.modalMode.set('close');
+    this.draft.update((draft) => ({ ...draft, endDate: currentLocalDate() }));
+  }
+
   protected openRemove(index: number): void {
     const address = this.addressAt(index);
     if (!address) return;
@@ -354,6 +374,21 @@ export class EmployeeAddressSectionComponent {
     if (field === 'startDate') {
       this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, value ?? '');
     }
+  }
+
+  private loadCoverages(ruleSystemCode: string | null): void {
+    if (!ruleSystemCode) {
+      this.coverages.set({});
+      return;
+    }
+    this.fieldCatalogService
+      .loadAddressTypeCoverages(ruleSystemCode)
+      .pipe(take(1))
+      .subscribe({
+        next: (coverages) => this.coverages.set(coverages),
+        // Sin cobertura no se ofrece «Cerrar»; corregir sigue estando.
+        error: () => this.coverages.set({}),
+      });
   }
 
   private addressAt(index: number): EmployeeAddressModel | null {

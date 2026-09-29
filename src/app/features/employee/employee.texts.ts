@@ -495,6 +495,8 @@ export const employeeTexts = {
   addressesSectionAddAction: 'Añadir dirección',
   addressesSectionCorrectTitle: 'Corregir dirección',
   addressesSectionRemoveTitle: 'Borrar dirección',
+  addressesSectionCloseTitle: 'Cerrar dirección',
+  addressesSectionCloseSubmitAction: 'Cerrar dirección',
   addressesSectionAddSubmitAction: 'Añadir dirección',
   addressesSectionCorrectSubmitAction: 'Guardar corrección',
   addressesSectionRemoveSubmitAction: 'Borrar dirección',

@@ -40,6 +40,10 @@ export class EmployeeFieldCatalogService {
     string,
     Observable<ReadonlyArray<CatalogFieldBindingResponse>>
   >();
+  private readonly coveragesCache = new Map<
+    string,
+    Observable<Readonly<Record<string, 'MANDATORY' | 'OPTIONAL'>>>
+  >();
   private readonly optionsByDirectCatalogCache = new Map<
     string,
     Observable<ReadonlyArray<SlotKeyOption<string>>>
@@ -94,6 +98,32 @@ export class EmployeeFieldCatalogService {
       employeeCatalogFields.addressType,
       referenceDate,
     );
+  }
+
+  /**
+   * La cobertura de cada tipo de dirección (`b4rrhh/backend#145`): `MANDATORY` mientras haya
+   * presencia u `OPTIONAL`. Es lo que decide si la sección puede ofrecer «Cerrar».
+   */
+  loadAddressTypeCoverages(
+    ruleSystemCode: string,
+  ): Observable<Readonly<Record<string, 'MANDATORY' | 'OPTIONAL'>>> {
+    const normalized = this.normalizeRequiredValue(ruleSystemCode);
+    if (!normalized) return of({});
+    const cacheKey = `address-type-coverages|${normalized}`;
+    const cached = this.coveragesCache.get(cacheKey);
+    if (cached) return cached;
+    const request = this.catalogsApi
+      .listEmployeeAddressTypeProfiles({ ruleSystemCode: normalized })
+      .pipe(
+        map((response) =>
+          Object.fromEntries(
+            (response.items ?? []).map((item) => [item.addressTypeCode, item.coverage] as const),
+          ),
+        ),
+        shareReplay(1),
+      );
+    this.coveragesCache.set(cacheKey, request);
+    return request;
   }
 
   loadWorkCenterOptions(

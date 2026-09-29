@@ -80,6 +80,9 @@ describe('EmployeeAddressSectionComponent', () => {
             loadAddressTypeOptions: vi
               .fn()
               .mockReturnValue(of([{ value: 'HOME', label: 'Domicilio' }])),
+            loadAddressTypeCoverages: vi
+              .fn()
+              .mockReturnValue(of({ HOME: 'MANDATORY', MAILING: 'OPTIONAL' })),
           },
         },
         {
@@ -168,5 +171,66 @@ describe('EmployeeAddressSectionComponent', () => {
     store.planState.set(plan({ operation: 'REMOVE' }));
     component.submit();
     expect(store.deleteAddress).toHaveBeenCalledWith(employeeKey, 1);
+  });
+
+  // b4rrhh/backend#145: el catálogo dice qué tipo es obligatorio, y «Cerrar» sale sólo donde se
+  // aceptaría: en una vigente de un tipo opcional.
+  describe('«Cerrar»', () => {
+    const mailing: EmployeeAddressModel = {
+      ...domicile,
+      addressNumber: 2,
+      addressTypeCode: 'MAILING',
+      addressTypeName: 'Correspondencia',
+    };
+    const closedMailing: EmployeeAddressModel = {
+      ...mailing,
+      addressNumber: 3,
+      endDate: '2025-12-31',
+      isActive: false,
+    };
+
+    function closeLabels(): number {
+      return Array.from(
+        fix.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).filter((button) => (button.textContent ?? '').trim() === 'Cerrar').length;
+    }
+
+    it('se ofrece en la vigente de un tipo opcional, no en la obligatoria ni en una cerrada', () => {
+      store.addressesState.set([domicile, mailing, closedMailing]);
+      fix.detectChanges();
+
+      const rows = (fix.componentInstance as any).rows() as ReadonlyArray<{
+        addressNumber: number;
+        canClose: boolean;
+      }>;
+      expect(rows.find((row) => row.addressNumber === 1)?.canClose).toBe(false);
+      expect(rows.find((row) => row.addressNumber === 2)?.canClose).toBe(true);
+      expect(rows.find((row) => row.addressNumber === 3)?.canClose).toBe(false);
+      expect(closeLabels()).toBe(1);
+    });
+
+    it('cerrar pide el plan de corregir su fecha de fin y guarda la corrección', () => {
+      store.addressesState.set([mailing]);
+      fix.detectChanges();
+      const component = fix.componentInstance as any;
+      component.openClose(0);
+      component.updateDraft('endDate', '2026-06-30');
+      fix.detectChanges();
+
+      expect(store.planChange).toHaveBeenLastCalledWith(employeeKey, {
+        operation: 'CORRECT',
+        addressNumber: 2,
+        startDate: '2024-01-01',
+        endDate: '2026-06-30',
+      });
+
+      store.planState.set(plan({ operation: 'CORRECT' }));
+      component.submit();
+      expect(store.correctAddress).toHaveBeenCalledWith(
+        employeeKey,
+        2,
+        expect.objectContaining({ endDate: '2026-06-30' }),
+      );
+    });
   });
 });

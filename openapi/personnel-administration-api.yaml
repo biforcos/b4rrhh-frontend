@@ -3985,6 +3985,33 @@ paths:
               schema:
                 $ref: "#/components/schemas/CompanyProfileErrorResponse"
 
+  /address-types/{ruleSystemCode}/profiles:
+    get:
+      tags:
+        - Catalogs
+      summary: Coverage of every employee address type of a rule system
+      description: >-
+        Whether an employee has to have an address of each type while present (`MANDATORY`) or
+        may have none (`OPTIONAL`), as the catalog declares it (V117, b4rrhh/backend#145). It is
+        the rule the address series applies: closing the mandatory one while the presence goes on
+        is refused with 409 `ADDRESS_COVERAGE_GAP`, closing an optional one is accepted. With it a
+        client can offer «close» only where it would be accepted.
+      operationId: listEmployeeAddressTypeProfiles
+      parameters:
+        - name: ruleSystemCode
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ESP"
+      responses:
+        "200":
+          description: The coverage of each address type, ordered by code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeAddressTypeProfilesResponse"
+
   /agreement-categories/{ruleSystemCode}/{categoryCode}/profile:
     get:
       tags:
@@ -6073,9 +6100,23 @@ paths:
         "400":
           description: Invalid request
         "404":
-          description: Employee not found
+          description: Employee not found (`PAYROLL_INPUT_EMPLOYEE_NOT_FOUND`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeePayrollInputErrorResponse"
         "409":
           description: Payroll input already exists for this concept and period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeePayrollInputErrorResponse"
+        "422":
+          description: >-
+            The input could never be paid (b4rrhh/backend#142): the concept does not exist or
+            is not an input (`PAYROLL_INPUT_CONCEPT_INVALID`), or the period has not a single
+            day of presence (`PAYROLL_INPUT_OUTSIDE_PRESENCE`, naming the presences). A period
+            covered in part is accepted: the engine prorates by days.
           content:
             application/json:
               schema:
@@ -6172,6 +6213,16 @@ paths:
                 $ref: "#/components/schemas/EmployeePayrollInputResponse"
         "400":
           description: Invalid request
+        "422":
+          description: >-
+            The input could never be paid (b4rrhh/backend#142): the concept does not exist or
+            is not an input (`PAYROLL_INPUT_CONCEPT_INVALID`), or the period has not a single
+            day of presence (`PAYROLL_INPUT_OUTSIDE_PRESENCE`, naming the presences). A period
+            covered in part is accepted: the engine prorates by days.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeePayrollInputErrorResponse"
         "404":
           description: Payroll input not found
           content:
@@ -6517,7 +6568,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/AbsenceResponse'
         '404':
-          description: Employee not found
+          description: >-
+            The employee does not exist (`ABSENCE_EMPLOYEE_NOT_FOUND`); it was a 422 until
+            b4rrhh/backend#144. An employee without absences answers 200 with an empty list.
 
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/absences/{absenceTypeCode}/{startDate}:
     put:
@@ -7151,6 +7204,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RetroMarkResponse'
+        '404':
+          description: >-
+            The employee does not exist (`RETRO_MARK_EMPLOYEE_NOT_FOUND`). An employee without
+            marks answers 200 with an empty list: the two are no longer the same (b4rrhh/backend#144).
 
   /payroll/retro-marks/{id}/discard:
     post:
@@ -11456,6 +11513,28 @@ components:
           enum: [MENSUAL, DIARIO]
           description: "Tipo de base de cotización: mensual (grupos 1-7) o diaria (grupos 8-11)"
           example: "MENSUAL"
+    EmployeeAddressTypeProfilesResponse:
+      type: object
+      required:
+        - ruleSystemCode
+        - items
+      properties:
+        ruleSystemCode:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - addressTypeCode
+              - coverage
+            properties:
+              addressTypeCode:
+                type: string
+              coverage:
+                type: string
+                enum: [MANDATORY, OPTIONAL]
+
     AgreementCategoryProfileResponse:
       type: object
       required:

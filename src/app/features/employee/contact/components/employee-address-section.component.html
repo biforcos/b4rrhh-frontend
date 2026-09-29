@@ -7,6 +7,7 @@
   (addClicked)="openAdd()"
   (editClicked)="openCorrect($event)"
   (deleteClicked)="openRemove($event)"
+  (closeClicked)="openClose($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">{{ texts.addressesSectionTypeLabel }}</th>
@@ -48,7 +49,16 @@
   (cancelled)="closeModal()"
   (noteActionClicked)="switchToCorrection()"
 >
-  @if (modalMode() !== 'remove') {
+  @if (modalMode() === 'close') {
+    <label class="address-form__field">
+      <span>{{ texts.addressesSectionEndDateLabel }}</span>
+      <app-ui-date-input
+        [value]="draft().endDate"
+        [min]="draft().startDate"
+        (valueChanged)="updateDraft('endDate', $event)"
+      />
+    </label>
+  } @else if (modalMode() !== 'remove') {
     <div class="address-form">
       @if (modalMode() === 'add') {
         <label class="address-form__field">
