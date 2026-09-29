@@ -36,9 +36,9 @@
   </div>
 
   <form [formGroup]="form" class="grid">
-    <!-- Identity Section -->
+    <!-- La persona: quién es, y el documento que dice que no está ya dada de alta -->
     <div class="col-12 lg:col-6">
-      <p-card [header]="texts.hireEmployeeIdentitySectionTitle" class="h-full">
+      <p-card [header]="texts.personAreaLabel" class="h-full">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="ruleSystemCode">{{ texts.detailHeaderRuleSystemLabel }} *</label>
@@ -52,6 +52,7 @@
               [fluid]="true"
               appendTo="body"
             ></p-select>
+            <small class="hire-field-hint">{{ texts.hireEmployeeRuleSystemHint }}</small>
           </div>
 
           <div class="flex flex-column gap-2">
@@ -74,13 +75,63 @@
             <label for="preferredName">{{ texts.detailHeaderPreferredNameLabel }}</label>
             <input pInputText id="preferredName" formControlName="preferredName" class="w-full" />
           </div>
+
+          <div class="grid">
+            <div class="col-12 sm:col-6 flex flex-column gap-2">
+              <label for="identifierTypeCode">{{ texts.hireEmployeeIdentityTypeLabel }} *</label>
+              <p-select
+                id="identifierTypeCode"
+                formControlName="identifierTypeCode"
+                [options]="identifierTypes()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Selecciona documento"
+                [fluid]="true"
+                appendTo="body"
+              ></p-select>
+              @if (blockedBy()['identifierTypeCode']; as reason) {
+                <small class="hire-field-hint" data-testid="hire-blocked-identifierTypeCode">{{
+                  reason
+                }}</small>
+              }
+            </div>
+            <div class="col-12 sm:col-6 flex flex-column gap-2">
+              <label for="identifierValue">{{ texts.hireEmployeeIdentityValueLabel }} *</label>
+              <input
+                pInputText
+                id="identifierValue"
+                formControlName="identifierValue"
+                class="w-full"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <small class="hire-field-hint">{{ texts.hireEmployeeIdentityValueHint }}</small>
+
+          @if (identifierOwner(); as owner) {
+            <div class="hire-owner" role="alert" data-testid="hire-identifier-owner">
+              <p class="hire-owner__message">{{ owner.message }}</p>
+              <div class="hire-owner__actions">
+                <a [routerLink]="ownerRoute(owner)" data-testid="hire-identifier-owner-open">{{
+                  texts.hireEmployeeOwnerOpenAction
+                }}</a>
+                @if (!owner.active) {
+                  <a
+                    [routerLink]="ownerRehireRoute(owner)"
+                    data-testid="hire-identifier-owner-rehire"
+                    >{{ texts.hireEmployeeOwnerRehireAction }}</a
+                  >
+                }
+              </div>
+            </div>
+          }
         </div>
       </p-card>
     </div>
 
-    <!-- Hiring Data -->
+    <!-- La relación: en el orden del dato, sistema → empresa → centro → contrato → convenio -->
     <div class="col-12 lg:col-6">
-      <p-card [header]="texts.hireEmployeeHiringSectionTitle" class="h-full">
+      <p-card [header]="texts.relationAreaLabel" class="h-full">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="hireDate">{{ texts.employeePageHeaderHireDateLabel }} *</label>
@@ -104,33 +155,15 @@
               optionValue="value"
               placeholder="Selecciona empresa"
               [fluid]="true"
-              [disabled]="!form.get('ruleSystemCode')?.value"
               appendTo="body"
             ></p-select>
+            @if (blockedBy()['companyCode']; as reason) {
+              <small class="hire-field-hint" data-testid="hire-blocked-companyCode">{{
+                reason
+              }}</small>
+            }
           </div>
 
-          <div class="flex flex-column gap-2">
-            <label for="entryReasonCode">{{ texts.presenceBlockEntryReasonLabel }} *</label>
-            <p-select
-              id="entryReasonCode"
-              formControlName="entryReasonCode"
-              [options]="entryReasons()"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecciona motivo"
-              [fluid]="true"
-              [disabled]="!form.get('ruleSystemCode')?.value"
-              appendTo="body"
-            ></p-select>
-          </div>
-        </div>
-      </p-card>
-    </div>
-
-    <!-- Organization -->
-    <div class="col-12 lg:col-6 mt-4">
-      <p-card [header]="texts.hireEmployeeOrganizationSectionTitle" class="h-full">
-        <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="workCenterCode">{{ texts.workCenterSectionCodeLabel }} *</label>
             <p-select
@@ -141,18 +174,15 @@
               optionValue="value"
               placeholder="Selecciona centro"
               [fluid]="true"
-              [disabled]="!form.get('ruleSystemCode')?.value"
               appendTo="body"
             ></p-select>
+            @if (blockedBy()['workCenterCode']; as reason) {
+              <small class="hire-field-hint" data-testid="hire-blocked-workCenterCode">{{
+                reason
+              }}</small>
+            }
           </div>
-        </div>
-      </p-card>
-    </div>
 
-    <!-- Labor Context -->
-    <div class="col-12 lg:col-6 mt-4">
-      <p-card [header]="texts.hireEmployeeLaborSectionTitle" class="h-full">
-        <div class="flex flex-column gap-3">
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
               <label for="contractTypeCode">{{ texts.contractSectionContractLabel }} *</label>
@@ -164,9 +194,13 @@
                 optionValue="value"
                 placeholder="Selecciona tipo"
                 [fluid]="true"
-                [disabled]="!form.get('ruleSystemCode')?.value"
                 appendTo="body"
               ></p-select>
+              @if (blockedBy()['contractTypeCode']; as reason) {
+                <small class="hire-field-hint" data-testid="hire-blocked-contractTypeCode">{{
+                  reason
+                }}</small>
+              }
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
               <label for="contractSubtypeCode">{{ texts.contractSectionSubtypeLabel }}</label>
@@ -178,9 +212,13 @@
                 optionValue="value"
                 placeholder="Selecciona subtipo"
                 [fluid]="true"
-                [disabled]="!form.get('contractTypeCode')?.value"
                 appendTo="body"
               ></p-select>
+              @if (blockedBy()['contractSubtypeCode']; as reason) {
+                <small class="hire-field-hint" data-testid="hire-blocked-contractSubtypeCode">{{
+                  reason
+                }}</small>
+              }
             </div>
           </div>
 
@@ -197,9 +235,13 @@
                 optionValue="value"
                 placeholder="Selecciona convenio"
                 [fluid]="true"
-                [disabled]="!form.get('ruleSystemCode')?.value"
                 appendTo="body"
               ></p-select>
+              @if (blockedBy()['agreementCode']; as reason) {
+                <small class="hire-field-hint" data-testid="hire-blocked-agreementCode">{{
+                  reason
+                }}</small>
+              }
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
               <label for="agreementCategoryCode"
@@ -213,9 +255,13 @@
                 optionValue="value"
                 placeholder="Selecciona categoría"
                 [fluid]="true"
-                [disabled]="!form.get('agreementCode')?.value"
                 appendTo="body"
               ></p-select>
+              @if (blockedBy()['agreementCategoryCode']; as reason) {
+                <small class="hire-field-hint" data-testid="hire-blocked-agreementCategoryCode">{{
+                  reason
+                }}</small>
+              }
             </div>
           </div>
 

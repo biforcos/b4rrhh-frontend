@@ -10,7 +10,8 @@ import {
   EmployeeHiringStore,
   HireEmployeeErrorCode,
 } from '../../../data-access/employee-hiring.store';
-import { HireEmployeeResult } from '../../../models/employee-hiring.model';
+import { HireEmployeeResult, HireIdentifierOwner } from '../../../models/employee-hiring.model';
+import { provideRouter } from '@angular/router';
 import { employeeTexts } from '../../../employee.texts';
 import { HireEmployeePageComponent } from './hire-employee-page.component';
 
@@ -18,8 +19,11 @@ class MockEmployeeHiringStore {
   readonly hiringState = signal(false);
   readonly errorState = signal<HireEmployeeErrorCode | null>(null);
   readonly resultState = signal<HireEmployeeResult | null>(null);
+  readonly identifierOwnerState = signal<HireIdentifierOwner | null>(null);
 
   readonly hiring = this.hiringState.asReadonly();
+  readonly identifierOwner = this.identifierOwnerState.asReadonly();
+  readonly failure = signal(null).asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly result = this.resultState.asReadonly();
 
@@ -53,7 +57,7 @@ describe('HireEmployeePageComponent', () => {
     loadWorkCenterOptions: ReturnType<typeof vi.fn>;
     loadWorkCenterOptionsByCompany: ReturnType<typeof vi.fn>;
     loadPresenceCompanyOptions: ReturnType<typeof vi.fn>;
-    loadPresenceEntryReasonOptions: ReturnType<typeof vi.fn>;
+    loadIdentifierTypeOptions: ReturnType<typeof vi.fn>;
     loadContractTypeOptions: ReturnType<typeof vi.fn>;
     loadLaborClassificationAgreementOptions: ReturnType<typeof vi.fn>;
   };
@@ -64,7 +68,7 @@ describe('HireEmployeePageComponent', () => {
       loadWorkCenterOptions: vi.fn(() => of([])),
       loadWorkCenterOptionsByCompany: vi.fn(() => of([])),
       loadPresenceCompanyOptions: vi.fn(() => of([])),
-      loadPresenceEntryReasonOptions: vi.fn(() => of([])),
+      loadIdentifierTypeOptions: vi.fn(() => of([{ value: 'NATIONAL_ID', label: 'DNI' }])),
       loadContractTypeOptions: vi.fn(() => of([])),
       loadLaborClassificationAgreementOptions: vi.fn(() => of([])),
     };
@@ -82,7 +86,7 @@ describe('HireEmployeePageComponent', () => {
             listLaborClassificationAgreementCategories: vi.fn(() => of([])),
           },
         },
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        provideRouter([]),
         { provide: GlobalMessageService, useClass: MockGlobalMessageService },
       ],
     }).compileComponents();
@@ -107,7 +111,7 @@ describe('HireEmployeePageComponent', () => {
       lastName1: 'Lopez',
       hireDate: new Date(2026, 2, 23),
       companyCode: 'COMP',
-      entryReasonCode: 'HIRE',
+      identifierValue: '12345678Z',
       workCenterCode: 'WC1',
       contractTypeCode: 'CON',
       contractSubtypeCode: 'SUB',
@@ -133,7 +137,7 @@ describe('HireEmployeePageComponent', () => {
       lastName1: 'Lopez',
       hireDate: new Date(2026, 2, 23),
       companyCode: 'COMP',
-      entryReasonCode: 'HIRE',
+      identifierValue: '12345678Z',
       workCenterCode: 'WC1',
       contractTypeCode: 'CON',
       contractSubtypeCode: 'SUB',
@@ -160,7 +164,7 @@ describe('HireEmployeePageComponent', () => {
       lastName1: 'Lopez',
       hireDate: new Date(2026, 2, 23),
       companyCode: 'ES01',
-      entryReasonCode: 'HIRE',
+      identifierValue: '12345678Z',
       workCenterCode: 'BRANCH_EAST',
       contractTypeCode: 'IND',
       contractSubtypeCode: 'FT1',
@@ -243,4 +247,141 @@ describe('HireEmployeePageComponent', () => {
     expect(root.textContent).toContain('Ana Lopez');
     expect(root.textContent).toContain('ACTIVE');
   });
+
+  // b4rrhh/frontend#95: el orden del formulario es el del dato. «No empresa, no centro».
+  describe('fields follow the order of the data', () => {
+    it('keeps the work center closed, saying why, until there is a company', () => {
+      component.form.controls.ruleSystemCode.setValue('ESP');
+      fixture.detectChanges();
+
+      const root = fixture.nativeElement as HTMLElement;
+      expect(component.form.controls.workCenterCode.disabled).toBe(true);
+      expect(
+        root.querySelector('[data-testid="hire-blocked-workCenterCode"]')?.textContent,
+      ).toContain(employeeTexts.hireEmployeeNeedsCompany);
+
+      component.form.controls.companyCode.setValue('ES01');
+      fixture.detectChanges();
+
+      expect(component.form.controls.workCenterCode.enabled).toBe(true);
+      expect(root.querySelector('[data-testid="hire-blocked-workCenterCode"]')).toBeNull();
+    });
+
+    it('keeps everything that depends on the rule system closed until there is one', () => {
+      for (const name of [
+        'companyCode',
+        'workCenterCode',
+        'contractTypeCode',
+        'agreementCode',
+      ] as const) {
+        expect(component.form.controls[name].disabled).toBe(true);
+      }
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector(
+          '[data-testid="hire-blocked-companyCode"]',
+        )?.textContent,
+      ).toContain(employeeTexts.hireEmployeeNeedsRuleSystem);
+    });
+
+    it('closes the subtype and the category until their parent has a value', () => {
+      component.form.controls.ruleSystemCode.setValue('ESP');
+      expect(component.form.controls.contractSubtypeCode.disabled).toBe(true);
+      expect(component.form.controls.agreementCategoryCode.disabled).toBe(true);
+
+      component.form.controls.contractTypeCode.setValue('100');
+      component.form.controls.agreementCode.setValue('AGR');
+
+      expect(component.form.controls.contractSubtypeCode.enabled).toBe(true);
+      expect(component.form.controls.agreementCategoryCode.enabled).toBe(true);
+    });
+  });
+
+  // b4rrhh/backend#141: sin documento no hay alta, y el documento viaja en el borrador.
+  it('requires the identity document and sends it', () => {
+    fillValidForm();
+    component.form.controls.identifierValue.setValue('');
+    expect(component.form.valid).toBe(false);
+
+    component.form.controls.identifierValue.setValue('12345678Z');
+    component.onSubmit();
+
+    expect(hiringStore.hire).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identifier: {
+          identifierTypeCode: 'NATIONAL_ID',
+          identifierValue: '12345678Z',
+          issuingCountryCode: 'ESP',
+        },
+      }),
+    );
+  });
+
+  // b4rrhh/backend#143: un alta es un alta; el motivo de entrada no es una pregunta.
+  it('does not ask for an entry reason', () => {
+    expect('entryReasonCode' in component.form.controls).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).querySelector('#entryReasonCode')).toBeNull();
+    expect(fieldCatalogServiceMock).not.toHaveProperty('loadPresenceEntryReasonOptions');
+  });
+
+  it('links the employee who already has the document, and offers the rehire when ceased', () => {
+    hiringStore.identifierOwnerState.set({
+      employeeKey: {
+        ruleSystemCode: 'ESP',
+        employeeTypeCode: 'INTERNAL',
+        employeeNumber: 'EMP000123',
+      },
+      active: false,
+      ceasedOn: '2026-05-13',
+      message:
+        'Este DNI ya es EMP000123 (cesado el 13/05/2026): si vuelve, es una readmisión, desde su ficha.',
+    });
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const owner = root.querySelector('[data-testid="hire-identifier-owner"]');
+    expect(owner?.textContent).toContain('Este DNI ya es EMP000123 (cesado el 13/05/2026)');
+    expect(
+      root.querySelector('[data-testid="hire-identifier-owner-open"]')?.getAttribute('href'),
+    ).toBe('/personas/empleados/ESP/INTERNAL/EMP000123');
+    expect(
+      root.querySelector('[data-testid="hire-identifier-owner-rehire"]')?.getAttribute('href'),
+    ).toBe('/personas/empleados/ESP/INTERNAL/EMP000123/rehire');
+  });
+
+  it('does not offer the rehire when the owner is still active', () => {
+    hiringStore.identifierOwnerState.set({
+      employeeKey: {
+        ruleSystemCode: 'ESP',
+        employeeTypeCode: 'INTERNAL',
+        employeeNumber: 'EMP000123',
+      },
+      active: true,
+      ceasedOn: null,
+      message:
+        'Este DNI ya es EMP000123, que está de alta: no se puede contratar dos veces a la misma persona.',
+    });
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('[data-testid="hire-identifier-owner-open"]')).not.toBeNull();
+    expect(root.querySelector('[data-testid="hire-identifier-owner-rehire"]')).toBeNull();
+  });
+
+  function fillValidForm(): void {
+    component.form.patchValue({
+      ruleSystemCode: 'ESP',
+      firstName: 'Ana',
+      lastName1: 'Lopez',
+      identifierTypeCode: 'NATIONAL_ID',
+      identifierValue: '12345678Z',
+      hireDate: new Date(2026, 2, 23),
+      companyCode: 'ES01',
+      workCenterCode: 'BRANCH_EAST',
+      contractTypeCode: 'IND',
+      contractSubtypeCode: 'FT1',
+      agreementCode: 'AGR_OFFICE',
+      agreementCategoryCode: 'CAT_ADMIN',
+      workingTimePercentage: 100,
+    });
+  }
 });

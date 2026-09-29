@@ -12,7 +12,11 @@ describe('employee-hiring.mapper', () => {
       lastName2: '',
       preferredName: '',
       hireDate: '2026-03-23',
-      entryReasonCode: 'HIRE',
+      identifier: {
+        identifierTypeCode: 'NATIONAL_ID',
+        identifierValue: ' 12345678z ',
+        issuingCountryCode: 'ESP',
+      },
       companyCode: 'COMP',
       workCenterCode: 'WC1',
       contractTypeCode: 'CON',
@@ -36,6 +40,38 @@ describe('employee-hiring.mapper', () => {
     expect(rawWorkingTime['workingTimeNumber']).toBeUndefined();
     expect(rawWorkingTime['startDate']).toBeUndefined();
     expect(rawWorkingTime['endDate']).toBeUndefined();
+  });
+
+  // b4rrhh/backend#141 y #143: el documento viaja, normalizado; el motivo de entrada, no.
+  it('sends the identity document and no entry reason', () => {
+    const request = mapDraftToHireRequest({
+      ruleSystemCode: 'ESP',
+      firstName: 'Ana',
+      lastName1: 'Lopez',
+      lastName2: '',
+      preferredName: '',
+      hireDate: '2026-03-23',
+      identifier: {
+        identifierTypeCode: 'NATIONAL_ID',
+        identifierValue: ' x1234567l ',
+        issuingCountryCode: 'ESP',
+      },
+      companyCode: 'COMP',
+      workCenterCode: 'WC1',
+      contractTypeCode: 'CON',
+      contractSubtypeCode: '',
+      agreementCode: 'AGR',
+      agreementCategoryCode: 'CAT',
+      workingTime: { workingTimePercentage: 100 },
+      costCenterDistribution: null,
+    });
+
+    expect(request.identifier).toEqual({
+      identifierTypeCode: 'NATIONAL_ID',
+      identifierValue: 'X1234567L',
+      issuingCountryCode: 'ESP',
+    });
+    expect('entryReasonCode' in request).toBe(false);
   });
 
   it('maps the backend working time block into the frontend hire result', () => {

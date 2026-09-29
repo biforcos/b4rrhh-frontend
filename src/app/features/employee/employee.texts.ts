@@ -861,10 +861,19 @@ export const employeeTexts = {
   hireEmployeeTitle: 'Nueva contratación',
   hireEmployeeSubtitle:
     'Inicia el ciclo de vida de un nuevo empleado en el sistema de reglas seleccionado.',
-  hireEmployeeIdentitySectionTitle: 'Identidad del empleado',
-  hireEmployeeHiringSectionTitle: 'Datos de contratación',
-  hireEmployeeOrganizationSectionTitle: 'Contexto organizativo inicial',
-  hireEmployeeLaborSectionTitle: 'Contexto laboral inicial',
+  // Los grupos del alta se llaman como las areas de la ficha (`b4rrhh/frontend#90`), para que
+  // el alta y la ficha hablen igual (`b4rrhh/frontend#95`).
+  hireEmployeeRuleSystemHint: 'Todo lo demás depende de él: empieza por aquí.',
+  hireEmployeeIdentityTypeLabel: 'Documento',
+  hireEmployeeIdentityValueLabel: 'Número',
+  hireEmployeeIdentityValueHint:
+    'DNI o NIE con su letra. Con él se comprueba que no esté ya dado de alta.',
+  hireEmployeeOwnerOpenAction: 'Abrir su ficha',
+  hireEmployeeOwnerRehireAction: 'Readmitirlo',
+  hireEmployeeNeedsRuleSystem: 'Elige primero el sistema de reglas.',
+  hireEmployeeNeedsCompany: 'Elige primero la empresa: cada centro es de una empresa.',
+  hireEmployeeNeedsContractType: 'Elige primero el contrato.',
+  hireEmployeeNeedsAgreement: 'Elige primero el convenio.',
   hireEmployeeAction: 'Contratar empleado',
   hireEmployeeCancelAction: 'Cancelar',
   hireEmployeeSuccessMessage: 'Empleado contratado correctamente.',

@@ -10,7 +10,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   EmployeeHiringStore,
   HireEmployeeErrorCode,
@@ -20,7 +20,7 @@ import { GlobalMessageService } from '../../../data-access/employee-global-messa
 import { employeeTexts } from '../../../employee.texts';
 import { RuleSystemsService } from '../../../../../core/api/generated/api/rule-systems.service';
 import { CatalogsService } from '../../../../../core/api/generated/api/catalogs.service';
-import { startWith, take } from 'rxjs';
+import { map, startWith, take } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -29,6 +29,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { MessageModule } from 'primeng/message';
 import { HIRE_EMPLOYEE_DEFAULTS } from '../../../models/hire-employee.defaults';
+import { HireIdentifierOwner } from '../../../models/employee-hiring.model';
 import { formatLocalDate } from '../../../shared/utils/local-date-string.util';
 import { GlobalMessageRailComponent } from '../../../shell/components/global-message-rail.component';
 import {
@@ -38,6 +39,11 @@ import {
 import { DISPLAY_DATE_FORMAT } from '../../../../../shared/utils/local-date.util';
 import { B4IconComponent } from '../../../../../shared/ui/icon/b4-icon.component';
 import { describeFailure, toHttpFailure } from '../../../../../shared/utils/http-failure.util';
+
+/** El documento que se ofrece primero: el DNI, que es el de casi todos. */
+const HIRE_IDENTIFIER_DEFAULT_TYPE = 'NATIONAL_ID';
+
+type HireDependencyReasons = Record<string, string | null>;
 
 @Component({
   selector: 'app-hire-employee-page',
@@ -55,6 +61,7 @@ import { describeFailure, toHttpFailure } from '../../../../../shared/utils/http
     CardModule,
     MessageModule,
     GlobalMessageRailComponent,
+    RouterLink,
   ],
   templateUrl: './hire-employee-page.component.html',
   styleUrl: './hire-employee-page.component.scss',
@@ -74,15 +81,19 @@ export class HireEmployeePageComponent {
   protected readonly texts = employeeTexts;
   protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
 
+  // Sin motivo de entrada: un alta es una contratación, y el servidor la da por HIRING
+  // (`b4rrhh/backend#143`). El documento es obligatorio: es lo que impide dar de alta dos veces a
+  // la misma persona (`b4rrhh/backend#141`).
   readonly form = this.fb.group({
     ruleSystemCode: ['', Validators.required],
     firstName: ['', Validators.required],
     lastName1: ['', Validators.required],
     lastName2: [''],
     preferredName: [''],
+    identifierTypeCode: [HIRE_IDENTIFIER_DEFAULT_TYPE, Validators.required],
+    identifierValue: ['', Validators.required],
     hireDate: [new Date(), Validators.required],
     companyCode: ['', Validators.required],
-    entryReasonCode: ['', Validators.required],
     workCenterCode: ['', Validators.required],
     contractTypeCode: ['', Validators.required],
     contractSubtypeCode: [''],
@@ -97,7 +108,7 @@ export class HireEmployeePageComponent {
   // Options
   readonly ruleSystems = signal<any[]>([]);
   readonly companies = signal<any[]>([]);
-  readonly entryReasons = signal<any[]>([]);
+  readonly identifierTypes = signal<any[]>([]);
   readonly workCenters = signal<any[]>([]);
   readonly contractTypes = signal<any[]>([]);
   readonly contractSubtypes = signal<any[]>([]);
@@ -109,6 +120,8 @@ export class HireEmployeePageComponent {
   readonly hiring = this.hiringStore.hiring;
   readonly error = this.hiringStore.error;
   readonly result = this.hiringStore.result;
+  /** Quién tiene ya el documento, si el servidor se negó por eso (`b4rrhh/backend#141`). */
+  readonly identifierOwner = this.hiringStore.identifierOwner;
   readonly globalMessages = this.globalMessageService.messages;
   readonly globalMessageSummary = this.globalMessageService.summary;
   readonly globalMessageExpanded = this.globalMessageService.expanded;
@@ -120,10 +133,24 @@ export class HireEmployeePageComponent {
   );
   readonly submitDisabled = computed(() => this.hiring() || this.formStatus() !== 'VALID');
 
+  /**
+   * Por qué un campo está cerrado todavía (`b4rrhh/frontend#95`): el orden del formulario es el
+   * del dato, y lo que depende de otro no se abre hasta que ese otro tiene valor.
+   */
+  readonly blockedBy = toSignal(
+    this.form.valueChanges.pipe(
+      startWith(null),
+      map(() => this.dependencyReasons()),
+    ),
+    { initialValue: this.dependencyReasons() },
+  );
+
   constructor() {
     this.globalMessageService.reset();
     this.hiringStore.reset();
     this.loadInitialCatalogs();
+    this.syncDependentControls();
+    this.form.valueChanges.subscribe(() => this.syncDependentControls());
 
     effect((onCleanup) => {
       const messages = this.buildGlobalMessages();
@@ -237,9 +264,9 @@ export class HireEmployeePageComponent {
           ),
       });
     (this.catalogService as any)
-      .loadPresenceEntryReasonOptions(ruleSystemCode, referenceDate)
+      .loadIdentifierTypeOptions(ruleSystemCode, referenceDate)
       .subscribe({
-        next: (opts: any) => this.entryReasons.set([...opts]),
+        next: (opts: any) => this.identifierTypes.set([...opts]),
         error: (err: unknown) =>
           this.catalogError.set(
             describeFailure(this.texts.catalogLoadFailedMessage, toHttpFailure(err)),
@@ -318,7 +345,7 @@ export class HireEmployeePageComponent {
   private resetOptions() {
     this.workCenters.set([]);
     this.companies.set([]);
-    this.entryReasons.set([]);
+    this.identifierTypes.set([]);
     this.contractTypes.set([]);
     this.contractSubtypes.set([]);
     this.agreements.set([]);
@@ -332,10 +359,17 @@ export class HireEmployeePageComponent {
     }
 
     const val = this.form.getRawValue();
+    const identifierTypeCode = val.identifierTypeCode ?? HIRE_IDENTIFIER_DEFAULT_TYPE;
     const draft: any = {
       ...val,
       employeeTypeCode: HIRE_EMPLOYEE_DEFAULTS.employeeTypeCode,
       hireDate: formatLocalDate(val.hireDate as Date),
+      identifier: {
+        identifierTypeCode,
+        identifierValue: val.identifierValue ?? '',
+        // El DNI y el NIE son españoles por definición; de otro documento no se sabe el país.
+        issuingCountryCode: identifierTypeCode === HIRE_IDENTIFIER_DEFAULT_TYPE ? 'ESP' : null,
+      },
       workingTime: {
         workingTimePercentage: val.workingTimePercentage,
       },
@@ -347,6 +381,60 @@ export class HireEmployeePageComponent {
 
   onCancel() {
     this.router.navigate(['/personas/empleados']);
+  }
+
+  /** La ficha de quien ya tiene el documento. */
+  protected ownerRoute(owner: HireIdentifierOwner): string[] {
+    const { ruleSystemCode, employeeTypeCode, employeeNumber } = owner.employeeKey;
+    return ['/personas/empleados', ruleSystemCode, employeeTypeCode, employeeNumber];
+  }
+
+  /** Su readmisión, que es el camino bueno si está cesado. */
+  protected ownerRehireRoute(owner: HireIdentifierOwner): string[] {
+    return [...this.ownerRoute(owner), 'rehire'];
+  }
+
+  private dependencyReasons(): HireDependencyReasons {
+    const value = (name: string) => this.form.get(name)?.value;
+    const noRuleSystem = value('ruleSystemCode') ? null : this.texts.hireEmployeeNeedsRuleSystem;
+    return {
+      identifierTypeCode: noRuleSystem,
+      companyCode: noRuleSystem,
+      workCenterCode:
+        noRuleSystem ?? (value('companyCode') ? null : this.texts.hireEmployeeNeedsCompany),
+      contractTypeCode: noRuleSystem,
+      contractSubtypeCode:
+        noRuleSystem ??
+        (value('contractTypeCode') ? null : this.texts.hireEmployeeNeedsContractType),
+      agreementCode: noRuleSystem,
+      agreementCategoryCode:
+        noRuleSystem ?? (value('agreementCode') ? null : this.texts.hireEmployeeNeedsAgreement),
+    };
+  }
+
+  /**
+   * Cierra lo que depende de un campo vacío y abre lo que ya puede elegirse. Con el estado del
+   * control y no con `[disabled]` en la plantilla: en un formulario reactivo ese atributo no
+   * deshabilita nada, y por eso el centro se podía abrir antes que la empresa.
+   */
+  private syncDependentControls(): void {
+    const reasons = this.dependencyReasons();
+    let changed = false;
+    for (const [name, reason] of Object.entries(reasons)) {
+      const control = this.form.get(name);
+      if (!control) continue;
+      if (reason && control.enabled) {
+        control.disable({ emitEvent: false });
+        changed = true;
+      }
+      if (!reason && control.disabled) {
+        control.enable({ emitEvent: false });
+        changed = true;
+      }
+    }
+    // Abrir un campo vacío y obligatorio cambia la validez: que el botón se entere. La vuelta
+    // que esto provoca ya no cambia nada, así que no hay bucle.
+    if (changed) this.form.updateValueAndValidity();
   }
 
   protected toggleGlobalMessages(): void {
@@ -409,7 +497,11 @@ export class HireEmployeePageComponent {
 
   private mapErrorMessage(code: HireEmployeeErrorCode): string {
     if (code === 'already-exists') {
-      return this.texts.hireEmployeeConflictMessage;
+      // El servidor dice quién es («Este DNI ya es EMP000123…»): eso vale más que un genérico.
+      const failure = this.hiringStore.failure();
+      return failure?.serverMessage
+        ? describeFailure(this.texts.hireEmployeeErrorMessage, failure)
+        : this.texts.hireEmployeeConflictMessage;
     }
 
     if (code === 'invalid-catalog-value' || code === 'invalid-dependent-relation') {

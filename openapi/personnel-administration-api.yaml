@@ -165,7 +165,16 @@ paths:
         "404":
           description: Required catalog dependency not found (rule system, company, etc).
         "409":
-          description: Employee already exists.
+          description: >-
+            Employee already exists, or the identifier of the hire already belongs to another
+            employee of the rule system (`HIRE_IDENTIFIER_ALREADY_EXISTS`, b4rrhh/backend#141).
+            In that case `details` names the owner: `employeeTypeCode`, `employeeNumber`,
+            `active` and `ceasedOn` (the last day of his last presence, when ceased), so the
+            client can link to him and offer the rehire.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HireEmployeeErrorResponse"
         "422":
           description: Business validation failed (invalid catalog relation or distribution).
         default:
@@ -4556,7 +4565,10 @@ paths:
         - request `referenceDate` when provided
         - current date when omitted
         The `active` flag for each item is resolved against this effective date.
+        `name` comes in the language of `Accept-Language` when the option is translated,
+        and in the base literal otherwise (b4rrhh/backend#143).
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: query
           name: ruleSystemCode
           required: true
@@ -7989,7 +8001,7 @@ components:
         - firstName
         - lastName1
         - hireDate
-        - entryReasonCode
+        - identifier
         - companyCode
         - workCenterCode
         - contract
@@ -8020,9 +8032,15 @@ components:
         hireDate:
           type: string
           format: date
+        identifier:
+          $ref: "#/components/schemas/LifecycleIdentifierRequest"
         entryReasonCode:
           type: string
           maxLength: 30
+          description: >-
+            Optional. A hire is always a `HIRING` (b4rrhh/backend#143): when omitted it enters as
+            `HIRING`, and any other code is rejected with 422 `HIRE_ENTRY_REASON_NOT_HIRING`. A
+            former employee comes back through the rehire; `TRANSFER_IN` has no flow yet.
         companyCode:
           type: string
           maxLength: 30
@@ -8327,6 +8345,42 @@ components:
           $ref: "#/components/schemas/CreateCostCenterDistributionInWorkflowRequest"
         workingTime:
           $ref: "#/components/schemas/RehireEmployeeWorkingTimeRequest"
+        identifier:
+          allOf:
+            - $ref: "#/components/schemas/LifecycleIdentifierRequest"
+          description: >-
+            Optional. When it comes it must be the rehired employee's own: one of another
+            employee is rejected with 409 `REHIRE_IDENTIFIER_OF_ANOTHER_EMPLOYEE`, and so is a
+            different value of a type he already has. If he has none of that type it is kept.
+
+    LifecycleIdentifierRequest:
+      type: object
+      description: >-
+        The document that identifies the person (b4rrhh/backend#141). A hire keeps it as the
+        primary identifier and refuses it if another employee of the rule system already has
+        it, compared without case or spaces. `NATIONAL_ID` issued by `ESP` is checked as a DNI
+        or a NIE, letter included.
+      required:
+        - identifierTypeCode
+        - identifierValue
+      properties:
+        identifierTypeCode:
+          type: string
+          maxLength: 30
+          example: NATIONAL_ID
+        identifierValue:
+          type: string
+          maxLength: 120
+          example: 12345678Z
+        issuingCountryCode:
+          type: string
+          maxLength: 3
+          nullable: true
+          example: ESP
+        expirationDate:
+          type: string
+          format: date
+          nullable: true
 
     RehireEmployeeWorkingTimeRequest:
       type: object

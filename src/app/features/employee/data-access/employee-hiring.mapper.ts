@@ -19,7 +19,13 @@ export function mapDraftToHireRequest(draft: HireEmployeeDraft): HireEmployeeReq
     lastName2: draft.lastName2 || null,
     preferredName: draft.preferredName || null,
     hireDate: draft.hireDate,
-    entryReasonCode: draft.entryReasonCode,
+    // Sin motivo de entrada: un alta es una contratación, y el servidor la da por HIRING
+    // (`b4rrhh/backend#143`).
+    identifier: {
+      identifierTypeCode: draft.identifier.identifierTypeCode,
+      identifierValue: draft.identifier.identifierValue.trim().toUpperCase(),
+      issuingCountryCode: draft.identifier.issuingCountryCode,
+    },
     companyCode: draft.companyCode,
     workCenterCode: draft.workCenterCode,
     costCenterDistribution: draft.costCenterDistribution

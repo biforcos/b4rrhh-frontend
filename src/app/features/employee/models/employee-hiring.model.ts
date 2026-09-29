@@ -19,6 +19,24 @@ export interface HireEmployeeWorkingTimeResult {
   endDate: string | null;
 }
 
+/** El documento que identifica a la persona: el alta lo exige (`b4rrhh/backend#141`). */
+export interface HireEmployeeIdentifierDraft {
+  identifierTypeCode: string;
+  identifierValue: string;
+  issuingCountryCode: string | null;
+}
+
+/**
+ * Quién tiene ya el documento que se quería dar de alta (`b4rrhh/backend#141`): lo que la
+ * pantalla necesita para enlazar su ficha y, si está cesado, ofrecer la readmisión.
+ */
+export interface HireIdentifierOwner {
+  employeeKey: EmployeeBusinessKey;
+  active: boolean;
+  ceasedOn: string | null;
+  message: string;
+}
+
 export interface HireEmployeeDraft {
   ruleSystemCode: string;
   employeeTypeCode?: string;
@@ -27,7 +45,7 @@ export interface HireEmployeeDraft {
   lastName2: string;
   preferredName: string;
   hireDate: string;
-  entryReasonCode: string;
+  identifier: HireEmployeeIdentifierDraft;
   companyCode: string;
   workCenterCode: string;
   contractTypeCode: string;
