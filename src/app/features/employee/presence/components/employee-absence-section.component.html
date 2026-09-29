@@ -6,7 +6,10 @@
     (addClicked)="startDeclare()"
   />
 
-  <p class="employee-absence-section__subtitle">{{ texts.absencesSectionSubtitle }}</p>
+  <p class="employee-absence-section__subtitle">
+    {{ texts.absencesSectionSubtitle }}
+    <app-ui-more>{{ texts.absencesSectionSubtitleMore }}</app-ui-more>
+  </p>
 
   <div class="employee-absence-section__body">
     <!--
@@ -59,9 +62,10 @@
                 (change)="updateDraftEntitlement($any($event.target).checked)"
               />
               <span>{{ texts.absencesEntitlementLabel }}</span>
-              <small class="employee-absence-section__hint">{{
-                texts.absencesEntitlementHint
-              }}</small>
+              <small class="employee-absence-section__hint"
+                >{{ texts.absencesEntitlementHint }}
+                <app-ui-more>{{ texts.absencesEntitlementHintMore }}</app-ui-more></small
+              >
             </label>
           }
         </div>

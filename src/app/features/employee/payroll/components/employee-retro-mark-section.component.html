@@ -5,7 +5,10 @@
   -->
   <app-section-heading [title]="texts.retroMarksSectionTitle" />
 
-  <p class="employee-retro-mark-section__subtitle">{{ texts.retroMarksSectionSubtitle }}</p>
+  <p class="employee-retro-mark-section__subtitle">
+    {{ texts.retroMarksSectionSubtitle }}
+    <app-ui-more>{{ texts.retroMarksSectionSubtitleMore }}</app-ui-more>
+  </p>
 
   <div class="employee-retro-mark-section__body">
     @if (hasRows()) {

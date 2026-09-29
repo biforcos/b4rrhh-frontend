@@ -221,8 +221,10 @@ export const employeeTexts = {
   // ausencia, se CIERRA la que está abierta, se CORRIGE EL FIN de la que ya lo tiene. «Editar» no
   // aparece, porque de una ausencia no se edita todo: el tipo y el día en que empieza son su clave.
   absencesSectionTitle: 'Ausencias',
-  absencesSectionSubtitle:
-    'Vacaciones, permisos y bajas. La baja por enfermedad común y el permiso no retribuido quitan días de la nómina; los demás tipos se cobran enteros.',
+  // Una línea a la vista y el porqué detrás del «?» (b4rrhh/frontend#108).
+  absencesSectionSubtitle: 'Vacaciones, permisos y bajas.',
+  absencesSectionSubtitleMore:
+    'La baja por enfermedad común y el permiso no retribuido quitan días de la nómina; los demás tipos se cobran enteros.',
   absencesDeclareAction: 'Declarar ausencia',
   absencesTypeLabel: 'Tipo de ausencia',
   absencesTypePlaceholder: 'Elige el tipo',
@@ -230,8 +232,8 @@ export const employeeTexts = {
   absencesEndDateLabel: 'Último día',
   absencesEndDateHint: 'En blanco, la ausencia queda sin cerrar.',
   absencesEntitlementLabel: 'Con derecho a prestación',
-  absencesEntitlementHint:
-    'Lo dice la resolución del INSS: 180 días cotizados en cinco años. Sin derecho, la baja quita días y no paga prestación.',
+  absencesEntitlementHint: 'Lo dice la resolución del INSS: 180 días cotizados en cinco años.',
+  absencesEntitlementHintMore: 'Sin derecho, la baja quita días y no paga prestación.',
   absencesEntitledLabel: 'Con derecho a prestación',
   absencesNotEntitledLabel: 'Sin derecho a prestación',
   absencesSaveDeclareAction: 'Declarar',
@@ -261,7 +263,9 @@ export const employeeTexts = {
   // por qué (ADR-010, ADR-016).
   retroMarksSectionTitle: 'Correcciones a meses ya entregados',
   retroMarksSectionSubtitle:
-    'Cada vez que se escribe algo con fecha dentro de un mes con recibo entregado queda una fila aquí. El cálculo del mes abierto las recoge y paga la diferencia como atraso.',
+    'El cálculo del mes abierto las recoge y paga la diferencia como atraso.',
+  retroMarksSectionSubtitleMore:
+    'Cada vez que se escribe algo con fecha dentro de un mes con recibo entregado queda una fila aquí.',
   retroMarksEmptyMessage: 'A este empleado no se le ha tocado ningún mes ya entregado.',
   retroMarksBusyMessage: 'Procesando cambios...',
   retroMarksOriginLabel: 'Recalcula desde',
@@ -278,7 +282,7 @@ export const employeeTexts = {
   retroMarksCancelAction: 'Cancelar',
   retroMarksDiscardReasonLabel: 'Por qué no se paga',
   retroMarksDiscardReasonHint:
-    'Obligatorio. La fila no se borra: se queda con este motivo y con quién lo decidió, para que el recibo pueda contar que la corrección se conocía.',
+    'Obligatorio. La fila no se borra: se queda con este motivo y con quién lo decidió.',
   retroMarksNotActiveMessage:
     'Esa corrección ya no está pendiente: entre medias se pagó o alguien la descartó. Recarga la ficha para ver en qué quedó.',
   retroMarksNotFoundMessage: 'Esa corrección ya no existe.',

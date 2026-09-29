@@ -20,6 +20,7 @@ import {
 } from '../../models/employee-retro-mark.model';
 import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/section-heading.component';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { PayrollPeriod } from '../../../../shared/utils/payroll-period.util';
 import { EmployeeOtherMonthsComponent } from './employee-other-months.component';
 
@@ -50,7 +51,13 @@ import { EmployeeOtherMonthsComponent } from './employee-other-months.component'
 @Component({
   selector: 'app-employee-retro-mark-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, SectionHeadingComponent, UiButtonComponent, EmployeeOtherMonthsComponent],
+  imports: [
+    DatePipe,
+    SectionHeadingComponent,
+    UiButtonComponent,
+    UiMoreComponent,
+    EmployeeOtherMonthsComponent,
+  ],
   templateUrl: './employee-retro-mark-section.component.html',
   styleUrl: './employee-retro-mark-section.component.scss',
 })

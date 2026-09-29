@@ -22,6 +22,7 @@ import { SectionHeadingComponent } from '../../../../shared/ui/section-heading/s
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
+import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { currentLocalDate, formatDisplayDate } from '../../../../shared/utils/local-date.util';
@@ -75,6 +76,7 @@ interface AbsenceDraft {
   imports: [
     SectionHeadingComponent,
     UiButtonComponent,
+    UiMoreComponent,
     UiDateInputComponent,
     UiSelectComponent,
     FormsModule,
