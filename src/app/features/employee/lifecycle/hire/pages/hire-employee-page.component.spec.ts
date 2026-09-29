@@ -28,6 +28,8 @@ class MockEmployeeHiringStore {
   readonly result = this.resultState.asReadonly();
 
   readonly hire = vi.fn();
+  readonly checkIdentifierOwner = vi.fn();
+  readonly forgetIdentifierOwner = vi.fn();
   readonly reset = vi.fn(() => {
     this.hiringState.set(false);
     this.errorState.set(null);
@@ -365,6 +367,94 @@ describe('HireEmployeePageComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('[data-testid="hire-identifier-owner-open"]')).not.toBeNull();
     expect(root.querySelector('[data-testid="hire-identifier-owner-rehire"]')).toBeNull();
+  });
+
+  /**
+   * El documento se comprueba al salir del campo, no al final (`b4rrhh/frontend#106`). El dueño
+   * que devuelve la consulta se enseña debajo del campo en ese momento, y mientras lo tenga
+   * «Contratar» está apagado: el motivo va en el control, como los campos cerrados del #95.
+   */
+  describe('the identity document is checked when leaving the field', () => {
+    const OWNER = {
+      employeeKey: {
+        ruleSystemCode: 'ESP',
+        employeeTypeCode: 'INTERNAL',
+        employeeNumber: 'EMP000002',
+      },
+      active: false,
+      ceasedOn: '2024-11-07',
+      message: 'Este DNI ya es EMP000002 (cesado el 07/11/2024)',
+    };
+
+    function submitButton(): HTMLButtonElement | undefined {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((button) => (button.textContent ?? '').includes(employeeTexts.hireEmployeeAction));
+    }
+
+    it('asks who owns it on blur, with the rule system, the type and the value', () => {
+      component.form.patchValue({ ruleSystemCode: 'ESP', identifierValue: '00000002W' });
+      fixture.detectChanges();
+
+      const input = (fixture.nativeElement as HTMLElement).querySelector(
+        '#identifierValue',
+      ) as HTMLInputElement;
+      input.dispatchEvent(new Event('blur'));
+
+      expect(hiringStore.checkIdentifierOwner).toHaveBeenCalledWith(
+        'ESP',
+        'NATIONAL_ID',
+        '00000002W',
+      );
+    });
+
+    it('with an owner, shows him under the field and keeps «Contratar» off, the rest empty', () => {
+      component.form.patchValue({ ruleSystemCode: 'ESP', identifierValue: '00000002W' });
+      hiringStore.identifierOwnerState.set(OWNER);
+      fixture.detectChanges();
+
+      const owner = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="hire-identifier-owner"]',
+      );
+      expect(owner?.textContent).toContain('Este DNI ya es EMP000002 (cesado el 07/11/2024)');
+      expect(component.form.controls.identifierValue.hasError('identifierOwned')).toBe(true);
+      expect(submitButton()?.disabled).toBe(true);
+    });
+
+    it('with an owner, «Contratar» stays off even with everything else filled in', () => {
+      fillValidForm();
+      hiringStore.identifierOwnerState.set(OWNER);
+      fixture.detectChanges();
+
+      expect(component.submitDisabled()).toBe(true);
+    });
+
+    it('a free document leaves «Contratar» to its usual rule', () => {
+      fillValidForm();
+      hiringStore.identifierOwnerState.set(OWNER);
+      fixture.detectChanges();
+      hiringStore.identifierOwnerState.set(null);
+      fixture.detectChanges();
+
+      expect(component.form.controls.identifierValue.hasError('identifierOwned')).toBe(false);
+      expect(component.submitDisabled()).toBe(false);
+    });
+
+    it('changing the value forgets the owner, and changing the type asks again', () => {
+      component.form.patchValue({ ruleSystemCode: 'ESP', identifierValue: '00000002W' });
+      hiringStore.forgetIdentifierOwner.mockClear();
+      hiringStore.checkIdentifierOwner.mockClear();
+
+      component.form.controls.identifierValue.setValue('00000003A');
+      expect(hiringStore.forgetIdentifierOwner).toHaveBeenCalled();
+
+      component.form.controls.identifierTypeCode.setValue('PASSPORT');
+      expect(hiringStore.checkIdentifierOwner).toHaveBeenLastCalledWith(
+        'ESP',
+        'PASSPORT',
+        '00000003A',
+      );
+    });
   });
 
   function fillValidForm(): void {

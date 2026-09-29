@@ -25,13 +25,17 @@ export class EmployeeHiringStore {
   private readonly failureState = signal<HttpFailure | null>(null);
   private readonly resultState = signal<HireEmployeeResult | null>(null);
   private readonly identifierOwnerState = signal<HireIdentifierOwner | null>(null);
+  private ownerRequestId = 0;
 
   readonly hiring = this.hiringState.asReadonly();
   readonly error = this.errorState.asReadonly();
   /** Lo que se sabe del último fallo, para contarlo y no sólo clasificarlo (`b4rrhh/frontend#92`). */
   readonly failure = this.failureState.asReadonly();
   readonly result = this.resultState.asReadonly();
-  /** El empleado que ya tiene el documento del alta, cuando el servidor se ha negado por eso. */
+  /**
+   * El empleado que ya tiene el documento del alta: el que dice la consulta al salir del campo
+   * (`b4rrhh/frontend#106`) o el que nombra el 409 si el servidor se niega de todos modos.
+   */
   readonly identifierOwner = this.identifierOwnerState.asReadonly();
 
   hire(draft: HireEmployeeDraft): void {
@@ -42,6 +46,8 @@ export class EmployeeHiringStore {
     this.failureState.set(null);
     this.resultState.set(null);
     this.identifierOwnerState.set(null);
+    // Una consulta del dueño en vuelo ya no manda: lo que diga el alta gana.
+    this.ownerRequestId++;
 
     this.gateway
       .hire(draft)
@@ -60,6 +66,43 @@ export class EmployeeHiringStore {
       });
   }
 
+  /**
+   * Pregunta de quién es el documento en cuanto se sale del campo (`b4rrhh/frontend#106`). Es
+   * cortesía, no garantía: si la consulta falla no se dice nada, y el 409 del alta sigue siendo lo
+   * que impide dar dos veces a la misma persona. La respuesta que llega tarde se tira.
+   */
+  checkIdentifierOwner(
+    ruleSystemCode: string,
+    identifierTypeCode: string,
+    identifierValue: string,
+  ): void {
+    const requestId = ++this.ownerRequestId;
+    const value = identifierValue.trim();
+    if (!ruleSystemCode || !identifierTypeCode || !value) {
+      this.identifierOwnerState.set(null);
+      return;
+    }
+    this.gateway
+      .findIdentifierOwner(ruleSystemCode, identifierTypeCode, value)
+      .pipe(take(1))
+      .subscribe({
+        next: (owner) => {
+          if (requestId !== this.ownerRequestId) return;
+          this.identifierOwnerState.set(owner);
+        },
+        error: () => {
+          if (requestId !== this.ownerRequestId) return;
+          this.identifierOwnerState.set(null);
+        },
+      });
+  }
+
+  /** El valor cambió: el dueño que había ya no es de este documento, y lo que esté en vuelo tampoco. */
+  forgetIdentifierOwner(): void {
+    this.ownerRequestId++;
+    this.identifierOwnerState.set(null);
+  }
+
   private mapError(error: any): HireEmployeeErrorCode {
     if (error.status === 409) return 'already-exists';
     if (error.status === 422) return 'invalid-catalog-value';
@@ -67,6 +110,7 @@ export class EmployeeHiringStore {
   }
 
   reset(): void {
+    this.ownerRequestId++;
     this.hiringState.set(false);
     this.errorState.set(null);
     this.failureState.set(null);

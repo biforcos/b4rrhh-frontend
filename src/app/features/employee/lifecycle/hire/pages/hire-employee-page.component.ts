@@ -181,6 +181,20 @@ export class HireEmployeePageComponent {
       }
     });
 
+    // El documento se comprueba al salir del campo, no al final (`b4rrhh/frontend#106`). Un valor
+    // nuevo olvida al dueño del anterior; un tipo nuevo vuelve a preguntar.
+    this.form.controls.identifierValue.valueChanges.subscribe(() =>
+      this.hiringStore.forgetIdentifierOwner(),
+    );
+    this.form.controls.identifierTypeCode.valueChanges.subscribe(() => this.checkIdentifierOwner());
+
+    // Mientras el documento tenga dueño, el control es inválido y «Contratar» se apaga solo: el
+    // motivo va en el control, como los campos cerrados del #95, y la plantilla lo cuenta debajo.
+    effect(() => {
+      const owned = this.identifierOwner() !== null;
+      untracked(() => this.markIdentifierOwned(owned));
+    });
+
     this.form.get('ruleSystemCode')?.valueChanges.subscribe((rs: any) => {
       if (rs) {
         this.loadDependentCatalogs(rs);
@@ -380,6 +394,28 @@ export class HireEmployeePageComponent {
 
   onCancel() {
     this.router.navigate(['/personas/empleados']);
+  }
+
+  /** Pregunta de quién es el documento escrito, si hay con qué preguntar. */
+  protected checkIdentifierOwner(): void {
+    const { ruleSystemCode, identifierTypeCode, identifierValue } = this.form.getRawValue();
+    this.hiringStore.checkIdentifierOwner(
+      ruleSystemCode ?? '',
+      identifierTypeCode ?? '',
+      identifierValue ?? '',
+    );
+  }
+
+  private markIdentifierOwned(owned: boolean): void {
+    const control = this.form.controls.identifierValue;
+    if (owned === control.hasError('identifierOwned')) return;
+    if (owned) {
+      control.setErrors({ ...control.errors, identifierOwned: true });
+      return;
+    }
+    // Quitar sólo el nuestro: los validadores vuelven a decir lo suyo.
+    control.updateValueAndValidity({ emitEvent: false });
+    this.form.updateValueAndValidity();
   }
 
   /** La ficha de quien ya tiene el documento. */
