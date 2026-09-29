@@ -1,4 +1,12 @@
-/* Lista maestra de recibos: papel, como la lista de empleados del canvas. */
+/*
+ * Lista maestra de recibos: papel, como la lista de empleados del canvas.
+ *
+ * Pegada arriba con el alto de la ventana, como el lateral (app-shell, frontend#53): los filtros
+ * arriba, las filas con su propio scroll y el pie con el total y el paginador siempre a la vista
+ * (frontend#103). Sin esto la columna crecia con sus cincuenta filas y el pie se iba al final del
+ * documento. `align-self` impide que el flex de la pagina la estire, que sin margen sobrante no
+ * hay donde pegarse.
+ */
 .list-panel {
   width: 300px;
   border-right: 1px solid var(--border-default);
@@ -6,6 +14,10 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
 }
 
 .filters {
@@ -73,9 +85,12 @@ select:focus-visible {
   border-color: var(--accent-primary-hover);
 }
 
+/* El unico que se desplaza de la columna. `min-height: 0` porque un elemento flex no baja de su
+   contenido por defecto, y sin eso las filas empujan al pie fuera de la ventana. */
 .results {
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 /* Desde frontend#64 la fila es un <a>: se le quita el aspecto de enlace, no el ser enlace. */
@@ -164,6 +179,7 @@ select:focus-visible {
 }
 
 .list-footer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;

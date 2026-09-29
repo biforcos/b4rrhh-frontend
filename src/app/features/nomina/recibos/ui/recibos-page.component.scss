@@ -1,7 +1,9 @@
+/* `clip` y no `hidden`: recorta igual sin hacerse contenedor de scroll, que dejaria muerto el
+   `sticky` de la lista (frontend#103). */
 .page-layout {
   display: flex;
   height: 100%;
-  overflow: hidden;
+  overflow: clip;
   font-size: 13px;
 }
 
