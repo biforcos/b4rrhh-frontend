@@ -96,8 +96,8 @@ export class EmployeePayrollLaunchStore {
         this.stateSignal.set({
           kind: 'blocked',
           reason:
-            `${label} ya está cerrado para ${key.employeeNumber}: no se vuelve a calcular. ` +
-            'Lo que cambie irá como atraso en el mes siguiente.',
+            `${label} ya está cerrado para ${key.employeeNumber}: ` +
+            'lo que cambie irá como atraso en el mes siguiente.',
         });
         return;
       }

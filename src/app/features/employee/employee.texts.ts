@@ -120,19 +120,20 @@ export const employeeTexts = {
   monthNavigatorLabel: 'Mes',
   monthNavigatorAriaLabel: 'Mes del que habla la página',
   otherMonthsLabel: 'También en:',
-  // Una vigencia nueva igual a la que está en vigor (frontend#94). `{desde}` es su fecha.
+  // Una vigencia nueva igual a la que está en vigor (frontend#94). `{desde}` es su fecha. Una línea
+  // (frontend#108): que se puede guardar igual lo dice el botón, que sigue ahí.
   workingTimeSectionSameAsInForceMessage:
-    'Esta jornada es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Esta jornada es igual a la que está en vigor desde el {desde}: guardarla solo parte el tramo en dos.',
   contractSectionSameAsInForceMessage:
-    'Este contrato es igual al que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Este contrato es igual al que está en vigor desde el {desde}: guardarlo solo parte el tramo en dos.',
   laborClassificationSectionSameAsInForceMessage:
-    'Esta clasificación es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Esta clasificación es igual a la que está en vigor desde el {desde}: guardarla solo parte el tramo en dos.',
   workCenterSectionSameAsInForceMessage:
-    'Este centro es el mismo que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Este centro es el mismo que está en vigor desde el {desde}: guardarlo solo parte el tramo en dos.',
   extraPaymentRegimeSectionSameAsInForceMessage:
-    'Este régimen de pagas es igual al que está en vigor desde el {desde}: guardarlo no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Este régimen de pagas es igual al que está en vigor desde el {desde}: guardarlo solo parte el tramo en dos.',
   costCenterSectionSameAsInForceMessage:
-    'Esta distribución es igual a la que está en vigor desde el {desde}: guardarla no cambia el cálculo y parte en dos lo que era un solo tramo. Se puede guardar igual.',
+    'Esta distribución es igual a la que está en vigor desde el {desde}: guardarla solo parte el tramo en dos.',
   absencesEmptyInMonthMessage: 'Ninguna ausencia toca este mes.',
   retroMarksEmptyInMonthMessage: 'Ninguna corrección va a este mes ni se pagó en él.',
   organizationCostCenterAreaLabel: 'Cost center',
@@ -243,7 +244,7 @@ export const employeeTexts = {
   absencesDeleteAction: 'Borrar',
   absencesCancelAction: 'Cancelar',
   absencesConfirmDeleteMessage:
-    'Se borra la ausencia entera. Si lo que está mal es el día en que empezó, ésta es la forma de arreglarlo: bórrala y vuelve a declararla.',
+    'Se borra la ausencia entera. Si falla el día de inicio, bórrala y vuelve a declararla.',
   absencesConfirmDeleteAction: 'Confirmar borrado',
   absencesEmptyMessage: 'Este empleado no tiene ausencias registradas.',
   absencesBusyMessage: 'Procesando cambios...',
@@ -876,8 +877,7 @@ export const employeeTexts = {
   currentEmployeeLabel: 'Employee number',
   placeholderMessage: 'This section is intentionally minimal and ready for OpenAPI integration.',
   hireEmployeeTitle: 'Nueva contratación',
-  hireEmployeeSubtitle:
-    'Inicia el ciclo de vida de un nuevo empleado en el sistema de reglas seleccionado.',
+  hireEmployeeSubtitle: 'Da de alta a un empleado nuevo.',
   // Los grupos del alta se llaman como las areas de la ficha (`b4rrhh/frontend#90`), para que
   // el alta y la ficha hablen igual (`b4rrhh/frontend#95`).
   hireEmployeeRuleSystemHint: 'Todo lo demás depende de él: empieza por aquí.',
@@ -910,7 +910,7 @@ export const employeeTexts = {
   hireEmployeeSummaryWorkingTimeTitle: 'Jornada creada',
   hireEmployeeSummarySincePrefix: 'Desde',
   rehireEmployeeTitle: 'Recontratar empleado',
-  rehireEmployeeSubtitle: 'Reapertura del ciclo laboral para un empleado existente.',
+  rehireEmployeeSubtitle: 'Vuelve a dar de alta a un empleado que ya estuvo.',
   rehireEmployeeDataSectionTitle: 'Datos de reincorporación',
   rehireEmployeeOrganizationSectionTitle: 'Contexto organizativo inicial',
   rehireEmployeeLaborSectionTitle: 'Contexto laboral inicial',
