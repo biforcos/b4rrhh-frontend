@@ -1,0 +1,47 @@
+:host {
+  display: inline;
+}
+
+/* Un círculo pequeño a continuación de la línea: se ve que hay más, y no compite con ella. */
+.ui-more__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: text-top;
+  cursor: pointer;
+}
+
+.ui-more__toggle:hover {
+  background: var(--surface-hover);
+}
+
+.ui-more__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.ui-more__toggle[aria-expanded='true'] {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Debajo de la línea, con su mismo tono. */
+.ui-more__body {
+  display: block;
+  margin-top: 4px;
+}
+
+.ui-more__body[hidden] {
+  display: none;
+}
