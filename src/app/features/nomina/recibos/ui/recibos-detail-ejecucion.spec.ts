@@ -53,6 +53,8 @@ describe('El recibo dice cuándo se calculó y de qué ejecución salió', () =>
         {
           provide: RecibosStore,
           useValue: {
+            // La marca de presencia busca hermanas en la lista (frontend#104): vacía.
+            payrolls: signal([]),
             selectedPayroll,
             runId: run,
             rulesChanged: signal(false),

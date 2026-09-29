@@ -55,6 +55,8 @@ describe('Volver a la pestaña del recibo', () => {
         {
           provide: RecibosStore,
           useValue: {
+            // La marca de presencia busca hermanas en la lista (frontend#104): vacía.
+            payrolls: signal([]),
             selectedPayroll: signal<PayrollSummaryModel | null>({
               ...KEY,
               status,

@@ -103,7 +103,8 @@ describe('La lista de recibos filtrada por un empleado', () => {
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('EMP000001');
-    expect(texto).toContain('presencia 2');
+    // Como marca desde el frontend#104: la presencia 2 dice algo y se dice.
+    expect(texto).toContain('2.ª presencia');
   });
 
   /** Sin número en la dirección no se busca: la pantalla abre como siempre, esperando. */

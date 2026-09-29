@@ -6,6 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
 import { RecibosFilters } from '../models/recibos-filters.model';
 import { PayrollSummaryModel } from '../models/payroll-summary.model';
+import { marcaDePresencia } from '../format/presencia.format';
 import {
   arePayrollBusinessKeysEqual,
   buildPayrollDetailRouteCommands,
@@ -83,9 +84,12 @@ const STATUS_LABELS: Record<string, string> = {
                 statusLabel(payroll.status)
               }}</span>
             </div>
+            <!-- La presencia sólo cuando distingue algo, y como marca (frontend#104). -->
             <div class="row-sub">
-              {{ payroll.payrollPeriodCode }} · {{ payroll.payrollTypeCode }} · presencia
-              {{ payroll.presenceNumber }}
+              {{ payroll.payrollPeriodCode }} · {{ payroll.payrollTypeCode }}
+              @if (marcaDePresencia(payroll); as marca) {
+                <span class="presence-mark">{{ marca }}</span>
+              }
             </div>
           </a>
         }
@@ -222,6 +226,10 @@ export class RecibosListComponent {
 
   routeCommands(payroll: PayrollSummaryModel): ReadonlyArray<string | number> {
     return buildPayrollDetailRouteCommands(payroll);
+  }
+
+  marcaDePresencia(payroll: PayrollSummaryModel): string | null {
+    return marcaDePresencia(payroll, this.store.payrolls());
   }
 
   isSelected(payroll: PayrollSummaryModel): boolean {

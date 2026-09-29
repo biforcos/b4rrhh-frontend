@@ -55,6 +55,8 @@ describe('La marca de reglas cambiadas', () => {
         {
           provide: RecibosStore,
           useValue: {
+            // La marca de presencia busca hermanas en la lista (frontend#104): vacía.
+            payrolls: signal([]),
             selectedPayroll,
             runId: signal(1),
             rulesChanged: signal(rulesChanged),

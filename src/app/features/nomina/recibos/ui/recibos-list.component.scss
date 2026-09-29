@@ -137,6 +137,19 @@ select:focus-visible {
   margin-top: 3px;
 }
 
+/* La presencia, sólo cuando distingue algo (frontend#104): una marca, no texto corrido. */
+.presence-mark {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
 /* Estado del recibo: un triplete por estado, ninguno fuera del sistema. */
 .status-badge {
   padding: 2px 8px;

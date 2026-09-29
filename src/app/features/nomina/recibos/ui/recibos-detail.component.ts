@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RecibosStore } from '../store/recibos.store';
+import { marcaDePresencia } from '../format/presencia.format';
+import { PayrollSummaryModel } from '../models/payroll-summary.model';
 import { readPayrollBusinessKeyFromParamMap } from '../routing/payroll-route-key.util';
 import { RecibosFolioComponent } from './recibos-folio.component';
 import { RecibosValorizacionPanelComponent } from './recibos-valorizacion-panel.component';
@@ -45,6 +47,13 @@ const STATUS_LABELS: Record<string, string> = {
           <span class="status-badge" [class]="'badge-' + payroll.status.toLowerCase()">
             {{ statusLabel(payroll.status) }}
           </span>
+          <!--
+            La misma marca que la fila de la lista, en el mismo caso (frontend#104): la cabecera es
+            donde se acaba mirando. Las hermanas se buscan entre los recibos de la lista.
+          -->
+          @if (marcaDePresencia(payroll); as marca) {
+            <span class="presence-mark">{{ marca }}</span>
+          }
 
           <!--
             Cuando se calculo y de que ejecucion salio (frontend#69). Los dos datos llevaban
@@ -473,6 +482,10 @@ export class RecibosDetailComponent {
       );
       this.store.selectPayroll(key);
     });
+  }
+
+  marcaDePresencia(payroll: PayrollSummaryModel): string | null {
+    return marcaDePresencia(payroll, this.store.payrolls());
   }
 
   statusLabel(status: string): string {

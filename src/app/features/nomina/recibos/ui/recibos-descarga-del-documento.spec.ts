@@ -62,6 +62,8 @@ describe('Descargar el documento desde la pantalla del recibo', () => {
         {
           provide: RecibosStore,
           useValue: {
+            // La marca de presencia busca hermanas en la lista (frontend#104): vacía.
+            payrolls: signal([]),
             selectedPayroll: signal<PayrollSummaryModel | null>({
               ...KEY,
               status,
