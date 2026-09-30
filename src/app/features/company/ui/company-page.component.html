@@ -46,10 +46,12 @@
           (submitted)="onFormSubmit($event)"
           (cancelled)="onFormCancel()"
         />
-        <app-display-name-format-card [ruleSystemCode]="store.selectedKey()!.ruleSystemCode" />
-        <app-employee-numbering-config-card
-          [ruleSystemCode]="store.selectedKey()!.ruleSystemCode"
-        />
+        <!-- Configuran el sistema de reglas de una empresa que ya existe: en alta no hay
+             selección y no salen (b4rrhh/frontend#116). -->
+        @if (store.selectedKey(); as key) {
+          <app-display-name-format-card [ruleSystemCode]="key.ruleSystemCode" />
+          <app-employee-numbering-config-card [ruleSystemCode]="key.ruleSystemCode" />
+        }
       }
     } @else {
       <app-section-card [title]="texts.detailPanelTitle">
