@@ -144,11 +144,7 @@
           <p class="rehire-working-time-hint">{{ texts.rehireEmployeeWorkingTimeHint }}</p>
 
           @if (workingTimePercentageError(); as errorMessage) {
-            <p-message
-              severity="error"
-              [text]="errorMessage"
-              styleClass="rehire-working-time-feedback"
-            />
+            <p-message severity="error" [text]="errorMessage" />
           }
 
           @if (workingTimePreview(); as preview) {

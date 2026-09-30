@@ -38,7 +38,7 @@
   <form [formGroup]="form" class="grid">
     <!-- La persona: quién es, y el documento que dice que no está ya dada de alta -->
     <div class="col-12 lg:col-6">
-      <p-card [header]="texts.personAreaLabel" class="h-full">
+      <p-card [header]="texts.personAreaLabel" class="hire-employee-area">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="ruleSystemCode">{{ texts.detailHeaderRuleSystemLabel }} *</label>
@@ -132,7 +132,7 @@
 
     <!-- La relación: en el orden del dato, sistema → empresa → centro → contrato → convenio -->
     <div class="col-12 lg:col-6">
-      <p-card [header]="texts.relationAreaLabel" class="h-full">
+      <p-card [header]="texts.relationAreaLabel" class="hire-employee-area">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
             <label for="hireDate">{{ texts.employeePageHeaderHireDateLabel }} *</label>
@@ -278,11 +278,7 @@
             <p class="hire-working-time-hint">{{ texts.hireEmployeeWorkingTimeHint }}</p>
 
             @if (workingTimePercentageError(); as errorMessage) {
-              <p-message
-                severity="error"
-                [text]="errorMessage"
-                styleClass="hire-working-time-feedback"
-              />
+              <p-message severity="error" [text]="errorMessage" />
             }
 
             @if (workingTimePreview(); as preview) {
@@ -314,11 +310,7 @@
 
     @if (result(); as result) {
       <div class="col-12 mt-4">
-        <p-card
-          [header]="texts.hireEmployeeSummaryTitle"
-          styleClass="hire-summary"
-          data-testid="hire-result-summary"
-        >
+        <p-card [header]="texts.hireEmployeeSummaryTitle" data-testid="hire-result-summary">
           <div class="hire-summary__grid">
             <div class="hire-summary__row">
               <span class="hire-summary__label">{{ texts.hireEmployeeSummaryEmployeeLabel }}</span>
