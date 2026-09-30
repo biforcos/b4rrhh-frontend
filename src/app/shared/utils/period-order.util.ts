@@ -6,7 +6,8 @@ import { currentLocalDate } from './local-date.util';
  * período (frontend#110).
  *
  * La regla no es «por fecha»: es «lo que importa ahora, arriba». Primero lo que rige hoy, luego lo
- * previsto, luego lo cerrado; dentro de cada grupo, por fecha de inicio descendente.
+ * previsto, luego lo cerrado. Dentro de lo previsto, por fecha de inicio ascendente (lo próximo
+ * primero); dentro de lo vigente y lo cerrado, descendente.
  *
  * Vive aquí una sola vez. Antes estaba copiada en tres gateways y el cuarto (presencia)
  * nunca recibió la copia, así que la ficha enseñaba una tabla al revés que las otras. Los
@@ -54,7 +55,11 @@ export function compareByTimelineRecency<T extends TimelinePeriod>(
     return standingOrder;
   }
 
-  const startDateOrder = right.startDate.localeCompare(left.startDate);
+  // Entre previstas manda la próxima; en los demás grupos, la más reciente.
+  const startDateOrder =
+    periodStanding(left, today) === 'PLANNED'
+      ? left.startDate.localeCompare(right.startDate)
+      : right.startDate.localeCompare(left.startDate);
   if (startDateOrder !== 0) {
     return startDateOrder;
   }

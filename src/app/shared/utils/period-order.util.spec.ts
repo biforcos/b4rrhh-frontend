@@ -119,4 +119,16 @@ describe('el orden con lo previsto', () => {
       'cerrada-vieja',
     ]);
   });
+
+  it('entre dos previstas, la más próxima arriba', () => {
+    const periods = [
+      { name: 'prevista-proxima', startDate: '2026-10-08', endDate: '2026-11-30' },
+      { name: 'prevista-lejana', startDate: '2026-12-01', endDate: null },
+    ];
+
+    expect(sortByTimelineRecency(periods, undefined, HOY).map((p) => p.name)).toEqual([
+      'prevista-proxima',
+      'prevista-lejana',
+    ]);
+  });
 });
