@@ -20,6 +20,7 @@
     "lint:unmounted": "node ./tools/lint-unmounted-components.mjs",
     "lint:raw-dates": "node ./tools/lint-raw-dates.mjs",
     "lint:unimported": "node ./tools/lint-unimported-files.mjs",
+    "lint:client-location": "node ./tools/lint-client-location.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",

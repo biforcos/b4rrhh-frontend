@@ -105,6 +105,9 @@ jobs:
           # tumba el build si a un .ts de src/app no se llega desde main.ts por
           # ningun import. Es el hermano de lint:unmounted para lo que no es
           # componente: modelos, utilidades, mappers, textos.
+          # lint:client-location es el del sitio de los clientes (#122): tumba
+          # el build si un *.client.ts no esta en la carpeta client/ de su
+          # feature ni en core/api/clients/, que es lo que dice CLAUDE.md.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -140,6 +143,7 @@ jobs:
                    && npm run lint:unmounted \
                    && npm run lint:raw-dates \
                    && npm run lint:unimported \
+                   && npm run lint:client-location \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
