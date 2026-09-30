@@ -126,7 +126,12 @@ The two verbs are different things:
 | `npm run api:pull` | Only to bring a **new** contract from a sibling `b4rrhh_backend` checkout. Its result — a modified `openapi/*.yaml` — is a change to review and commit. |
 | `npm run api:refresh` | `api:pull` + `api:generate` in one step, for the same case as `api:pull`. |
 
-Custom adapters in `core/api/clients/` and transformation logic in `core/api/mappers/` wrap the generated client — insulating the app from breaking changes in the generated layer.
+Hand-written clients wrap the generated services, insulating the app from breaking changes in
+the generated layer. They go in the `client/` folder of their feature, next to the gateway that
+uses them (`features/company/client/company.client.ts`), following `client/ → gateway/ → store/ → ui/`.
+`core/api/clients/` keeps only the employee file clients, which predate that rule, and their
+mappers in `core/api/mappers/`. `npm run lint:client-location` fails the pipeline if a
+`*.client.ts` lives anywhere else.
 
 ### What stops the snapshot going stale
 

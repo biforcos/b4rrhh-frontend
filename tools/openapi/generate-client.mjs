@@ -63,7 +63,10 @@ This folder is generated from the OpenAPI contract.
 
 - Do not edit files here manually.
 - Regenerate with: npm run api:generate (runs automatically before build and start).
-- Put custom API adapters and mappers outside generated in src/app/core/api/clients and src/app/core/api/mappers.
+- Hand-written clients that wrap these services go in the client/ folder of their feature,
+  next to the gateway that uses them (features/company/client/company.client.ts).
+  src/app/core/api/clients/ keeps only the employee file clients, which predate that rule.
+  npm run lint:client-location enforces it.
 `;
 
 writeFileSync(generatedReadmePath, generatedReadme, 'utf8');
