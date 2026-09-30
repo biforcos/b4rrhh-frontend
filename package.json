@@ -17,6 +17,7 @@
     "lint:nginx": "node ./tools/lint-nginx-headers.mjs",
     "lint:english": "node ./tools/lint-english-labels.mjs",
     "lint:phantom-classes": "node ./tools/lint-phantom-classes.mjs",
+    "lint:unmounted": "node ./tools/lint-unmounted-components.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",

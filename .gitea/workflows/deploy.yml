@@ -93,6 +93,10 @@ jobs:
           # build si una plantilla usa una clase que no define ninguna hoja que
           # le llegue -la de su componente, la global o el tema de PrimeNG-.
           # Asi entraron p-4, h-full o mb-3: PrimeFlex no esta instalado.
+          # lint:unmounted es el de los componentes que nadie monta (#117):
+          # tumba el build si ni una ruta ni un componente montado nombra a
+          # uno. Un -demo no salva a lo que importa. Las excepciones van con
+          # nombre y motivo en el propio script y solo pueden encoger.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -125,6 +129,7 @@ jobs:
                    && npm run lint:nginx \
                    && npm run lint:english \
                    && npm run lint:phantom-classes \
+                   && npm run lint:unmounted \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
