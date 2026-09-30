@@ -147,7 +147,7 @@ export class RuleSystemStore {
 
     const normalizedCode = code.trim();
     if (!normalizedCode) {
-      this.errorState.set('Rule system code is required for update.');
+      this.errorState.set('Falta el código del sistema de reglas.');
       return;
     }
 

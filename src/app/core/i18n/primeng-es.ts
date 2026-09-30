@@ -46,4 +46,15 @@ export const PRIMENG_ES: Translation = {
   dateFormat: 'dd/mm/yy',
   emptyMessage: 'Sin resultados',
   emptyFilterMessage: 'Sin resultados',
+  // Lo que lee un lector de pantalla en el botón y en las flechas del calendario
+  // (`b4rrhh/frontend#113`): no se ve, pero se pinta, y salía «Choose Date».
+  chooseDate: 'Elegir fecha',
+  chooseMonth: 'Elegir mes',
+  chooseYear: 'Elegir año',
+  prevMonth: 'Mes anterior',
+  nextMonth: 'Mes siguiente',
+  prevYear: 'Año anterior',
+  nextYear: 'Año siguiente',
+  prevDecade: 'Década anterior',
+  nextDecade: 'Década siguiente',
 };

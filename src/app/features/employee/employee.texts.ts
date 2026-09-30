@@ -438,7 +438,7 @@ export const employeeTexts = {
     'Clave de negocio activa y estado de lectura actual para iniciar navegación segura.',
   summaryLifecycleBlockTitle: 'Hitos laborales',
   summaryLifecycleBlockDescription:
-    'Esta zona consolidara altas, cambios y cierres en cuanto exista timeline agregado de backend.',
+    'Esta zona consolidara altas, cambios y cierres en cuanto el backend dé la línea de vida agregada.',
   summaryPendingBlockTitle: 'Proximos pasos',
   summaryPendingBlockDescription:
     'Preparado para alertas operativas: datos incompletos, revisiones y validaciones pendientes.',
@@ -880,9 +880,9 @@ export const employeeTexts = {
   laborFutureBlockTitle: 'Evolucion laboral',
   laborFutureBlockDescription:
     'Preparado para eventos de movilidad, cambios de categoría y transiciones de jornada.',
-  currentEmployeeKeyLabel: 'Employee business key',
-  currentEmployeeLabel: 'Employee number',
-  placeholderMessage: 'This section is intentionally minimal and ready for OpenAPI integration.',
+  currentEmployeeKeyLabel: 'Clave del empleado',
+  currentEmployeeLabel: 'Número de empleado',
+  placeholderMessage: 'Esta sección todavía no está conectada.',
   hireEmployeeTitle: 'Nueva contratación',
   hireEmployeeSubtitle: 'Da de alta a un empleado nuevo.',
   // Los grupos del alta se llaman como las areas de la ficha (`b4rrhh/frontend#90`), para que

@@ -39,7 +39,7 @@ export class EmployeeRehireCatalogService {
    */
   loadForRuleSystem(ruleSystemCode: string, referenceDate?: string | null): void {
     if (!ruleSystemCode || ruleSystemCode.trim().length === 0) {
-      this.error.set('Invalid rule system code');
+      this.error.set('Falta el sistema de reglas.');
       return;
     }
 
