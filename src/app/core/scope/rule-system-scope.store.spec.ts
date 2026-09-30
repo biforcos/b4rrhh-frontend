@@ -79,4 +79,48 @@ describe('RuleSystemScopeStore', () => {
     expect(store.active()).toBeNull();
     expect(store.loading()).toBe(false);
   });
+
+  describe('con qué sistema arranca una pantalla con selector propio (frontend#124)', () => {
+    it('con ámbito, arranca en el ámbito aunque la pantalla lo reciba detrás de otro', () => {
+      const store = setup([ESP, PRT]);
+
+      expect(store.initialCodeAmong(['FRA', 'ESP'])).toBe('ESP');
+    });
+
+    it('sin ámbito, arranca en el primero que ofrece la pantalla', () => {
+      const store = setup([]);
+
+      expect(store.initialCodeAmong(['FRA', 'ESP'])).toBe('FRA');
+    });
+
+    it('si la pantalla no ofrece el ámbito, arranca en el primero que ofrece', () => {
+      const store = setup([ESP, PRT]);
+
+      expect(store.initialCodeAmong(['FRA', 'PRT'])).toBe('FRA');
+    });
+
+    it('sin nada que ofrecer, no arranca en ninguno', () => {
+      expect(setup([ESP]).initialCodeAmong([])).toBeNull();
+    });
+
+    it('avisa cuando el ámbito está resuelto, con él, y también si la carga falla', () => {
+      const resolved: Array<string | null> = [];
+      setup([PRT, ESP])
+        .whenResolved()
+        .subscribe((code) => resolved.push(code));
+
+      TestBed.resetTestingModule();
+      loadRuleSystems = vi.fn().mockReturnValue(throwError(() => new Error('boom')));
+      TestBed.configureTestingModule({
+        providers: [{ provide: RuleSystemGateway, useValue: { loadRuleSystems } }],
+      });
+      const failing = TestBed.inject(RuleSystemScopeStore);
+      failing.whenResolved().subscribe((code) => resolved.push(code));
+      expect(resolved).toEqual(['ESP']);
+
+      failing.load();
+
+      expect(resolved).toEqual(['ESP', null]);
+    });
+  });
 });

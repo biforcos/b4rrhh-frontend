@@ -1,7 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
+import {
+  RULE_SYSTEM_SCOPE_STORAGE_KEY,
+  RuleSystemScopeStore,
+} from '../../../core/scope/rule-system-scope.store';
+import { RuleSystemGateway } from '../../rule-system/gateway/rule-system.gateway';
 import { CatalogGateway } from '../gateway/catalog.gateway';
 import { RuleEntityModel } from '../models/rule-entity.model';
 import { CatalogStore } from './catalog.store';
@@ -63,18 +68,88 @@ describe('CatalogStore', () => {
       deleteRuleEntityByBusinessKey: vi.fn().mockReturnValue(of(void 0)),
     };
 
-    TestBed.configureTestingModule({
-      providers: [{ provide: CatalogGateway, useValue: gatewayMock }],
-    });
-
-    store = TestBed.inject(CatalogStore);
+    store = setupWithScope([]);
     store.initialize();
   });
+
+  /** El ámbito, cargado de verdad: el criterio de arranque vive en su store (frontend#124). */
+  function setupWithScope(scopeCodes: ReadonlyArray<string>): CatalogStore {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CatalogGateway, useValue: gatewayMock },
+        {
+          provide: RuleSystemGateway,
+          useValue: {
+            loadRuleSystems: vi
+              .fn()
+              .mockReturnValue(
+                of(
+                  scopeCodes.map((code) => ({ code, name: code, countryCode: 'XX', active: true })),
+                ),
+              ),
+          },
+        },
+      ],
+    });
+    TestBed.inject(RuleSystemScopeStore).load();
+    return TestBed.inject(CatalogStore);
+  }
 
   it('initializes selected rule system and type with first available values', () => {
     expect(store.selectedRuleSystemCode()).toBe('PA-ES');
     expect(store.selectedRuleEntityTypeCode()).toBe('CONTRACT');
     expect(gatewayMock.loadRuleEntities).toHaveBeenCalledWith('PA-ES', 'CONTRACT');
+  });
+
+  describe('sistema de reglas con el que arranca (frontend#124)', () => {
+    beforeEach(() => {
+      localStorage.removeItem(RULE_SYSTEM_SCOPE_STORAGE_KEY);
+      gatewayMock.loadRuleSystems.mockReturnValue(
+        of([
+          { code: 'FRA', name: 'France' },
+          { code: 'ESP', name: 'Administración de personal' },
+        ]),
+      );
+    });
+
+    it('con ámbito, arranca en el del ámbito y no en el primero que llega', () => {
+      const scoped = setupWithScope(['ESP', 'FRA']);
+
+      scoped.initialize();
+
+      expect(scoped.selectedRuleSystemCode()).toBe('ESP');
+      expect(gatewayMock.loadRuleEntities).toHaveBeenLastCalledWith('ESP', 'CONTRACT');
+    });
+
+    it('sin ámbito, arranca en el primero que llega', () => {
+      const unscoped = setupWithScope([]);
+
+      unscoped.initialize();
+
+      expect(unscoped.selectedRuleSystemCode()).toBe('FRA');
+    });
+
+    it('espera a que el ámbito esté resuelto antes de elegir', () => {
+      const pending = new Subject<ReadonlyArray<unknown>>();
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: CatalogGateway, useValue: gatewayMock },
+          { provide: RuleSystemGateway, useValue: { loadRuleSystems: () => pending } },
+        ],
+      });
+      TestBed.inject(RuleSystemScopeStore).load();
+      const waiting = TestBed.inject(CatalogStore);
+
+      waiting.initialize();
+      expect(waiting.selectedRuleSystemCode()).toBeNull();
+
+      pending.next([{ code: 'ESP', name: 'España', countryCode: 'ES', active: true }]);
+      pending.complete();
+
+      expect(waiting.selectedRuleSystemCode()).toBe('ESP');
+    });
   });
 
   it('submits correct operation over same occurrence business key', () => {

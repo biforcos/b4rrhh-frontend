@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { forkJoin, take } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { CatalogGateway } from '../gateway/catalog.gateway';
 import { CloseRuleEntityRequestModel } from '../models/close-rule-entity.request';
 import { CreateRuleEntityRequestModel } from '../models/create-rule-entity.request';
@@ -34,6 +35,7 @@ function createEmptyCorrectDraft(): RuleEntityCorrectDraft {
 })
 export class CatalogStore {
   private readonly gateway = inject(CatalogGateway);
+  private readonly scope = inject(RuleSystemScopeStore);
 
   private readonly ruleSystemsState = signal<ReadonlyArray<RuleSystemModel>>([]);
   private readonly selectedRuleSystemCodeState = signal<string | null>(null);
@@ -107,6 +109,8 @@ export class CatalogStore {
     forkJoin({
       ruleSystems: this.gateway.loadRuleSystems(),
       ruleEntityTypes: this.gateway.loadRuleEntityTypes(),
+      // Se arranca en el ámbito, y la lista de aquí puede llegar antes que la suya (frontend#124).
+      scopeResolved: this.scope.whenResolved(),
     })
       .pipe(take(1))
       .subscribe({
@@ -116,10 +120,12 @@ export class CatalogStore {
           this.ruleSystemsState.set(ruleSystems);
           this.ruleEntityTypesState.set(ruleEntityTypes);
 
+          const ruleSystemCodes = ruleSystems.map((item) => item.code);
           this.selectedRuleSystemCodeState.set(
             this.resolveSelectedCode(
               this.selectedRuleSystemCodeState(),
-              ruleSystems.map((item) => item.code),
+              ruleSystemCodes,
+              this.scope.initialCodeAmong(ruleSystemCodes),
             ),
           );
 
@@ -523,6 +529,7 @@ export class CatalogStore {
   private resolveSelectedCode(
     currentCode: string | null,
     availableCodes: ReadonlyArray<string>,
+    initialCode: string | null = availableCodes[0] ?? null,
   ): string | null {
     if (availableCodes.length === 0) {
       return null;
@@ -530,12 +537,10 @@ export class CatalogStore {
 
     const normalizedCurrentCode = normalizeRequiredValue(currentCode);
     if (normalizedCurrentCode.length === 0) {
-      return availableCodes[0];
+      return initialCode;
     }
 
-    return availableCodes.includes(normalizedCurrentCode)
-      ? normalizedCurrentCode
-      : availableCodes[0];
+    return availableCodes.includes(normalizedCurrentCode) ? normalizedCurrentCode : initialCode;
   }
 }
 

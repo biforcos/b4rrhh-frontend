@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { take } from 'rxjs';
+import { Observable, ReplaySubject, map, take } from 'rxjs';
 
 import { RuleSystemGateway } from '../../rulesystem/rule-system/gateway/rule-system.gateway';
 import { RuleSystem } from '../../rulesystem/rule-system/models/rule-system.model';
@@ -28,6 +28,8 @@ export class RuleSystemScopeStore {
   private readonly loadingState = signal(false);
   private readonly errorState = signal(false);
   private loadRequestId = 0;
+  /** Suena una vez resuelto el ámbito, haya ido bien o mal la carga (frontend#124). */
+  private readonly resolvedSignal = new ReplaySubject<void>(1);
 
   /** Los sistemas de reglas activos, ordenados por código. */
   readonly items = this.itemsState.asReadonly();
@@ -75,6 +77,7 @@ export class RuleSystemScopeStore {
           this.itemsState.set(items);
           this.activeCodeState.set(this.resolveInitialCode(items));
           this.loadingState.set(false);
+          this.resolvedSignal.next();
         },
         error: () => {
           if (requestId !== this.loadRequestId) {
@@ -82,8 +85,32 @@ export class RuleSystemScopeStore {
           }
           this.loadingState.set(false);
           this.errorState.set(true);
+          this.resolvedSignal.next();
         },
       });
+  }
+
+  /**
+   * El ámbito en cuanto está resuelto: emite una vez y completa, con su código o con `null` si
+   * no hay ámbito o su carga falló. Una pantalla que arranca en el ámbito (frontend#124) lo
+   * espera, porque su propia lista puede llegar antes que la del ámbito.
+   */
+  whenResolved(): Observable<string | null> {
+    return this.resolvedSignal.pipe(
+      take(1),
+      map(() => this.activeCodeState()),
+    );
+  }
+
+  /**
+   * Con qué sistema arranca una pantalla que tiene selector de sistema de reglas propio: el del
+   * ámbito si la pantalla lo ofrece, y si no hay ámbito o no lo ofrece, el primero de los suyos.
+   * Lo que se ve al entrar tiene que ser lo que rige, y el criterio se decide aquí una vez y no
+   * en cada pantalla (frontend#124).
+   */
+  initialCodeAmong(codes: ReadonlyArray<string>): string | null {
+    const scope = this.activeCodeState();
+    return scope !== null && codes.includes(scope) ? scope : (codes[0] ?? null);
   }
 
   /** Cambia el ámbito y lo recuerda. No navega: el contexto se recarga donde se consuma. */
