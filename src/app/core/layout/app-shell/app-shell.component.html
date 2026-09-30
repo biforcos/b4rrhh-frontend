@@ -31,8 +31,12 @@
             [value]="scope.activeCode()"
             (change)="onScopeChange($event)"
           >
+            <!-- Cada opción se marca por su lado: si el ámbito recordado no es el primero, el
+                 [value] del select llega antes que las opciones y no casaría (frontend#128). -->
             @for (item of scope.items(); track item.code) {
-              <option [value]="item.code">{{ item.code }} · {{ item.name }}</option>
+              <option [value]="item.code" [selected]="item.code === scope.activeCode()">
+                {{ item.code }} · {{ item.name }}
+              </option>
             }
           </select>
           <b4-icon class="app-shell__scope-chevron" name="chevron-abajo" [size]="16" />

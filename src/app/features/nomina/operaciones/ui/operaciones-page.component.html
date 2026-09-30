@@ -37,15 +37,11 @@
 
       <label class="ops-page__field">
         <span class="ops-page__field-label">Tipo de nómina</span>
-        <select
-          class="ops-page__input"
+        <app-ui-select
           [value]="store.payrollTypeCode()"
-          (change)="store.setPayrollTypeCode($any($event.target).value)"
-        >
-          @for (opt of store.payrollTypeOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
+          [options]="store.payrollTypeOptions"
+          (valueChanged)="store.setPayrollTypeCode($any($event))"
+        />
       </label>
     </div>
 
@@ -67,20 +63,12 @@
       @if (store.targetMode() === 'LIST') {
         <label class="ops-page__field">
           <span class="ops-page__field-label">Tipo</span>
-          <select
-            class="ops-page__input"
+          <app-ui-select
+            placeholder="Elige un tipo"
             [value]="store.listEmployeeType()"
-            (change)="store.setListEmployeeType($any($event.target).value)"
-          >
-            @if (store.employeeTypes().length !== 1) {
-              <option value="" [selected]="store.listEmployeeType() === ''">Elige un tipo</option>
-            }
-            @for (tipo of store.employeeTypes(); track tipo) {
-              <option [value]="tipo" [selected]="store.listEmployeeType() === tipo">
-                {{ tipo }}
-              </option>
-            }
-          </select>
+            [options]="employeeTypeOptions()"
+            (valueChanged)="store.setListEmployeeType($event)"
+          />
         </label>
         <textarea
           class="ops-page__textarea"
@@ -95,22 +83,12 @@
         <div class="ops-page__single-employee">
           <label class="ops-page__field">
             <span class="ops-page__field-label">Tipo</span>
-            <select
-              class="ops-page__input"
+            <app-ui-select
+              placeholder="Elige un tipo"
               [value]="store.singleEmployeeType()"
-              (change)="store.setSingleEmployeeType($any($event.target).value)"
-            >
-              @if (store.employeeTypes().length !== 1) {
-                <option value="" [selected]="store.singleEmployeeType() === ''">
-                  Elige un tipo
-                </option>
-              }
-              @for (tipo of store.employeeTypes(); track tipo) {
-                <option [value]="tipo" [selected]="store.singleEmployeeType() === tipo">
-                  {{ tipo }}
-                </option>
-              }
-            </select>
+              [options]="employeeTypeOptions()"
+              (valueChanged)="store.setSingleEmployeeType($event)"
+            />
           </label>
           <label class="ops-page__field">
             <span class="ops-page__field-label">Número</span>

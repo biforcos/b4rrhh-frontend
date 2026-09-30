@@ -108,6 +108,9 @@ jobs:
           # lint:client-location es el del sitio de los clientes (#122): tumba
           # el build si un *.client.ts no esta en la carpeta client/ de su
           # feature ni en core/api/clients/, que es lo que dice CLAUDE.md.
+          # lint:native-selects es el de los <select> nativos (#128): tumba el
+          # build si una plantilla lleva un <select> con [value] y @for fuera
+          # de ui-select, que pinta la primera opcion y no el valor (#125).
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -144,6 +147,7 @@ jobs:
                    && npm run lint:raw-dates \
                    && npm run lint:unimported \
                    && npm run lint:client-location \
+                   && npm run lint:native-selects \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \

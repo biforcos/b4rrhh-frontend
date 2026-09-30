@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { UiMoreComponent } from '../../../../shared/ui/more/ui-more.component';
+import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { TargetSelectionMode } from '../models/target-selection.model';
 import {
   OperacionesStore,
@@ -20,12 +21,17 @@ import {
 @Component({
   selector: 'app-operaciones-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButtonComponent, UiMoreComponent],
+  imports: [UiButtonComponent, UiMoreComponent, UiSelectComponent],
   templateUrl: './operaciones-page.component.html',
   styleUrl: './operaciones-page.component.scss',
 })
 export class OperacionesPageComponent {
   protected readonly store = inject(OperacionesStore);
+
+  /** Los tipos de empleado, en la forma de `ui-select` (frontend#128). */
+  protected readonly employeeTypeOptions = computed(() =>
+    this.store.employeeTypes().map((tipo) => ({ value: tipo, label: tipo })),
+  );
 
   protected readonly targetModes: ReadonlyArray<{ value: TargetSelectionMode; label: string }> = [
     { value: 'ALL', label: 'Todos del período' },
