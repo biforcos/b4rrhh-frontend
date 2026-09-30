@@ -89,6 +89,10 @@ jobs:
           # plantilla o un *.texts.ts trae un literal en inglés («Code»,
           # «Create rule system»). Las excepciones van con nombre en el
           # propio script y solo pueden encoger.
+          # lint:phantom-classes es el de las clases fantasma (#114): tumba el
+          # build si una plantilla usa una clase que no define ninguna hoja que
+          # le llegue -la de su componente, la global o el tema de PrimeNG-.
+          # Asi entraron p-4, h-full o mb-3: PrimeFlex no esta instalado.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -120,6 +124,7 @@ jobs:
                    && npm run lint:own-cards \
                    && npm run lint:nginx \
                    && npm run lint:english \
+                   && npm run lint:phantom-classes \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
