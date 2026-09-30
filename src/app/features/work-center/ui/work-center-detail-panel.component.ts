@@ -40,6 +40,7 @@ import { WorkCenterDetailModel } from '../models/work-center-detail.model';
 import { WorkCenterFormValue } from '../models/work-center-form-value.model';
 import { workCenterTexts } from '../work-center.texts';
 import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
+import { formatDisplayDate } from '../../../shared/utils/local-date.util';
 
 export type WorkCenterDetailMode = 'create' | 'view' | 'edit';
 
@@ -285,6 +286,9 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
     }
     return Object.values(detail.address).some((value) => !!value);
   }
+
+  /** El formateador de fechas de toda la aplicacion (`b4rrhh/frontend#120`), para la plantilla. */
+  protected readonly formatDisplayDate = formatDisplayDate;
 
   protected displayValue(value: string | null | undefined): string {
     const normalized = value?.trim();

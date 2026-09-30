@@ -44,7 +44,7 @@
         </div>
         <div class="work-center-list__meta-item work-center-list__meta-item--full">
           <dt>{{ texts.listMetaStartDateLabel }}</dt>
-          <dd>{{ workCenter.startDate }}</dd>
+          <dd>{{ workCenter.startDate | date: displayDateFormat }}</dd>
         </div>
       </dl>
     </app-list-item>

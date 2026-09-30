@@ -16,8 +16,8 @@
           <td>{{ item.code }}</td>
           <td>{{ item.name }}</td>
           <td>{{ item.active ? texts.activeYes : texts.activeNo }}</td>
-          <td>{{ item.startDate }}</td>
-          <td>{{ item.endDate ?? '-' }}</td>
+          <td>{{ item.startDate | date: displayDateFormat }}</td>
+          <td>{{ (item.endDate | date: displayDateFormat) ?? '-' }}</td>
           <td>
             <div class="rule-entity-list__actions">
               @if (item.canCorrect) {

@@ -75,8 +75,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}:
-              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}: {{ occurrence.code }} ·
+              {{ occurrence.startDate | date: displayDateFormat }}
             </p>
 
             <div class="catalog-page__operation-form">
@@ -141,8 +141,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}:
-              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}: {{ occurrence.code }} ·
+              {{ occurrence.startDate | date: displayDateFormat }}
             </p>
 
             <div class="catalog-page__operation-form">
@@ -186,8 +186,8 @@
             </header>
 
             <p class="catalog-page__operation-target">
-              {{ texts.operationTargetLabel }}:
-              {{ occurrenceLabel(occurrence.code, occurrence.startDate) }}
+              {{ texts.operationTargetLabel }}: {{ occurrence.code }} ·
+              {{ occurrence.startDate | date: displayDateFormat }}
             </p>
             <p class="catalog-page__operation-warning">{{ texts.operationDeleteMessage }}</p>
 

@@ -200,6 +200,9 @@ export class CompanyDetailPanelComponent implements OnChanges {
     this.editRequested.emit();
   }
 
+  /** El formateador de fechas de toda la aplicacion (`b4rrhh/frontend#120`), para la plantilla. */
+  protected readonly formatDisplayDate = formatDisplayDate;
+
   protected displayValue(value: string | null | undefined): string {
     const normalized = value?.trim();
     return normalized ? normalized : this.texts.detailViewEmptyValue;

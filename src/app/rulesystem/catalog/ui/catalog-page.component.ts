@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -7,6 +8,7 @@ import { mapCreateRuleEntityFormToRequest } from '../mapper/create-rule-entity-f
 import { CreateRuleEntityFormModel } from '../models/create-rule-entity-form.model';
 import { CatalogStore } from '../store/catalog.store';
 import { catalogTexts } from '../catalog.texts';
+import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 import { CreateRuleEntityFormComponent } from './create-rule-entity-form.component';
 import { RuleEntityListComponent } from './rule-entity-list.component';
 import { RuleEntityTypeListComponent } from './rule-entity-type-list.component';
@@ -16,6 +18,7 @@ import { RuleSystemSelectorComponent } from './rule-system-selector.component';
   selector: 'app-catalog-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DatePipe,
     InputTextModule,
     UiButtonComponent,
     UiDateInputComponent,
@@ -31,6 +34,7 @@ export class CatalogPageComponent {
   private readonly store = inject(CatalogStore);
 
   protected readonly texts = catalogTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly ruleSystems = this.store.ruleSystems;
   protected readonly selectedRuleSystemCode = this.store.selectedRuleSystemCode;
   protected readonly ruleEntityTypes = this.store.ruleEntityTypes;
@@ -136,9 +140,5 @@ export class CatalogPageComponent {
 
   protected cancelOperation(): void {
     this.store.cancel();
-  }
-
-  protected occurrenceLabel(code: string, startDate: string): string {
-    return `${code} · ${startDate}`;
   }
 }

@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 import { ListItemComponent } from '../../../shared/ui/list-item/list-item.component';
@@ -6,11 +7,12 @@ import { UiTagComponent } from '../../../shared/ui/tag/ui-tag.component';
 import { WorkCenterListItemModel } from '../models/work-center-list-item.model';
 import { WorkCenterBusinessKey } from '../models/work-center-ui-state.model';
 import { workCenterTexts } from '../work-center.texts';
+import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 
 @Component({
   selector: 'app-work-center-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MasterListPanelComponent, ListItemComponent, UiTagComponent],
+  imports: [DatePipe, MasterListPanelComponent, ListItemComponent, UiTagComponent],
   templateUrl: './work-center-list.component.html',
   styleUrl: './work-center-list.component.scss',
 })
@@ -24,6 +26,7 @@ export class WorkCenterListComponent {
   readonly newRequested = output<void>();
 
   protected readonly texts = workCenterTexts;
+  protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly searchValue = signal('');
   protected readonly selectedListKey = computed(() => {
     const key = this.selectedKey();
