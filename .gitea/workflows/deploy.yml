@@ -97,6 +97,10 @@ jobs:
           # tumba el build si ni una ruta ni un componente montado nombra a
           # uno. Un -demo no salva a lo que importa. Las excepciones van con
           # nombre y motivo en el propio script y solo pueden encoger.
+          # lint:raw-dates es el de las fechas en crudo (#120): tumba el build
+          # si una plantilla interpola un campo de fecha sin `| date` ni
+          # formatDisplayDate, que es como una ficha acababa diciendo la misma
+          # fecha en dd/mm/aaaa y en ISO a un palmo.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -130,6 +134,7 @@ jobs:
                    && npm run lint:english \
                    && npm run lint:phantom-classes \
                    && npm run lint:unmounted \
+                   && npm run lint:raw-dates \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \
