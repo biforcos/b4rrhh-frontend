@@ -85,6 +85,10 @@ jobs:
           # porque la otra red -el curl -I contra la demo del reset diario-
           # corre DESPUES de desplegar: sin este paso el bloque olvidado se
           # despliega sin cabeceras y lo cuenta la noche siguiente.
+          # lint:english es el del idioma (#113): tumba el build si una
+          # plantilla o un *.texts.ts trae un literal en inglés («Code»,
+          # «Create rule system»). Las excepciones van con nombre en el
+          # propio script y solo pueden encoger.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -115,6 +119,7 @@ jobs:
                    && npm run lint:orphan-styles \
                    && npm run lint:own-cards \
                    && npm run lint:nginx \
+                   && npm run lint:english \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \

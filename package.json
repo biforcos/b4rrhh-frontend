@@ -15,6 +15,7 @@
     "lint:orphan-styles": "node ./tools/lint-orphan-styles.mjs",
     "lint:own-cards": "node ./tools/lint-own-cards.mjs",
     "lint:nginx": "node ./tools/lint-nginx-headers.mjs",
+    "lint:english": "node ./tools/lint-english-labels.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",
