@@ -1,7 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { take } from 'rxjs';
+import { forkJoin, take } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { AgreementCategoryProfileGateway } from '../gateway/agreement-category-profile.gateway';
 import {
   AgreementCategoryProfileDraft,
@@ -15,6 +16,7 @@ type LoadingState = 'idle' | 'rule-systems' | 'agreements' | 'categories';
 @Injectable({ providedIn: 'root' })
 export class AgreementCategoryProfileStore {
   private readonly gateway = inject(AgreementCategoryProfileGateway);
+  private readonly scope = inject(RuleSystemScopeStore);
 
   private readonly ruleSystemsState = signal<ReadonlyArray<SimpleOption>>([]);
   private readonly selectedRuleSystemCodeState = signal<string | null>(null);
@@ -63,13 +65,17 @@ export class AgreementCategoryProfileStore {
   initialize(): void {
     if (this.ruleSystemsState().length > 0) return;
     this.loadingState.set('rule-systems');
-    this.gateway
-      .loadRuleSystems()
+    // Se arranca en el ámbito, y la lista de aquí puede llegar antes que la suya (frontend#124).
+    forkJoin({ items: this.gateway.loadRuleSystems(), scopeResolved: this.scope.whenResolved() })
       .pipe(take(1))
       .subscribe({
-        next: (items) => {
+        next: ({ items }) => {
           this.ruleSystemsState.set(items);
           this.loadingState.set('idle');
+          const initialCode = this.scope.initialCodeAmong(items.map((item) => item.code));
+          if (this.selectedRuleSystemCodeState() === null && initialCode !== null) {
+            this.selectRuleSystem(initialCode);
+          }
         },
         error: (err: unknown) => {
           this.errorMessageState.set(
