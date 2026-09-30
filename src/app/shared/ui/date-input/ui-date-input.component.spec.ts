@@ -97,3 +97,125 @@ describe('UiDateInputComponent en un formulario', () => {
     expect(host.componentInstance.control.value).toBe('2026-09-30');
   });
 });
+
+/**
+ * Lo tecleado llega igual que lo elegido (`b4rrhh/frontend#119`). PrimeNG solo atiende a un
+ * `input` que venga tras un `keydown`: lo que entra sin teclas —pegar con el ratón, el
+ * autorrelleno del navegador— se perdía al salir de la caja, y un texto que no es fecha se
+ * tragaba sin decir nada. Aquí se escribe en la caja como lo haría el navegador: sin teclas.
+ */
+describe('UiDateInputComponent con la fecha escrita', () => {
+  let host: ComponentFixture<FormHostComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FormHostComponent],
+      providers: [provideNoopAnimations()],
+    }).compileComponents();
+    host = TestBed.createComponent(FormHostComponent);
+    host.componentInstance.control.setValue(null);
+    host.detectChanges();
+    await host.whenStable();
+  });
+
+  const box = () => (host.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+  const write = (text: string) => {
+    box().value = text;
+    box().dispatchEvent(new Event('input'));
+  };
+  const leave = () => {
+    box().dispatchEvent(new Event('blur'));
+    host.detectChanges();
+  };
+  const enter = () => {
+    box().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+    host.detectChanges();
+  };
+  const message = () =>
+    (host.nativeElement as HTMLElement).querySelector('.ui-date-input__error')?.textContent?.trim();
+
+  it('escrita y al salir, llega al control', () => {
+    write('01/09/2026');
+    leave();
+    expect(host.componentInstance.control.value).toBe('2026-09-01');
+    expect(host.componentInstance.control.errors).toBeNull();
+  });
+
+  it('escrita y con Intro, llega al control', () => {
+    write('01/09/2026');
+    enter();
+    expect(host.componentInstance.control.value).toBe('2026-09-01');
+  });
+
+  it('sin ceros, también', () => {
+    write('1/9/2026');
+    leave();
+    expect(host.componentInstance.control.value).toBe('2026-09-01');
+  });
+
+  it('lo que no es fecha lo dice, con su nombre en el control', () => {
+    host.componentInstance.control.setValue('2026-09-01');
+    host.detectChanges();
+    write('32/13/2026');
+    leave();
+    // No se queda con la fecha de antes: lo que hay en la caja no es esa.
+    expect(host.componentInstance.control.value).toBe('');
+    expect(host.componentInstance.control.hasError('fechaInvalida')).toBe(true);
+    expect(message()).toContain('32/13/2026');
+    expect(message()).toContain('dd/mm/aaaa');
+  });
+
+  it('una fecha buena después borra el aviso', () => {
+    write('32/13/2026');
+    leave();
+    write('01/09/2026');
+    leave();
+    expect(host.componentInstance.control.errors).toBeNull();
+    expect(message()).toBeUndefined();
+  });
+
+  it('borrar la caja deja la fecha vacía, sin aviso', () => {
+    host.componentInstance.control.setValue('2026-09-01');
+    host.detectChanges();
+    write('');
+    leave();
+    expect(host.componentInstance.control.value).toBe('');
+    expect(message()).toBeUndefined();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [UiDateInputComponent],
+  template: `<app-ui-date-input
+    [value]="value"
+    min="2026-01-01"
+    max="2026-12-31"
+    (valueChanged)="value = $event"
+  />`,
+})
+class ValueHostComponent {
+  value = '';
+}
+
+describe('UiDateInputComponent con la fecha escrita, sin formulario', () => {
+  it('fuera del intervalo lo dice y no la deja pasar', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ValueHostComponent],
+      providers: [provideNoopAnimations()],
+    }).compileComponents();
+    const host = TestBed.createComponent(ValueHostComponent);
+    host.detectChanges();
+    const box = (host.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+
+    box.value = '01/09/2027';
+    box.dispatchEvent(new Event('input'));
+    box.dispatchEvent(new Event('blur'));
+    host.detectChanges();
+
+    expect(host.componentInstance.value).toBe('');
+    const message = (host.nativeElement as HTMLElement).querySelector('.ui-date-input__error');
+    expect(message?.textContent).toContain('01/09/2027');
+    expect(message?.textContent).toContain('31/12/2026');
+  });
+});

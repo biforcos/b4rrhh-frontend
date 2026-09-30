@@ -5,3 +5,10 @@
 input {
   width: 100%;
 }
+
+.ui-date-input__error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--error-text);
+}
