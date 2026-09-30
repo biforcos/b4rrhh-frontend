@@ -7,7 +7,7 @@ export const appTexts = {
   authLoginTitle: 'Acceso local de desarrollo',
   authLoginDescription: 'Pon un subject local para pedir un token de desarrollo.',
   authSubjectLabel: 'Subject',
-  authSubjectPlaceholder: 'bifor',
+  authSubjectPlaceholder: 'Usuario',
   authSubjectHelpPrefix: 'Subjects locales disponibles de ejemplo:',
   authLoginSubmitAction: 'Entrar',
   authLoginSubmittingAction: 'Entrando...',

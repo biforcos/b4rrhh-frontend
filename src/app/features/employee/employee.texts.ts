@@ -293,7 +293,7 @@ export const employeeTexts = {
   payrollInputsConceptCodeLabel: 'Concepto',
   payrollInputsConceptCodePlaceholder: 'Ej: HE_QTY',
   payrollInputsQuantityLabel: 'Cantidad',
-  payrollInputsQuantityPlaceholder: '0',
+  payrollInputsQuantityPlaceholder: 'Cantidad',
   payrollInputsAddAction: 'Añadir entrada',
   payrollInputsEditAction: 'Editar',
   payrollInputsDeleteAction: 'Eliminar',

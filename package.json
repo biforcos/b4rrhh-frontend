@@ -22,6 +22,7 @@
     "lint:unimported": "node ./tools/lint-unimported-files.mjs",
     "lint:client-location": "node ./tools/lint-client-location.mjs",
     "lint:native-selects": "node ./tools/lint-native-selects.mjs",
+    "lint:value-placeholders": "node ./tools/lint-value-placeholders.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",

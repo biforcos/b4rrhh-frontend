@@ -111,6 +111,9 @@ jobs:
           # lint:native-selects es el de los <select> nativos (#128): tumba el
           # build si una plantilla lleva un <select> con [value] y @for fuera
           # de ui-select, que pinta la primera opcion y no el valor (#125).
+          # lint:value-placeholders es el de los placeholders que parecen un
+          # valor (#129): tumba el build si un placeholder es un numero, un
+          # codigo en mayusculas o una palabra suelta, como ACME o 202604.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -148,6 +151,7 @@ jobs:
                    && npm run lint:unimported \
                    && npm run lint:client-location \
                    && npm run lint:native-selects \
+                   && npm run lint:value-placeholders \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \

@@ -89,7 +89,7 @@
               id="companyCode"
               formControlName="companyCode"
               [invalid]="hasError('companyCode')"
-              placeholder="ACME"
+              placeholder="Hasta 30 caracteres"
               maxlength="30"
             />
             @if (hasError('companyCode')) {
@@ -291,7 +291,7 @@
               pInputText
               id="countryCode"
               formControlName="countryCode"
-              placeholder="ESP"
+              placeholder="Código ISO de 3 letras"
               maxlength="3"
             />
           </div>
