@@ -8,6 +8,9 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: 14px 20px 12px;
+  /* Las columnas las decide el ancho de la caja, no el de la ventana: con el Historial abierto,
+     a 1280, la caja se queda en 353 px (b4rrhh/frontend#115). */
+  container-type: inline-size;
 }
 
 /* A dos columnas, para que no ocupe media pantalla. */
@@ -62,9 +65,8 @@
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Si no cabe, baja de línea; no se corta (b4rrhh/frontend#115). */
+  overflow-wrap: anywhere;
 }
 
 .today__link:hover,
@@ -79,9 +81,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-tertiary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .today__since {
@@ -95,6 +95,8 @@
 .today__none {
   font-size: 16px;
   color: var(--text-soft);
+  /* «sin vigencia» entero: partido en dos parece otra cosa. */
+  white-space: nowrap;
 }
 
 /* «sin asignar» es un estado, no un aviso ni un enlace: lo dice el literal, no el color. */
@@ -102,8 +104,26 @@
   color: var(--text-tertiary);
 }
 
-@media (max-width: 960px) {
+/*
+ * Lo que pide una fila, medido (b4rrhh/frontend#115): rótulo 136 + fecha «desde» 106 + dos huecos
+ * de 12 = 266 px sin el valor, y el valor necesita unos 100 para que «sin vigencia» o un nombre
+ * corto quepan en una línea. Dos columnas: 2 × 366 + 32 de hueco + 40 de relleno ≈ 800. Una fila
+ * con el rótulo al lado: 366 + 40 ≈ 420. Por debajo, el rótulo sube encima del valor.
+ */
+@container (max-width: 800px) {
   .today__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 420px) {
+  .today__item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 2px;
+  }
+
+  .today__label {
+    grid-column: 1 / -1;
+    padding-top: 0;
   }
 }
