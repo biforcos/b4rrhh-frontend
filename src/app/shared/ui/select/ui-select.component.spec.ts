@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { UiSelectComponent } from './ui-select.component';
@@ -133,5 +133,77 @@ describe('UiSelectComponent con vigencia', () => {
       'No vigente en la fecha del período: cerrado el 31/12/2022. Se guarda igual.',
     );
     expect(control.getAttribute('aria-describedby')).toBe('tipo-vigencia');
+  });
+});
+
+/**
+ * b4rrhh/frontend#125: el valor y las opciones llegan en el mismo ciclo —la lista y lo elegido
+ * salen de la misma respuesta— y el valor no es la primera opción. Asignar `value` al `<select>`
+ * antes de que existan sus `<option>` dejaba al navegador en la primera seleccionable: el
+ * componente decía ESP y la pantalla, FRA. Se mira el `<select>` del DOM, no el input.
+ */
+@Component({
+  standalone: true,
+  imports: [UiSelectComponent],
+  template: ` <app-ui-select placeholder="Selecciona" [value]="value()" [options]="options()" /> `,
+})
+class HostALaVezComponent {
+  readonly value = signal<string | null>(null);
+  readonly options = signal<ReadonlyArray<{ value: string; label: string; effective?: boolean }>>(
+    [],
+  );
+}
+
+describe('UiSelectComponent con valor y opciones a la vez', () => {
+  let fixture: ComponentFixture<HostALaVezComponent>;
+  let control: HTMLSelectElement;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [HostALaVezComponent] }).compileComponents();
+    fixture = TestBed.createComponent(HostALaVezComponent);
+    await fixture.whenStable();
+    control = fixture.nativeElement.querySelector('select.ui-select__control');
+  });
+
+  it('pinta el valor aunque no sea la primera opción', async () => {
+    fixture.componentInstance.options.set([
+      { value: 'FRA', label: 'FRA · Francia' },
+      { value: 'PRT', label: 'PRT · Portugal' },
+      { value: 'ESP', label: 'ESP · España' },
+    ]);
+    fixture.componentInstance.value.set('ESP');
+    await fixture.whenStable();
+
+    expect(control.value).toBe('ESP');
+    // 0 es el marcador; FRA, PRT y ESP van detrás.
+    expect(control.selectedIndex).toBe(3);
+  });
+
+  it('también cuando las opciones van agrupadas por vigencia', async () => {
+    fixture.componentInstance.options.set([
+      { value: 'EMAIL', label: 'Correo', effective: true },
+      { value: 'PHONE', label: 'Teléfono', effective: true },
+      { value: 'OLD_FAX', label: 'Fax', effective: false },
+    ]);
+    fixture.componentInstance.value.set('PHONE');
+    await fixture.whenStable();
+
+    expect(control.value).toBe('PHONE');
+    expect(control.selectedIndex).toBe(2);
+  });
+
+  it('y vuelve al marcador cuando el valor se vacía', async () => {
+    fixture.componentInstance.options.set([
+      { value: 'FRA', label: 'FRA · Francia' },
+      { value: 'ESP', label: 'ESP · España' },
+    ]);
+    fixture.componentInstance.value.set('ESP');
+    await fixture.whenStable();
+
+    fixture.componentInstance.value.set(null);
+    await fixture.whenStable();
+
+    expect(control.value).toBe('');
+    expect(control.selectedIndex).toBe(0);
   });
 });

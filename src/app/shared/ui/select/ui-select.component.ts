@@ -35,21 +35,31 @@ import { B4IconComponent } from '../icon/b4-icon.component';
         [value]="value() ?? ''"
         (change)="onSelectionChange($event)"
       >
-        <option value="" [disabled]="true" [hidden]="true">{{ placeholder() ?? '' }}</option>
+        <!--
+          Cada opción se marca por su lado (frontend#125): el [value] del <select> se asigna antes
+          de que el @for cree las opciones, y si llegan en el mismo ciclo no hay con quién casarlo.
+        -->
+        <option value="" [disabled]="true" [hidden]="true" [selected]="!value()">
+          {{ placeholder() ?? '' }}
+        </option>
         @if (hasNotEffective()) {
           <optgroup label="Vigentes">
             @for (opt of effectiveOptions(); track opt.value) {
-              <option [value]="opt.value">{{ opt.label }}</option>
+              <option [value]="opt.value" [selected]="opt.value === value()">
+                {{ opt.label }}
+              </option>
             }
           </optgroup>
           <optgroup label="No vigentes en esa fecha">
             @for (opt of notEffectiveOptions(); track opt.value) {
-              <option [value]="opt.value">{{ optionLabel(opt) }}</option>
+              <option [value]="opt.value" [selected]="opt.value === value()">
+                {{ optionLabel(opt) }}
+              </option>
             }
           </optgroup>
         } @else {
           @for (opt of selectOptions(); track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
+            <option [value]="opt.value" [selected]="opt.value === value()">{{ opt.label }}</option>
           }
         }
       </select>
