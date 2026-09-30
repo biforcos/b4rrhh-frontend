@@ -69,7 +69,7 @@
               pInputText
               id="ruleSystemCode"
               formControlName="ruleSystemCode"
-              [class.ng-invalid]="hasError('ruleSystemCode')"
+              [invalid]="hasError('ruleSystemCode')"
               placeholder="ESP"
               maxlength="5"
             />
@@ -89,7 +89,7 @@
               pInputText
               id="companyCode"
               formControlName="companyCode"
-              [class.ng-invalid]="hasError('companyCode')"
+              [invalid]="hasError('companyCode')"
               placeholder="ACME"
               maxlength="30"
             />
@@ -108,7 +108,7 @@
               pInputText
               id="name"
               formControlName="name"
-              [class.ng-invalid]="hasError('name')"
+              [invalid]="hasError('name')"
               maxlength="100"
             />
             @if (hasError('name')) {
@@ -186,7 +186,7 @@
               pInputText
               id="legalName"
               formControlName="legalName"
-              [class.ng-invalid]="hasError('legalName')"
+              [invalid]="hasError('legalName')"
               maxlength="200"
             />
             @if (hasError('legalName')) {
@@ -257,7 +257,7 @@
           <p class="company-detail-panel__empty-copy">{{ texts.detailAddressEmpty }}</p>
         }
       } @else {
-        <div class="company-detail-panel__grid company-detail-panel__grid--address">
+        <div class="company-detail-panel__grid">
           <div class="company-detail-panel__field company-detail-panel__field--full">
             <label for="street" class="company-detail-panel__label">{{
               texts.fieldStreetLabel

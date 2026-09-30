@@ -68,7 +68,8 @@ describe('EmployeeTerminatePanelComponent', () => {
 
   afterEach(() => http.verify());
 
-  const dialog = () => document.body.querySelector('.period-modal-dialog') as HTMLElement | null;
+  const dialog = () =>
+    document.body.querySelector('app-period-modal [role="dialog"]') as HTMLElement | null;
 
   it('se abre en el molde de los modales, con título, a quién y los dos campos', () => {
     expect(dialog()).not.toBeNull();

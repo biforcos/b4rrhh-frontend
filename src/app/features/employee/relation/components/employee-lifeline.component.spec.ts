@@ -134,7 +134,7 @@ describe('EmployeeLifelineComponent', () => {
       'Convenio',
       'Centro',
     ]);
-    expect(all('.lifeline__event-label').map((l) => l.textContent?.trim())).toEqual([
+    expect(all('[data-testid="lifeline-event-label"]').map((l) => l.textContent?.trim())).toEqual([
       'Alta',
       'Cese',
       'Readmisión',

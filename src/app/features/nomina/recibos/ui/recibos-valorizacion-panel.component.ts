@@ -199,7 +199,7 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
           } @else if (filteredSteps().length === 0) {
             <div class="loading-msg">Sin resultados.</div>
           } @else {
-            <table class="val-table steps-table">
+            <table class="val-table" data-testid="steps-table">
               <thead>
                 <tr>
                   <th class="col-stripe"></th>
@@ -282,7 +282,7 @@ export type ValorizacionView = 'recibo' | 'calculo' | 'grafo';
                       -->
                       @if (mergedWith(s); as cuantos) {
                         <span
-                          class="step-merged"
+                          data-testid="step-merged"
                           [attr.title]="
                             'Este paso y ' +
                             (cuantos - 1) +

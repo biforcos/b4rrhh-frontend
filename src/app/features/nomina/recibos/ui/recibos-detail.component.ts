@@ -135,7 +135,8 @@ const STATUS_LABELS: Record<string, string> = {
               Invalidar
             </button>
             <button
-              class="btn btn-validar"
+              class="btn"
+              data-testid="validar"
               [disabled]="store.transitioning() || store.reciboDesaparecido()"
               (click)="validate()"
             >
@@ -177,7 +178,8 @@ const STATUS_LABELS: Record<string, string> = {
           -->
           @if (payroll.status !== 'NOT_VALID') {
             <button
-              class="btn btn-descargar"
+              class="btn"
+              data-testid="descargar"
               [disabled]="store.descargando() || store.reciboDesaparecido()"
               (click)="descargar()"
             >
@@ -191,9 +193,7 @@ const STATUS_LABELS: Record<string, string> = {
             </button>
           }
           @if (!store.conceptsLoading()) {
-            <button class="btn btn-valorizacion" (click)="drawerOpen.set(true)">
-              ⊞ Valorización
-            </button>
+            <button class="btn" (click)="drawerOpen.set(true)">⊞ Valorización</button>
           }
           <!--
             Y lo que llegó de verdad, que lo dice la cabecera y no el estado de esta pantalla. Los

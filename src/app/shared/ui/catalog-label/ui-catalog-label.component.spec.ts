@@ -22,7 +22,7 @@ describe('UiCatalogLabelComponent', () => {
   it('pinta el literal y el código detrás: el código nunca va solo (ADR-051 §4)', () => {
     const el = render('Sustitución en proceso de selección');
 
-    expect(el.querySelector('.ui-catalog-label__name')?.textContent?.trim()).toBe(
+    expect(el.querySelector('[data-testid="catalog-label-name"]')?.textContent?.trim()).toBe(
       'Sustitución en proceso de selección',
     );
     expect(el.querySelector('.ui-catalog-label__code')?.textContent?.trim()).toBe('420');
@@ -32,7 +32,9 @@ describe('UiCatalogLabelComponent', () => {
     for (const name of [null, '', '   ']) {
       const el = render(name);
 
-      expect(el.querySelector('.ui-catalog-label__name')?.textContent?.trim()).toBe('420');
+      expect(el.querySelector('[data-testid="catalog-label-name"]')?.textContent?.trim()).toBe(
+        '420',
+      );
       expect(el.querySelector('.ui-catalog-label__code')).toBeNull();
     }
   });

@@ -60,7 +60,7 @@
     } @else {
       <div class="master-list-panel__items" role="list" [attr.aria-label]="listAriaLabel()">
         @for (item of items(); track trackByKey($index, item)) {
-          <div class="master-list-panel__row" role="listitem">
+          <div role="listitem">
             <button
               type="button"
               class="master-list-panel__item"

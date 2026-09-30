@@ -1,5 +1,4 @@
 <app-entity-header
-  class="employee-page-header"
   [title]="fullName()"
   [subtitle]="subtitle()"
   [metadata]="metadata()"
@@ -32,7 +31,6 @@
     @if (isActive()) {
       <app-ui-button
         type="button"
-        class="employee-page-header__danger-action"
         severity="danger"
         size="small"
         [label]="texts.employeePageHeaderTerminateAction"
@@ -41,7 +39,6 @@
     } @else {
       <app-ui-button
         type="button"
-        class="employee-page-header__neutral-action"
         severity="contrast"
         [outlined]="true"
         size="small"

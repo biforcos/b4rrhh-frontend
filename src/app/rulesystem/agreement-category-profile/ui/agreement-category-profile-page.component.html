@@ -43,19 +43,16 @@
       </thead>
       <tbody>
         @for (cat of store.categories(); track cat.categoryCode) {
-          <tr
-            class="acp-page__row"
-            [class.acp-page__row--editing]="store.editingCategoryCode() === cat.categoryCode"
-          >
-            <td class="acp-page__cell">
+          <tr [class.acp-page__row--editing]="store.editingCategoryCode() === cat.categoryCode">
+            <td>
               <span class="acp-page__code">{{ cat.categoryCode }}</span>
               @if (cat.categoryName) {
                 <span class="acp-page__name">{{ cat.categoryName }}</span>
               }
             </td>
-            <td class="acp-page__cell">{{ cat.grupoCotizacionCode || '—' }}</td>
-            <td class="acp-page__cell">{{ cat.tipoNomina || '—' }}</td>
-            <td class="acp-page__cell acp-page__cell--actions">
+            <td>{{ cat.grupoCotizacionCode || '—' }}</td>
+            <td>{{ cat.tipoNomina || '—' }}</td>
+            <td class="acp-page__cell--actions">
               @if (store.editingCategoryCode() !== cat.categoryCode) {
                 <app-ui-button
                   label="Editar"

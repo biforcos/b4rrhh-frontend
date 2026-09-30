@@ -3,7 +3,6 @@
     @if (showManageAction()) {
       <app-ui-button
         type="button"
-        class="editable-slot-section__manage-action"
         severity="secondary"
         [outlined]="true"
         size="small"
@@ -15,7 +14,6 @@
     @if (showAddAction()) {
       <app-ui-button
         type="button"
-        class="editable-slot-section__add-action"
         [outlined]="true"
         size="small"
         [label]="texts().addAction"
@@ -26,7 +24,6 @@
     @if (showExitManageAction()) {
       <app-ui-button
         type="button"
-        class="editable-slot-section__exit-manage-action"
         severity="secondary"
         [outlined]="true"
         size="small"
@@ -44,7 +41,7 @@
     @if (isCreating()) {
       <article class="editable-slot-section__row editable-slot-section__row--draft">
         @if (hasCustomCreateForm()) {
-          <div class="editable-slot-section__fields editable-slot-section__fields--custom">
+          <div class="editable-slot-section__fields">
             <ng-container [ngTemplateOutlet]="customCreateFormTemplate()!"></ng-container>
           </div>
         } @else {
@@ -90,7 +87,6 @@
           />
           <app-ui-button
             type="button"
-            class="editable-slot-section__cancel-action"
             severity="secondary"
             [outlined]="true"
             size="small"
@@ -112,7 +108,7 @@
           >
             @if (isRowEditing(row)) {
               @if (hasCustomEditForm()) {
-                <div class="editable-slot-section__fields editable-slot-section__fields--custom">
+                <div class="editable-slot-section__fields">
                   <ng-container [ngTemplateOutlet]="customEditFormTemplate()!"></ng-container>
                 </div>
               } @else {
@@ -144,7 +140,6 @@
                 />
                 <app-ui-button
                   type="button"
-                  class="editable-slot-section__cancel-action"
                   severity="secondary"
                   [outlined]="true"
                   size="small"
@@ -158,7 +153,6 @@
                 <div class="editable-slot-section__row-actions">
                   <app-ui-button
                     type="button"
-                    class="editable-slot-section__danger-action"
                     severity="danger"
                     [outlined]="true"
                     size="small"
@@ -167,7 +161,6 @@
                   />
                   <app-ui-button
                     type="button"
-                    class="editable-slot-section__cancel-action"
                     severity="secondary"
                     [outlined]="true"
                     size="small"
@@ -223,7 +216,6 @@
                   @if (canDelete()) {
                     <app-ui-button
                       type="button"
-                      class="editable-slot-section__danger-action"
                       severity="danger"
                       [outlined]="true"
                       size="small"

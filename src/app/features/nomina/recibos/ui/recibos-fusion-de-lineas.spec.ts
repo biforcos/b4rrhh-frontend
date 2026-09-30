@@ -35,7 +35,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
   it('un paso que comparte línea con otro dice con cuántos y cuál', () => {
     const root = render({ steps: CUATRO_TRAMOS, concepts: DOS_LINEAS_FUNDIDAS });
 
-    const marcas = root.querySelectorAll('.step-merged');
+    const marcas = root.querySelectorAll('[data-testid="step-merged"]');
     expect(marcas.length).toBe(4);
     expect(marcas[0].textContent).toContain('línea 1');
     expect(marcas[0].textContent).toContain('2 tramos');
@@ -59,7 +59,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
       concepts: [linea(1, 1000, 1), linea(2, 250, 1), linea(3, 490, 1), linea(4, 270, 1)],
     });
 
-    expect(root.querySelectorAll('.step-merged').length).toBe(0);
+    expect(root.querySelectorAll('[data-testid="step-merged"]').length).toBe(0);
   });
 
   /** Y un paso que no llegó al folio tampoco: no tiene línea que compartir. */
@@ -77,7 +77,7 @@ describe('La fusión de líneas se dice, y sólo cuando la hay', () => {
 
     const root = render({ steps: [tecnico], concepts: [] });
 
-    expect(root.querySelectorAll('.step-merged').length).toBe(0);
+    expect(root.querySelectorAll('[data-testid="step-merged"]').length).toBe(0);
   });
 
   function paso(

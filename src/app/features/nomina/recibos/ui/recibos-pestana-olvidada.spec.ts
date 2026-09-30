@@ -226,7 +226,7 @@ describe('Volver a la pestaña del recibo', () => {
 
       expect(deshabilitado(host, '.btn-recalcular')).toBe(true);
       expect(deshabilitado(host, '.btn-invalidar')).toBe(true);
-      expect(deshabilitado(host, '.btn-validar')).toBe(true);
+      expect(deshabilitado(host, '[data-testid="validar"]')).toBe(true);
       expect(deshabilitado(host, '.btn-cerrar')).toBe(true);
     });
 

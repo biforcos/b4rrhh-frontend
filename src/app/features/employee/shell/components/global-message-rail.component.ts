@@ -63,7 +63,7 @@ const MAX_VISIBLE = 4;
             @if (msg.sectionId) {
               <button class="toast__link" type="button" (click)="sectionRequested.emit(msg)">
                 Ir a la sección
-                <b4-icon class="toast__link-icon" name="flecha-derecha" [size]="16" />
+                <b4-icon name="flecha-derecha" [size]="16" />
               </button>
             }
           </div>

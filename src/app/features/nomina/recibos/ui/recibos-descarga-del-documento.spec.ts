@@ -120,7 +120,7 @@ describe('Descargar el documento desde la pantalla del recibo', () => {
   }
 
   function boton(fixture: ReturnType<typeof render>): HTMLButtonElement | null {
-    return (fixture.nativeElement as HTMLElement).querySelector('.btn-descargar');
+    return (fixture.nativeElement as HTMLElement).querySelector('[data-testid="descargar"]');
   }
 
   function dicho(fixture: ReturnType<typeof render>): string {

@@ -298,7 +298,7 @@ const MONTH_NAMES_ES = [
                   como una lista (b4rrhh/backend#121).
                 -->
                 @if (grupo.label) {
-                  <tr class="subsection-row">
+                  <tr>
                     <th class="subsection-label" colspan="6" scope="colgroup">{{ grupo.label }}</th>
                   </tr>
                 }

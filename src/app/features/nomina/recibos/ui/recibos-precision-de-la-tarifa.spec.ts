@@ -125,7 +125,7 @@ describe('La tarifa se enseña con la precisión que se usó', () => {
     fixture.detectChanges();
 
     const celdas = Array.from(
-      host.querySelectorAll('.steps-table tbody .col-num-cell'),
+      host.querySelectorAll('[data-testid="steps-table"] tbody .col-num-cell'),
     ) as HTMLElement[];
     // Cantidad, tarifa, importe: la tarifa es la segunda.
     return celdas[1].textContent?.trim() ?? '';

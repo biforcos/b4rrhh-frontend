@@ -265,7 +265,7 @@ describe('El enlace entre «Cálculo» y «Grafo»', () => {
 
   function filasDe(conceptCode: string): HTMLElement[] {
     return Array.from(
-      host.querySelectorAll(`.steps-table tbody tr[data-concept="${conceptCode}"]`),
+      host.querySelectorAll(`[data-testid="steps-table"] tbody tr[data-concept="${conceptCode}"]`),
     ) as HTMLElement[];
   }
 

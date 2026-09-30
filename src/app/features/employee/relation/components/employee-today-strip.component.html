@@ -5,11 +5,7 @@
   </app-section-heading>
   <dl class="today__grid">
     @for (item of items(); track item.anchor) {
-      <div
-        class="today__item"
-        [class.today__item--empty]="item.value === null"
-        [class.today__item--anomaly]="item.value === null && item.anomaly"
-      >
+      <div class="today__item" [class.today__item--anomaly]="item.value === null && item.anomaly">
         <dt class="today__label">
           <b4-icon [name]="item.icon" [size]="16" />
           {{ item.label }}

@@ -19,19 +19,11 @@
   </app-entity-header>
 
   @if (submitSuccess()) {
-    <p-message
-      severity="success"
-      [text]="successMessage!"
-      styleClass="work-center-detail-panel__feedback"
-    />
+    <p-message severity="success" [text]="successMessage!" />
   }
 
   @if (submitError()) {
-    <p-message
-      severity="error"
-      [text]="submitError()!"
-      styleClass="work-center-detail-panel__feedback"
-    />
+    <p-message severity="error" [text]="submitError()!" />
   }
 
   <div class="work-center-detail-panel__sections">
@@ -42,33 +34,25 @@
             <span class="work-center-detail-panel__view-label">{{
               texts.fieldWorkCenterCodeLabel
             }}</span>
-            <span class="work-center-detail-panel__view-value">{{
-              displayValue(detail()?.workCenterCode)
-            }}</span>
+            <span>{{ displayValue(detail()?.workCenterCode) }}</span>
           </div>
           <div class="work-center-detail-panel__view-item">
             <span class="work-center-detail-panel__view-label">{{
               texts.fieldCompanyCodeLabel
             }}</span>
-            <span class="work-center-detail-panel__view-value">{{
-              displayValue(detail()?.companyCode)
-            }}</span>
+            <span>{{ displayValue(detail()?.companyCode) }}</span>
           </div>
           <div
             class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
           >
             <span class="work-center-detail-panel__view-label">{{ texts.fieldNameLabel }}</span>
-            <span class="work-center-detail-panel__view-value">{{
-              displayValue(detail()?.name)
-            }}</span>
+            <span>{{ displayValue(detail()?.name) }}</span>
           </div>
           <div class="work-center-detail-panel__view-item">
             <span class="work-center-detail-panel__view-label">{{
               texts.fieldStartDateLabel
             }}</span>
-            <span class="work-center-detail-panel__view-value">{{
-              displayValue(detail()?.startDate)
-            }}</span>
+            <span>{{ displayValue(detail()?.startDate) }}</span>
           </div>
           <div
             class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
@@ -76,9 +60,7 @@
             <span class="work-center-detail-panel__view-label">{{
               texts.fieldDescriptionLabel
             }}</span>
-            <span
-              class="work-center-detail-panel__view-value work-center-detail-panel__view-value--soft"
-            >
+            <span class="work-center-detail-panel__view-value--soft">
               {{ detail()?.description?.trim() || texts.detailDescriptionEmpty }}
             </span>
           </div>
@@ -142,53 +124,41 @@
     <app-section-card [title]="texts.sectionAddressTitle">
       @if (isViewMode()) {
         @if (hasAddress) {
-          <div
-            class="work-center-detail-panel__view-grid work-center-detail-panel__view-grid--address"
-          >
+          <div class="work-center-detail-panel__view-grid">
             <div
               class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
             >
               <span class="work-center-detail-panel__view-label">{{ texts.fieldStreetLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{
-                displayValue(detail()?.address?.street)
-              }}</span>
+              <span>{{ displayValue(detail()?.address?.street) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{ texts.fieldCityLabel }}</span>
-              <span class="work-center-detail-panel__view-value">{{
-                displayValue(detail()?.address?.city)
-              }}</span>
+              <span>{{ displayValue(detail()?.address?.city) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{
                 texts.fieldPostalCodeLabel
               }}</span>
-              <span class="work-center-detail-panel__view-value">{{
-                displayValue(detail()?.address?.postalCode)
-              }}</span>
+              <span>{{ displayValue(detail()?.address?.postalCode) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{
                 texts.fieldRegionCodeLabel
               }}</span>
-              <span class="work-center-detail-panel__view-value">{{
-                displayValue(detail()?.address?.regionCode)
-              }}</span>
+              <span>{{ displayValue(detail()?.address?.regionCode) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{
                 texts.fieldCountryCodeLabel
               }}</span>
-              <span class="work-center-detail-panel__view-value">{{
-                displayValue(detail()?.address?.countryCode)
-              }}</span>
+              <span>{{ displayValue(detail()?.address?.countryCode) }}</span>
             </div>
           </div>
         } @else {
           <p class="work-center-detail-panel__empty-copy">{{ texts.detailAddressEmpty }}</p>
         }
       } @else {
-        <div class="work-center-detail-panel__grid work-center-detail-panel__grid--address">
+        <div class="work-center-detail-panel__grid">
           <div class="work-center-detail-panel__field work-center-detail-panel__field--full">
             <label for="street" class="work-center-detail-panel__label">{{
               texts.fieldStreetLabel
@@ -228,18 +198,10 @@
         <p class="work-center-detail-panel__empty-copy">{{ texts.contactsCreateHint }}</p>
       } @else {
         @if (contactSuccessMessage) {
-          <p-message
-            severity="success"
-            [text]="contactSuccessMessage"
-            styleClass="work-center-detail-panel__feedback"
-          />
+          <p-message severity="success" [text]="contactSuccessMessage" />
         }
         @if (contactSubmitError()) {
-          <p-message
-            severity="error"
-            [text]="contactSubmitError()!"
-            styleClass="work-center-detail-panel__feedback"
-          />
+          <p-message severity="error" [text]="contactSubmitError()!" />
         }
 
         <div class="work-center-detail-panel__contacts-toolbar">

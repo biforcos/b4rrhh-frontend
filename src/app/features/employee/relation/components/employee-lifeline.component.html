@@ -47,7 +47,7 @@
       }
 
       <!-- El eje: meses o años, y encima los hitos de la relación. -->
-      <div class="lifeline__axis-label"></div>
+      <div aria-hidden="true"></div>
       <div class="lifeline__axis" #axis>
         @for (tick of ticks(); track tick.id) {
           <span
@@ -70,7 +70,7 @@
               [label]="event.showLabel ? null : eventTitle(event)"
             />
             @if (event.showLabel) {
-              <span class="lifeline__event-label">{{ event.label }}</span>
+              <span data-testid="lifeline-event-label">{{ event.label }}</span>
             }
           </span>
         }

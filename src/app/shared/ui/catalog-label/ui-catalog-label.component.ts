@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   selector: 'app-ui-catalog-label',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <span class="ui-catalog-label__name">{{ shownName() }}</span>
+    <span data-testid="catalog-label-name">{{ shownName() }}</span>
     @if (shownCode(); as code) {
       <!-- El aire lo pone el margen; el espacio se queda porque separa las dos partes al copiar
            la fila o al leerla en voz. -->

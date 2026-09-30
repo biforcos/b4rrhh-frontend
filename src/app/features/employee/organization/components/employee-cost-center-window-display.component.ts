@@ -12,7 +12,7 @@ import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center
   template: `
     <div class="window-display">
       <div class="window-header">
-        <span class="window-period">
+        <span>
           <strong>{{ texts.costCenterSectionStartDateLabel }}:</strong> {{ window().startDate }}
           @if (window().endDate) {
             - {{ window().endDate }}
@@ -20,7 +20,7 @@ import { EmployeeCostCenterWindowModel } from '../../models/employee-cost-center
             - {{ texts.costCenterSectionCurrentPeriodLabel }}
           }
         </span>
-        <span class="window-total">
+        <span>
           <strong>{{ texts.costCenterSectionTotalLabel }}:</strong>
           {{ window().totalAllocationPercentage }}%
         </span>

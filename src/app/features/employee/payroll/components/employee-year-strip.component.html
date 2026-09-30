@@ -92,7 +92,7 @@
         @if (m.activeMarks > 0) {
           <button
             type="button"
-            class="year-strip__mark year-strip__mark--active"
+            class="year-strip__mark"
             [attr.aria-label]="marksLabel(m.activeMarks, 'active', m.name)"
             (click)="marksPicked.emit(m.period)"
           >

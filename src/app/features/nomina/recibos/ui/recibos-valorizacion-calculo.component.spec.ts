@@ -116,7 +116,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
     expect(texto).toContain('Se calculó antes de que el motor guardara sus pasos');
     expect(texto).toContain('Recalcúlalo para verlos');
     expect(texto).toContain('14 líneas');
-    expect(folio.querySelector('.steps-table')).toBeNull();
+    expect(folio.querySelector('[data-testid="steps-table"]')).toBeNull();
   });
 
   /**
@@ -138,7 +138,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
     const folio = render({ steps: MES_PARTIDO, stepsLoaded: true });
     abrirCalculo(folio);
 
-    expect(folio.querySelector('.steps-table tfoot')).toBeNull();
+    expect(folio.querySelector('[data-testid="steps-table"] tfoot')).toBeNull();
     expect(folio.querySelector('.steps-note')?.textContent).toContain('no se suma');
   });
 
@@ -208,7 +208,7 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
 
     expect(fixture.componentInstance.view()).toBe('recibo');
     const folio = fixture.nativeElement as HTMLElement;
-    expect(folio.querySelector('.steps-table')).toBeNull();
+    expect(folio.querySelector('[data-testid="steps-table"]')).toBeNull();
     expect(folio.querySelectorAll('.val-table tbody tr')).toHaveLength(CATORCE_LINEAS.length);
   });
 
@@ -280,7 +280,9 @@ describe('La pestaña «Cálculo» de la Valorización', () => {
   function filasDeCalculo(steps: ReadonlyArray<PayrollCalculationStepModel>): HTMLElement[] {
     const host = render({ steps, stepsLoaded: true });
     abrirCalculo(host);
-    return Array.from(host.querySelectorAll('.steps-table tbody tr')) as HTMLElement[];
+    return Array.from(
+      host.querySelectorAll('[data-testid="steps-table"] tbody tr'),
+    ) as HTMLElement[];
   }
 
   function celda(fila: HTMLElement, index: number): string {

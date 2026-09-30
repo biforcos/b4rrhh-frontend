@@ -27,7 +27,7 @@
   }
 
   <section class="catalog-page__main-grid">
-    <aside class="catalog-page__panel catalog-page__panel--types">
+    <aside class="catalog-page__panel">
       <h3>{{ texts.typePanelTitle }}</h3>
       @if (loadingRuleEntityTypes()) {
         <p class="catalog-page__feedback catalog-page__feedback--loading">
@@ -43,7 +43,7 @@
       }
     </aside>
 
-    <section class="catalog-page__panel catalog-page__panel--entities">
+    <section class="catalog-page__panel">
       <header class="catalog-page__panel-header">
         <h3>{{ texts.entityPanelTitle }}</h3>
       </header>
