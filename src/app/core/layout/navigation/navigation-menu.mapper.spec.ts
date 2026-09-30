@@ -33,6 +33,7 @@ function type(
   return {
     code,
     name: code,
+    label: code,
     active: true,
     literalClass: RuleEntityTypeResponseLiteralClassEnum.ProperNoun,
     maintenanceMode: RuleEntityTypeResponseMaintenanceModeEnum.Maintained,

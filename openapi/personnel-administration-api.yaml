@@ -3349,6 +3349,8 @@ paths:
       summary: Create rule entity type
       tags:
         - Rule Entity Types
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
       requestBody:
         required: true
         content:
@@ -3367,6 +3369,8 @@ paths:
       summary: List rule entity types
       tags:
         - Rule Entity Types
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
       responses:
         "200":
           description: Rule entity types list
@@ -3384,6 +3388,7 @@ paths:
       tags:
         - Rule Entity Types
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleEntityTypeCode
           required: true
@@ -3441,6 +3446,8 @@ paths:
       summary: Create rule entity
       tags:
         - Rule Entities
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
       requestBody:
         required: true
         content:
@@ -3475,6 +3482,7 @@ paths:
         - `ruleSystemCode + ruleEntityTypeCode`
         - `ruleSystemCode + ruleEntityTypeCode + code`
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: query
           name: ruleSystemCode
           required: false
@@ -3523,6 +3531,7 @@ paths:
         - Rule Entities
       description: Returns the exact occurrence identified by ruleSystemCode, ruleEntityTypeCode, code and startDate.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -3566,6 +3575,7 @@ paths:
         Identity fields (ruleSystemCode, ruleEntityTypeCode, code, startDate) are immutable.
         This operation does not create a new occurrence.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -3660,6 +3670,7 @@ paths:
         Explicit domain action to close an existing occurrence by setting endDate.
         Identity fields remain immutable.
       parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
           name: ruleSystemCode
           required: true
@@ -12188,6 +12199,7 @@ components:
       required:
         - code
         - name
+        - label
         - active
         - literalClass
         - maintenanceMode
@@ -12198,6 +12210,12 @@ components:
           type: string
         name:
           type: string
+          description: The stored name of the type, the one that is edited. Never translated.
+        label:
+          type: string
+          description: >-
+            The name of the type in the language of Accept-Language (ADR-052, backend#152), or
+            the stored name when there is no translation for it or no language is asked for.
         active:
           type: boolean
         literalClass:
@@ -12281,6 +12299,7 @@ components:
         - ruleEntityTypeCode
         - code
         - name
+        - label
         - active
         - startDate
       properties:
@@ -12292,6 +12311,15 @@ components:
           type: string
         name:
           type: string
+          description: >-
+            The stored literal, the one that is edited (ADR-052 §1). Never translated: a
+            maintenance screen shows it next to the label (backend#152).
+        label:
+          type: string
+          description: >-
+            The literal in the language of Accept-Language, resolved like every other catalog
+            label (ADR-052 §3), or the stored name when there is no translation for it, the
+            type is not translatable or no language is asked for.
         description:
           type: string
           nullable: true

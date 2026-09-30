@@ -30,6 +30,10 @@
   background: var(--surface-hover);
 }
 
+.rule-entity-list__label {
+  color: var(--text-tertiary);
+}
+
 .rule-entity-list__actions {
   display: flex;
   gap: 0.28rem;

@@ -14,7 +14,12 @@
       @for (item of items(); track item.occurrenceKey) {
         <tr>
           <td>{{ item.code }}</td>
-          <td>{{ item.name }}</td>
+          <td>
+            {{ item.name }}
+            @if (item.translatedLabel) {
+              <span class="rule-entity-list__label">· {{ item.translatedLabel }}</span>
+            }
+          </td>
           <td>{{ item.active ? texts.activeYes : texts.activeNo }}</td>
           <td>{{ item.startDate | date: displayDateFormat }}</td>
           <td>{{ (item.endDate | date: displayDateFormat) ?? '-' }}</td>
