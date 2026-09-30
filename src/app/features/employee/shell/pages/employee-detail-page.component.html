@@ -4,7 +4,10 @@
 
      Cada hueco va en su propio @if con un único nodo raíz: Angular solo proyecta un bloque de
      control de flujo al slot que dice su `slot="…"` cuando el bloque tiene un solo nodo raíz;
-     con varios, el bloque entero cae en el hueco por defecto. -->
+     con varios, el bloque entero cae en el hueco por defecto.
+
+     Con el Historial abierto el raíl se pliega entero y vuelve al cerrarlo (frontend#118): a 1280
+     las tablas de vigencias no caben con los dos a los lados. Se decide aquí, no en cada sección. -->
 <app-page-skeleton
   class="employee-detail"
   storageKey="employee-detail"
@@ -15,6 +18,7 @@
       : null
   "
   [railToggleLabel]="texts.railToggleLabel"
+  [railYieldsToContextual]="true"
 >
   <!-- Identidad (ADR-050 §1 y §6): la barra a ancho completo, la misma en todas las secciones,
        con la miga encima y las acciones de página a la derecha. Nunca desaparece el nombre. -->

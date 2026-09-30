@@ -77,6 +77,14 @@ export class PageSkeletonComponent {
    * estado recordado: cuando deja de forzarse, vuelve a lo que el usuario había elegido.
    */
   readonly contextualForcedOpen = input(false);
+  /**
+   * El raíl le deja sitio al contextual (`b4rrhh/frontend#118`): al abrirse el contextual se
+   * pliega entero —la única forma plegada que tiene, ADR-050 §4— y al cerrarse vuelve a como
+   * estaba. Mientras tanto no se recuerda nada: el panel se abre para mirar, no para navegar, y
+   * lo que el usuario había elegido para el raíl sigue siendo lo suyo. Si lo despliega a mano con
+   * el panel abierto, se respeta hasta que lo cierre. Lo pide la página, no cada sección.
+   */
+  readonly railYieldsToContextual = input(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
@@ -88,7 +96,13 @@ export class PageSkeletonComponent {
   /** Lo que el ancho decidió en el primer render; `null` hasta que se mide. */
   private readonly contextualFitsState = signal<boolean | null>(null);
 
-  readonly railCollapsed = this.railCollapsedState.asReadonly();
+  /**
+   * El estado del raíl mientras cede al contextual; `null` cuando no cede. Manda sobre el
+   * recordado y no se guarda.
+   */
+  private readonly railYieldState = signal<boolean | null>(null);
+
+  readonly railCollapsed = computed(() => this.railYieldState() ?? this.railCollapsedState());
   readonly hasContextual = computed(() => this.contextualTitle() !== null);
   readonly contextualOpen = computed(
     () => this.hasContextual() && (this.contextualForcedOpen() || this.contextualOpenState()),
@@ -105,6 +119,16 @@ export class PageSkeletonComponent {
         const remembered = this.read(key, 'contextual-open');
         this.contextualOpenState.set(remembered === null ? (fits ?? false) : remembered === 'true');
       });
+    });
+
+    // Cede al abrirse el contextual y lo devuelve al cerrarse. Solo en los cambios: mientras sigue
+    // abierto, lo que el usuario haga con el raíl es suyo.
+    let wasYielding = false;
+    effect(() => {
+      const yielding = this.railYieldsToContextual() && this.contextualOpen();
+      if (yielding === wasYielding) return;
+      wasYielding = yielding;
+      untracked(() => this.railYieldState.set(yielding ? true : null));
     });
 
     // Hace falta el DOM para medir: tras el primer render, y solo esa vez. No se escucha
@@ -160,6 +184,11 @@ export class PageSkeletonComponent {
   }
 
   toggleRail(): void {
+    const yielded = this.railYieldState();
+    if (yielded !== null) {
+      this.railYieldState.set(!yielded);
+      return;
+    }
     const next = !this.railCollapsedState();
     this.railCollapsedState.set(next);
     this.write(this.storageKey(), 'rail-collapsed', String(next));

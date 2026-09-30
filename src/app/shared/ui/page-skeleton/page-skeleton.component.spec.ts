@@ -12,6 +12,7 @@ import { PAGE_SKELETON_STORAGE_PREFIX, PageSkeletonComponent } from './page-skel
       [rail]="true"
       [contextualTitle]="contextualTitle()"
       [contextualForcedOpen]="forced()"
+      [railYieldsToContextual]="yields()"
     >
       <nav slot="identidad" class="t-identidad">Ana</nav>
       <!-- Un @if con un solo nodo raíz se proyecta al slot de ese nodo; así lo usan las páginas. -->
@@ -28,6 +29,7 @@ class HostComponent {
   readonly storageKey = signal<string | null>('test-page');
   readonly contextualTitle = signal<string | null>('Historial');
   readonly forced = signal(false);
+  readonly yields = signal(true);
 }
 
 function clearStorage(): void {
@@ -191,6 +193,57 @@ describe('PageSkeletonComponent', () => {
     fixture.componentInstance.forced.set(false);
     fixture.detectChanges();
     expect(el('.t-contextual')).toBeNull();
+  });
+
+  // Al abrir el contextual, el raíl le deja sitio: se pliega entero, sin recordarlo, y vuelve a
+  // como estaba al cerrarlo (b4rrhh/frontend#118).
+  describe('el raíl cede al contextual', () => {
+    const railKey = `${PAGE_SKELETON_STORAGE_PREFIX}.test-page.rail-collapsed`;
+    const contextualToggle = () => el('.page-skeleton__contextual-toggle')!;
+    const railToggle = () => el('.page-skeleton__rail-toggle')!;
+    const click = (button: HTMLElement) => {
+      button.click();
+      fixture.detectChanges();
+    };
+
+    it('abrir el panel pliega el raíl sin guardarlo, y cerrarlo lo devuelve', () => {
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).not.toBeNull();
+      expect(localStorage.getItem(railKey)).toBeNull();
+
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).toBeNull();
+      expect(localStorage.getItem(railKey)).toBeNull();
+    });
+
+    it('desplegarlo a mano con el panel abierto se respeta hasta cerrar el panel', () => {
+      click(contextualToggle());
+      click(railToggle());
+      expect(el('.page-skeleton__rail--collapsed')).toBeNull();
+      expect(railToggle().getAttribute('aria-expanded')).toBe('true');
+      expect(localStorage.getItem(railKey)).toBeNull();
+
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).toBeNull();
+
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).not.toBeNull();
+    });
+
+    it('un raíl que ya estaba plegado sigue plegado al cerrar', () => {
+      click(railToggle());
+      click(contextualToggle());
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).not.toBeNull();
+      expect(localStorage.getItem(railKey)).toBe('true');
+    });
+
+    it('si la página no lo pide, abrir el panel no toca el raíl', () => {
+      fixture.componentInstance.yields.set(false);
+      fixture.detectChanges();
+      click(contextualToggle());
+      expect(el('.page-skeleton__rail--collapsed')).toBeNull();
+    });
   });
 
   it('sin título no hay hueco contextual', () => {
