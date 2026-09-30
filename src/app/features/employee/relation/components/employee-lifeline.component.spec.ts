@@ -6,7 +6,7 @@ import { EmployeeContractModel } from '../../models/employee-contract.model';
 import { EmployeePresenceModel } from '../../models/employee-presence.model';
 import { EmployeeWorkCenterModel } from '../../models/employee-work-center.model';
 import { EmployeeRelationAnchor } from '../../routing/employee-route-builder.util';
-import { EmployeeLifelineComponent } from './employee-lifeline.component';
+import { EmployeeLifelineComponent, tickLabelStep } from './employee-lifeline.component';
 
 /** EMP000003 de la semilla: dos etapas, cuatro contratos, un centro de cuatro días. */
 const PRESENCES: EmployeePresenceModel[] = [
@@ -187,6 +187,33 @@ describe('EmployeeLifelineComponent', () => {
     expect(ticks).toContain('2026');
   });
 
+  it('un hito junto a hoy no escribe su nombre encima de «Hoy»: baja a la segunda fila', () => {
+    // Como EMP000173 del #115: cesado y con la readmisión tres días después de hoy. El cese, un
+    // año antes, para que lo único que haya cerca de la readmisión sea «Hoy».
+    fixture.componentInstance.presences.set([
+      { ...PRESENCES[0], endDate: '2025-06-12' },
+      { ...PRESENCES[1], startDate: '2026-09-01' },
+    ]);
+    fixture.detectChanges();
+
+    const rehire = one('.lifeline__event--rehire')!;
+    expect(rehire.textContent).toContain('Readmisión');
+    expect(rehire.classList.contains('lifeline__event--tier1')).toBe(true);
+  });
+
+  it('y si tampoco cabe su nombre en la segunda, el icono solo, pero no debajo de «Hoy»', () => {
+    // El caso de EMP000173 tal cual: cese en junio, readmisión tres días después de hoy. El nombre
+    // del cese ocupa la segunda fila y no queda sitio para el de la readmisión en ninguna.
+    fixture.componentInstance.presences.set([
+      { ...PRESENCES[0], endDate: '2026-06-12' },
+      { ...PRESENCES[1], startDate: '2026-09-01' },
+    ]);
+    fixture.detectChanges();
+
+    const rehire = one('.lifeline__event--rehire')!;
+    expect(rehire.classList.contains('lifeline__event--tier1')).toBe(true);
+  });
+
   it('un solape entre dos vigencias del mismo carril se marca como solape', () => {
     fixture.componentInstance.contracts.set([
       ...CONTRACTS.slice(0, 3),
@@ -240,5 +267,34 @@ describe('EmployeeLifelineComponent', () => {
     expect(fixture.componentInstance.requested()).toBe('work-center');
     all('.lifeline__lane')[1].querySelector<HTMLElement>('.lifeline__segment')!.click();
     expect(fixture.componentInstance.requested()).toBe('contract');
+  });
+});
+
+/**
+ * Cuántos rótulos caben en el eje (`b4rrhh/frontend#115`). Con el Historial abierto, a 1280, el
+ * eje se queda en 199 px para dieciocho meses: 11 px por mes, y cada rótulo mide de 18 a 24 px.
+ * Se escribían todos, uno encima de otro. El paso es el menor de 1, 2, 3, 6 o 12 meses que deja
+ * 24 px entre rótulos; todos dividen el año, así que enero —el que lleva el año— siempre sale.
+ */
+describe('tickLabelStep', () => {
+  it('con sitio, un rótulo por mes', () => {
+    expect(tickLabelStep(56)).toBe(1);
+    // Con el Historial cerrado, a 1280: 546 px para 640 días.
+    expect(tickLabelStep((546 / 640) * (365.25 / 12))).toBe(1);
+  });
+
+  it('con el Historial abierto a 1280, uno de cada tres', () => {
+    expect(tickLabelStep(199 / 18)).toBe(3);
+  });
+
+  it('va de 1 a 2, 3, 6 y al año según se estrecha', () => {
+    expect(tickLabelStep(20)).toBe(2);
+    expect(tickLabelStep(11)).toBe(3);
+    expect(tickLabelStep(7)).toBe(6);
+    expect(tickLabelStep(3)).toBe(12);
+  });
+
+  it('sin medir todavía, no aclara nada', () => {
+    expect(tickLabelStep(0)).toBe(1);
   });
 });

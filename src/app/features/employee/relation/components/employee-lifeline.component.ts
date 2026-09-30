@@ -114,6 +114,29 @@ const MONTH_LABELS = [
   'dic',
 ];
 
+/**
+ * Separación mínima entre dos rótulos del eje, de centro a centro: un año (24 px) y un mes (18 px)
+ * a esa distancia dejan 3 px entre ellos. Con el Historial cerrado, a 1280, hay unos 26 px por mes
+ * y caben todos, que es como se veía hasta ahora.
+ */
+const TICK_LABEL_MIN_SPACING_PX = 24;
+/** Los pasos posibles, en meses. Todos dividen el año: enero, que lleva el año, siempre sale. */
+const TICK_LABEL_STEPS = [1, 2, 3, 6, 12];
+const DAYS_PER_MONTH = 365.25 / 12;
+
+/**
+ * Cada cuántos meses cabe un rótulo en el eje (`b4rrhh/frontend#115`). Con el Historial abierto
+ * el eje encoge a la mitad y los rótulos de mes se escribían uno encima de otro; las marcas se
+ * quedan todas, lo que se aclara es el texto. Sin medir todavía (0 px), no se aclara nada.
+ */
+export function tickLabelStep(pxPerMonth: number): number {
+  if (pxPerMonth <= 0) return 1;
+  return (
+    TICK_LABEL_STEPS.find((step) => step * pxPerMonth >= TICK_LABEL_MIN_SPACING_PX) ??
+    TICK_LABEL_STEPS[TICK_LABEL_STEPS.length - 1]
+  );
+}
+
 function toIso(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -339,7 +362,9 @@ export class EmployeeLifelineComponent {
 
   protected readonly ticks = computed<ReadonlyArray<LifelineTick>>(() => {
     const { start, end } = this.domain();
-    const monthly = daysBetween(start, end) <= MONTHLY_TICKS_MAX_DAYS;
+    const days = daysBetween(start, end);
+    const step = tickLabelStep((this.axisWidth() / days) * DAYS_PER_MONTH);
+    const monthly = days <= MONTHLY_TICKS_MAX_DAYS && step < 12;
     const ticks: LifelineTick[] = [];
     const cursor = parseLocalDate(start) ?? new Date();
     cursor.setDate(1);
@@ -352,11 +377,15 @@ export class EmployeeLifelineComponent {
       const iso = toIso(cursor);
       if (iso >= start) {
         const isJanuary = cursor.getMonth() === 0;
+        const labelled = !monthly || cursor.getMonth() % step === 0;
         ticks.push({
           id: iso,
           date: iso,
-          label:
-            !monthly || isJanuary ? String(cursor.getFullYear()) : MONTH_LABELS[cursor.getMonth()],
+          label: !labelled
+            ? ''
+            : !monthly || isJanuary
+              ? String(cursor.getFullYear())
+              : MONTH_LABELS[cursor.getMonth()],
           major: !monthly || isJanuary,
         });
       }
@@ -380,15 +409,28 @@ export class EmployeeLifelineComponent {
 
   /**
    * Los eventos con la etiqueta colocada contra las vecinas: en la primera fila si cabe, en la
-   * segunda si choca, y si choca en las dos se queda el icono solo (con su título).
+   * segunda si choca, y si choca en las dos se queda el icono solo (con su título). «Hoy» va en la
+   * primera fila y cuenta como una vecina más: un hito a tres días de hoy escribía su nombre
+   * encima (`b4rrhh/frontend#115`).
    */
   protected readonly placedEvents = computed<ReadonlyArray<LifelineEvent>>(() => {
     const lastLabelX: [number, number] = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
+    const todayX = this.todayInRange() ? this.todayX() : null;
+    const clearOfToday = (x: number): boolean =>
+      todayX === null || Math.abs(x - todayX) >= EVENT_LABEL_WIDTH_PX;
     return this.events().map((event) => {
       const x = this.x(event.date);
-      const tier = ([0, 1] as const).find((t) => x - lastLabelX[t] >= EVENT_LABEL_WIDTH_PX);
+      const tier = ([0, 1] as const).find(
+        (t) => x - lastLabelX[t] >= EVENT_LABEL_WIDTH_PX && (t === 1 || clearOfToday(x)),
+      );
       if (tier !== undefined) lastLabelX[tier] = x;
-      return { ...event, showLabel: tier !== undefined, tier: tier ?? 0 };
+      // Sin sitio para el nombre, el icono solo; y junto a hoy, en la segunda fila, porque en la
+      // primera lo tapa el fondo de «Hoy».
+      return {
+        ...event,
+        showLabel: tier !== undefined,
+        tier: tier ?? (clearOfToday(x) ? 0 : 1),
+      };
     });
   });
 
