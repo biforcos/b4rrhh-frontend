@@ -2,14 +2,74 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { employeeDirectorySeed } from './employee-directory.seed';
 import { EmployeeDirectoryReadGateway } from './employee-directory-read.gateway';
 import {
   EMPLOYEE_DIRECTORY_PAGE_SIZE,
   EMPLOYEE_DIRECTORY_SEARCH_DEBOUNCE_MS,
   EmployeeDirectoryStore,
 } from './employee-directory.store';
-import { EmployeeDirectoryQuery } from '../models/employee-list-item.model';
+import { EmployeeDirectoryQuery, EmployeeListItemModel } from '../models/employee-list-item.model';
+
+// Los datos de la pagina del directorio. Vivian en `employee-directory.seed.ts`, entre el codigo
+// de la aplicacion, y solo los usaba este spec (b4rrhh/frontend#121).
+const employeeDirectorySeed: ReadonlyArray<EmployeeListItemModel> = [
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'STAFF',
+    employeeNumber: '00012345',
+    displayName: 'Lidia Morales',
+    workCenter: 'Madrid HQ',
+    statusLabel: 'Active',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'MANAGER',
+    employeeNumber: '00012780',
+    displayName: 'Javier Paredes',
+    workCenter: 'Madrid HQ',
+    statusLabel: 'Active',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'STAFF',
+    employeeNumber: '00020311',
+    displayName: 'Marta Serrano',
+    workCenter: 'Barcelona North',
+    statusLabel: 'Active',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'STAFF',
+    employeeNumber: '00031809',
+    displayName: 'Nuria Cid',
+    workCenter: 'Valencia South',
+    statusLabel: 'On leave',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'STAFF',
+    employeeNumber: '00041274',
+    displayName: 'Diego Colomer',
+    workCenter: 'Bilbao Center',
+    statusLabel: 'Active',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'CONTRACTOR',
+    employeeNumber: '00012345',
+    displayName: 'Lidia Morales Contractor',
+    workCenter: 'Madrid HQ',
+    statusLabel: 'Active',
+  },
+  {
+    ruleSystemCode: 'PA-ES',
+    employeeTypeCode: 'TEMP',
+    employeeNumber: '00057822',
+    displayName: 'Aitana Llorens',
+    workCenter: 'Sevilla East',
+    statusLabel: 'Suspended',
+  },
+];
 
 describe('EmployeeDirectoryStore', () => {
   let store: EmployeeDirectoryStore;
