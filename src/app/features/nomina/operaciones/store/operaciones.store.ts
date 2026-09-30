@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
@@ -89,8 +90,10 @@ export function monthInputToPeriod(value: string): number | null {
 export class OperacionesStore {
   private readonly gateway = inject(OperacionesGateway);
   private readonly router = inject(Router);
+  private readonly scope = inject(RuleSystemScopeStore);
 
-  private readonly ruleSystemCodeState = signal<string>('ESP');
+  /** Vacío hasta que se resuelve el ámbito: ningún sistema de reglas escrito a mano (frontend#124). */
+  private readonly ruleSystemCodeState = signal<string>('');
   private readonly periodState = signal<number>(currentPeriod());
   private readonly payrollTypeCodeState = signal<'NORMAL' | 'EXTRA'>('NORMAL');
   private readonly targetModeState = signal<TargetSelectionMode>('ALL');
@@ -242,7 +245,13 @@ export class OperacionesStore {
   );
 
   constructor() {
-    this.loadEmployeeTypes();
+    // Arranca en el ámbito. Si antes de resolverse ya se escribió otro, se respeta lo escrito.
+    this.scope.whenResolved().subscribe((code) => {
+      if (code !== null && this.ruleSystemCodeState() === '') {
+        this.ruleSystemCodeState.set(code);
+        this.loadEmployeeTypes();
+      }
+    });
   }
 
   /**

@@ -1,10 +1,14 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyDetailPanelComponent } from './company-detail-panel.component';
 
 describe('CompanyDetailPanelComponent', () => {
   let fixture: ComponentFixture<CompanyDetailPanelComponent>;
+  const scopeCode = signal<string | null>('ESP');
 
   const detailFixture: CompanyDetailModel = {
     ruleSystemCode: 'ESP',
@@ -27,8 +31,10 @@ describe('CompanyDetailPanelComponent', () => {
   };
 
   beforeEach(async () => {
+    scopeCode.set('ESP');
     await TestBed.configureTestingModule({
       imports: [CompanyDetailPanelComponent],
+      providers: [{ provide: RuleSystemScopeStore, useValue: { activeCode: scopeCode } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CompanyDetailPanelComponent);
@@ -186,6 +192,32 @@ describe('CompanyDetailPanelComponent', () => {
       postalCode: '28013',
       regionCode: 'MD',
       countryCode: 'ESP',
+    });
+  });
+
+  describe('sistema de reglas del alta (frontend#124)', () => {
+    function openCreate(): HTMLInputElement {
+      fixture.componentRef.setInput('mode', 'create');
+      fixture.componentRef.setInput('detail', null);
+      fixture.componentRef.setInput('submitting', false);
+      fixture.componentRef.setInput('submitError', null);
+      fixture.componentRef.setInput('submitSuccess', null);
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('input#ruleSystemCode') as HTMLInputElement;
+    }
+
+    it('viene puesto con el del ámbito, editable y sin un marcador que parezca un valor', () => {
+      const input = openCreate();
+
+      expect(input.value).toBe('ESP');
+      expect(input.disabled).toBe(false);
+      expect(input.hasAttribute('placeholder')).toBe(false);
+    });
+
+    it('sin ámbito, viene vacío', () => {
+      scopeCode.set(null);
+
+      expect(openCreate().value).toBe('');
     });
   });
 

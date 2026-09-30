@@ -14,6 +14,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { TextareaModule } from 'primeng/textarea';
 
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { companyTexts } from '../company.texts';
 import {
   buildCompanyFormValueFromDetail,
@@ -63,6 +64,7 @@ export class CompanyDetailPanelComponent implements OnChanges {
 
   protected readonly texts = companyTexts;
   private readonly fb = inject(FormBuilder);
+  private readonly scope = inject(RuleSystemScopeStore);
 
   readonly form: FormGroup;
   protected readonly isCreateMode = computed(() => this.mode() === 'create');
@@ -232,7 +234,11 @@ export class CompanyDetailPanelComponent implements OnChanges {
 
     const initialValue = detail
       ? this.toFormState(buildCompanyFormValueFromDetail(detail))
-      : this.toFormState(buildEmptyCompanyFormValue());
+      : // El alta viene con el sistema del ámbito, editable (frontend#124).
+        this.toFormState({
+          ...buildEmptyCompanyFormValue(),
+          ruleSystemCode: this.scope.activeCode() ?? '',
+        });
 
     this.form.reset(initialValue);
     this.form.markAsPristine();

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { OperacionesStore } from '../store/operaciones.store';
@@ -26,6 +27,7 @@ describe('Invalidar en masa', () => {
       imports: [OperacionesPageComponent],
       providers: [
         provideZonelessChangeDetection(),
+        { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
         {
           provide: OperacionesGateway,
           useValue: {

@@ -1,8 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { CompanyGateway } from '../gateway/company.gateway';
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyStore } from '../store/company.store';
@@ -39,6 +41,7 @@ describe('CompanyPageComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: RuleSystemScopeStore, useValue: { activeCode: signal('ESP') } },
         {
           provide: CompanyGateway,
           useValue: {

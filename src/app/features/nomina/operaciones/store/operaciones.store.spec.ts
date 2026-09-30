@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { CalculationRun } from '../models/calculation-run.model';
@@ -76,6 +77,7 @@ describe('OperacionesStore', () => {
         OperacionesStore,
         { provide: OperacionesGateway, useValue: gatewayMock },
         { provide: Router, useValue: routerMock },
+        { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
       ],
     });
 

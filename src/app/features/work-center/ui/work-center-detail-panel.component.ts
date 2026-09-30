@@ -19,6 +19,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
 import { UiSelectComponent } from '../../../shared/ui/select/ui-select.component';
 import { SlotKeyOption } from '../../employee/shared/ui/section/editable-slot-section.model';
+import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { WorkCenterFieldCatalogService } from '../data-access/work-center-field-catalog.service';
 import {
   EntityHeaderComponent,
@@ -87,6 +88,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   protected readonly texts = workCenterTexts;
   private readonly fb = inject(FormBuilder);
   private readonly fieldCatalogService = inject(WorkCenterFieldCatalogService);
+  private readonly scope = inject(RuleSystemScopeStore);
   private readonly contactEditorModeState = signal<'hidden' | 'create' | 'edit'>('hidden');
   private readonly editingContactNumberState = signal<number | null>(null);
   private readonly contactTypeOptionsState = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
@@ -379,7 +381,11 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
     const detail = this.detail();
     const initialValue = detail
       ? this.toFormState(buildWorkCenterFormValueFromDetail(detail))
-      : this.toFormState(buildEmptyWorkCenterFormValue());
+      : // El alta viene con el sistema del ámbito, editable (frontend#124).
+        this.toFormState({
+          ...buildEmptyWorkCenterFormValue(),
+          ruleSystemCode: this.scope.activeCode() ?? '',
+        });
 
     this.form.reset(initialValue);
     this.form.markAsPristine();

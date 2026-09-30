@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { OperacionesStore } from '../store/operaciones.store';
 import { OperacionesPageComponent } from './operaciones-page.component';
@@ -27,6 +28,7 @@ describe('El formulario de lanzamiento enseña el suelo y el límite', () => {
       imports: [OperacionesPageComponent],
       providers: [
         provideZonelessChangeDetection(),
+        { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
         {
           provide: OperacionesGateway,
           useValue: {

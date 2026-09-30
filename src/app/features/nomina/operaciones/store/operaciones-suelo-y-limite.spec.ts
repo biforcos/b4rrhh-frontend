@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { CalculationRun } from '../models/calculation-run.model';
 import { OperacionesStore } from './operaciones.store';
@@ -69,6 +70,7 @@ describe('El lanzamiento dice hasta dónde atrás recalcula', () => {
         OperacionesStore,
         { provide: OperacionesGateway, useValue: gatewayMock },
         { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
+        { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
       ],
     });
 

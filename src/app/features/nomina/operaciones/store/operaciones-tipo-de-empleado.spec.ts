@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { OperacionesStore } from './operaciones.store';
 
@@ -29,6 +30,7 @@ describe('Operaciones: el tipo de empleado', () => {
           },
         },
         { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
+        { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
       ],
     });
     return TestBed.inject(OperacionesStore);
