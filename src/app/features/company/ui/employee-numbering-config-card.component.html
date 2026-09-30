@@ -1,63 +1,68 @@
-<div class="card">
-  <h3 class="mt-0 mb-3">Numeración de matrícula</h3>
+<div class="numbering-card">
+  <h3 class="numbering-card__title">Numeración de matrícula</h3>
 
   @if (loading()) {
-    <p class="text-color-secondary">Cargando...</p>
+    <p class="numbering-card__hint">Cargando...</p>
   } @else {
     @if (notConfigured()) {
-      <p class="text-color-secondary mb-3">
+      <p class="numbering-card__hint">
         Sin configurar — introduce los valores para activar la autonumeración.
       </p>
     }
 
-    <div class="grid gap-3">
-      <div class="field col-12 sm:col-6 md:col-3">
-        <label class="block mb-1">Prefijo</label>
+    <div class="numbering-card__fields">
+      <div class="numbering-card__field">
+        <label class="numbering-card__label" for="numbering-prefix">Prefijo</label>
         <input
+          id="numbering-prefix"
           pInputText
+          [fluid]="true"
           [ngModel]="draftPrefix()"
           (ngModelChange)="draftPrefix.set($event)"
           placeholder="EMP"
-          class="w-full"
           maxlength="14"
         />
       </div>
 
-      <div class="field col-12 sm:col-6 md:col-3">
-        <label class="block mb-1">Dígitos numéricos</label>
+      <div class="numbering-card__field">
+        <label class="numbering-card__label" for="numbering-length">Dígitos numéricos</label>
         <p-inputNumber
+          inputId="numbering-length"
+          [fluid]="true"
           [ngModel]="draftNumericPartLength()"
           (ngModelChange)="draftNumericPartLength.set($event)"
           [min]="1"
           [max]="14"
-          class="w-full"
         />
       </div>
 
-      <div class="field col-12 sm:col-6 md:col-3">
-        <label class="block mb-1">Incremento</label>
+      <div class="numbering-card__field">
+        <label class="numbering-card__label" for="numbering-step">Incremento</label>
         <p-inputNumber
+          inputId="numbering-step"
+          [fluid]="true"
           [ngModel]="draftStep()"
           (ngModelChange)="draftStep.set($event)"
           [min]="1"
-          class="w-full"
         />
       </div>
 
-      <div class="field col-12 sm:col-6 md:col-3">
-        <label class="block mb-1">Siguiente valor</label>
+      <div class="numbering-card__field">
+        <label class="numbering-card__label" for="numbering-next">Siguiente valor</label>
         <p-inputNumber
+          inputId="numbering-next"
+          [fluid]="true"
           [ngModel]="draftNextValue()"
           (ngModelChange)="draftNextValue.set($event)"
           [min]="1"
-          class="w-full"
         />
       </div>
     </div>
 
-    <div class="flex align-items-center gap-3 mt-2">
-      <div class="preview-badge">
-        Siguiente matrícula: <strong>{{ preview() }}</strong>
+    <div class="numbering-card__actions">
+      <div class="numbering-card__preview">
+        <span class="numbering-card__preview-label">Siguiente matrícula</span>
+        <span class="numbering-card__preview-value">{{ preview() }}</span>
       </div>
       <p-button label="Guardar" [loading]="saving()" (onClick)="save()" />
     </div>
