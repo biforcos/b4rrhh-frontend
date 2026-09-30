@@ -101,6 +101,10 @@ jobs:
           # si una plantilla interpola un campo de fecha sin `| date` ni
           # formatDisplayDate, que es como una ficha acababa diciendo la misma
           # fecha en dd/mm/aaaa y en ISO a un palmo.
+          # lint:unimported es el de los ficheros que nadie importa (#121):
+          # tumba el build si a un .ts de src/app no se llega desde main.ts por
+          # ningun import. Es el hermano de lint:unmounted para lo que no es
+          # componente: modelos, utilidades, mappers, textos.
           # format:check es el candado de Prettier (#38): tumba el build si
           # entra un fichero sin formatear. Va con los otros dos candados,
           # antes de api:generate: el cliente generado no se formatea (esta
@@ -135,6 +139,7 @@ jobs:
                    && npm run lint:phantom-classes \
                    && npm run lint:unmounted \
                    && npm run lint:raw-dates \
+                   && npm run lint:unimported \
                    && npm run format:check \
                    && npm run api:check \
                    && npm run api:generate \

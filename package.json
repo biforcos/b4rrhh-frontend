@@ -19,6 +19,7 @@
     "lint:phantom-classes": "node ./tools/lint-phantom-classes.mjs",
     "lint:unmounted": "node ./tools/lint-unmounted-components.mjs",
     "lint:raw-dates": "node ./tools/lint-raw-dates.mjs",
+    "lint:unimported": "node ./tools/lint-unimported-files.mjs",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
     "api:check": "node ./tools/openapi/check-contract.mjs",
