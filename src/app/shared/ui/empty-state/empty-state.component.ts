@@ -7,6 +7,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styleUrl: './empty-state.component.scss',
 })
 export class EmptyStateComponent {
-  readonly title = input('No data yet');
-  readonly description = input('This area is ready and waiting for backend integration.');
+  // Sin texto de reserva: el que tenia, en ingles, habria salido el dia que alguien lo
+  // montase sin pasarle los suyos (b4rrhh/frontend#117). Quien lo monta dice que esta vacio.
+  readonly title = input.required<string>();
+  readonly description = input.required<string>();
 }
