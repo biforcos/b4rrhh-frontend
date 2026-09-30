@@ -45,6 +45,8 @@
 // pagina que no enrutaba nadie y que el `frontend#56` retiro. Se fueron por el
 // camino bueno —el candado fallo pidiendo que se borraran de la lista— y no por
 // una migracion; el aviso funciono en la direccion que casi nunca se prueba.
+// El 30/09, a OCHO, por el mismo camino: `.window-display` era de un componente
+// que nadie montaba y que el `frontend#117` retiro.
 //
 // ─── El radio circular no es una esquina de tarjeta ─────────────────────────
 //
@@ -98,7 +100,6 @@ const SUPERVIVIENTES = new Set([
   'src/app/core/availability/backend-unavailable.component.scss::.backend-unavailable__card',
   'src/app/core/layout/pages/app-home-page.component.scss::.home-page',
   'src/app/core/layout/pages/section-placeholder-page.component.scss::.placeholder-page',
-  'src/app/features/employee/organization/components/employee-cost-center-window-display.component.scss::.window-display',
   'src/app/features/employee/shell/pages/employee-shell-page.component.scss::.employee-directory__table-wrapper',
   'src/app/rulesystem/catalog/ui/catalog-page.component.scss::.catalog-page__panel',
   'src/app/rulesystem/rule-system/ui/rule-system-detail-page.component.scss::.rule-system-detail-page',
