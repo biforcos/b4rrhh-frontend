@@ -7693,13 +7693,23 @@ components:
 
     RuleEntityMissingTranslation:
       type: object
+      description: >-
+        A row of rule_entity, not a resolution: it is reported once, with the layer it lives in,
+        however many rule systems mount that layer (backend#157).
       required:
-        - ruleSystemCode
+        - layerCode
+        - level
         - code
         - name
       properties:
-        ruleSystemCode:
+        layerCode:
           type: string
+          example: ESP
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 3
         code:
           type: string
         name:
@@ -12296,6 +12306,8 @@ components:
       type: object
       required:
         - ruleSystemCode
+        - layerCode
+        - level
         - ruleEntityTypeCode
         - code
         - name
@@ -12305,6 +12317,22 @@ components:
       properties:
         ruleSystemCode:
           type: string
+          description: >-
+            The rule system the entity was asked for. An entity of a shared layer (INT, COM) is
+            the same row seen from every rule system that mounts that layer (ADR-077 §4).
+        layerCode:
+          type: string
+          description: >-
+            The layer the entity lives in: the one its rule system mounts at the level of its
+            type (ADR-077, backend#157). While every type is national it is the code of the rule
+            system itself.
+          example: ESP
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The level of that layer, which is the level of the type.
+          example: 3
         ruleEntityTypeCode:
           type: string
         code:

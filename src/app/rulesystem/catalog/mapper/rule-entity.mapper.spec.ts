@@ -6,6 +6,8 @@ describe('mapRuleEntityResponseToModel', () => {
   it('marks active occurrences as closable and deletable', () => {
     const source: RuleEntityResponse = {
       ruleSystemCode: 'PA-ES',
+      layerCode: 'PA-ES',
+      level: 3,
       ruleEntityTypeCode: 'CONTRACT',
       code: 'IND',
       name: 'Indefinido',
@@ -27,6 +29,8 @@ describe('mapRuleEntityResponseToModel', () => {
   it('marks closed occurrences as correctable and deletable but not closable', () => {
     const source: RuleEntityResponse = {
       ruleSystemCode: 'PA-ES',
+      layerCode: 'PA-ES',
+      level: 3,
       ruleEntityTypeCode: 'CONTRACT',
       code: 'TMP',
       name: 'Temporal',
@@ -50,6 +54,8 @@ describe('mapRuleEntityResponseToModel', () => {
   it('keeps the translated label when it differs from the stored name', () => {
     const source: RuleEntityResponse = {
       ruleSystemCode: 'ESP',
+      layerCode: 'ESP',
+      level: 3,
       ruleEntityTypeCode: 'CONTACT_TYPE',
       code: 'COMPANY_MOBILE',
       name: 'Company Mobile',
@@ -69,6 +75,8 @@ describe('mapRuleEntityResponseToModel', () => {
   it('has no translated label when the label is the stored name', () => {
     const source: RuleEntityResponse = {
       ruleSystemCode: 'ESP',
+      layerCode: 'ESP',
+      level: 3,
       ruleEntityTypeCode: 'CONTRACT',
       code: '100',
       name: 'Indefinido ordinario (jornada completa)',
