@@ -58,6 +58,10 @@ tags:
     description: Employee absence occurrence management.
   - name: Employee Year
     description: The calendar year of one employee at a glance, for the year strip (b4rrhh/backend#151).
+  - name: Territory
+    description: >-
+      Read-only territory master (backend#154, ADR-078): countries, provinces with their region and
+      street types from the catalog layers; municipalities and postal codes from the geo schema.
 
 paths:
   /employees:
@@ -7445,8 +7449,210 @@ paths:
                 items:
                   $ref: "#/components/schemas/ArrearExplanationResponse"
 
+  /territory/{ruleSystemCode}/countries:
+    get:
+      operationId: listTerritoryCountries
+      summary: The countries, with their name in the requested language
+      description: >-
+        The COUNTRY entities the rule system sees, which live in the INT layer (ADR-077, backend#158):
+        ISO 3166-1 alpha-3 code and name. The name is translated by Accept-Language.
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: The countries, by name
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TerritoryCountryResponse"
+        "404":
+          description: The rule system does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+
+  /territory/{ruleSystemCode}/provinces:
+    get:
+      operationId: listTerritoryProvinces
+      summary: The provinces, each with its region
+      description: >-
+        The PROVINCE entities of the national layer, by INE code, each with its ISO 3166-2 code and
+        its region (backend#154, ADR-078).
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+      responses:
+        "200":
+          description: The provinces, by code
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TerritoryProvinceResponse"
+        "404":
+          description: The rule system does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+
+  /territory/{ruleSystemCode}/street-types:
+    get:
+      operationId: listTerritoryStreetTypes
+      summary: The street types
+      description: >-
+        The STREET_TYPE entities of the national layer: for ESP, the 93 abbreviations of Annex II of
+        the Catastro free web services, version 2.6, written as the Catastro writes them.
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+      responses:
+        "200":
+          description: The street types, by code
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TerritoryStreetTypeResponse"
+        "404":
+          description: The rule system does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+
+  /territory/{ruleSystemCode}/municipalities:
+    get:
+      operationId: searchTerritoryMunicipalities
+      summary: Search municipalities of a country by name, in force on a date
+      description: >-
+        Municipalities whose name has a word starting with `name`, ignoring case, accents and the
+        slash of bilingual names: «Vale» finds «València» and «Valencia de Alcántara». Only those
+        in force on `date`. A start date means «in force since at least» (ADR-078): it is the date
+        of the first INE relation loaded that lists the municipality, not its creation date. Names
+        that start with `name` come first, then the rest, each by name.
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - in: query
+          name: countryCode
+          required: true
+          schema:
+            type: string
+            example: ESP
+        - in: query
+          name: name
+          required: true
+          description: At least two characters.
+          schema:
+            type: string
+            minLength: 2
+            example: Vale
+        - in: query
+          name: date
+          required: false
+          description: The date the municipality has to be in force on. Today when omitted.
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: The municipalities found, or an empty array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TerritoryMunicipalityResponse"
+        "400":
+          description: The name is shorter than two characters, or the limit is out of range
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+        "404":
+          description: The rule system does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+
+  /territory/{ruleSystemCode}/postal-codes/{postalCode}:
+    get:
+      operationId: checkTerritoryPostalCode
+      summary: Check a postal code
+      description: >-
+        For ESP, the province of a postal code is its first two digits, always. The suggested
+        municipality comes from GeoNames (CC BY 4.0) and is a suggestion: absent when the source
+        does not give one, or gives two. A postal code whose first two digits are not a province
+        has no province and says why in `message`; that is an answer, not an error.
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - in: path
+          name: postalCode
+          required: true
+          schema:
+            type: string
+            example: "46001"
+        - in: query
+          name: countryCode
+          required: true
+          schema:
+            type: string
+            example: ESP
+      responses:
+        "200":
+          description: What the postal code says
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryPostalCodeResponse"
+        "400":
+          description: The postal code is not five digits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+        "404":
+          description: The rule system does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryErrorResponse"
+
 components:
   parameters:
+    TerritoryRuleSystemCode:
+      in: path
+      name: ruleSystemCode
+      required: true
+      description: >-
+        The rule system whose layers are read: countries from its level-2 layer, provinces and
+        street types from its national one.
+      schema:
+        type: string
+        example: ESP
     AcceptLanguage:
       in: header
       name: Accept-Language
@@ -13679,5 +13885,174 @@ components:
       properties:
         error:
           type: string
+        message:
+          type: string
+    TerritoryCountryResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: ISO 3166-1 alpha-3.
+          example: ESP
+        name:
+          type: string
+          description: The name in the language of Accept-Language, or the stored one.
+          example: España
+    TerritoryRegionResponse:
+      type: object
+      required:
+        - code
+        - name
+        - isoCode
+      properties:
+        code:
+          type: string
+          description: INE code of the autonomous community or city (CODAUTO).
+          example: "10"
+        name:
+          type: string
+          example: Comunitat Valenciana
+        isoCode:
+          type: string
+          description: ISO 3166-2.
+          example: ES-VC
+    TerritoryProvinceResponse:
+      type: object
+      required:
+        - code
+        - name
+        - isoCode
+        - region
+      properties:
+        code:
+          type: string
+          description: INE code (CPRO), the one the 190 and the Social Security ask for.
+          example: "46"
+        name:
+          type: string
+          example: Valencia/València
+        isoCode:
+          type: string
+          description: ISO 3166-2. Ceuta and Melilla have none as provinces and carry the one of the autonomous city.
+          example: ES-V
+        region:
+          $ref: "#/components/schemas/TerritoryRegionResponse"
+    TerritoryStreetTypeResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: CL
+        name:
+          type: string
+          example: CALLE
+    TerritoryProvinceRefResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: "46"
+        name:
+          type: string
+          example: Valencia/València
+    TerritoryRegionRefResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: "10"
+        name:
+          type: string
+          example: Comunitat Valenciana
+    TerritoryMunicipalityResponse:
+      type: object
+      required:
+        - code
+        - name
+        - startDate
+        - province
+      properties:
+        code:
+          type: string
+          description: INE code, five digits (province + municipality).
+          example: "46250"
+        name:
+          type: string
+          description: The name of the most recent INE relation loaded.
+          example: València
+        startDate:
+          type: string
+          format: date
+          description: In force since at least this date (ADR-078); not its creation date.
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        province:
+          $ref: "#/components/schemas/TerritoryProvinceRefResponse"
+        region:
+          allOf:
+            - $ref: "#/components/schemas/TerritoryRegionRefResponse"
+          nullable: true
+    TerritoryMunicipalityRefResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: "46250"
+        name:
+          type: string
+          example: València
+    TerritoryPostalCodeResponse:
+      type: object
+      required:
+        - postalCode
+        - countryCode
+      properties:
+        postalCode:
+          type: string
+          example: "46001"
+        countryCode:
+          type: string
+          example: ESP
+        province:
+          allOf:
+            - $ref: "#/components/schemas/TerritoryProvinceRefResponse"
+          nullable: true
+          description: The province its first two digits name; absent when they name none.
+        suggestedMunicipality:
+          allOf:
+            - $ref: "#/components/schemas/TerritoryMunicipalityRefResponse"
+          nullable: true
+          description: A suggestion from GeoNames (CC BY 4.0), never a validation.
+        message:
+          type: string
+          nullable: true
+          description: Why there is no province, when there is none.
+          example: Las dos primeras cifras de 99999 no son una provincia.
+    TerritoryErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: TERRITORY_RULE_SYSTEM_NOT_FOUND
         message:
           type: string
