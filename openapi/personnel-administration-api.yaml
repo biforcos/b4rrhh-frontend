@@ -12215,12 +12215,23 @@ components:
         - maintenanceMode
         - group
         - extensions
+        - level
       properties:
         code:
           type: string
         name:
           type: string
           description: The stored name of the type, the one that is edited. Never translated.
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 2
+          description: >-
+            The level its entities live in (ADR-077): 1 Common, 2 International, 3 National,
+            4 National payroll, 5 Company payroll. A type created through the API is born at 3,
+            and the level is not changed through the API: moving a type is moving its entities
+            to another layer, which is a migration (backend#164).
         label:
           type: string
           description: >-

@@ -34,6 +34,7 @@ function type(
     code,
     name: code,
     label: code,
+    level: 3,
     active: true,
     literalClass: RuleEntityTypeResponseLiteralClassEnum.ProperNoun,
     maintenanceMode: RuleEntityTypeResponseMaintenanceModeEnum.Maintained,

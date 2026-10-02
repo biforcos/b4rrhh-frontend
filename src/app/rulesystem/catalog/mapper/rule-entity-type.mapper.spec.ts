@@ -11,6 +11,7 @@ function type(name: string, label: string): RuleEntityTypeResponse {
     code: 'CONTACT_TYPE',
     name,
     label,
+    level: 1,
     active: true,
     literalClass: RuleEntityTypeResponseLiteralClassEnum.DomainVocabulary,
     maintenanceMode: RuleEntityTypeResponseMaintenanceModeEnum.Maintained,
