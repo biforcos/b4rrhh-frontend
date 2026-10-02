@@ -1,5 +1,6 @@
 import { RuleEntityResponse } from '../../../core/api/generated/model/rule-entity-response';
 
+import { NATIONAL_LEVEL } from '../models/catalog-level';
 import { RuleEntityModel } from '../models/rule-entity.model';
 
 /**
@@ -14,9 +15,13 @@ export function translatedLabelOf(name: string, label: string | null | undefined
 }
 
 export function mapRuleEntityResponseToModel(source: RuleEntityResponse): RuleEntityModel {
+  const national = source.level === NATIONAL_LEVEL;
   return {
     occurrenceKey: `${source.code}|${source.startDate}`,
     ruleSystemCode: source.ruleSystemCode,
+    layerCode: source.layerCode,
+    level: source.level,
+    definedIn: national ? null : source.layerCode,
     ruleEntityTypeCode: source.ruleEntityTypeCode,
     code: source.code,
     name: source.name,
@@ -25,8 +30,8 @@ export function mapRuleEntityResponseToModel(source: RuleEntityResponse): RuleEn
     active: source.active,
     startDate: source.startDate,
     endDate: source.endDate ?? null,
-    canCorrect: true,
-    canClose: source.active,
-    canDelete: true,
+    canCorrect: national,
+    canClose: national && source.active,
+    canDelete: national,
   };
 }

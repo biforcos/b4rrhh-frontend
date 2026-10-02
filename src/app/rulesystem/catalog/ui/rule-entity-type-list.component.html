@@ -1,20 +1,27 @@
-<div class="rule-entity-type-list" role="list" aria-label="Tipos de entidad">
-  @for (item of items(); track item.code) {
-    <button
-      type="button"
-      role="listitem"
-      class="rule-entity-type-list__item"
-      [class.rule-entity-type-list__item--selected]="selectedCode() === item.code"
-      [disabled]="disabled()"
-      (click)="select(item.code)"
-    >
-      <span class="rule-entity-type-list__code">{{ item.code }}</span>
-      <span class="rule-entity-type-list__name">
-        {{ item.name }}
-        @if (item.translatedLabel) {
-          <span class="rule-entity-type-list__label">· {{ item.translatedLabel }}</span>
+<div class="rule-entity-type-list" aria-label="Tipos de entidad">
+  @for (group of groups(); track group.level) {
+    <section class="rule-entity-type-list__group">
+      <h4 class="rule-entity-type-list__group-title">{{ group.title }}</h4>
+      <div class="rule-entity-type-list__items" role="list">
+        @for (item of group.items; track item.code) {
+          <button
+            type="button"
+            role="listitem"
+            class="rule-entity-type-list__item"
+            [class.rule-entity-type-list__item--selected]="selectedCode() === item.code"
+            [disabled]="disabled()"
+            (click)="select(item.code)"
+          >
+            <span class="rule-entity-type-list__code">{{ item.code }}</span>
+            <span class="rule-entity-type-list__name">
+              {{ item.name }}
+              @if (item.translatedLabel) {
+                <span class="rule-entity-type-list__label">· {{ item.translatedLabel }}</span>
+              }
+            </span>
+          </button>
         }
-      </span>
-    </button>
+      </div>
+    </section>
   }
 </div>

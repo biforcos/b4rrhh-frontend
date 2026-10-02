@@ -216,7 +216,7 @@
         }
       }
 
-      @if (hasContext()) {
+      @if (hasContext() && canCreateInSelectedType()) {
         <section class="catalog-page__create-zone">
           <header class="catalog-page__panel-header">
             <h3>{{ texts.createPanelTitle }}</h3>
@@ -230,6 +230,10 @@
             (interactionStarted)="clearFeedback()"
           />
         </section>
+      } @else if (hasContext()) {
+        <p class="catalog-page__empty">
+          {{ texts.createNotInThisLayer }}
+        </p>
       }
     </section>
   </section>

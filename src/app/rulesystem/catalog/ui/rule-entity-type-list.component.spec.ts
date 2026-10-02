@@ -23,14 +23,50 @@ describe('RuleEntityTypeListComponent', () => {
           name: 'Contact Type',
           translatedLabel: 'Tipo de contacto',
           active: true,
+          level: 1,
         },
         {
           code: 'GRUPO_COTIZACION',
           name: 'Grupo de cotización',
           translatedLabel: null,
           active: true,
+          level: 3,
         },
       ]),
     ).toEqual(['Contact Type · Tipo de contacto', 'Grupo de cotización']);
   });
+
+  // frontend#127: los tipos se agrupan por el nivel que sirve el contrato (backend#164), de
+  // Común a Nómina de empresa, y un nivel sin tipos no sale.
+  it('groups the types by their level, from Common down, and leaves out an empty level', () => {
+    const fixture = TestBed.createComponent(RuleEntityTypeListComponent);
+    fixture.componentRef.setInput('items', [
+      type('COMPANY', 3),
+      type('COUNTRY', 2),
+      type('CONTACT_TYPE', 1),
+      type('CONTRACT', 3),
+      type('EMPLOYEE_IDENTIFIER_TYPE', 2),
+    ]);
+    fixture.detectChanges();
+    const groups = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      '.rule-entity-type-list__group',
+    );
+
+    expect(
+      Array.from(groups, (group) => ({
+        title: group.querySelector('.rule-entity-type-list__group-title')?.textContent?.trim(),
+        codes: Array.from(group.querySelectorAll('.rule-entity-type-list__code'), (code) =>
+          code.textContent?.trim(),
+        ),
+      })),
+    ).toEqual([
+      { title: 'Común', codes: ['CONTACT_TYPE'] },
+      { title: 'Internacional', codes: ['COUNTRY', 'EMPLOYEE_IDENTIFIER_TYPE'] },
+      { title: 'Nacional', codes: ['COMPANY', 'CONTRACT'] },
+    ]);
+  });
 });
+
+function type(code: string, level: number): RuleEntityTypeModel {
+  return { code, name: code, translatedLabel: null, active: true, level };
+}

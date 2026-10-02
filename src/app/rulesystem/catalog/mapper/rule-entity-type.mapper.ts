@@ -11,5 +11,6 @@ export function mapRuleEntityTypeResponseToModel(
     name: source.name,
     translatedLabel: translatedLabelOf(source.name, source.label),
     active: source.active,
+    level: source.level,
   };
 }

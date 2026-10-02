@@ -4,6 +4,25 @@
 
 .rule-entity-type-list {
   display: grid;
+  gap: 0.75rem;
+}
+
+.rule-entity-type-list__group {
+  display: grid;
+  gap: 0.34rem;
+}
+
+.rule-entity-type-list__group-title {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.rule-entity-type-list__items {
+  display: grid;
   gap: 0.34rem;
 }
 

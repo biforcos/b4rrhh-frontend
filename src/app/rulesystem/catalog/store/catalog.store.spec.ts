@@ -14,6 +14,9 @@ import { CatalogStore } from './catalog.store';
 const activeOccurrence: RuleEntityModel = {
   occurrenceKey: 'IND|2026-01-01',
   ruleSystemCode: 'PA-ES',
+  layerCode: 'PA-ES',
+  level: 3,
+  definedIn: null,
   ruleEntityTypeCode: 'CONTRACT',
   code: 'IND',
   name: 'Indefinido',
@@ -30,6 +33,9 @@ const activeOccurrence: RuleEntityModel = {
 const closedOccurrence: RuleEntityModel = {
   occurrenceKey: 'TMP|2025-01-01',
   ruleSystemCode: 'PA-ES',
+  layerCode: 'PA-ES',
+  level: 3,
+  definedIn: null,
   ruleEntityTypeCode: 'CONTRACT',
   code: 'TMP',
   name: 'Temporal',
@@ -58,7 +64,12 @@ describe('CatalogStore', () => {
   beforeEach(() => {
     gatewayMock = {
       loadRuleSystems: vi.fn().mockReturnValue(of([{ code: 'PA-ES', name: 'Personnel ES' }])),
-      loadRuleEntityTypes: vi.fn().mockReturnValue(of([{ code: 'CONTRACT', name: 'Contract' }])),
+      loadRuleEntityTypes: vi.fn().mockReturnValue(
+        of([
+          { code: 'CONTRACT', name: 'Contract', level: 3 },
+          { code: 'COUNTRY', name: 'Country', level: 2 },
+        ]),
+      ),
       loadRuleEntities: vi.fn().mockReturnValue(of([activeOccurrence, closedOccurrence])),
       createRuleEntity: vi.fn().mockReturnValue(of(activeOccurrence)),
       correctRuleEntityByBusinessKey: vi.fn().mockReturnValue(of(activeOccurrence)),
@@ -150,6 +161,18 @@ describe('CatalogStore', () => {
 
       expect(waiting.selectedRuleSystemCode()).toBe('ESP');
     });
+  });
+
+  // frontend#127: se crea en su capa. Un país dado de alta desde ESP iría a INT, que también
+  // montan FRA y PRT; sólo un tipo nacional ofrece el alta.
+  it('offers creation only for a national type', () => {
+    expect(store.selectedRuleEntityTypeLevel()).toBe(3);
+    expect(store.canCreateInSelectedType()).toBe(true);
+
+    store.selectRuleEntityType('COUNTRY');
+
+    expect(store.selectedRuleEntityTypeLevel()).toBe(2);
+    expect(store.canCreateInSelectedType()).toBe(false);
   });
 
   it('submits correct operation over same occurrence business key', () => {

@@ -55,6 +55,7 @@ export class CatalogPageComponent {
   protected readonly errorMessage = this.store.errorMessage;
   protected readonly successMessage = this.store.successMessage;
   protected readonly createResetToken = this.store.createResetToken;
+  protected readonly canCreateInSelectedType = this.store.canCreateInSelectedType;
   protected readonly correctingOccurrence = computed(() => {
     const occurrenceKey = this.correctingOccurrenceKey();
     return occurrenceKey

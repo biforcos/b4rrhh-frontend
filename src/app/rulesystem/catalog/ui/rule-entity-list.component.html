@@ -19,6 +19,11 @@
             @if (item.translatedLabel) {
               <span class="rule-entity-list__label">· {{ item.translatedLabel }}</span>
             }
+            @if (item.definedIn) {
+              <span class="rule-entity-list__layer"
+                >{{ texts.definedInPrefix }} {{ item.definedIn }}</span
+              >
+            }
           </td>
           <td>{{ item.active ? texts.activeYes : texts.activeNo }}</td>
           <td>{{ item.startDate | date: displayDateFormat }}</td>

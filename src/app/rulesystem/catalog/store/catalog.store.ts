@@ -7,6 +7,7 @@ import { CatalogGateway } from '../gateway/catalog.gateway';
 import { CloseRuleEntityRequestModel } from '../models/close-rule-entity.request';
 import { CreateRuleEntityRequestModel } from '../models/create-rule-entity.request';
 import { CorrectRuleEntityRequestModel } from '../models/correct-rule-entity.request';
+import { NATIONAL_LEVEL } from '../models/catalog-level';
 import { RuleEntityModel } from '../models/rule-entity.model';
 import { RuleEntityTypeModel } from '../models/rule-entity-type.model';
 import { RuleSystemModel } from '../models/rule-system.model';
@@ -64,6 +65,18 @@ export class CatalogStore {
   readonly loadingRuleSystems = this.loadingRuleSystemsState.asReadonly();
   readonly loadingRuleEntityTypes = this.loadingRuleEntityTypesState.asReadonly();
   readonly loadingRuleEntities = this.loadingRuleEntitiesState.asReadonly();
+  /** El nivel del tipo elegido, del contrato (backend#164); `null` sin tipo. */
+  readonly selectedRuleEntityTypeLevel = computed(() => {
+    const code = this.selectedRuleEntityTypeCodeState();
+    return this.ruleEntityTypesState().find((type) => type.code === code)?.level ?? null;
+  });
+  /**
+   * Se crea en su capa (frontend#127): un alta desde la reglamentación cae en la capa que monta
+   * en el nivel del tipo, y sólo la nacional es suya. Un país dado de alta desde ESP iría a INT.
+   */
+  readonly canCreateInSelectedType = computed(
+    () => this.selectedRuleEntityTypeLevel() === NATIONAL_LEVEL,
+  );
   readonly mutating = computed(() => this.activeMutationState() !== null);
   readonly creating = computed(() => this.activeMutationState() === 'creating');
   readonly correctingOccurrenceKey = this.correctingOccurrenceKeyState.asReadonly();

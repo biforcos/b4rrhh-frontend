@@ -18,6 +18,16 @@ export const catalogTexts = {
   listStartDateHeader: 'Inicio',
   listEndDateHeader: 'Fin',
   listActionsHeader: 'Acciones',
+  levelNames: {
+    1: 'Común',
+    2: 'Internacional',
+    3: 'Nacional',
+    4: 'Nómina nacional',
+    5: 'Nómina de empresa',
+  } as Readonly<Record<number, string>>,
+  definedInPrefix: 'definida en',
+  createNotInThisLayer:
+    'Las entidades de este tipo no viven en la capa nacional: desde aquí se consultan, no se crean ni se editan.',
   activeYes: 'Sí',
   activeNo: 'No',
   actionCorrect: 'Corregir',

@@ -7,4 +7,6 @@ export interface RuleEntityTypeModel {
    */
   translatedLabel: string | null;
   active: boolean;
+  /** El nivel en el que viven sus entidades, tal y como lo sirve el contrato (backend#164). */
+  level: number;
 }

@@ -89,4 +89,54 @@ describe('mapRuleEntityResponseToModel', () => {
 
     expect(mapRuleEntityResponseToModel(source).translatedLabel).toBeNull();
   });
+
+  // frontend#127: una entidad se edita en su capa. Desde ESP, un país es de INT, que también
+  // montan FRA y PRT: se enseña de dónde viene y no se corrige, ni se cierra, ni se borra.
+  it('says where an entity of a shared layer is defined and offers nothing to do with it', () => {
+    const source: RuleEntityResponse = {
+      ruleSystemCode: 'ESP',
+      layerCode: 'INT',
+      level: 2,
+      ruleEntityTypeCode: 'COUNTRY',
+      code: 'FRA',
+      name: 'Francia',
+      label: 'Francia',
+      description: null,
+      active: true,
+      startDate: '1900-01-01',
+      endDate: null,
+    };
+
+    expect(mapRuleEntityResponseToModel(source)).toMatchObject({
+      layerCode: 'INT',
+      level: 2,
+      definedIn: 'INT',
+      canCorrect: false,
+      canClose: false,
+      canDelete: false,
+    });
+  });
+
+  it('says nothing of the layer of a national entity, which is edited where it is', () => {
+    const source: RuleEntityResponse = {
+      ruleSystemCode: 'ESP',
+      layerCode: 'ESP',
+      level: 3,
+      ruleEntityTypeCode: 'CONTRACT',
+      code: '100',
+      name: 'Indefinido ordinario (jornada completa)',
+      label: 'Indefinido ordinario (jornada completa)',
+      description: null,
+      active: true,
+      startDate: '1900-01-01',
+      endDate: null,
+    };
+
+    expect(mapRuleEntityResponseToModel(source)).toMatchObject({
+      definedIn: null,
+      canCorrect: true,
+      canClose: true,
+      canDelete: true,
+    });
+  });
 });

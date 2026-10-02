@@ -29,6 +29,7 @@ describe('mapRuleEntityTypeResponseToModel', () => {
       name: 'Contact Type',
       translatedLabel: 'Tipo de contacto',
       active: true,
+      level: 1,
     });
   });
 
