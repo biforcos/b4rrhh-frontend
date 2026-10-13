@@ -10019,37 +10019,175 @@ components:
           type: string
           format: date
           nullable: true
+    PostalAddressRequest:
+      type: object
+      additionalProperties: false
+      description: >-
+        An address, the same in the employee, the company and the work center (backend#155,
+        ADR-078): the structure of the AEAT and TGSS domicile. The one validation is shared: in
+        Spain, a municipality that has not ended on the date, the province of that municipality, a
+        postal code of that province and a street type of the catalog; outside Spain, the country
+        alone. An address that fails it is stored all the same, with normalized false. Rejected
+        (400) are only an address without country, a country not in the catalog, a postal code that
+        contradicts the province, and a field that does not fit.
+      required:
+        - countryCode
+      properties:
+        streetTypeCode:
+          type: string
+          maxLength: 30
+          nullable: true
+          description: Street type, a STREET_TYPE entity of the ESP layer (Catastro, V174). Spanish addresses only.
+        streetName:
+          type: string
+          maxLength: 200
+          nullable: true
+        streetNumber:
+          type: string
+          maxLength: 10
+          nullable: true
+        numberQualifier:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: What qualifies the number, such as bis or km.
+        block:
+          type: string
+          maxLength: 10
+          nullable: true
+        stair:
+          type: string
+          maxLength: 10
+          nullable: true
+        floor:
+          type: string
+          maxLength: 10
+          nullable: true
+        door:
+          type: string
+          maxLength: 10
+          nullable: true
+        locality:
+          type: string
+          maxLength: 120
+          nullable: true
+          description: >-
+            Free text. In Spain, the hamlet or district inside the municipality; outside Spain, the
+            town, since there is no INE municipality.
+        municipalityCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: INE municipality code from the geo master (GET /territory/{ruleSystemCode}/municipalities). Spanish addresses only.
+        subdivisionCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: >-
+            The province, an INE code of a PROVINCE entity of the ESP layer. Stored even though it
+            follows from the municipality; when omitted it is taken from the municipality, or from
+            the postal code. Spanish addresses only.
+        postalCode:
+          type: string
+          maxLength: 20
+          nullable: true
+          description: In Spain, five digits whose first two are the province.
+        countryCode:
+          type: string
+          maxLength: 3
+          description: ISO 3166-1 alpha-3, a COUNTRY entity seen from the rule system (layer INT).
+    PostalAddressResponse:
+      type: object
+      description: >-
+        An address, the same in the employee, the company and the work center (backend#155).
+        normalized false is «sin normalizar»: it was stored without passing the validation, and the
+        screen says so.
+      required:
+        - normalized
+      properties:
+        streetTypeCode:
+          type: string
+          maxLength: 30
+          nullable: true
+          description: Street type, a STREET_TYPE entity of the ESP layer (Catastro, V174). Spanish addresses only.
+        streetName:
+          type: string
+          maxLength: 200
+          nullable: true
+        streetNumber:
+          type: string
+          maxLength: 10
+          nullable: true
+        numberQualifier:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: What qualifies the number, such as bis or km.
+        block:
+          type: string
+          maxLength: 10
+          nullable: true
+        stair:
+          type: string
+          maxLength: 10
+          nullable: true
+        floor:
+          type: string
+          maxLength: 10
+          nullable: true
+        door:
+          type: string
+          maxLength: 10
+          nullable: true
+        locality:
+          type: string
+          maxLength: 120
+          nullable: true
+          description: >-
+            Free text. In Spain, the hamlet or district inside the municipality; outside Spain, the
+            town, since there is no INE municipality.
+        municipalityCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: INE municipality code from the geo master (GET /territory/{ruleSystemCode}/municipalities). Spanish addresses only.
+        municipalityName:
+          type: string
+          nullable: true
+          description: The name the geo master gives to municipalityCode; null when the code is not there.
+        subdivisionCode:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: >-
+            The province, an INE code of a PROVINCE entity of the ESP layer. Stored even though it
+            follows from the municipality; when omitted it is taken from the municipality, or from
+            the postal code. Spanish addresses only.
+        postalCode:
+          type: string
+          maxLength: 20
+          nullable: true
+          description: In Spain, five digits whose first two are the province.
+        countryCode:
+          type: string
+          nullable: true
+          description: ISO 3166-1 alpha-3, a COUNTRY entity seen from the rule system (layer INT). Null only in the empty address of a company or work center without one.
+        normalized:
+          type: boolean
+          description: Whether the address passes the validation. False is «sin normalizar».
     CreateAddressRequest:
       type: object
       additionalProperties: false
       required:
         - addressTypeCode
-        - street
-        - city
-        - countryCode
+        - address
         - startDate
       properties:
         addressTypeCode:
           type: string
           maxLength: 30
-        street:
-          type: string
-          maxLength: 300
-        city:
-          type: string
-          maxLength: 120
-        countryCode:
-          type: string
-          maxLength: 3
-          description: ISO 3166-1 alpha-3 code validated against active COUNTRY rule entities for the employee ruleSystemCode.
-        postalCode:
-          type: string
-          maxLength: 20
-          nullable: true
-        regionCode:
-          type: string
-          maxLength: 30
-          nullable: true
+        address:
+          $ref: "#/components/schemas/PostalAddressRequest"
         startDate:
           type: string
           format: date
@@ -10060,30 +10198,15 @@ components:
     UpdateAddressRequest:
       type: object
       additionalProperties: false
+      description: >-
+        The correction of an address: the whole corrected address, not a patch (a field left out
+        is a field left empty, backend#155), and its dates.
       required:
-        - street
-        - city
-        - countryCode
+        - address
         - startDate
       properties:
-        street:
-          type: string
-          maxLength: 300
-        city:
-          type: string
-          maxLength: 120
-        countryCode:
-          type: string
-          maxLength: 3
-          description: ISO 3166-1 alpha-3 code validated against active COUNTRY rule entities for the employee ruleSystemCode.
-        postalCode:
-          type: string
-          maxLength: 20
-          nullable: true
-        regionCode:
-          type: string
-          maxLength: 30
-          nullable: true
+        address:
+          $ref: "#/components/schemas/PostalAddressRequest"
         startDate:
           type: string
           format: date
@@ -10274,9 +10397,7 @@ components:
       required:
         - addressNumber
         - addressTypeCode
-        - street
-        - city
-        - countryCode
+        - address
         - startDate
       properties:
         addressNumber:
@@ -10288,19 +10409,8 @@ components:
           type: string
           nullable: true
           description: Optional display name from EMPLOYEE_ADDRESS_TYPE rule entities in the employee ruleSystemCode catalog.
-        street:
-          type: string
-        city:
-          type: string
-        countryCode:
-          type: string
-          description: ISO 3166-1 alpha-3 code from COUNTRY rule entities in the employee ruleSystemCode catalog.
-        postalCode:
-          type: string
-          nullable: true
-        regionCode:
-          type: string
-          nullable: true
+        address:
+          $ref: "#/components/schemas/PostalAddressResponse"
         startDate:
           type: string
           format: date
@@ -11990,31 +12100,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WorkCenterByCompanyOptionResponse"
-    CompanyAddress:
-      type: object
-      properties:
-        street:
-          type: string
-          maxLength: 300
-          nullable: true
-        city:
-          type: string
-          maxLength: 120
-          nullable: true
-        postalCode:
-          type: string
-          maxLength: 20
-          nullable: true
-        regionCode:
-          type: string
-          maxLength: 30
-          nullable: true
-        countryCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          nullable: true
-          description: ISO 3166-1 alpha-3 country code aligned with COUNTRY rule entity codes.
     CreateCompanyRequest:
       type: object
       required:
@@ -12048,7 +12133,10 @@ components:
           maxLength: 50
           nullable: true
         address:
-          $ref: "#/components/schemas/CompanyAddress"
+          nullable: true
+          description: Optional as a whole; when present it goes through the one validation (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressRequest"
         cnaeCode:
           type: string
           maxLength: 10
@@ -12079,7 +12167,10 @@ components:
           maxLength: 50
           nullable: true
         address:
-          $ref: "#/components/schemas/CompanyAddress"
+          nullable: true
+          description: Optional as a whole; when present it goes through the one validation (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressRequest"
         cnaeCode:
           type: string
           maxLength: 10
@@ -12130,7 +12221,11 @@ components:
           maxLength: 50
           nullable: true
         address:
-          $ref: "#/components/schemas/CompanyAddress"
+          description: >-
+            Always present. Empty, with normalized false, when the company or the work center has no
+            address (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressResponse"
         cnaeCode:
           type: string
           maxLength: 10
@@ -12185,31 +12280,6 @@ components:
       properties:
         message:
           type: string
-    CompanyProfileAddress:
-      type: object
-      properties:
-        street:
-          type: string
-          maxLength: 300
-          nullable: true
-        city:
-          type: string
-          maxLength: 120
-          nullable: true
-        postalCode:
-          type: string
-          maxLength: 20
-          nullable: true
-        regionCode:
-          type: string
-          maxLength: 30
-          nullable: true
-        countryCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          nullable: true
-          description: ISO 3166-1 alpha-3 country code aligned with COUNTRY rule entity codes.
     UpsertCompanyProfileRequest:
       type: object
       required:
@@ -12223,7 +12293,10 @@ components:
           maxLength: 50
           nullable: true
         address:
-          $ref: "#/components/schemas/CompanyProfileAddress"
+          nullable: true
+          description: Optional as a whole; when present it goes through the one validation (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressRequest"
         cnaeCode:
           type: string
           maxLength: 10
@@ -12253,7 +12326,11 @@ components:
           maxLength: 50
           nullable: true
         address:
-          $ref: "#/components/schemas/CompanyProfileAddress"
+          description: >-
+            Always present. Empty, with normalized false, when the company or the work center has no
+            address (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressResponse"
         cnaeCode:
           type: string
           nullable: true
@@ -12400,31 +12477,6 @@ components:
           type: boolean
           nullable: true
           description: Whether the agreement profile should be active. Defaults to true if not specified.
-    WorkCenterAddress:
-      type: object
-      properties:
-        street:
-          type: string
-          maxLength: 300
-          nullable: true
-        city:
-          type: string
-          maxLength: 120
-          nullable: true
-        postalCode:
-          type: string
-          maxLength: 20
-          nullable: true
-        regionCode:
-          type: string
-          maxLength: 30
-          nullable: true
-        countryCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          nullable: true
-          description: ISO 3166-1 alpha-3 country code aligned with COUNTRY rule entity codes.
     CreateWorkCenterRequest:
       type: object
       required:
@@ -12455,7 +12507,10 @@ components:
           nullable: true
           description: Optional COMPANY code validated against the rule system catalog on the work center start date.
         address:
-          $ref: "#/components/schemas/WorkCenterAddress"
+          nullable: true
+          description: Optional as a whole; when present it goes through the one validation (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressRequest"
     UpdateWorkCenterRequest:
       type: object
       required:
@@ -12474,7 +12529,10 @@ components:
           nullable: true
           description: Optional COMPANY code validated against the rule system catalog on the current server date.
         address:
-          $ref: "#/components/schemas/WorkCenterAddress"
+          nullable: true
+          description: Optional as a whole; when present it goes through the one validation (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressRequest"
     WorkCenterContactResponse:
       type: object
       required:
@@ -12558,7 +12616,11 @@ components:
           maxLength: 30
           nullable: true
         address:
-          $ref: "#/components/schemas/WorkCenterAddress"
+          description: >-
+            Always present. Empty, with normalized false, when the company or the work center has no
+            address (backend#155).
+          allOf:
+            - $ref: "#/components/schemas/PostalAddressResponse"
       description: Aggregated base work center ficha enriched with work_center_profile data. Contacts are exposed only by the canonical contacts subresource.
     WorkCenterListItemResponse:
       type: object
@@ -12586,6 +12648,9 @@ components:
           type: string
           maxLength: 120
           nullable: true
+          description: >-
+            The town as shown, composed from the address (backend#155): the municipality name, with
+            the locality before it when there is one.
         countryCode:
           type: string
           minLength: 3
@@ -13139,8 +13204,10 @@ components:
           type: string
         street:
           type: string
+          description: The street line as printed on the payslip, composed from the structured address (backend#155).
         city:
           type: string
+          description: The town as printed on the payslip, composed from the structured address (backend#155).
         postalCode:
           type: string
     PayrollEmployeeProfileResponse:
@@ -13152,8 +13219,10 @@ components:
           type: string
         street:
           type: string
+          description: The street line as printed on the payslip, composed from the structured address (backend#155).
         city:
           type: string
+          description: The town as printed on the payslip, composed from the structured address (backend#155).
         postalCode:
           type: string
     PayrollAgreementProfileResponse:
