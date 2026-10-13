@@ -1,3 +1,4 @@
+import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
 import {
   buildEmptyCompanyFormValue,
   buildCompanyFormValueFromDetail,
@@ -5,6 +6,24 @@ import {
   mapCompanyFormValueToUpdateRequest,
 } from './company-form.mapper';
 import { CompanyDetailModel } from '../models/company-detail.model';
+
+const ADDRESS: PostalAddressModel = {
+  streetTypeCode: 'CL',
+  streetName: 'Mayor',
+  streetNumber: '1',
+  numberQualifier: null,
+  block: null,
+  stair: null,
+  floor: null,
+  door: null,
+  locality: null,
+  municipalityCode: '28079',
+  municipalityName: 'Madrid',
+  subdivisionCode: '28',
+  postalCode: '28001',
+  countryCode: 'ESP',
+  normalized: true,
+};
 
 const detail: CompanyDetailModel = {
   ruleSystemCode: 'ESP',
@@ -17,13 +36,7 @@ const detail: CompanyDetailModel = {
   legalName: 'Company Spain SL',
   taxIdentifier: 'B12345678',
   cnaeCode: '4719',
-  address: {
-    street: 'Calle Mayor 1',
-    city: 'Madrid',
-    postalCode: '28001',
-    regionCode: 'MD',
-    countryCode: 'ES',
-  },
+  address: ADDRESS,
 };
 
 describe('buildEmptyCompanyFormValue', () => {
@@ -43,8 +56,8 @@ describe('buildCompanyFormValueFromDetail', () => {
     expect(form.ruleSystemCode).toBe('ESP');
     expect(form.companyCode).toBe('ES01');
     expect(form.name).toBe('Company Spain');
-    expect(form.street).toBe('Calle Mayor 1');
-    expect(form.countryCode).toBe('ES');
+    expect(form.streetName).toBe('Mayor');
+    expect(form.countryCode).toBe('ESP');
   });
 
   it('converts null optional fields to empty strings', () => {
@@ -101,7 +114,9 @@ describe('mapCompanyFormValueToCreateRequest', () => {
     const result = mapCompanyFormValueToCreateRequest(form);
 
     expect(result.address).toBeDefined();
-    expect(result.address?.city).toBe('Madrid');
+    expect(result.address?.streetName).toBe('Mayor');
+    // Lo que el formulario no edita se conserva de la que había (b4rrhh/backend#155).
+    expect(result.address?.municipalityCode).toBe('28079');
   });
 });
 
@@ -116,10 +131,10 @@ describe('mapCompanyFormValueToUpdateRequest', () => {
   it('uppercases countryCode in address', () => {
     const form = buildCompanyFormValueFromDetail({
       ...detail,
-      address: { ...detail.address, countryCode: 'es' },
+      address: { ...ADDRESS, countryCode: 'esp' },
     });
     const result = mapCompanyFormValueToUpdateRequest(form);
 
-    expect(result.address?.countryCode).toBe('ES');
+    expect(result.address?.countryCode).toBe('ESP');
   });
 });

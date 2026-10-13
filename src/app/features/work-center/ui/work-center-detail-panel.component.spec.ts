@@ -25,11 +25,21 @@ describe('WorkCenterDetailPanelComponent', () => {
     active: true,
     companyCode: 'ACME',
     address: {
-      street: 'Gran Via 1',
-      city: 'Madrid',
+      streetTypeCode: null,
+      streetName: 'Gran Via 1',
+      streetNumber: null,
+      numberQualifier: null,
+      block: null,
+      stair: null,
+      floor: null,
+      door: null,
+      locality: 'Madrid',
+      municipalityCode: null,
+      municipalityName: null,
+      subdivisionCode: null,
       postalCode: '28013',
-      regionCode: 'MD',
       countryCode: 'ESP',
+      normalized: true,
     },
   };
 
@@ -113,10 +123,12 @@ describe('WorkCenterDetailPanelComponent', () => {
       description: 'Headquarters',
       startDate: new Date(2026, 0, 1),
       companyCode: 'ACME',
-      street: 'Gran Via 1',
-      city: 'Madrid',
+      streetName: 'Gran Via 1',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       postalCode: '28013',
-      regionCode: 'MD',
       countryCode: 'ESP',
     });
 
@@ -132,11 +144,14 @@ describe('WorkCenterDetailPanelComponent', () => {
       description: 'Headquarters',
       startDate: '2026-01-01',
       companyCode: 'ACME',
-      street: 'Gran Via 1',
-      city: 'Madrid',
+      streetName: 'Gran Via 1',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       postalCode: '28013',
-      regionCode: 'MD',
       countryCode: 'ESP',
+      previousAddress: null,
     });
   });
 

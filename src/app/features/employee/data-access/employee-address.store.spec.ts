@@ -17,11 +17,23 @@ const addressesFixture: ReadonlyArray<EmployeeAddressModel> = [
   {
     addressNumber: 1,
     addressTypeCode: 'HOME',
-    street: 'Calle Mayor 10',
-    city: 'Madrid',
-    countryCode: 'ESP',
-    postalCode: '28013',
-    regionCode: 'M',
+    address: {
+      streetTypeCode: null,
+      streetName: 'Calle Mayor 10',
+      streetNumber: null,
+      numberQualifier: null,
+      block: null,
+      stair: null,
+      floor: null,
+      door: null,
+      locality: 'Madrid',
+      municipalityCode: null,
+      municipalityName: null,
+      subdivisionCode: null,
+      postalCode: '28013',
+      countryCode: 'ESP',
+      normalized: true,
+    },
     startDate: '2025-01-01',
     endDate: null,
     isActive: true,
@@ -131,11 +143,13 @@ describe('EmployeeAddressStore', () => {
 
     store.createAddress(employeeBusinessKey, {
       addressTypeCode: 'HOME',
-      street: 'Avenida Demo 12',
-      city: 'Madrid',
+      streetName: 'Avenida Demo 12',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       countryCode: 'ESP',
       postalCode: '28001',
-      regionCode: 'M',
       startDate: '2026-01-01',
       endDate: '',
     });
@@ -149,11 +163,14 @@ describe('EmployeeAddressStore', () => {
     store.loadAddresses(employeeBusinessKey);
 
     const correction = {
-      street: 'Calle Nueva 20',
-      city: 'Madrid',
+      streetName: 'Calle Nueva 20',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       countryCode: 'ESP',
       postalCode: '28009',
-      regionCode: 'M',
+      previous: null,
       startDate: '2025-01-01',
       endDate: '',
     };
@@ -205,11 +222,13 @@ describe('EmployeeAddressStore', () => {
 
     store.createAddress(employeeBusinessKey, {
       addressTypeCode: 'HOME',
-      street: 'Avenida Demo 12',
-      city: 'Madrid',
+      streetName: 'Avenida Demo 12',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       countryCode: 'ESP',
       postalCode: '',
-      regionCode: '',
       startDate: '2026-03-01',
       endDate: '',
     });
@@ -225,11 +244,13 @@ describe('EmployeeAddressStore', () => {
 
     store.createAddress(employeeBusinessKey, {
       addressTypeCode: 'HOME',
-      street: 'Avenida Demo 12',
-      city: 'Madrid',
+      streetName: 'Avenida Demo 12',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       countryCode: 'ESP',
       postalCode: '',
-      regionCode: '',
       startDate: '2026-01-01',
       endDate: '',
     });
@@ -242,11 +263,13 @@ describe('EmployeeAddressStore', () => {
     store.loadAddresses(employeeBusinessKey);
     store.createAddress(employeeBusinessKey, {
       addressTypeCode: 'HOME',
-      street: 'Avenida Demo 12',
-      city: 'Madrid',
+      streetName: 'Avenida Demo 12',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       countryCode: 'ESP',
       postalCode: '28001',
-      regionCode: 'M',
       startDate: '2026-01-01',
       endDate: '',
     });

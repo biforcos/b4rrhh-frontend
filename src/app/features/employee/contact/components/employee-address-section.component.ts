@@ -16,6 +16,13 @@ import {
   AddressPlanDraft,
 } from '../../data-access/employee-address-edit.mapper';
 import { EmployeeAddressStore } from '../../data-access/employee-address.store';
+import {
+  PostalAddressModel,
+  describeStreetLine,
+  describeTownLine,
+  emptyPostalAddressDraft,
+  mapPostalAddressToDraft,
+} from '../../../../core/api/mappers/postal-address.mapper';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { employeeTexts } from '../../employee.texts';
@@ -56,21 +63,28 @@ interface AddressPeriodRow extends TemporalSectionRow {
   addressTypeCode: string;
   addressTypeName: string | null;
   street: string;
-  /** Código postal, ciudad y región, en una línea. */
+  /** Código postal y población, en una línea. */
   locality: string;
   countryCode: string;
+  /** «Sin normalizar»: el backend la guardó sin pasar la validación (b4rrhh/backend#155). */
+  normalized: boolean;
 }
 
-function createEmptyAddressDraft(): AddressCreateDraft {
+/** Los campos de texto del formulario: todos menos la dirección que se corrige. */
+type AddressDraftField = Exclude<keyof AddressFormDraft, 'previous'>;
+
+/** El formulario: el alta y, al corregir, la dirección que había. */
+interface AddressFormDraft extends AddressCreateDraft {
+  previous: PostalAddressModel | null;
+}
+
+function createEmptyAddressDraft(): AddressFormDraft {
   return {
     addressTypeCode: '',
-    street: '',
-    city: '',
-    countryCode: '',
-    postalCode: '',
-    regionCode: '',
+    ...emptyPostalAddressDraft(),
     startDate: currentLocalDate(),
     endDate: '',
+    previous: null,
   };
 }
 
@@ -103,7 +117,7 @@ export class EmployeeAddressSectionComponent {
   /** La dirección que se corrige o se borra. */
   protected readonly editingNumber = signal<number | null>(null);
   protected readonly editingPeriod = signal<string | null>(null);
-  protected readonly draft = signal<AddressCreateDraft>(createEmptyAddressDraft());
+  protected readonly draft = signal<AddressFormDraft>(createEmptyAddressDraft());
   protected readonly addressTypeOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   protected readonly catalogLoading = signal(false);
   /** Qué tipos son obligatorios y cuáles opcionales, según el catálogo (`b4rrhh/backend#145`). */
@@ -127,12 +141,10 @@ export class EmployeeAddressSectionComponent {
         addressNumber: address.addressNumber,
         addressTypeCode: address.addressTypeCode,
         addressTypeName: address.addressTypeName ?? null,
-        street: address.street,
-        locality: [address.postalCode, address.city, address.regionCode]
-          .map((part) => part?.trim() ?? '')
-          .filter((part) => part.length > 0)
-          .join(' · '),
-        countryCode: address.countryCode,
+        street: describeStreetLine(address.address),
+        locality: describeTownLine(address.address),
+        countryCode: address.address.countryCode,
+        normalized: address.address.normalized,
       })),
   );
 
@@ -222,7 +234,7 @@ export class EmployeeAddressSectionComponent {
     if (!this.planDraft()) return false;
     if (this.modalMode() !== 'remove') {
       const draft = this.draft();
-      const required = [draft.street, draft.city, draft.countryCode];
+      const required = [draft.streetName, draft.countryCode];
       if (!required.every((value) => value.trim().length > 0)) return false;
     }
     return this.plan()?.accepted === true;
@@ -290,13 +302,10 @@ export class EmployeeAddressSectionComponent {
     this.editingPeriod.set(this.describeDates(address.startDate, address.endDate));
     this.draft.set({
       addressTypeCode: address.addressTypeCode,
-      street: address.street,
-      city: address.city,
-      countryCode: address.countryCode,
-      postalCode: address.postalCode ?? '',
-      regionCode: address.regionCode ?? '',
+      ...mapPostalAddressToDraft(address.address),
       startDate: address.startDate,
       endDate: address.endDate ?? '',
+      previous: address.address,
     });
     this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, this.draft().startDate);
     this.modalVisible.set(true);
@@ -349,15 +358,7 @@ export class EmployeeAddressSectionComponent {
     }
 
     const draft = this.draft();
-    this.addressStore.correctAddress(key, addressNumber, {
-      street: draft.street,
-      city: draft.city,
-      countryCode: draft.countryCode,
-      postalCode: draft.postalCode,
-      regionCode: draft.regionCode,
-      startDate: draft.startDate,
-      endDate: draft.endDate,
-    });
+    this.addressStore.correctAddress(key, addressNumber, draft);
   }
 
   protected closeModal(): void {
@@ -366,7 +367,7 @@ export class EmployeeAddressSectionComponent {
     this.addressStore.clearFeedback();
   }
 
-  protected updateDraft(field: keyof AddressCreateDraft, value: string | null): void {
+  protected updateDraft(field: AddressDraftField, value: string | null): void {
     this.draft.update((draft) => ({ ...draft, [field]: value ?? '' }));
 
     // La vigencia de un tipo de dirección se pregunta respecto al día en que empieza el

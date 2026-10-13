@@ -1,5 +1,9 @@
 import { CreateCompanyRequest } from '../../../core/api/generated/model/create-company-request';
-import { CompanyAddress } from '../../../core/api/generated/model/company-address';
+import {
+  emptyPostalAddressDraft,
+  mapPostalAddressDraftToRequest,
+  mapPostalAddressToDraft,
+} from '../../../core/api/mappers/postal-address.mapper';
 import { UpdateCompanyRequest } from '../../../core/api/generated/model/update-company-request';
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyFormValue } from '../models/company-form-value.model';
@@ -14,11 +18,8 @@ export function buildEmptyCompanyFormValue(): CompanyFormValue {
     legalName: '',
     taxIdentifier: '',
     cnaeCode: '',
-    street: '',
-    city: '',
-    postalCode: '',
-    regionCode: '',
-    countryCode: '',
+    ...emptyPostalAddressDraft(),
+    previousAddress: null,
   };
 }
 
@@ -32,11 +33,8 @@ export function buildCompanyFormValueFromDetail(detail: CompanyDetailModel): Com
     legalName: detail.legalName,
     taxIdentifier: detail.taxIdentifier ?? '',
     cnaeCode: detail.cnaeCode ?? '',
-    street: detail.address.street ?? '',
-    city: detail.address.city ?? '',
-    postalCode: detail.address.postalCode ?? '',
-    regionCode: detail.address.regionCode ?? '',
-    countryCode: detail.address.countryCode ?? '',
+    ...mapPostalAddressToDraft(detail.address),
+    previousAddress: detail.address,
   };
 }
 
@@ -69,15 +67,5 @@ export function mapCompanyFormValueToUpdateRequest(form: CompanyFormValue): Upda
 }
 
 function buildAddressPayload(form: CompanyFormValue) {
-  const street = form.street.trim() || null;
-  const city = form.city.trim() || null;
-  const postalCode = form.postalCode.trim() || null;
-  const regionCode = form.regionCode.trim() || null;
-  const countryCode = form.countryCode.trim().toUpperCase() || null;
-
-  if (!street && !city && !postalCode && !regionCode && !countryCode) {
-    return undefined;
-  }
-
-  return { street, city, postalCode, regionCode, countryCode } satisfies CompanyAddress;
+  return mapPostalAddressDraftToRequest(form, form.previousAddress) ?? undefined;
 }

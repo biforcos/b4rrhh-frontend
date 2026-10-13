@@ -9,6 +9,10 @@ import {
   output,
   signal,
 } from '@angular/core';
+import {
+  describeStreetLine,
+  describeTownLine,
+} from '../../../core/api/mappers/postal-address.mapper';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take } from 'rxjs';
@@ -167,10 +171,12 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       description: ['', [Validators.maxLength(500)]],
       startDate: [{ value: '', disabled: false }, [Validators.required]],
       companyCode: ['', [Validators.maxLength(30)]],
-      street: ['', [Validators.maxLength(300)]],
-      city: ['', [Validators.maxLength(120)]],
+      streetName: ['', [Validators.maxLength(200)]],
+      streetNumber: ['', [Validators.maxLength(10)]],
+      floor: ['', [Validators.maxLength(10)]],
+      door: ['', [Validators.maxLength(10)]],
+      locality: ['', [Validators.maxLength(120)]],
       postalCode: ['', [Validators.maxLength(20)]],
-      regionCode: ['', [Validators.maxLength(30)]],
       countryCode: ['', [Validators.maxLength(3)]],
     });
 
@@ -274,7 +280,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
 
   protected get entityLocation(): string {
     const raw = this.form.getRawValue();
-    const location = [raw['city'], raw['countryCode']]
+    const location = [raw['locality'], raw['countryCode']]
       .map((value) => (typeof value === 'string' ? value.trim() : ''))
       .filter((value) => value.length > 0)
       .join(' · ');
@@ -286,7 +292,23 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
     if (!detail) {
       return false;
     }
-    return Object.values(detail.address).some((value) => !!value);
+    return detail.address !== null;
+  }
+
+  /** La vía de la dirección, en una línea. */
+  protected get addressStreetLine(): string {
+    return describeStreetLine(this.detail()?.address ?? null);
+  }
+
+  /** El código postal y la población, en una línea. */
+  protected get addressTownLine(): string {
+    return describeTownLine(this.detail()?.address ?? null);
+  }
+
+  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
+  protected get addressNotNormalized(): boolean {
+    const address = this.detail()?.address;
+    return !!address && !address.normalized;
   }
 
   /** El formateador de fechas de toda la aplicacion (`b4rrhh/frontend#120`), para la plantilla. */
@@ -403,8 +425,10 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   private toFormState(value: WorkCenterFormValue): Record<string, string | Date | null> {
+    // La dirección que había no es un control: viaja aparte, en getRawFormValue.
+    const { previousAddress: _previousAddress, ...controls } = value;
     return {
-      ...value,
+      ...controls,
       startDate: value.startDate ? this.parseDate(value.startDate) : null,
     };
   }
@@ -421,11 +445,14 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
           ? this.toIsoDate(raw['startDate'])
           : (raw['startDate'] ?? ''),
       companyCode: raw['companyCode'] ?? '',
-      street: raw['street'] ?? '',
-      city: raw['city'] ?? '',
+      streetName: raw['streetName'] ?? '',
+      streetNumber: raw['streetNumber'] ?? '',
+      floor: raw['floor'] ?? '',
+      door: raw['door'] ?? '',
+      locality: raw['locality'] ?? '',
       postalCode: raw['postalCode'] ?? '',
-      regionCode: raw['regionCode'] ?? '',
       countryCode: raw['countryCode'] ?? '',
+      previousAddress: this.detail()?.address ?? null,
     };
   }
 

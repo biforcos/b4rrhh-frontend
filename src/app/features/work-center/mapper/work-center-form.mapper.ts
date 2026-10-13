@@ -1,6 +1,10 @@
 import { CreateWorkCenterRequest } from '../../../core/api/generated/model/create-work-center-request';
 import { UpdateWorkCenterRequest } from '../../../core/api/generated/model/update-work-center-request';
-import { WorkCenterAddress } from '../../../core/api/generated/model/work-center-address';
+import {
+  emptyPostalAddressDraft,
+  mapPostalAddressDraftToRequest,
+  mapPostalAddressToDraft,
+} from '../../../core/api/mappers/postal-address.mapper';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
 import { WorkCenterFormValue } from '../models/work-center-form-value.model';
 
@@ -12,11 +16,8 @@ export function buildEmptyWorkCenterFormValue(): WorkCenterFormValue {
     description: '',
     startDate: '',
     companyCode: '',
-    street: '',
-    city: '',
-    postalCode: '',
-    regionCode: '',
-    countryCode: '',
+    ...emptyPostalAddressDraft(),
+    previousAddress: null,
   };
 }
 
@@ -30,11 +31,8 @@ export function buildWorkCenterFormValueFromDetail(
     description: detail.description ?? '',
     startDate: detail.startDate,
     companyCode: detail.companyCode ?? '',
-    street: detail.address.street ?? '',
-    city: detail.address.city ?? '',
-    postalCode: detail.address.postalCode ?? '',
-    regionCode: detail.address.regionCode ?? '',
-    countryCode: detail.address.countryCode ?? '',
+    ...mapPostalAddressToDraft(detail.address),
+    previousAddress: detail.address,
   };
 }
 
@@ -63,18 +61,8 @@ export function mapWorkCenterFormValueToUpdateRequest(
   };
 }
 
-function mapAddress(formValue: WorkCenterFormValue): WorkCenterAddress | undefined {
-  const address: WorkCenterAddress = {
-    street: normalizeOptional(formValue.street),
-    city: normalizeOptional(formValue.city),
-    postalCode: normalizeOptional(formValue.postalCode),
-    regionCode: normalizeOptionalCode(formValue.regionCode),
-    countryCode: normalizeOptionalCode(formValue.countryCode),
-  };
-
-  return Object.values(address).some((value) => value != null && `${value}`.trim().length > 0)
-    ? address
-    : undefined;
+function mapAddress(formValue: WorkCenterFormValue) {
+  return mapPostalAddressDraftToRequest(formValue, formValue.previousAddress) ?? undefined;
 }
 
 function normalizeRequired(value: string): string {

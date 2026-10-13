@@ -16,11 +16,23 @@ const domicile: EmployeeAddressModel = {
   addressNumber: 1,
   addressTypeCode: 'HOME',
   addressTypeName: 'Domicilio',
-  street: 'Calle Mayor 10',
-  city: 'Madrid',
-  countryCode: 'ESP',
-  postalCode: '28013',
-  regionCode: 'M',
+  address: {
+    streetTypeCode: null,
+    streetName: 'Calle Mayor 10',
+    streetNumber: null,
+    numberQualifier: null,
+    block: null,
+    stair: null,
+    floor: null,
+    door: null,
+    locality: 'Madrid',
+    municipalityCode: null,
+    municipalityName: null,
+    subdivisionCode: null,
+    postalCode: '28013',
+    countryCode: 'ESP',
+    normalized: true,
+  },
   startDate: '2024-01-01',
   endDate: null,
   isActive: true,
@@ -103,6 +115,21 @@ describe('EmployeeAddressSectionComponent', () => {
     expect(fix.nativeElement.querySelectorAll('.temporal-section__row').length).toBe(1);
   });
 
+  // b4rrhh/backend#155: lo que el backend guardó sin pasar la validación del territorio se ve.
+  it('marks an address that is not normalized, and only that one', () => {
+    store.addressesState.set([domicile]);
+    fix.detectChanges();
+    expect(fix.nativeElement.querySelector('.address-row__not-normalized')).toBeNull();
+
+    store.addressesState.set([
+      { ...domicile, address: { ...domicile.address, normalized: false } },
+    ]);
+    fix.detectChanges();
+    expect(
+      fix.nativeElement.querySelector('.address-row__not-normalized')?.textContent?.trim(),
+    ).toBe('Sin normalizar');
+  });
+
   it('names the series by type when planning an add', () => {
     const component = fix.componentInstance as any;
     component.openAdd();
@@ -129,8 +156,8 @@ describe('EmployeeAddressSectionComponent', () => {
     component.openAdd();
     component.updateDraft('addressTypeCode', 'HOME');
     component.updateDraft('startDate', '2026-03-01');
-    component.updateDraft('street', 'Calle Mayor 10');
-    component.updateDraft('city', 'Madrid');
+    component.updateDraft('streetName', 'Calle Mayor 10');
+    component.updateDraft('locality', 'Madrid');
     component.updateDraft('countryCode', 'ESP');
 
     store.planState.set(plan({ accepted: false, rejection: 'GAP_NOT_ALLOWED', gaps }));

@@ -1,10 +1,4 @@
-export interface CompanyAddressModel {
-  street: string | null;
-  city: string | null;
-  postalCode: string | null;
-  regionCode: string | null;
-  countryCode: string | null;
-}
+import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
 
 export interface CompanyDetailModel {
   ruleSystemCode: string;
@@ -16,7 +10,8 @@ export interface CompanyDetailModel {
   active: boolean;
   legalName: string;
   taxIdentifier: string | null;
-  address: CompanyAddressModel;
+  /** La dirección, la misma estructura que la del empleado; null si no tiene (b4rrhh/backend#155). */
+  address: PostalAddressModel | null;
   /**
    * La actividad economica de la empresa, en CNAE (`b4rrhh/backend#122`).
    *

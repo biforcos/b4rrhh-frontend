@@ -1,3 +1,4 @@
+import { mapOptionalPostalAddressResponseToModel } from '../../../core/api/mappers/postal-address.mapper';
 import { CompanyListItemResponse } from '../../../core/api/generated/model/company-list-item-response';
 import { CompanyResponse } from '../../../core/api/generated/model/company-response';
 import { CompanyDetailModel } from '../models/company-detail.model';
@@ -30,13 +31,7 @@ export function mapCompanyResponseToDetailModel(response: CompanyResponse): Comp
     active: response.active,
     legalName: response.legalName,
     taxIdentifier: response.taxIdentifier ?? null,
-    address: {
-      street: response.address?.street ?? null,
-      city: response.address?.city ?? null,
-      postalCode: response.address?.postalCode ?? null,
-      regionCode: response.address?.regionCode ?? null,
-      countryCode: response.address?.countryCode ?? null,
-    },
+    address: mapOptionalPostalAddressResponseToModel(response.address),
     cnaeCode: response.cnaeCode ?? null,
   };
 }

@@ -20,6 +20,11 @@
     </td>
     <td class="temporal-section__td">
       {{ row.street }}
+      @if (!row.normalized) {
+        <span class="address-row__not-normalized" [title]="texts.addressesSectionNotNormalizedHint">
+          {{ texts.addressesSectionNotNormalizedLabel }}
+        </span>
+      }
       <span class="temporal-section__secondary address-row__locality">
         @if (row.locality) {
           {{ row.locality }} ·
@@ -91,8 +96,35 @@
         <input
           pInputText
           type="text"
-          [value]="draft().street"
-          (input)="updateDraft('street', $any($event.target).value)"
+          [value]="draft().streetName"
+          (input)="updateDraft('streetName', $any($event.target).value)"
+        />
+      </label>
+      <label class="address-form__field">
+        <span>{{ texts.addressesSectionStreetNumberLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          [value]="draft().streetNumber"
+          (input)="updateDraft('streetNumber', $any($event.target).value)"
+        />
+      </label>
+      <label class="address-form__field">
+        <span>{{ texts.addressesSectionFloorLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          [value]="draft().floor"
+          (input)="updateDraft('floor', $any($event.target).value)"
+        />
+      </label>
+      <label class="address-form__field">
+        <span>{{ texts.addressesSectionDoorLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          [value]="draft().door"
+          (input)="updateDraft('door', $any($event.target).value)"
         />
       </label>
       <label class="address-form__field">
@@ -105,21 +137,12 @@
         />
       </label>
       <label class="address-form__field">
-        <span>{{ texts.addressesSectionCityLabel }}</span>
+        <span>{{ texts.addressesSectionLocalityLabel }}</span>
         <input
           pInputText
           type="text"
-          [value]="draft().city"
-          (input)="updateDraft('city', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionRegionLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().regionCode"
-          (input)="updateDraft('regionCode', $any($event.target).value)"
+          [value]="draft().locality"
+          (input)="updateDraft('locality', $any($event.target).value)"
         />
       </label>
       <label class="address-form__field">

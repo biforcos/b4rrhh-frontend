@@ -33,11 +33,21 @@ const companyDetailFixture: CompanyDetailModel = {
   taxIdentifier: 'A12345678',
   cnaeCode: '4719',
   address: {
-    street: 'Gran Via 1',
-    city: 'Madrid',
+    streetTypeCode: null,
+    streetName: 'Gran Via 1',
+    streetNumber: null,
+    numberQualifier: null,
+    block: null,
+    stair: null,
+    floor: null,
+    door: null,
+    locality: 'Madrid',
+    municipalityCode: null,
+    municipalityName: null,
+    subdivisionCode: null,
     postalCode: '28013',
-    regionCode: 'MD',
     countryCode: 'ESP',
+    normalized: true,
   },
 };
 
@@ -84,11 +94,14 @@ describe('CompanyStore', () => {
       legalName: 'Acme Spain SA',
       taxIdentifier: 'A12345678',
       cnaeCode: '4719',
-      street: 'Gran Via 1',
-      city: 'Madrid',
+      streetName: 'Gran Via 1',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: 'Madrid',
       postalCode: '28013',
-      regionCode: 'MD',
       countryCode: 'ESP',
+      previousAddress: null,
     });
 
     expect(gatewayMock.createCompany).toHaveBeenCalledTimes(1);
@@ -131,11 +144,14 @@ describe('CompanyStore', () => {
         legalName: 'Acme Spain SA',
         taxIdentifier: 'A12345678',
         cnaeCode: '4719',
-        street: 'Gran Via 1',
-        city: 'Madrid',
+        streetName: 'Gran Via 1',
+        streetNumber: '',
+        floor: '',
+        door: '',
+        locality: 'Madrid',
         postalCode: '28013',
-        regionCode: 'MD',
         countryCode: 'ESP',
+        previousAddress: null,
       },
     );
 
@@ -176,11 +192,14 @@ describe('CompanyStore', () => {
       legalName: 'Acme Spain SA',
       taxIdentifier: '',
       cnaeCode: '4719',
-      street: '',
-      city: '',
+      streetName: '',
+      streetNumber: '',
+      floor: '',
+      door: '',
+      locality: '',
       postalCode: '',
-      regionCode: '',
       countryCode: 'XXX',
+      previousAddress: null,
     });
 
     expect(store.submitError()).toBe('countryCode is invalid');

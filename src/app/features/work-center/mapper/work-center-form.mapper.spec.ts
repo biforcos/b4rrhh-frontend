@@ -1,3 +1,4 @@
+import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
 import {
   buildEmptyWorkCenterFormValue,
   buildWorkCenterFormValueFromDetail,
@@ -5,6 +6,24 @@ import {
   mapWorkCenterFormValueToUpdateRequest,
 } from './work-center-form.mapper';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
+
+const ADDRESS: PostalAddressModel = {
+  streetTypeCode: 'CL',
+  streetName: 'Mayor',
+  streetNumber: '1',
+  numberQualifier: null,
+  block: null,
+  stair: null,
+  floor: null,
+  door: null,
+  locality: null,
+  municipalityCode: '28079',
+  municipalityName: 'Madrid',
+  subdivisionCode: '28',
+  postalCode: '28001',
+  countryCode: 'ESP',
+  normalized: true,
+};
 
 const detail: WorkCenterDetailModel = {
   ruleSystemCode: 'ESP',
@@ -15,13 +34,7 @@ const detail: WorkCenterDetailModel = {
   endDate: null,
   active: true,
   companyCode: 'ES01',
-  address: {
-    street: 'Calle Mayor 1',
-    city: 'Madrid',
-    postalCode: '28001',
-    regionCode: 'MD',
-    countryCode: 'ES',
-  },
+  address: ADDRESS,
 };
 
 describe('buildEmptyWorkCenterFormValue', () => {
@@ -40,8 +53,8 @@ describe('buildWorkCenterFormValueFromDetail', () => {
 
     expect(form.ruleSystemCode).toBe('ESP');
     expect(form.workCenterCode).toBe('MAD-01');
-    expect(form.street).toBe('Calle Mayor 1');
-    expect(form.countryCode).toBe('ES');
+    expect(form.streetName).toBe('Mayor');
+    expect(form.countryCode).toBe('ESP');
   });
 
   it('converts null optional fields to empty strings', () => {
@@ -89,12 +102,14 @@ describe('mapWorkCenterFormValueToCreateRequest', () => {
     expect(result.address).toBeUndefined();
   });
 
-  it('includes address when city is filled', () => {
+  it('includes address when the street is filled', () => {
     const result = mapWorkCenterFormValueToCreateRequest(
       buildWorkCenterFormValueFromDetail(detail),
     );
 
-    expect(result.address?.city).toBe('Madrid');
+    expect(result.address?.streetName).toBe('Mayor');
+    // Lo que el formulario no edita se conserva de la que había (b4rrhh/backend#155).
+    expect(result.address?.municipalityCode).toBe('28079');
   });
 });
 
@@ -111,10 +126,10 @@ describe('mapWorkCenterFormValueToUpdateRequest', () => {
   it('uppercases countryCode in address', () => {
     const form = buildWorkCenterFormValueFromDetail({
       ...detail,
-      address: { ...detail.address, countryCode: 'es' },
+      address: { ...ADDRESS, countryCode: 'esp' },
     });
     const result = mapWorkCenterFormValueToUpdateRequest(form);
 
-    expect(result.address?.countryCode).toBe('ES');
+    expect(result.address?.countryCode).toBe('ESP');
   });
 });

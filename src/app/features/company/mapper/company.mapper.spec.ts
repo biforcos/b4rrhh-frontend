@@ -57,21 +57,26 @@ describe('mapCompanyResponseToDetailModel', () => {
       startDate: '2020-01-01',
       endDate: undefined,
       address: {
-        street: 'Calle Mayor 1',
-        city: 'Madrid',
+        streetTypeCode: 'CL',
+        streetName: 'Mayor',
+        streetNumber: '1',
+        municipalityCode: '28079',
+        municipalityName: 'Madrid',
+        subdivisionCode: '28',
         postalCode: '28001',
-        regionCode: 'MD',
-        countryCode: 'ES',
+        countryCode: 'ESP',
+        normalized: true,
       },
     });
 
     expect(result.description).toBe('A company');
-    expect(result.address.street).toBe('Calle Mayor 1');
-    expect(result.address.city).toBe('Madrid');
+    expect(result.address?.streetName).toBe('Mayor');
+    expect(result.address?.municipalityName).toBe('Madrid');
     expect(result.endDate).toBeNull();
   });
 
-  it('normalizes missing address fields to null', () => {
+  // Sin dirección, el backend la manda vacía y sin país (b4rrhh/backend#155): no hay dirección.
+  it('maps an empty address to no address', () => {
     const result = mapCompanyResponseToDetailModel({
       ruleSystemCode: 'ESP',
       companyCode: 'ES01',
@@ -82,12 +87,10 @@ describe('mapCompanyResponseToDetailModel', () => {
       active: true,
       startDate: '2020-01-01',
       endDate: undefined,
-      address:
-        undefined as unknown as import('../../../core/api/generated/model/company-address').CompanyAddress,
+      address: { normalized: false },
     });
 
     expect(result.description).toBeNull();
-    expect(result.address.street).toBeNull();
-    expect(result.address.countryCode).toBeNull();
+    expect(result.address).toBeNull();
   });
 });

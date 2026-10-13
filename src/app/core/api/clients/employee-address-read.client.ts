@@ -10,17 +10,17 @@ import {
   PlanAddressChangeRequest,
   UpdateAddressRequest,
 } from '../generated/model/models';
+import {
+  PostalAddressModel,
+  mapPostalAddressResponseToModel,
+} from '../mappers/postal-address.mapper';
 import { EmployeeBusinessKeyApiQuery } from './employee-read.client';
 
 export interface EmployeeAddressApiModel {
   addressNumber: number;
   addressTypeCode: string;
   addressTypeName?: string | null;
-  street: string;
-  city: string;
-  countryCode: string;
-  postalCode: string | null;
-  regionCode: string | null;
+  address: PostalAddressModel;
   startDate: string;
   endDate: string | null;
 }
@@ -59,11 +59,7 @@ export class EmployeeAddressReadClient {
         ...normalizedKey,
         createAddressRequest: {
           addressTypeCode: request.addressTypeCode.trim().toUpperCase(),
-          street: request.street.trim(),
-          city: request.city.trim(),
-          countryCode: request.countryCode.trim().toUpperCase(),
-          postalCode: this.normalizeOptionalValue(request.postalCode),
-          regionCode: this.normalizeOptionalValue(request.regionCode),
+          address: request.address,
           startDate: request.startDate.trim(),
           endDate: this.normalizeOptionalValue(request.endDate),
         },
@@ -83,11 +79,7 @@ export class EmployeeAddressReadClient {
         ...normalizedKey,
         addressNumber,
         updateAddressRequest: {
-          street: request.street.trim(),
-          city: request.city.trim(),
-          countryCode: request.countryCode.trim().toUpperCase(),
-          postalCode: this.normalizeOptionalValue(request.postalCode),
-          regionCode: this.normalizeOptionalValue(request.regionCode),
+          address: request.address,
           // Las fechas corregidas viajan: corregir una dirección son sus datos y su tramo
           // (ADR-057, decisión 3). Sin ellas el backend dejaba el tramo como estaba; desde el
           // backend#69 el inicio es obligatorio y omitirlo es un 400.
@@ -140,11 +132,7 @@ export class EmployeeAddressReadClient {
       addressNumber: source.addressNumber,
       addressTypeCode: source.addressTypeCode,
       addressTypeName: source.addressTypeName ?? null,
-      street: source.street,
-      city: source.city,
-      countryCode: source.countryCode,
-      postalCode: source.postalCode ?? null,
-      regionCode: source.regionCode ?? null,
+      address: mapPostalAddressResponseToModel(source.address),
       startDate: source.startDate,
       endDate: source.endDate ?? null,
     };

@@ -1,3 +1,4 @@
+import { mapOptionalPostalAddressResponseToModel } from '../../../core/api/mappers/postal-address.mapper';
 import { WorkCenterListItemResponse } from '../../../core/api/generated/model/work-center-list-item-response';
 import { WorkCenterResponse } from '../../../core/api/generated/model/work-center-response';
 import { WorkCenterDetailModel } from '../models/work-center-detail.model';
@@ -31,12 +32,6 @@ export function mapWorkCenterResponseToDetailModel(
     endDate: response.endDate ?? null,
     active: response.active,
     companyCode: response.companyCode ?? null,
-    address: {
-      street: response.address?.street ?? null,
-      city: response.address?.city ?? null,
-      postalCode: response.address?.postalCode ?? null,
-      regionCode: response.address?.regionCode ?? null,
-      countryCode: response.address?.countryCode ?? null,
-    },
+    address: mapOptionalPostalAddressResponseToModel(response.address),
   };
 }

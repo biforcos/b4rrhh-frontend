@@ -1,12 +1,10 @@
+import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
+
 export interface EmployeeAddressModel {
   addressNumber: number;
   addressTypeCode: string;
   addressTypeName?: string | null;
-  street: string;
-  city: string;
-  countryCode: string;
-  postalCode: string | null;
-  regionCode: string | null;
+  address: PostalAddressModel;
   startDate: string;
   endDate: string | null;
   isActive: boolean;

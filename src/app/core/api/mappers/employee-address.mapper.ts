@@ -1,14 +1,11 @@
 import { EmployeeAddressApiModel } from '../clients/employee-address-read.client';
+import { PostalAddressModel } from './postal-address.mapper';
 
 export interface EmployeeAddressReadModel {
   addressNumber: number;
   addressTypeCode: string;
   addressTypeName?: string | null;
-  street: string;
-  city: string;
-  countryCode: string;
-  postalCode: string | null;
-  regionCode: string | null;
+  address: PostalAddressModel;
   startDate: string;
   endDate: string | null;
   isActive: boolean;
@@ -17,11 +14,7 @@ export interface EmployeeAddressReadModel {
 export function mapEmployeeAddressApiToReadModel(
   source: EmployeeAddressApiModel,
 ): EmployeeAddressReadModel | null {
-  const street = source.street.trim();
-  const city = source.city.trim();
-  const countryCode = source.countryCode.trim().toUpperCase();
-
-  if (!street && !city && !countryCode) {
+  if (!source.address.countryCode) {
     return null;
   }
 
@@ -31,11 +24,7 @@ export function mapEmployeeAddressApiToReadModel(
     addressNumber: source.addressNumber,
     addressTypeCode: source.addressTypeCode.trim().toUpperCase(),
     addressTypeName: normalizeOptionalValue(source.addressTypeName),
-    street,
-    city,
-    countryCode,
-    postalCode: normalizeOptionalValue(source.postalCode),
-    regionCode: normalizeOptionalValue(source.regionCode),
+    address: source.address,
     startDate: source.startDate.trim(),
     endDate,
     isActive: endDate === null,

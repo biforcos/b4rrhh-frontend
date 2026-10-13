@@ -1,10 +1,4 @@
-export interface WorkCenterAddressModel {
-  street: string | null;
-  city: string | null;
-  postalCode: string | null;
-  regionCode: string | null;
-  countryCode: string | null;
-}
+import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
 
 export interface WorkCenterDetailModel {
   ruleSystemCode: string;
@@ -15,5 +9,6 @@ export interface WorkCenterDetailModel {
   endDate: string | null;
   active: boolean;
   companyCode: string | null;
-  address: WorkCenterAddressModel;
+  /** La dirección, la misma estructura que la del empleado; null si no tiene (b4rrhh/backend#155). */
+  address: PostalAddressModel | null;
 }

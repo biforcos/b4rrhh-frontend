@@ -54,21 +54,26 @@ describe('mapWorkCenterResponseToDetailModel', () => {
       active: true,
       companyCode: 'ES01',
       address: {
-        street: 'Calle Mayor 1',
-        city: 'Madrid',
+        streetTypeCode: 'CL',
+        streetName: 'Mayor',
+        streetNumber: '1',
+        municipalityCode: '28079',
+        municipalityName: 'Madrid',
+        subdivisionCode: '28',
         postalCode: '28001',
-        regionCode: 'MD',
-        countryCode: 'ES',
+        countryCode: 'ESP',
+        normalized: true,
       },
     });
 
-    expect(result.address.street).toBe('Calle Mayor 1');
-    expect(result.address.countryCode).toBe('ES');
+    expect(result.address?.streetName).toBe('Mayor');
+    expect(result.address?.countryCode).toBe('ESP');
     expect(result.description).toBe('HQ');
     expect(result.endDate).toBeNull();
   });
 
-  it('normalizes missing address fields to null', () => {
+  // Sin dirección, el backend la manda vacía y sin país (b4rrhh/backend#155): no hay dirección.
+  it('maps an empty address to no address', () => {
     const result = mapWorkCenterResponseToDetailModel({
       ruleSystemCode: 'ESP',
       workCenterCode: 'MAD-01',
@@ -78,12 +83,11 @@ describe('mapWorkCenterResponseToDetailModel', () => {
       endDate: undefined,
       active: true,
       companyCode: undefined,
-      address:
-        undefined as unknown as import('../../../core/api/generated/model/work-center-address').WorkCenterAddress,
+      address: { normalized: false },
     });
 
     expect(result.description).toBeNull();
-    expect(result.address.street).toBeNull();
+    expect(result.address).toBeNull();
     expect(result.companyCode).toBeNull();
   });
 });

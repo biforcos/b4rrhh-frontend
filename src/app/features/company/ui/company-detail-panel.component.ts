@@ -8,6 +8,10 @@ import {
   input,
   output,
 } from '@angular/core';
+import {
+  describeStreetLine,
+  describeTownLine,
+} from '../../../core/api/mappers/postal-address.mapper';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -87,10 +91,12 @@ export class CompanyDetailPanelComponent implements OnChanges {
       legalName: ['', [Validators.required, Validators.maxLength(200)]],
       taxIdentifier: ['', [Validators.maxLength(50)]],
       cnaeCode: ['', [Validators.maxLength(10)]],
-      street: ['', [Validators.maxLength(300)]],
-      city: ['', [Validators.maxLength(120)]],
+      streetName: ['', [Validators.maxLength(200)]],
+      streetNumber: ['', [Validators.maxLength(10)]],
+      floor: ['', [Validators.maxLength(10)]],
+      door: ['', [Validators.maxLength(10)]],
+      locality: ['', [Validators.maxLength(120)]],
       postalCode: ['', [Validators.maxLength(20)]],
-      regionCode: ['', [Validators.maxLength(30)]],
       countryCode: ['', [Validators.maxLength(3)]],
     });
   }
@@ -189,13 +195,23 @@ export class CompanyDetailPanelComponent implements OnChanges {
       return false;
     }
 
-    return [
-      detail.address.street,
-      detail.address.city,
-      detail.address.postalCode,
-      detail.address.regionCode,
-      detail.address.countryCode,
-    ].some((value) => !!value);
+    return detail.address !== null;
+  }
+
+  /** La vía de la dirección, en una línea. */
+  protected get addressStreetLine(): string {
+    return describeStreetLine(this.detail()?.address ?? null);
+  }
+
+  /** El código postal y la población, en una línea. */
+  protected get addressTownLine(): string {
+    return describeTownLine(this.detail()?.address ?? null);
+  }
+
+  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
+  protected get addressNotNormalized(): boolean {
+    const address = this.detail()?.address;
+    return !!address && !address.normalized;
   }
 
   protected requestEdit(): void {
@@ -256,8 +272,10 @@ export class CompanyDetailPanelComponent implements OnChanges {
   }
 
   private toFormState(value: CompanyFormValue): Record<string, string | Date | null> {
+    // La dirección que había no es un control: viaja aparte, en getRawFormValue.
+    const { previousAddress: _previousAddress, ...controls } = value;
     return {
-      ...value,
+      ...controls,
       startDate: value.startDate ? this.parseDate(value.startDate) : null,
     };
   }
@@ -276,11 +294,14 @@ export class CompanyDetailPanelComponent implements OnChanges {
       legalName: raw['legalName'] ?? '',
       taxIdentifier: raw['taxIdentifier'] ?? '',
       cnaeCode: raw['cnaeCode'] ?? '',
-      street: raw['street'] ?? '',
-      city: raw['city'] ?? '',
+      streetName: raw['streetName'] ?? '',
+      streetNumber: raw['streetNumber'] ?? '',
+      floor: raw['floor'] ?? '',
+      door: raw['door'] ?? '',
+      locality: raw['locality'] ?? '',
       postalCode: raw['postalCode'] ?? '',
-      regionCode: raw['regionCode'] ?? '',
       countryCode: raw['countryCode'] ?? '',
+      previousAddress: this.detail()?.address ?? null,
     };
   }
 

@@ -129,23 +129,11 @@
               class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
             >
               <span class="work-center-detail-panel__view-label">{{ texts.fieldStreetLabel }}</span>
-              <span>{{ displayValue(detail()?.address?.street) }}</span>
+              <span>{{ displayValue(addressStreetLine) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{ texts.fieldCityLabel }}</span>
-              <span>{{ displayValue(detail()?.address?.city) }}</span>
-            </div>
-            <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{
-                texts.fieldPostalCodeLabel
-              }}</span>
-              <span>{{ displayValue(detail()?.address?.postalCode) }}</span>
-            </div>
-            <div class="work-center-detail-panel__view-item">
-              <span class="work-center-detail-panel__view-label">{{
-                texts.fieldRegionCodeLabel
-              }}</span>
-              <span>{{ displayValue(detail()?.address?.regionCode) }}</span>
+              <span class="work-center-detail-panel__view-label">{{ texts.fieldTownLabel }}</span>
+              <span>{{ displayValue(addressTownLine) }}</span>
             </div>
             <div class="work-center-detail-panel__view-item">
               <span class="work-center-detail-panel__view-label">{{
@@ -153,6 +141,18 @@
               }}</span>
               <span>{{ displayValue(detail()?.address?.countryCode) }}</span>
             </div>
+            @if (addressNotNormalized) {
+              <div
+                class="work-center-detail-panel__view-item work-center-detail-panel__view-item--full"
+              >
+                <span
+                  class="work-center-detail-panel__not-normalized"
+                  [title]="texts.addressNotNormalizedHint"
+                >
+                  {{ texts.addressNotNormalizedLabel }}
+                </span>
+              </div>
+            }
           </div>
         } @else {
           <p class="work-center-detail-panel__empty-copy">{{ texts.detailAddressEmpty }}</p>
@@ -160,16 +160,28 @@
       } @else {
         <div class="work-center-detail-panel__grid">
           <div class="work-center-detail-panel__field work-center-detail-panel__field--full">
-            <label for="street" class="work-center-detail-panel__label">{{
+            <label for="streetName" class="work-center-detail-panel__label">{{
               texts.fieldStreetLabel
             }}</label>
-            <input pInputText id="street" formControlName="street" maxlength="300" />
+            <input pInputText id="streetName" formControlName="streetName" maxlength="200" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="city" class="work-center-detail-panel__label">{{
-              texts.fieldCityLabel
+            <label for="streetNumber" class="work-center-detail-panel__label">{{
+              texts.fieldStreetNumberLabel
             }}</label>
-            <input pInputText id="city" formControlName="city" maxlength="120" />
+            <input pInputText id="streetNumber" formControlName="streetNumber" maxlength="10" />
+          </div>
+          <div class="work-center-detail-panel__field">
+            <label for="floor" class="work-center-detail-panel__label">{{
+              texts.fieldFloorLabel
+            }}</label>
+            <input pInputText id="floor" formControlName="floor" maxlength="10" />
+          </div>
+          <div class="work-center-detail-panel__field">
+            <label for="door" class="work-center-detail-panel__label">{{
+              texts.fieldDoorLabel
+            }}</label>
+            <input pInputText id="door" formControlName="door" maxlength="10" />
           </div>
           <div class="work-center-detail-panel__field">
             <label for="postalCode" class="work-center-detail-panel__label">{{
@@ -178,10 +190,10 @@
             <input pInputText id="postalCode" formControlName="postalCode" maxlength="20" />
           </div>
           <div class="work-center-detail-panel__field">
-            <label for="regionCode" class="work-center-detail-panel__label">{{
-              texts.fieldRegionCodeLabel
+            <label for="locality" class="work-center-detail-panel__label">{{
+              texts.fieldLocalityLabel
             }}</label>
-            <input pInputText id="regionCode" formControlName="regionCode" maxlength="30" />
+            <input pInputText id="locality" formControlName="locality" maxlength="120" />
           </div>
           <div class="work-center-detail-panel__field">
             <label for="countryCode" class="work-center-detail-panel__label">{{
