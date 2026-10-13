@@ -3479,6 +3479,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RuleEntityErrorResponse"
+        "409":
+          description: |
+            The rule entity type lives in a shared layer (COM or INT), not in the national layer of
+            the rule system (backend#166). The message names the layer and the
+            /layers/{layerCode}/rule-entities path where it is created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityErrorResponse"
     get:
       operationId: listRuleEntities
       summary: List or retrieve rule entities by business filters
@@ -3583,6 +3592,9 @@ paths:
         Corrects mutable fields of the same occurrence identified by the full business key.
         Identity fields (ruleSystemCode, ruleEntityTypeCode, code, startDate) are immutable.
         This operation does not create a new occurrence.
+        A rule system sees the entities of every layer it mounts, but writes only in its national
+        one (backend#166): an entity of COM or INT is answered with 409, naming its layer and the
+        /layers/{layerCode}/rule-entities path where it is maintained.
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
@@ -3636,6 +3648,9 @@ paths:
       description: |
         Delete is allowed only when the target rule entity exists and is not referenced by business resources.
         This operation is business-key only and does not use technical identifiers.
+        A rule system sees the entities of every layer it mounts, but writes only in its national
+        one (backend#166): an entity of COM or INT is answered with 409, naming its layer and the
+        /layers/{layerCode}/rule-entities path where it is maintained.
       parameters:
         - in: path
           name: ruleSystemCode
@@ -3667,7 +3682,7 @@ paths:
         "404":
           description: Rule entity not found
         "409":
-          description: Rule entity is in use and cannot be deleted
+          description: Rule entity is in use and cannot be deleted, or it is defined in another layer
 
   /rule-entities/{ruleSystemCode}/{ruleEntityTypeCode}/{code}/{startDate}/close:
     post:
@@ -3678,6 +3693,9 @@ paths:
       description: |
         Explicit domain action to close an existing occurrence by setting endDate.
         Identity fields remain immutable.
+        A rule system sees the entities of every layer it mounts, but writes only in its national
+        one (backend#166): an entity of COM or INT is answered with 409, naming its layer and the
+        /layers/{layerCode}/rule-entities path where it is maintained.
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - in: path
