@@ -46,6 +46,11 @@ tags:
     description: Rule entity type administration endpoints.
   - name: Rule Entities
     description: Rule entity administration endpoints.
+  - name: Layers
+    description: >-
+      The layers rule systems are assembled from (ADR-077), and the rule entities of one layer
+      maintained from the layer itself. It is where an entity of a shared layer (COM, INT) is
+      maintained: from a rule system it is only seen (frontend#131).
   - name: Payroll Engine
     description: Payroll concept designer, operand/feed configuration, and assignment rule management.
   - name: Employee Payroll Input
@@ -3716,6 +3721,246 @@ paths:
           description: Invalid request payload
         "404":
           description: Rule entity occurrence not found
+        "409":
+          description: Domain conflict while closing the occurrence
+
+  /layers:
+    get:
+      operationId: listLayers
+      summary: List the layers, with their level and the rule systems that mount them
+      tags:
+        - Layers
+      description: |
+        Every layer, ordered by level and code (ADR-077). A layer is not a rule system: no payroll
+        is calculated in INT and nobody is hired in it, so the scope selector never offers one
+        (`GET /rule-systems` lists assemblies only).
+      responses:
+        "200":
+          description: Layers list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LayerResponse"
+
+  /layers/{layerCode}/rule-entities:
+    post:
+      operationId: createLayerRuleEntity
+      summary: Create a rule entity in a layer
+      tags:
+        - Layers
+      description: |
+        Creates the entity in the layer of the path. The type must live at the level of that
+        layer (ADR-077 §4): a COUNTRY is created in INT, never in ESP.
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/LayerCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLayerRuleEntityRequest"
+      responses:
+        "201":
+          description: Rule entity created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayerRuleEntityResponse"
+        "400":
+          description: |
+            The rule entity type does not exist, does not live at the level of the layer, the
+            business key is already taken in the layer, or the type declares required extensions
+            and is maintained by its own endpoint (backend#88).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityErrorResponse"
+        "404":
+          description: Layer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityErrorResponse"
+    get:
+      operationId: listLayerRuleEntities
+      summary: List the rule entities that live in a layer
+      tags:
+        - Layers
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/LayerCode"
+        - in: query
+          name: ruleEntityTypeCode
+          required: false
+          schema:
+            type: string
+            maxLength: 30
+        - in: query
+          name: code
+          required: false
+          schema:
+            type: string
+            maxLength: 50
+        - in: query
+          name: active
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: referenceDate
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Optional date used to return only occurrences valid on that day.
+      responses:
+        "200":
+          description: Rule entities of the layer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LayerRuleEntityResponse"
+        "404":
+          description: Layer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEntityErrorResponse"
+
+  /layers/{layerCode}/rule-entities/{ruleEntityTypeCode}/{code}/{startDate}:
+    put:
+      operationId: correctLayerRuleEntity
+      summary: Correct a rule entity occurrence of a layer
+      tags:
+        - Layers
+      description: |
+        Corrects the row of the layer, so every rule system that mounts the layer sees the
+        change: correcting a country in INT is correcting it for ESP, FRA and PRT.
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/LayerCode"
+        - in: path
+          name: ruleEntityTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorrectRuleEntityRequest"
+      responses:
+        "200":
+          description: Rule entity occurrence corrected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayerRuleEntityResponse"
+        "400":
+          description: Invalid request payload
+        "404":
+          description: Layer or rule entity occurrence not found
+        "409":
+          description: Domain conflict while correcting the occurrence
+    delete:
+      operationId: deleteLayerRuleEntity
+      summary: Delete a rule entity occurrence of a layer
+      tags:
+        - Layers
+      description: |
+        Allowed only when nothing references the code from any rule system that mounts the
+        layer: a country of INT used by one employee of FRA is in use.
+      parameters:
+        - $ref: "#/components/parameters/LayerCode"
+        - in: path
+          name: ruleEntityTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "204":
+          description: Rule entity deleted
+        "404":
+          description: Layer or rule entity occurrence not found
+        "409":
+          description: Rule entity is in use from some rule system and cannot be deleted
+
+  /layers/{layerCode}/rule-entities/{ruleEntityTypeCode}/{code}/{startDate}/close:
+    post:
+      operationId: closeLayerRuleEntity
+      summary: Close a rule entity occurrence of a layer
+      tags:
+        - Layers
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/LayerCode"
+        - in: path
+          name: ruleEntityTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+        - in: path
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseRuleEntityRequest"
+      responses:
+        "200":
+          description: Rule entity occurrence closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayerRuleEntityResponse"
+        "400":
+          description: Invalid request payload
+        "404":
+          description: Layer or rule entity occurrence not found
         "409":
           description: Domain conflict while closing the occurrence
 
@@ -7665,6 +7910,15 @@ components:
       schema:
         type: string
         example: es-ES
+    LayerCode:
+      in: path
+      name: layerCode
+      required: true
+      description: The code of a layer (ADR-077), such as `COM`, `INT` or `ESP`. Never a rule system.
+      schema:
+        type: string
+        maxLength: 20
+        example: INT
   schemas:
     ArrearExplanationResponse:
       type: object
@@ -12565,6 +12819,109 @@ components:
             The literal in the language of Accept-Language, resolved like every other catalog
             label (ADR-052 §3), or the stored name when there is no translation for it, the
             type is not translatable or no language is asked for.
+        description:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+    LayerResponse:
+      type: object
+      required:
+        - code
+        - name
+        - level
+        - active
+        - mountedBy
+      properties:
+        code:
+          type: string
+          example: INT
+        name:
+          type: string
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 1 Common, 2 International, 3 National, 4 National payroll, 5 Company payroll.
+        active:
+          type: boolean
+        mountedBy:
+          type: array
+          description: >-
+            The rule systems that mount the layer, ordered by code: the ones that see a change
+            made in it.
+          items:
+            type: string
+          example: [ESP, FRA, PRT]
+    CreateLayerRuleEntityRequest:
+      type: object
+      required:
+        - ruleEntityTypeCode
+        - code
+        - name
+        - startDate
+      properties:
+        ruleEntityTypeCode:
+          type: string
+          maxLength: 30
+        code:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+    LayerRuleEntityResponse:
+      type: object
+      description: >-
+        A rule entity seen from its layer, not from a rule system: that is why it has no
+        ruleSystemCode.
+      required:
+        - layerCode
+        - level
+        - ruleEntityTypeCode
+        - code
+        - name
+        - label
+        - active
+        - startDate
+      properties:
+        layerCode:
+          type: string
+          example: INT
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+        ruleEntityTypeCode:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+          description: The stored literal, the one that is edited (ADR-052 §1).
+        label:
+          type: string
+          description: >-
+            The literal in the language of Accept-Language, or the stored name when there is no
+            translation for it (ADR-052 §3).
         description:
           type: string
           nullable: true
