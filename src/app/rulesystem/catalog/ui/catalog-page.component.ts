@@ -1,10 +1,16 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
+import { combineLatest } from 'rxjs';
 
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
-import { mapCreateRuleEntityFormToRequest } from '../mapper/create-rule-entity-form.mapper';
+import {
+  mapCreateRuleEntityFormToLayerRequest,
+  mapCreateRuleEntityFormToRequest,
+} from '../mapper/create-rule-entity-form.mapper';
 import { CreateRuleEntityFormModel } from '../models/create-rule-entity-form.model';
 import { CatalogStore } from '../store/catalog.store';
 import { catalogTexts } from '../catalog.texts';
@@ -20,6 +26,7 @@ import { RuleSystemSelectorComponent } from './rule-system-selector.component';
   imports: [
     DatePipe,
     InputTextModule,
+    RouterLink,
     UiButtonComponent,
     UiDateInputComponent,
     RuleSystemSelectorComponent,
@@ -32,12 +39,15 @@ import { RuleSystemSelectorComponent } from './rule-system-selector.component';
 })
 export class CatalogPageComponent {
   private readonly store = inject(CatalogStore);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly texts = catalogTexts;
   protected readonly displayDateFormat = DISPLAY_DATE_FORMAT;
   protected readonly ruleSystems = this.store.ruleSystems;
   protected readonly selectedRuleSystemCode = this.store.selectedRuleSystemCode;
-  protected readonly ruleEntityTypes = this.store.ruleEntityTypes;
+  protected readonly ruleEntityTypes = this.store.visibleRuleEntityTypes;
+  protected readonly selectedLayerCode = this.store.selectedLayerCode;
+  protected readonly selectedLayer = this.store.selectedLayer;
   protected readonly selectedRuleEntityTypeCode = this.store.selectedRuleEntityTypeCode;
   protected readonly ruleEntities = this.store.ruleEntities;
   protected readonly loadingRuleSystems = this.store.loadingRuleSystems;
@@ -76,11 +86,26 @@ export class CatalogPageComponent {
   });
 
   protected readonly hasContext = computed(
-    () => this.selectedRuleSystemCode() !== null && this.selectedRuleEntityTypeCode() !== null,
+    () =>
+      (this.selectedLayerCode() ?? this.selectedRuleSystemCode()) !== null &&
+      this.selectedRuleEntityTypeCode() !== null,
   );
 
+  /**
+   * Sin `layerCode` en la ruta, Catálogos desde una reglamentación; con él, desde esa capa
+   * (frontend#131). `tipo` es el tipo desde el que se llegó.
+   */
   constructor() {
-    this.store.initialize();
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
+      .pipe(takeUntilDestroyed())
+      .subscribe(([params, query]) => {
+        const layerCode = params.get('layerCode');
+        if (layerCode) {
+          this.store.openLayer(layerCode, query.get('tipo'));
+        } else {
+          this.store.initialize();
+        }
+      });
   }
 
   protected onRuleSystemChanged(code: string): void {
@@ -94,6 +119,13 @@ export class CatalogPageComponent {
   protected createEntity(formValue: CreateRuleEntityFormModel): void {
     const ruleSystemCode = this.selectedRuleSystemCode();
     const ruleEntityTypeCode = this.selectedRuleEntityTypeCode();
+
+    if (this.selectedLayerCode() && ruleEntityTypeCode) {
+      this.store.createRuleEntityInLayer(
+        mapCreateRuleEntityFormToLayerRequest(formValue, ruleEntityTypeCode),
+      );
+      return;
+    }
 
     if (!ruleSystemCode || !ruleEntityTypeCode) {
       return;

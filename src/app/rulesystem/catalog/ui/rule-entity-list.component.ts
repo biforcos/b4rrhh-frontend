@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { UiButtonComponent } from '../../../shared/ui/button/ui-button.component';
 import { catalogTexts } from '../catalog.texts';
@@ -9,7 +10,7 @@ import { DISPLAY_DATE_FORMAT } from '../../../shared/utils/local-date.util';
 @Component({
   selector: 'app-rule-entity-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, UiButtonComponent],
+  imports: [DatePipe, RouterLink, UiButtonComponent],
   templateUrl: './rule-entity-list.component.html',
   styleUrl: './rule-entity-list.component.scss',
 })

@@ -1,3 +1,4 @@
+import { LayerRuleEntityResponse } from '../../../core/api/generated/model/layer-rule-entity-response';
 import { RuleEntityResponse } from '../../../core/api/generated/model/rule-entity-response';
 
 import { NATIONAL_LEVEL } from '../models/catalog-level';
@@ -33,5 +34,32 @@ export function mapRuleEntityResponseToModel(source: RuleEntityResponse): RuleEn
     canCorrect: national,
     canClose: national && source.active,
     canDelete: national,
+  };
+}
+
+/**
+ * Vista desde su capa, una entidad es de esa capa por construcción: se mantiene entera, y no hay
+ * reglamentación desde la que se pidiera (frontend#131).
+ */
+export function mapLayerRuleEntityResponseToModel(
+  source: LayerRuleEntityResponse,
+): RuleEntityModel {
+  return {
+    occurrenceKey: `${source.code}|${source.startDate}`,
+    ruleSystemCode: null,
+    layerCode: source.layerCode,
+    level: source.level,
+    definedIn: null,
+    ruleEntityTypeCode: source.ruleEntityTypeCode,
+    code: source.code,
+    name: source.name,
+    translatedLabel: translatedLabelOf(source.name, source.label),
+    description: source.description ?? null,
+    active: source.active,
+    startDate: source.startDate,
+    endDate: source.endDate ?? null,
+    canCorrect: true,
+    canClose: source.active,
+    canDelete: true,
   };
 }

@@ -28,6 +28,16 @@ export const catalogTexts = {
   definedInPrefix: 'definida en',
   createNotInThisLayer:
     'Las entidades de este tipo no viven en la capa nacional: desde aquí se consultan, no se crean ni se editan.',
+  // frontend#131: la vista de una capa, a la que lleva una entidad «definida en INT».
+  maintainInLayerAction: 'Mantener en',
+  layerTitlePrefix: 'Capa',
+  layerSubtitle:
+    'Lo que se crea, corrige, cierra o elimina aquí lo ven todas las reglamentaciones que montan esta capa.',
+  layerMountedByPrefix: 'La montan:',
+  layerMountedByNone: 'Ninguna reglamentación la monta.',
+  backToRuleSystemAction: 'Volver a Catálogos',
+  layerNotFoundMessage: 'No existe la capa',
+  emptyNoTypeInLayer: 'Ningún tipo de entidad vive en el nivel de esta capa.',
   activeYes: 'Sí',
   activeNo: 'No',
   actionCorrect: 'Corregir',

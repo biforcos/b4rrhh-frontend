@@ -30,6 +30,15 @@
           <td>{{ (item.endDate | date: displayDateFormat) ?? '-' }}</td>
           <td>
             <div class="rule-entity-list__actions">
+              <!-- Desde la reglamentación no se toca; se mantiene en su capa (frontend#131). -->
+              @if (item.definedIn) {
+                <a
+                  class="rule-entity-list__layer-link"
+                  [routerLink]="['/organizacion/catalogos/capa', item.definedIn]"
+                  [queryParams]="{ tipo: item.ruleEntityTypeCode }"
+                  >{{ texts.maintainInLayerAction }} {{ item.definedIn }}</a
+                >
+              }
               @if (item.canCorrect) {
                 <app-ui-button
                   type="button"

@@ -1,13 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { forkJoin, take } from 'rxjs';
+import { Observable, forkJoin, take } from 'rxjs';
 
 import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
+import { LayerRuleEntityOccurrenceKey } from '../client/layer.client';
 import { CatalogGateway } from '../gateway/catalog.gateway';
 import { CloseRuleEntityRequestModel } from '../models/close-rule-entity.request';
+import { CreateLayerRuleEntityRequestModel } from '../models/create-layer-rule-entity.request';
 import { CreateRuleEntityRequestModel } from '../models/create-rule-entity.request';
 import { CorrectRuleEntityRequestModel } from '../models/correct-rule-entity.request';
 import { NATIONAL_LEVEL } from '../models/catalog-level';
+import { LayerModel } from '../models/layer.model';
 import { RuleEntityModel } from '../models/rule-entity.model';
 import { RuleEntityTypeModel } from '../models/rule-entity-type.model';
 import { RuleSystemModel } from '../models/rule-system.model';
@@ -40,6 +43,13 @@ export class CatalogStore {
 
   private readonly ruleSystemsState = signal<ReadonlyArray<RuleSystemModel>>([]);
   private readonly selectedRuleSystemCodeState = signal<string | null>(null);
+  private readonly layersState = signal<ReadonlyArray<LayerModel>>([]);
+  /**
+   * La capa que se mantiene, o `null` si Catálogos se mira desde una reglamentación. Son los dos
+   * contextos de la pantalla (frontend#131): desde una reglamentación se ve todo y se edita lo
+   * nacional; desde una capa se ve y se edita lo suyo, y eso lo ven todas las que la montan.
+   */
+  private readonly selectedLayerCodeState = signal<string | null>(null);
   private readonly ruleEntityTypesState = signal<ReadonlyArray<RuleEntityTypeModel>>([]);
   private readonly selectedRuleEntityTypeCodeState = signal<string | null>(null);
   private readonly ruleEntitiesState = signal<ReadonlyArray<RuleEntityModel>>([]);
@@ -59,6 +69,22 @@ export class CatalogStore {
 
   readonly ruleSystems = this.ruleSystemsState.asReadonly();
   readonly selectedRuleSystemCode = this.selectedRuleSystemCodeState.asReadonly();
+  readonly selectedLayerCode = this.selectedLayerCodeState.asReadonly();
+  readonly selectedLayer = computed(() => {
+    const code = this.selectedLayerCodeState();
+    return code ? (this.layersState().find((layer) => layer.code === code) ?? null) : null;
+  });
+  /** Desde una capa, sólo los tipos de su nivel: los demás no pueden vivir en ella (ADR-077 §4). */
+  readonly visibleRuleEntityTypes = computed(() => {
+    const types = this.ruleEntityTypesState();
+    if (this.selectedLayerCodeState() === null) {
+      return types;
+    }
+
+    // Una capa que no existe no tiene nivel, y no enseña ningún tipo.
+    const layer = this.selectedLayer();
+    return layer ? types.filter((type) => type.level === layer.level) : [];
+  });
   readonly ruleEntityTypes = this.ruleEntityTypesState.asReadonly();
   readonly selectedRuleEntityTypeCode = this.selectedRuleEntityTypeCodeState.asReadonly();
   readonly ruleEntities = this.ruleEntitiesState.asReadonly();
@@ -74,9 +100,10 @@ export class CatalogStore {
    * Se crea en su capa (frontend#127): un alta desde la reglamentación cae en la capa que monta
    * en el nivel del tipo, y sólo la nacional es suya. Un país dado de alta desde ESP iría a INT.
    */
-  readonly canCreateInSelectedType = computed(
-    () => this.selectedRuleEntityTypeLevel() === NATIONAL_LEVEL,
-  );
+  readonly canCreateInSelectedType = computed(() => {
+    const layer = this.selectedLayer();
+    return this.selectedRuleEntityTypeLevel() === (layer ? layer.level : NATIONAL_LEVEL);
+  });
   readonly mutating = computed(() => this.activeMutationState() !== null);
   readonly creating = computed(() => this.activeMutationState() === 'creating');
   readonly correctingOccurrenceKey = this.correctingOccurrenceKeyState.asReadonly();
@@ -115,6 +142,9 @@ export class CatalogStore {
   readonly createResetToken = this.createResetTokenState.asReadonly();
 
   initialize(): void {
+    this.selectedLayerCodeState.set(null);
+    this.cancel();
+    this.clearFeedback();
     this.loadingRuleSystemsState.set(true);
     this.loadingRuleEntityTypesState.set(true);
     this.errorMessageState.set(null);
@@ -159,6 +189,53 @@ export class CatalogStore {
       });
   }
 
+  /**
+   * Abre Catálogos en una capa (frontend#131): a donde lleva una entidad «definida en INT».
+   * `preferredTypeCode` es el tipo desde el que se llegó, si vive en esa capa.
+   */
+  openLayer(layerCode: string, preferredTypeCode: string | null = null): void {
+    this.selectedLayerCodeState.set(layerCode.trim());
+    this.cancel();
+    this.clearFeedback();
+    this.ruleEntitiesState.set([]);
+    this.loadingRuleSystemsState.set(true);
+    this.loadingRuleEntityTypesState.set(true);
+
+    forkJoin({
+      layers: this.gateway.loadLayers(),
+      ruleEntityTypes: this.gateway.loadRuleEntityTypes(),
+    })
+      .pipe(take(1))
+      .subscribe({
+        next: ({ layers, ruleEntityTypes }) => {
+          this.loadingRuleSystemsState.set(false);
+          this.loadingRuleEntityTypesState.set(false);
+          this.layersState.set(layers);
+          this.ruleEntityTypesState.set(ruleEntityTypes);
+
+          if (!this.selectedLayer()) {
+            this.selectedRuleEntityTypeCodeState.set(null);
+            this.errorMessageState.set(`${catalogTexts.layerNotFoundMessage} ${layerCode}`);
+            return;
+          }
+
+          const visibleCodes = this.visibleRuleEntityTypes().map((type) => type.code);
+          this.selectedRuleEntityTypeCodeState.set(
+            this.resolveSelectedCode(
+              preferredTypeCode ?? this.selectedRuleEntityTypeCodeState(),
+              visibleCodes,
+            ),
+          );
+          this.loadRuleEntitiesForCurrentContext();
+        },
+        error: (error: unknown) => {
+          this.loadingRuleSystemsState.set(false);
+          this.loadingRuleEntityTypesState.set(false);
+          this.errorMessageState.set(this.formatError(error));
+        },
+      });
+  }
+
   selectRuleSystem(code: string): void {
     const normalizedCode = code.trim();
     this.selectedRuleSystemCodeState.set(normalizedCode.length > 0 ? normalizedCode : null);
@@ -178,6 +255,20 @@ export class CatalogStore {
   }
 
   createRuleEntity(request: CreateRuleEntityRequestModel): void {
+    this.runCreate(() => this.gateway.createRuleEntity(request));
+  }
+
+  /** El alta desde la vista de una capa: va a esa capa (frontend#131). */
+  createRuleEntityInLayer(request: CreateLayerRuleEntityRequestModel): void {
+    const layerCode = this.selectedLayerCodeState();
+    if (!layerCode) {
+      return;
+    }
+
+    this.runCreate(() => this.gateway.createLayerRuleEntity(layerCode, request));
+  }
+
+  private runCreate(create: () => Observable<RuleEntityModel>): void {
     if (this.mutating()) {
       return;
     }
@@ -186,8 +277,7 @@ export class CatalogStore {
     this.errorMessageState.set(null);
     this.successMessageState.set(null);
 
-    this.gateway
-      .createRuleEntity(request)
+    create()
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -259,8 +349,7 @@ export class CatalogStore {
       endDate: normalizeOptionalValue(this.correctDraftState().endDate),
     };
 
-    this.gateway
-      .correctRuleEntityByBusinessKey(this.toOccurrenceBusinessKey(occurrence), request)
+    this.correctCall(occurrence, request)
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -323,8 +412,7 @@ export class CatalogStore {
       endDate: normalizeRequiredValue(this.closeEndDateState()),
     };
 
-    this.gateway
-      .closeRuleEntityByBusinessKey(this.toOccurrenceBusinessKey(occurrence), request)
+    this.closeCall(occurrence, request)
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -373,8 +461,7 @@ export class CatalogStore {
     this.errorMessageState.set(null);
     this.successMessageState.set(null);
 
-    this.gateway
-      .deleteRuleEntityByBusinessKey(this.toOccurrenceBusinessKey(occurrence))
+    this.deleteCall(occurrence)
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -404,10 +491,12 @@ export class CatalogStore {
   }
 
   private loadRuleEntitiesForCurrentContext(): void {
+    const layerCode = this.selectedLayerCodeState();
     const ruleSystemCode = this.selectedRuleSystemCodeState();
     const ruleEntityTypeCode = this.selectedRuleEntityTypeCodeState();
+    const contextCode = layerCode ?? ruleSystemCode;
 
-    if (!ruleSystemCode || !ruleEntityTypeCode) {
+    if (!contextCode || !ruleEntityTypeCode) {
       this.ruleEntitiesState.set([]);
       this.loadingRuleEntitiesState.set(false);
       return;
@@ -418,8 +507,10 @@ export class CatalogStore {
 
     const requestId = ++this.listRequestId;
 
-    this.gateway
-      .loadRuleEntities(ruleSystemCode, ruleEntityTypeCode)
+    (layerCode
+      ? this.gateway.loadLayerRuleEntities(layerCode, ruleEntityTypeCode)
+      : this.gateway.loadRuleEntities(contextCode, ruleEntityTypeCode)
+    )
       .pipe(take(1))
       .subscribe({
         next: (items) => {
@@ -483,6 +574,53 @@ export class CatalogStore {
     return this.ruleEntitiesState().find((item) => item.occurrenceKey === occurrenceKey) ?? null;
   }
 
+  // Las tres mutaciones van a la capa abierta o a la reglamentación, según el contexto.
+
+  private correctCall(
+    occurrence: RuleEntityModel,
+    request: CorrectRuleEntityRequestModel,
+  ): Observable<RuleEntityModel> {
+    const layerKey = this.toLayerOccurrenceKey(occurrence);
+    return layerKey
+      ? this.gateway.correctLayerRuleEntity(layerKey, request)
+      : this.gateway.correctRuleEntityByBusinessKey(
+          this.toOccurrenceBusinessKey(occurrence),
+          request,
+        );
+  }
+
+  private closeCall(
+    occurrence: RuleEntityModel,
+    request: CloseRuleEntityRequestModel,
+  ): Observable<RuleEntityModel> {
+    const layerKey = this.toLayerOccurrenceKey(occurrence);
+    return layerKey
+      ? this.gateway.closeLayerRuleEntity(layerKey, request)
+      : this.gateway.closeRuleEntityByBusinessKey(
+          this.toOccurrenceBusinessKey(occurrence),
+          request,
+        );
+  }
+
+  private deleteCall(occurrence: RuleEntityModel): Observable<void> {
+    const layerKey = this.toLayerOccurrenceKey(occurrence);
+    return layerKey
+      ? this.gateway.deleteLayerRuleEntity(layerKey)
+      : this.gateway.deleteRuleEntityByBusinessKey(this.toOccurrenceBusinessKey(occurrence));
+  }
+
+  private toLayerOccurrenceKey(occurrence: RuleEntityModel): LayerRuleEntityOccurrenceKey | null {
+    const layerCode = this.selectedLayerCodeState();
+    return layerCode
+      ? {
+          layerCode,
+          ruleEntityTypeCode: occurrence.ruleEntityTypeCode,
+          code: occurrence.code,
+          startDate: occurrence.startDate,
+        }
+      : null;
+  }
+
   private toOccurrenceBusinessKey(occurrence: RuleEntityModel): {
     ruleSystemCode: string;
     ruleEntityTypeCode: string;
@@ -490,7 +628,7 @@ export class CatalogStore {
     startDate: string;
   } {
     return {
-      ruleSystemCode: occurrence.ruleSystemCode,
+      ruleSystemCode: occurrence.ruleSystemCode ?? '',
       ruleEntityTypeCode: occurrence.ruleEntityTypeCode,
       code: occurrence.code,
       startDate: occurrence.startDate,

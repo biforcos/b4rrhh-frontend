@@ -49,6 +49,25 @@ const closedOccurrence: RuleEntityModel = {
   canDelete: true,
 };
 
+const countryInInt: RuleEntityModel = {
+  occurrenceKey: 'FRA|1900-01-01',
+  ruleSystemCode: null,
+  layerCode: 'INT',
+  level: 2,
+  definedIn: null,
+  ruleEntityTypeCode: 'COUNTRY',
+  code: 'FRA',
+  name: 'France',
+  translatedLabel: 'Francia',
+  description: null,
+  active: true,
+  startDate: '1900-01-01',
+  endDate: null,
+  canCorrect: true,
+  canClose: true,
+  canDelete: true,
+};
+
 describe('CatalogStore', () => {
   let store: CatalogStore;
   let gatewayMock: {
@@ -59,6 +78,12 @@ describe('CatalogStore', () => {
     correctRuleEntityByBusinessKey: ReturnType<typeof vi.fn>;
     closeRuleEntityByBusinessKey: ReturnType<typeof vi.fn>;
     deleteRuleEntityByBusinessKey: ReturnType<typeof vi.fn>;
+    loadLayers: ReturnType<typeof vi.fn>;
+    loadLayerRuleEntities: ReturnType<typeof vi.fn>;
+    createLayerRuleEntity: ReturnType<typeof vi.fn>;
+    correctLayerRuleEntity: ReturnType<typeof vi.fn>;
+    closeLayerRuleEntity: ReturnType<typeof vi.fn>;
+    deleteLayerRuleEntity: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -77,6 +102,17 @@ describe('CatalogStore', () => {
         .fn()
         .mockReturnValue(of({ ...activeOccurrence, active: false })),
       deleteRuleEntityByBusinessKey: vi.fn().mockReturnValue(of(void 0)),
+      loadLayers: vi.fn().mockReturnValue(
+        of([
+          { code: 'COM', name: 'Común', level: 1, mountedBy: ['ESP', 'FRA', 'PRT'] },
+          { code: 'INT', name: 'Internacional', level: 2, mountedBy: ['ESP', 'FRA', 'PRT'] },
+        ]),
+      ),
+      loadLayerRuleEntities: vi.fn().mockReturnValue(of([countryInInt])),
+      createLayerRuleEntity: vi.fn().mockReturnValue(of(countryInInt)),
+      correctLayerRuleEntity: vi.fn().mockReturnValue(of(countryInInt)),
+      closeLayerRuleEntity: vi.fn().mockReturnValue(of({ ...countryInInt, active: false })),
+      deleteLayerRuleEntity: vi.fn().mockReturnValue(of(void 0)),
     };
 
     store = setupWithScope([]);
@@ -173,6 +209,69 @@ describe('CatalogStore', () => {
 
     expect(store.selectedRuleEntityTypeLevel()).toBe(2);
     expect(store.canCreateInSelectedType()).toBe(false);
+  });
+
+  // frontend#131: la vista de una capa. Se ve y se edita lo suyo, y va a la capa, no a una
+  // reglamentación.
+  describe('from a layer', () => {
+    beforeEach(() => {
+      store.openLayer('INT', 'COUNTRY');
+    });
+
+    it('lists the entities of the layer and only the types of its level', () => {
+      expect(store.selectedLayer()?.mountedBy).toEqual(['ESP', 'FRA', 'PRT']);
+      expect(store.visibleRuleEntityTypes().map((type) => type.code)).toEqual(['COUNTRY']);
+      expect(store.selectedRuleEntityTypeCode()).toBe('COUNTRY');
+      expect(gatewayMock.loadLayerRuleEntities).toHaveBeenCalledWith('INT', 'COUNTRY');
+      expect(store.ruleEntities()).toEqual([countryInInt]);
+      expect(store.canCreateInSelectedType()).toBe(true);
+    });
+
+    it('corrects in the layer, never through a rule system', () => {
+      store.startCorrect(countryInInt.occurrenceKey);
+      store.updateCorrectDraft('name', 'France (corregido)');
+
+      store.submitCorrect();
+
+      expect(gatewayMock.correctLayerRuleEntity).toHaveBeenCalledWith(
+        { layerCode: 'INT', ruleEntityTypeCode: 'COUNTRY', code: 'FRA', startDate: '1900-01-01' },
+        { name: 'France (corregido)', description: null, endDate: null },
+      );
+      expect(gatewayMock.correctRuleEntityByBusinessKey).not.toHaveBeenCalled();
+    });
+
+    it('creates in the layer', () => {
+      const request = {
+        ruleEntityTypeCode: 'COUNTRY',
+        code: 'ZZZ',
+        name: 'Probe',
+        description: null,
+        startDate: '2020-01-01',
+        endDate: null,
+      };
+
+      store.createRuleEntityInLayer(request);
+
+      expect(gatewayMock.createLayerRuleEntity).toHaveBeenCalledWith('INT', request);
+      expect(gatewayMock.createRuleEntity).not.toHaveBeenCalled();
+    });
+
+    it('goes back to the rule system when initialized again', () => {
+      store.initialize();
+
+      expect(store.selectedLayerCode()).toBeNull();
+      expect(store.visibleRuleEntityTypes()).toHaveLength(2);
+    });
+  });
+
+  it('says so when the layer does not exist and loads nothing', () => {
+    gatewayMock.loadLayerRuleEntities.mockClear();
+
+    store.openLayer('NOPE');
+
+    expect(store.errorMessage()).toBe('No existe la capa NOPE');
+    expect(store.visibleRuleEntityTypes()).toEqual([]);
+    expect(gatewayMock.loadLayerRuleEntities).not.toHaveBeenCalled();
   });
 
   it('submits correct operation over same occurrence business key', () => {

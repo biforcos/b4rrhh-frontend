@@ -18,6 +18,34 @@
   color: var(--text-muted);
 }
 
+.catalog-page__layer-zone {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.72rem;
+}
+
+.catalog-page__layer-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.catalog-page__layer-subtitle {
+  margin: 0.16rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.catalog-page__back-link {
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.catalog-page__back-link:hover {
+  color: var(--accent-primary-hover);
+}
+
 .catalog-page__selector-zone,
 .catalog-page__panel {
   border: 1px solid var(--border-subtle);

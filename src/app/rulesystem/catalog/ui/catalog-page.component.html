@@ -1,22 +1,55 @@
 <section class="catalog-page">
   <header class="catalog-page__header">
     <h2>{{ texts.pageTitle }}</h2>
-    <p>{{ texts.pageSubtitle }}</p>
+    @if (!selectedLayerCode()) {
+      <p>{{ texts.pageSubtitle }}</p>
+    }
   </header>
 
-  <section class="catalog-page__selector-zone">
-    @if (loadingRuleSystems()) {
-      <p class="catalog-page__feedback catalog-page__feedback--loading">
-        {{ texts.loadingRuleSystems }}
-      </p>
-    }
-    <app-rule-system-selector
-      [ruleSystems]="ruleSystems()"
-      [selectedCode]="selectedRuleSystemCode()"
-      [disabled]="loadingRuleSystems()"
-      (selectionChanged)="onRuleSystemChanged($event)"
-    />
-  </section>
+  @if (selectedLayerCode(); as layerCode) {
+    <!-- Desde una capa no se elige reglamentación: lo de aquí lo ven todas las que la montan (frontend#131). -->
+    <section class="catalog-page__selector-zone catalog-page__layer-zone">
+      <div>
+        <h3 class="catalog-page__layer-title">
+          {{ texts.layerTitlePrefix }} {{ layerCode }}
+          @if (selectedLayer(); as layer) {
+            · {{ layer.name }}
+            <!-- COM e INT se llaman como su nivel: el nivel sólo si dice otra cosa. -->
+            @if (texts.levelNames[layer.level] !== layer.name) {
+              · {{ texts.levelNames[layer.level] }}
+            }
+          }
+        </h3>
+        <p class="catalog-page__layer-subtitle">{{ texts.layerSubtitle }}</p>
+        @if (selectedLayer(); as layer) {
+          <p class="catalog-page__layer-subtitle">
+            @if (layer.mountedBy.length > 0) {
+              {{ texts.layerMountedByPrefix }} {{ layer.mountedBy.join(', ') }}
+            } @else {
+              {{ texts.layerMountedByNone }}
+            }
+          </p>
+        }
+      </div>
+      <a class="catalog-page__back-link" routerLink="/organizacion/catalogos">{{
+        texts.backToRuleSystemAction
+      }}</a>
+    </section>
+  } @else {
+    <section class="catalog-page__selector-zone">
+      @if (loadingRuleSystems()) {
+        <p class="catalog-page__feedback catalog-page__feedback--loading">
+          {{ texts.loadingRuleSystems }}
+        </p>
+      }
+      <app-rule-system-selector
+        [ruleSystems]="ruleSystems()"
+        [selectedCode]="selectedRuleSystemCode()"
+        [disabled]="loadingRuleSystems()"
+        (selectionChanged)="onRuleSystemChanged($event)"
+      />
+    </section>
+  }
 
   @if (errorMessage()) {
     <p class="catalog-page__feedback catalog-page__feedback--error">{{ errorMessage() }}</p>
@@ -48,8 +81,10 @@
         <h3>{{ texts.entityPanelTitle }}</h3>
       </header>
 
-      @if (!selectedRuleSystemCode()) {
+      @if (!selectedLayerCode() && !selectedRuleSystemCode()) {
         <p class="catalog-page__empty">{{ texts.emptyNoRuleSystem }}</p>
+      } @else if (selectedLayerCode() && ruleEntityTypes().length === 0) {
+        <p class="catalog-page__empty">{{ texts.emptyNoTypeInLayer }}</p>
       } @else if (!selectedRuleEntityTypeCode()) {
         <p class="catalog-page__empty">{{ texts.emptyNoType }}</p>
       } @else if (loadingRuleEntities()) {

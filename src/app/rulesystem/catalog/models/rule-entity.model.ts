@@ -1,6 +1,7 @@
 export interface RuleEntityModel {
   occurrenceKey: string;
-  ruleSystemCode: string;
+  /** Desde qué reglamentación se pidió; `null` vista desde su capa (frontend#131). */
+  ruleSystemCode: string | null;
   /** La capa en la que vive y su nivel, del contrato (backend#157); nada se deduce aquí. */
   layerCode: string;
   level: number;

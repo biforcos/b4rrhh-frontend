@@ -1,6 +1,10 @@
+import { LayerRuleEntityResponse } from '../../../core/api/generated/model/layer-rule-entity-response';
 import { RuleEntityResponse } from '../../../core/api/generated/model/rule-entity-response';
 
-import { mapRuleEntityResponseToModel } from './rule-entity.mapper';
+import {
+  mapLayerRuleEntityResponseToModel,
+  mapRuleEntityResponseToModel,
+} from './rule-entity.mapper';
 
 describe('mapRuleEntityResponseToModel', () => {
   it('marks active occurrences as closable and deletable', () => {
@@ -134,6 +138,34 @@ describe('mapRuleEntityResponseToModel', () => {
 
     expect(mapRuleEntityResponseToModel(source)).toMatchObject({
       definedIn: null,
+      canCorrect: true,
+      canClose: true,
+      canDelete: true,
+    });
+  });
+});
+
+// frontend#131: vista desde su capa, una entidad de INT es de esa capa y se mantiene entera.
+describe('mapLayerRuleEntityResponseToModel', () => {
+  it('offers every action on an entity seen from its own layer', () => {
+    const source: LayerRuleEntityResponse = {
+      layerCode: 'INT',
+      level: 2,
+      ruleEntityTypeCode: 'COUNTRY',
+      code: 'FRA',
+      name: 'France',
+      label: 'Francia',
+      description: null,
+      active: true,
+      startDate: '1900-01-01',
+      endDate: null,
+    };
+
+    expect(mapLayerRuleEntityResponseToModel(source)).toMatchObject({
+      ruleSystemCode: null,
+      layerCode: 'INT',
+      definedIn: null,
+      translatedLabel: 'Francia',
       canCorrect: true,
       canClose: true,
       canDelete: true,

@@ -1,10 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
+import { LayerClient, LayerRuleEntityOccurrenceKey } from '../client/layer.client';
 import { RuleEntityClient } from '../client/rule-entity.client';
 import { RuleEntityTypeClient } from '../client/rule-entity-type.client';
 import { RuleSystemClient } from '../client/rule-system.client';
-import { mapRuleEntityResponseToModel } from '../mapper/rule-entity.mapper';
+import { mapLayerResponseToModel } from '../mapper/layer.mapper';
+import {
+  mapLayerRuleEntityResponseToModel,
+  mapRuleEntityResponseToModel,
+} from '../mapper/rule-entity.mapper';
+import { CreateLayerRuleEntityRequestModel } from '../models/create-layer-rule-entity.request';
+import { LayerModel } from '../models/layer.model';
 import { mapRuleEntityTypeResponseToModel } from '../mapper/rule-entity-type.mapper';
 import { CloseRuleEntityRequestModel } from '../models/close-rule-entity.request';
 import { CreateRuleEntityRequestModel } from '../models/create-rule-entity.request';
@@ -22,6 +29,7 @@ export class CatalogGateway {
   private readonly ruleSystemClient = inject(RuleSystemClient);
   private readonly ruleEntityTypeClient = inject(RuleEntityTypeClient);
   private readonly ruleEntityClient = inject(RuleEntityClient);
+  private readonly layerClient = inject(LayerClient);
 
   loadRuleSystems(): Observable<ReadonlyArray<RuleSystemModel>> {
     return this.ruleSystemClient
@@ -70,5 +78,53 @@ export class CatalogGateway {
 
   deleteRuleEntityByBusinessKey(businessKey: RuleEntityOccurrenceBusinessKey): Observable<void> {
     return this.ruleEntityClient.deleteRuleEntityByBusinessKey(businessKey);
+  }
+
+  // Por capa (frontend#131): donde se mantiene una entidad de COM o de INT.
+
+  loadLayers(): Observable<ReadonlyArray<LayerModel>> {
+    return this.layerClient
+      .listLayers()
+      .pipe(map((items) => items.map((item) => mapLayerResponseToModel(item))));
+  }
+
+  loadLayerRuleEntities(
+    layerCode: string,
+    ruleEntityTypeCode: string,
+  ): Observable<ReadonlyArray<RuleEntityModel>> {
+    return this.layerClient
+      .listLayerRuleEntities(layerCode, ruleEntityTypeCode)
+      .pipe(map((items) => items.map((item) => mapLayerRuleEntityResponseToModel(item))));
+  }
+
+  createLayerRuleEntity(
+    layerCode: string,
+    request: CreateLayerRuleEntityRequestModel,
+  ): Observable<RuleEntityModel> {
+    return this.layerClient
+      .createLayerRuleEntity(layerCode, request)
+      .pipe(map((created) => mapLayerRuleEntityResponseToModel(created)));
+  }
+
+  correctLayerRuleEntity(
+    key: LayerRuleEntityOccurrenceKey,
+    request: CorrectRuleEntityRequestModel,
+  ): Observable<RuleEntityModel> {
+    return this.layerClient
+      .correctLayerRuleEntity(key, request)
+      .pipe(map((updated) => mapLayerRuleEntityResponseToModel(updated)));
+  }
+
+  closeLayerRuleEntity(
+    key: LayerRuleEntityOccurrenceKey,
+    request: CloseRuleEntityRequestModel,
+  ): Observable<RuleEntityModel> {
+    return this.layerClient
+      .closeLayerRuleEntity(key, request)
+      .pipe(map((updated) => mapLayerRuleEntityResponseToModel(updated)));
+  }
+
+  deleteLayerRuleEntity(key: LayerRuleEntityOccurrenceKey): Observable<void> {
+    return this.layerClient.deleteLayerRuleEntity(key);
   }
 }
