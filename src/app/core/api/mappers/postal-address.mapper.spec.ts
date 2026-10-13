@@ -1,5 +1,6 @@
 import {
   PostalAddressModel,
+  describeNormalizationIssue,
   describeStreetLine,
   describeTownLine,
   mapOptionalPostalAddressResponseToModel,
@@ -13,6 +14,7 @@ const address: PostalAddressModel = {
   streetNumber: '3',
   numberQualifier: null,
   block: null,
+  portal: null,
   stair: null,
   floor: '3',
   door: 'D',
@@ -23,6 +25,7 @@ const address: PostalAddressModel = {
   postalCode: '28001',
   countryCode: 'ESP',
   normalized: true,
+  normalizationIssue: null,
 };
 
 describe('postal-address.mapper (b4rrhh/backend#155)', () => {
@@ -33,6 +36,21 @@ describe('postal-address.mapper (b4rrhh/backend#155)', () => {
     expect(describeTownLine({ ...address, municipalityName: null, locality: 'Lisboa' })).toBe(
       '28001 Lisboa',
     );
+  });
+
+  it('says why an address is not normalized, and shows the portal in the street line', () => {
+    expect(describeNormalizationIssue(address)).toBe('');
+    expect(
+      describeNormalizationIssue({
+        ...address,
+        normalized: false,
+        normalizationIssue: 'CP_DESCONOCIDO',
+      }),
+    ).toBe('el código postal no está en el maestro');
+    expect(
+      describeNormalizationIssue({ ...address, normalized: false, normalizationIssue: 'NUEVO' }),
+    ).toBe('NUEVO');
+    expect(describeStreetLine({ ...address, portal: '2' })).toBe('CL Mayor, 3, portal 2, 3º D');
   });
 
   it('reads an empty address of a company or a work center as no address', () => {
@@ -53,6 +71,7 @@ describe('postal-address.mapper (b4rrhh/backend#155)', () => {
       streetTypeCode: 'CL',
       numberQualifier: null,
       block: null,
+      portal: null,
       stair: null,
       municipalityCode: '28079',
       subdivisionCode: '28',

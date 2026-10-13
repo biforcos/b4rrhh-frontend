@@ -19,6 +19,7 @@ import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import {
   PostalAddressModel,
   describeStreetLine,
+  describeNormalizationIssue,
   describeTownLine,
   emptyPostalAddressDraft,
   mapPostalAddressToDraft,
@@ -68,6 +69,8 @@ interface AddressPeriodRow extends TemporalSectionRow {
   countryCode: string;
   /** «Sin normalizar»: el backend la guardó sin pasar la validación (b4rrhh/backend#155). */
   normalized: boolean;
+  /** Por qué no lo está, dicho para la ficha. */
+  normalizationIssue: string;
 }
 
 /** Los campos de texto del formulario: todos menos la dirección que se corrige. */
@@ -145,6 +148,7 @@ export class EmployeeAddressSectionComponent {
         locality: describeTownLine(address.address),
         countryCode: address.address.countryCode,
         normalized: address.address.normalized,
+        normalizationIssue: describeNormalizationIssue(address.address),
       })),
   );
 

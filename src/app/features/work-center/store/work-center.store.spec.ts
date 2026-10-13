@@ -37,6 +37,7 @@ const detailFixture: WorkCenterDetailModel = {
     streetNumber: null,
     numberQualifier: null,
     block: null,
+    portal: null,
     stair: null,
     floor: null,
     door: null,
@@ -47,6 +48,7 @@ const detailFixture: WorkCenterDetailModel = {
     postalCode: '28013',
     countryCode: 'ESP',
     normalized: true,
+    normalizationIssue: null,
   },
 };
 

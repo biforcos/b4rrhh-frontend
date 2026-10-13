@@ -63,6 +63,7 @@ describe('mapWorkCenterResponseToDetailModel', () => {
         postalCode: '28001',
         countryCode: 'ESP',
         normalized: true,
+        normalizationIssue: null,
       },
     });
 

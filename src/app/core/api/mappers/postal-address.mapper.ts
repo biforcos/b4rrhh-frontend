@@ -1,4 +1,5 @@
 import { PostalAddressRequest, PostalAddressResponse } from '../generated/model/models';
+import { POSTAL_ADDRESS_ISSUE_TEXTS } from './postal-address.texts';
 
 /**
  * Una dirección, la misma en el domicilio del empleado, la empresa y el centro (b4rrhh/backend#155).
@@ -11,6 +12,7 @@ export interface PostalAddressModel {
   streetNumber: string | null;
   numberQualifier: string | null;
   block: string | null;
+  portal: string | null;
   stair: string | null;
   floor: string | null;
   door: string | null;
@@ -21,6 +23,8 @@ export interface PostalAddressModel {
   postalCode: string | null;
   countryCode: string;
   normalized: boolean;
+  /** Por qué no está normalizada; null si lo está. */
+  normalizationIssue: string | null;
 }
 
 /**
@@ -44,6 +48,7 @@ export function mapPostalAddressResponseToModel(source: PostalAddressResponse): 
     streetNumber: optional(source.streetNumber),
     numberQualifier: optional(source.numberQualifier),
     block: optional(source.block),
+    portal: optional(source.portal),
     stair: optional(source.stair),
     floor: optional(source.floor),
     door: optional(source.door),
@@ -54,6 +59,7 @@ export function mapPostalAddressResponseToModel(source: PostalAddressResponse): 
     postalCode: optional(source.postalCode),
     countryCode: (source.countryCode ?? '').trim().toUpperCase(),
     normalized: source.normalized,
+    normalizationIssue: source.normalizationIssue ?? null,
   };
 }
 
@@ -116,6 +122,7 @@ export function mapPostalAddressDraftToRequest(
     streetTypeCode: previous?.streetTypeCode ?? null,
     numberQualifier: previous?.numberQualifier ?? null,
     block: previous?.block ?? null,
+    portal: previous?.portal ?? null,
     stair: previous?.stair ?? null,
     municipalityCode: previous?.municipalityCode ?? null,
     subdivisionCode: previous?.subdivisionCode ?? null,
@@ -133,10 +140,18 @@ export function describeStreetLine(address: PostalAddressModel | null): string {
     head,
     number,
     address.block ? `bl. ${address.block}` : null,
+    address.portal ? `portal ${address.portal}` : null,
     address.stair ? `esc. ${address.stair}` : null,
     [address.floor ? `${address.floor}º` : null, address.door].filter(present).join(' '),
   ].filter(present);
   return parts.join(', ');
+}
+
+/** Por qué está «sin normalizar», dicho para la ficha; vacío si lo está. */
+export function describeNormalizationIssue(address: PostalAddressModel | null): string {
+  const issue = address?.normalizationIssue;
+  if (!issue) return '';
+  return POSTAL_ADDRESS_ISSUE_TEXTS[issue] ?? issue;
 }
 
 /** El código postal y la población: el municipio, con la localidad delante si la hay. */

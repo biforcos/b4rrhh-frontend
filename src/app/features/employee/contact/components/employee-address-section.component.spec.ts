@@ -22,6 +22,7 @@ const domicile: EmployeeAddressModel = {
     streetNumber: null,
     numberQualifier: null,
     block: null,
+    portal: null,
     stair: null,
     floor: null,
     door: null,
@@ -32,6 +33,7 @@ const domicile: EmployeeAddressModel = {
     postalCode: '28013',
     countryCode: 'ESP',
     normalized: true,
+    normalizationIssue: null,
   },
   startDate: '2024-01-01',
   endDate: null,
@@ -122,12 +124,18 @@ describe('EmployeeAddressSectionComponent', () => {
     expect(fix.nativeElement.querySelector('.address-row__not-normalized')).toBeNull();
 
     store.addressesState.set([
-      { ...domicile, address: { ...domicile.address, normalized: false } },
+      {
+        ...domicile,
+        address: { ...domicile.address, normalized: false, normalizationIssue: 'CP_DESCONOCIDO' },
+      },
     ]);
     fix.detectChanges();
     expect(
-      fix.nativeElement.querySelector('.address-row__not-normalized')?.textContent?.trim(),
-    ).toBe('Sin normalizar');
+      fix.nativeElement
+        .querySelector('.address-row__not-normalized')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim(),
+    ).toBe('Sin normalizar · el código postal no está en el maestro');
   });
 
   it('names the series by type when planning an add', () => {

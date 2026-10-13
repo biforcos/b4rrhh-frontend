@@ -27,6 +27,7 @@ const createdCompany: CompanyDetailModel = {
     streetNumber: null,
     numberQualifier: null,
     block: null,
+    portal: null,
     stair: null,
     floor: null,
     door: null,
@@ -37,6 +38,7 @@ const createdCompany: CompanyDetailModel = {
     postalCode: '28013',
     countryCode: 'ESP',
     normalized: true,
+    normalizationIssue: null,
   },
 };
 

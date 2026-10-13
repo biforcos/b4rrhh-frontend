@@ -44,6 +44,7 @@ describe('employee-address-edit.mapper', () => {
         streetNumber: '1',
         numberQualifier: null,
         block: null,
+        portal: null,
         stair: null,
         floor: null,
         door: null,
@@ -54,6 +55,7 @@ describe('employee-address-edit.mapper', () => {
         postalCode: '28001',
         countryCode: 'ESP',
         normalized: true,
+        normalizationIssue: null,
       },
     });
 

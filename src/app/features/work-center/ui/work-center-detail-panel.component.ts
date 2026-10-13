@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import {
   describeStreetLine,
+  describeNormalizationIssue,
   describeTownLine,
 } from '../../../core/api/mappers/postal-address.mapper';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
@@ -306,6 +307,11 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
+  /** El motivo de la marca, para la ficha (b4rrhh/backend#155). */
+  protected get addressNormalizationIssue(): string {
+    return describeNormalizationIssue(this.detail()?.address ?? null);
+  }
+
   protected get addressNotNormalized(): boolean {
     const address = this.detail()?.address;
     return !!address && !address.normalized;

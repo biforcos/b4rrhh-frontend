@@ -246,6 +246,9 @@
                   [title]="texts.addressNotNormalizedHint"
                 >
                   {{ texts.addressNotNormalizedLabel }}
+                  @if (addressNormalizationIssue) {
+                    · {{ addressNormalizationIssue }}
+                  }
                 </span>
               </div>
             }

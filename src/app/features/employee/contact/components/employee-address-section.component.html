@@ -23,6 +23,9 @@
       @if (!row.normalized) {
         <span class="address-row__not-normalized" [title]="texts.addressesSectionNotNormalizedHint">
           {{ texts.addressesSectionNotNormalizedLabel }}
+          @if (row.normalizationIssue) {
+            · {{ row.normalizationIssue }}
+          }
         </span>
       }
       <span class="temporal-section__secondary address-row__locality">

@@ -13,6 +13,7 @@ const ADDRESS: PostalAddressModel = {
   streetNumber: '1',
   numberQualifier: null,
   block: null,
+  portal: null,
   stair: null,
   floor: null,
   door: null,
@@ -23,6 +24,7 @@ const ADDRESS: PostalAddressModel = {
   postalCode: '28001',
   countryCode: 'ESP',
   normalized: true,
+  normalizationIssue: null,
 };
 
 const detail: CompanyDetailModel = {
