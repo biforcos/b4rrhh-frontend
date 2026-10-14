@@ -12534,6 +12534,7 @@ components:
       type: object
       required:
         - name
+        - companyCode
       properties:
         name:
           type: string
@@ -12545,8 +12546,10 @@ components:
         companyCode:
           type: string
           maxLength: 30
-          nullable: true
-          description: Optional COMPANY code validated against the rule system catalog on the current server date.
+          description: >-
+            The COMPANY the work center belongs to, validated against the rule system catalog on the
+            current server date. Required, as on creation: a work center cannot be left without one
+            (backend#167).
         address:
           nullable: true
           description: Optional as a whole; when present it goes through the one validation (backend#155).

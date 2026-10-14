@@ -134,4 +134,14 @@ describe('mapWorkCenterFormValueToUpdateRequest', () => {
 
     expect(result.address?.countryCode).toBe('ESP');
   });
+
+  // La empresa viaja siempre: la edición también la exige (b4rrhh/backend#167).
+  it('sends the company trimmed and uppercased', () => {
+    const result = mapWorkCenterFormValueToUpdateRequest({
+      ...buildWorkCenterFormValueFromDetail(detail),
+      companyCode: ' es01 ',
+    });
+
+    expect(result.companyCode).toBe('ES01');
+  });
 });

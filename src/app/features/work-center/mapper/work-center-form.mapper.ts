@@ -54,7 +54,7 @@ export function mapWorkCenterFormValueToUpdateRequest(
   return {
     name: normalizeText(formValue.name),
     description: normalizeOptional(formValue.description),
-    companyCode: normalizeOptionalCode(formValue.companyCode),
+    companyCode: normalizeRequired(formValue.companyCode),
     address: mapAddress(formValue),
   };
 }
@@ -65,11 +65,6 @@ function mapAddress(formValue: WorkCenterFormValue) {
 
 function normalizeRequired(value: string): string {
   return value.trim().toUpperCase();
-}
-
-function normalizeOptionalCode(value: string): string | undefined {
-  const normalized = value.trim().toUpperCase();
-  return normalized.length > 0 ? normalized : undefined;
 }
 
 function normalizeText(value: string): string {
