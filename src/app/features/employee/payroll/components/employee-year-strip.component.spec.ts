@@ -148,4 +148,11 @@ describe('La tira del año', () => {
     expect(months()[9].getAttribute('aria-label')).toContain('octubre de 2026 · sin abrir todavía');
     expect(months()[9].classList).toContain('year-strip__month--not-open');
   });
+
+  it('dice que es para elegir el mes, y el elegido se distingue (b4rrhh/frontend#139)', () => {
+    expect(host.querySelector('.year-strip__title')?.textContent?.trim()).toBe('Elige el mes');
+    const selected = months().filter((m) => m.classList.contains('year-strip__month--selected'));
+    expect(selected.map((m) => m.getAttribute('aria-pressed'))).toEqual(['true']);
+    expect(selected[0].getAttribute('aria-label')).toContain('marzo de 2026');
+  });
 });
