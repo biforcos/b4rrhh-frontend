@@ -7740,61 +7740,73 @@ paths:
               schema:
                 $ref: "#/components/schemas/TerritoryErrorResponse"
 
-  /territory/{ruleSystemCode}/provinces:
+  /territory/{countryCode}:
     get:
-      operationId: listTerritoryProvinces
-      summary: The provinces, each with its region
+      operationId: describeTerritoryOfCountry
+      summary: Whether a country has a territory loaded, and why not when it has none
       description: >-
-        The PROVINCE entities of the national layer, by INE code, each with its ISO 3166-2 code and
-        its region (backend#154, ADR-078).
+        The territory of a country is read from its national layer: the level-3 layer of the rule
+        system whose country is that one (backend#169, ADR-077). A country without a rule system of
+        its own (ITA) has none: its provinces and street types come back empty, and this says why.
+        Outside the countries with a territory an address is country, postal code and text.
       tags:
         - Territory
       parameters:
-        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - $ref: "#/components/parameters/TerritoryCountryCode"
       responses:
         "200":
-          description: The provinces, by code
+          description: Whether the country has a territory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerritoryOfCountryResponse"
+
+  /territory/{countryCode}/provinces:
+    get:
+      operationId: listTerritoryProvinces
+      summary: The provinces of a country, each with its region
+      description: >-
+        The PROVINCE entities of the national layer of the country, by INE code, each with its ISO
+        3166-2 code and its region (backend#154, ADR-078). The same whichever rule system asks
+        (backend#169): an employee of FRA living in Valencia finds the provinces of Spain. Empty for a
+        country without a territory; GET /territory/{countryCode} says why.
+      tags:
+        - Territory
+      parameters:
+        - $ref: "#/components/parameters/TerritoryCountryCode"
+      responses:
+        "200":
+          description: The provinces, by code, or an empty array
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/TerritoryProvinceResponse"
-        "404":
-          description: The rule system does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TerritoryErrorResponse"
 
-  /territory/{ruleSystemCode}/street-types:
+  /territory/{countryCode}/street-types:
     get:
       operationId: listTerritoryStreetTypes
-      summary: The street types
+      summary: The street types of a country
       description: >-
-        The STREET_TYPE entities of the national layer: for ESP, the 93 abbreviations of Annex II of
-        the Catastro free web services, version 2.6, written as the Catastro writes them.
+        The STREET_TYPE entities of the national layer of the country: for ESP, the 93 abbreviations
+        of Annex II of the Catastro free web services, version 2.6, written as the Catastro writes
+        them. Empty for a country without a territory (backend#169).
       tags:
         - Territory
       parameters:
-        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - $ref: "#/components/parameters/TerritoryCountryCode"
       responses:
         "200":
-          description: The street types, by code
+          description: The street types, by code, or an empty array
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/TerritoryStreetTypeResponse"
-        "404":
-          description: The rule system does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TerritoryErrorResponse"
 
-  /territory/{ruleSystemCode}/municipalities:
+  /territory/{countryCode}/municipalities:
     get:
       operationId: searchTerritoryMunicipalities
       summary: Search municipalities of a country by name, in force on a date
@@ -7803,17 +7815,12 @@ paths:
         slash of bilingual names: «Vale» finds «València» and «Valencia de Alcántara». Only those
         in force on `date`. A start date means «in force since at least» (ADR-078): it is the date
         of the first INE relation loaded that lists the municipality, not its creation date. Names
-        that start with `name` come first, then the rest, each by name.
+        that start with `name` come first, then the rest, each by name. Empty for a country without
+        municipalities loaded.
       tags:
         - Territory
       parameters:
-        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
-        - in: query
-          name: countryCode
-          required: true
-          schema:
-            type: string
-            example: ESP
+        - $ref: "#/components/parameters/TerritoryCountryCode"
         - in: query
           name: name
           required: true
@@ -7852,14 +7859,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TerritoryErrorResponse"
-        "404":
-          description: The rule system does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TerritoryErrorResponse"
 
-  /territory/{ruleSystemCode}/postal-codes/{postalCode}:
+  /territory/{countryCode}/postal-codes/{postalCode}:
     get:
       operationId: checkTerritoryPostalCode
       summary: Check a postal code
@@ -7871,19 +7872,13 @@ paths:
       tags:
         - Territory
       parameters:
-        - $ref: "#/components/parameters/TerritoryRuleSystemCode"
+        - $ref: "#/components/parameters/TerritoryCountryCode"
         - in: path
           name: postalCode
           required: true
           schema:
             type: string
             example: "46001"
-        - in: query
-          name: countryCode
-          required: true
-          schema:
-            type: string
-            example: ESP
       responses:
         "200":
           description: What the postal code says
@@ -7897,12 +7892,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TerritoryErrorResponse"
-        "404":
-          description: The rule system does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TerritoryErrorResponse"
 
 components:
   parameters:
@@ -7910,9 +7899,17 @@ components:
       in: path
       name: ruleSystemCode
       required: true
+      description: The rule system whose level-2 layer gives the countries it sees.
+      schema:
+        type: string
+        example: ESP
+    TerritoryCountryCode:
+      in: path
+      name: countryCode
+      required: true
       description: >-
-        The rule system whose layers are read: countries from its level-2 layer, provinces and
-        street types from its national one.
+        ISO 3166-1 alpha-3 country whose territory is read (backend#169): its national layer for
+        provinces and street types, the geo master for municipalities and postal codes.
       schema:
         type: string
         example: ESP
@@ -14519,6 +14516,23 @@ components:
           nullable: true
           description: Why there is no province, when there is none.
           example: Las dos primeras cifras de 99999 no son una provincia.
+    TerritoryOfCountryResponse:
+      type: object
+      required:
+        - countryCode
+        - hasTerritory
+      properties:
+        countryCode:
+          type: string
+          example: ITA
+        hasTerritory:
+          type: boolean
+          description: Whether a rule system has this country as its own, and so a national layer to read.
+        message:
+          type: string
+          nullable: true
+          description: Why there is no territory, when there is none.
+          example: ITA no tiene territorio cargado; una dirección de allí es país, código postal y texto.
     TerritoryErrorResponse:
       type: object
       required:

@@ -75,13 +75,14 @@ const POSTAL_CODES: Record<string, TerritoryPostalCodeCheck> = {
 @Component({
   imports: [PostalAddressFormComponent],
   template: `<app-postal-address-form
-    ruleSystemCode="ESP"
+    [ruleSystemCode]="ruleSystem()"
     [value]="draft()"
     (valueChanged)="draft.set($event)"
     (savingBlockedChanged)="blocked.set($event)"
   />`,
 })
 class HostComponent {
+  readonly ruleSystem = signal('ESP');
   readonly draft = signal<PostalAddressDraft>(emptyPostalAddressDraft());
   readonly blocked = signal(false);
 }
@@ -89,18 +90,44 @@ class HostComponent {
 describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
   let fixture: ComponentFixture<HostComponent>;
   let host: HostComponent;
-  let territory: { searchMunicipalities: ReturnType<typeof vi.fn> };
+  let territory: {
+    searchMunicipalities: ReturnType<typeof vi.fn>;
+    listProvinces: ReturnType<typeof vi.fn>;
+    listStreetTypes: ReturnType<typeof vi.fn>;
+  };
   const ruleSystems = signal<ReadonlyArray<RuleSystem>>([
     { code: 'ESP', name: 'España', countryCode: 'ESP', active: true },
   ]);
 
   beforeEach(async () => {
     territory = {
-      searchMunicipalities: vi.fn((_rs: string, _country: string, name: string) =>
+      searchMunicipalities: vi.fn((_country: string, name: string) =>
         of(
           [VALENCIA, VALENCIA_DE_ALCANTARA, MADRID].filter((item) =>
             item.name.toLowerCase().startsWith(name.toLowerCase()),
           ),
+        ),
+      ),
+      // El territorio es de un país (backend#169): sólo España tiene.
+      listProvinces: vi.fn((country: string) =>
+        of(
+          country === 'ESP'
+            ? [
+                { code: '10', name: 'Cáceres', regionName: 'Extremadura' },
+                { code: '28', name: 'Madrid', regionName: 'Comunidad de Madrid' },
+                { code: '46', name: 'Valencia', regionName: 'Comunitat Valenciana' },
+              ]
+            : [],
+        ),
+      ),
+      listStreetTypes: vi.fn((country: string) =>
+        of(
+          country === 'ESP'
+            ? [
+                { code: 'CL', name: 'CALLE' },
+                { code: 'AV', name: 'AVENIDA' },
+              ]
+            : [],
         ),
       ),
     };
@@ -116,18 +143,7 @@ describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
                 { code: 'ESP', name: 'España' },
                 { code: 'FRA', name: 'Francia' },
               ]),
-            listProvinces: () =>
-              of([
-                { code: '10', name: 'Cáceres', regionName: 'Extremadura' },
-                { code: '28', name: 'Madrid', regionName: 'Comunidad de Madrid' },
-                { code: '46', name: 'Valencia', regionName: 'Comunitat Valenciana' },
-              ]),
-            listStreetTypes: () =>
-              of([
-                { code: 'CL', name: 'CALLE' },
-                { code: 'AV', name: 'AVENIDA' },
-              ]),
-            checkPostalCode: (_rs: string, _country: string, postalCode: string) =>
+            checkPostalCode: (_country: string, postalCode: string) =>
               of(POSTAL_CODES[postalCode] ?? null),
           },
         },
@@ -196,7 +212,7 @@ describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
       'Valencia (46250) · Valencia',
       'Valencia de Alcántara (10203) · Cáceres',
     ]);
-    expect(territory.searchMunicipalities).toHaveBeenLastCalledWith('ESP', 'ESP', 'Vale', null);
+    expect(territory.searchMunicipalities).toHaveBeenLastCalledWith('ESP', 'Vale', null);
   });
 
   it('fills the province and the region from the municipality, and nobody types them', async () => {
@@ -316,6 +332,19 @@ describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
     host.draft.set({ ...emptyPostalAddressDraft(), countryCode: 'ESP', floor: '3' });
     fixture.detectChanges();
     expect(more.open).toBe(true);
+  });
+
+  it('reads the territory of the country of the address, not of the rule system (backend#169)', () => {
+    // Un empleado de FRA que vive en Valencia: su reglamentación no monta la capa de España.
+    host.ruleSystem.set('FRA');
+    host.draft.set({ ...emptyPostalAddressDraft(), countryCode: 'ESP' });
+    fixture.detectChanges();
+
+    expect(territory.listProvinces).not.toHaveBeenCalledWith('FRA');
+    expect(territory.listProvinces).toHaveBeenLastCalledWith('ESP');
+    expect(territory.listStreetTypes).toHaveBeenLastCalledWith('ESP');
+    const streetType = el().querySelector('select[id$="street-type"]') as HTMLSelectElement;
+    expect(Array.from(streetType.options).filter((option) => option.value)).toHaveLength(2);
   });
 
   it('outside Spain the town is text, and the Spanish fields go away', async () => {

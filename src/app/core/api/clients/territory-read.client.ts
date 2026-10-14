@@ -67,28 +67,28 @@ export class TerritoryReadClient {
       .pipe(map((countries) => countries.map(({ code, name }) => ({ code, name }))));
   }
 
-  listProvinces(ruleSystemCode: string): Observable<ReadonlyArray<TerritoryProvince>> {
+  /** Las de un país, sea quien sea quien pregunte (backend#169); vacío si no tiene territorio. */
+  listProvinces(countryCode: string): Observable<ReadonlyArray<TerritoryProvince>> {
     return this.api
-      .listTerritoryProvinces({ ruleSystemCode })
+      .listTerritoryProvinces({ countryCode })
       .pipe(map((provinces) => provinces.map(toProvince)));
   }
 
-  listStreetTypes(ruleSystemCode: string): Observable<ReadonlyArray<TerritoryStreetType>> {
+  /** Los de un país (backend#169); vacío si no tiene territorio. */
+  listStreetTypes(countryCode: string): Observable<ReadonlyArray<TerritoryStreetType>> {
     return this.api
-      .listTerritoryStreetTypes({ ruleSystemCode })
+      .listTerritoryStreetTypes({ countryCode })
       .pipe(map((types) => types.map(({ code, name }) => ({ code, name }))));
   }
 
   /** Los municipios en vigor en `date` con una palabra que empieza por `name`. */
   searchMunicipalities(
-    ruleSystemCode: string,
     countryCode: string,
     name: string,
     date: string | null,
   ): Observable<ReadonlyArray<TerritoryMunicipality>> {
     return this.api
       .searchTerritoryMunicipalities({
-        ruleSystemCode,
         countryCode,
         name,
         ...(date ? { date } : {}),
@@ -96,13 +96,9 @@ export class TerritoryReadClient {
       .pipe(map((municipalities) => municipalities.map(toMunicipality)));
   }
 
-  checkPostalCode(
-    ruleSystemCode: string,
-    countryCode: string,
-    postalCode: string,
-  ): Observable<TerritoryPostalCodeCheck> {
+  checkPostalCode(countryCode: string, postalCode: string): Observable<TerritoryPostalCodeCheck> {
     return this.api
-      .checkTerritoryPostalCode({ ruleSystemCode, countryCode, postalCode })
+      .checkTerritoryPostalCode({ countryCode, postalCode })
       .pipe(map(toPostalCodeCheck));
   }
 }

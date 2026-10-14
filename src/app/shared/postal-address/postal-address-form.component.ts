@@ -123,6 +123,9 @@ export class PostalAddressFormComponent {
 
   protected readonly moreOpen = signal(false);
 
+  /** El país cuyas provincias y tipos de vía hay cargados. */
+  private territoryCountry: string | null = null;
+
   /** La última dirección que salió de aquí: la que vuelve por `value` no es un cambio de fuera. */
   private lastEmitted: PostalAddressDraft | null = null;
 
@@ -238,10 +241,17 @@ export class PostalAddressFormComponent {
   constructor() {
     effect(() => this.savingBlockedChanged.emit(this.postalCodeContradictsProvince()));
 
-    // Los catálogos del territorio, una vez por reglamentación.
+    // Los países que ve la reglamentación de quien tiene la dirección.
     effect(() => {
       const ruleSystemCode = this.ruleSystemCode()?.trim() ?? '';
-      untracked(() => this.loadTerritory(ruleSystemCode));
+      untracked(() => this.loadCountries(ruleSystemCode));
+    });
+
+    // Provincias y tipos de vía, del país de la dirección y no de la reglamentación (backend#169):
+    // un empleado de FRA que vive en Valencia elige entre las provincias de España.
+    effect(() => {
+      const countryCode = this.value().countryCode.trim();
+      untracked(() => this.loadTerritoryOf(countryCode));
     });
 
     // Una dirección que llega de fuera —abrir, corregir, otra fila— pone la caja del municipio y
@@ -371,17 +381,16 @@ export class PostalAddressFormComponent {
 
   /** Al salir del CP se pregunta al maestro qué dice de él. */
   protected checkPostalCode(): void {
-    const ruleSystemCode = this.ruleSystemCode()?.trim() ?? '';
     const postalCode = this.value().postalCode.trim();
     this.postalCheck.set(null);
     this.postalCodeMalformed.set(false);
-    if (!this.isSpain() || !postalCode || !ruleSystemCode) return;
+    if (!this.isSpain() || !postalCode) return;
     if (!SPANISH_POSTAL_CODE.test(postalCode)) {
       this.postalCodeMalformed.set(true);
       return;
     }
     this.territory
-      .checkPostalCode(ruleSystemCode, SPAIN, postalCode)
+      .checkPostalCode(SPAIN, postalCode)
       .pipe(
         take(1),
         catchError(() => of(null)),
@@ -410,35 +419,39 @@ export class PostalAddressFormComponent {
   }
 
   private searchMunicipalities(query: string): Observable<ReadonlyArray<TerritoryMunicipality>> {
-    const ruleSystemCode = this.ruleSystemCode()?.trim() ?? '';
-    if (!ruleSystemCode) return of([]);
     return this.territory
-      .searchMunicipalities(ruleSystemCode, SPAIN, query, this.referenceDate() || null)
+      .searchMunicipalities(SPAIN, query, this.referenceDate() || null)
       .pipe(catchError(() => of([])));
   }
 
-  private loadTerritory(ruleSystemCode: string): void {
+  private loadCountries(ruleSystemCode: string): void {
     if (!ruleSystemCode) {
       this.countries.set([]);
-      this.provinces.set([]);
-      this.streetTypes.set([]);
       return;
     }
-    // Sin catálogo el formulario sigue sirviendo: se escribe y se guarda «sin normalizar».
-    const load = <T>(
-      source: Observable<ReadonlyArray<T>>,
-      target: (items: ReadonlyArray<T>) => void,
-    ) =>
-      source
-        .pipe(
-          take(1),
-          catchError(() => of([] as ReadonlyArray<T>)),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(target);
-    load(this.territory.listCountries(ruleSystemCode), (items) => this.countries.set(items));
-    load(this.territory.listProvinces(ruleSystemCode), (items) => this.provinces.set(items));
-    load(this.territory.listStreetTypes(ruleSystemCode), (items) => this.streetTypes.set(items));
+    this.load(this.territory.listCountries(ruleSystemCode), (items) => this.countries.set(items));
+  }
+
+  /** Una vez por país: cambiar la calle no vuelve a pedir las provincias. */
+  private loadTerritoryOf(countryCode: string): void {
+    if (countryCode === this.territoryCountry) return;
+    this.territoryCountry = countryCode;
+    this.provinces.set([]);
+    this.streetTypes.set([]);
+    if (!countryCode) return;
+    this.load(this.territory.listProvinces(countryCode), (items) => this.provinces.set(items));
+    this.load(this.territory.listStreetTypes(countryCode), (items) => this.streetTypes.set(items));
+  }
+
+  // Sin catálogo el formulario sigue sirviendo: se escribe y se guarda «sin normalizar».
+  private load<T>(source: Observable<ReadonlyArray<T>>, target: (items: ReadonlyArray<T>) => void) {
+    source
+      .pipe(
+        take(1),
+        catchError(() => of([] as ReadonlyArray<T>)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(target);
   }
 }
 
