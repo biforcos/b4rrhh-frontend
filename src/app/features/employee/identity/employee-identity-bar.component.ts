@@ -20,6 +20,9 @@ import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 import { EmployeeDetailModel, EmployeeStatus } from '../models/employee-detail.model';
 import { EmployeePhotoUploadDialogComponent } from '../photo/employee-photo-upload-dialog.component';
 
+/** La fuente del aviso de «Copiar matrícula» en el servicio global (`b4rrhh/frontend#138`). */
+const COPY_FEEDBACK_SOURCE = 'identity-copy';
+
 /**
  * La barra de identidad de la ficha (frontend#24): quién es la persona que se está mirando, a
  * ancho completo en el hueco `identidad` del esqueleto (ADR-050), idéntica en todas las secciones.
@@ -31,8 +34,6 @@ import { EmployeePhotoUploadDialogComponent } from '../photo/employee-photo-uplo
  * - Las acciones de página se proyectan a la derecha (`[identityActions]`); la miga, encima
  *   (`[identityBreadcrumb]`).
  */
-const COPY_FEEDBACK_SOURCE = 'identity-copy';
-
 @Component({
   selector: 'app-employee-identity-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
