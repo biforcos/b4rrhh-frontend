@@ -162,4 +162,17 @@ describe('Operaciones: el tipo de empleado', () => {
     expect(store.scope().label).toBe('1 empleado: EMP000025');
     expect(launchCalculation).toHaveBeenCalledTimes(1);
   });
+
+  it('sin tipo elegido no pregunta por sus presencias: una URL con un hueco da 401 y echa de la sesión', () => {
+    const launchCalculation = vi.fn().mockReturnValue(of({ runId: 7 }));
+    const store = montar(['EXTERNAL', 'INTERNAL'], launchCalculation);
+    const presences = TestBed.inject(EmployeePresenceReadClient);
+    store.setTargetMode('SINGLE');
+    store.setSingleEmployeeNumber('EMP001001');
+
+    store.launch();
+
+    expect(presences.readEmployeePresencesByBusinessKey).not.toHaveBeenCalled();
+    expect(launchCalculation).toHaveBeenCalled();
+  });
 });

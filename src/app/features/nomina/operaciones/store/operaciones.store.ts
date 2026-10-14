@@ -546,11 +546,19 @@ export class OperacionesStore {
     // lanzar, con su primer mes si empieza después (b4rrhh/frontend#136). Sin presencias que leer
     // —no existe, o no se pudieron leer— se lanza igual: el servidor dice mejor «no existe».
     const employeeNumber = this.singleEmployeeNumberState().trim();
+    const employeeTypeCode = this.singleEmployeeTypeState().trim();
     const period = this.periodState();
+    // Sin tipo o sin número no hay a quién preguntar: una URL con un hueco
+    // (`/employees/ESP//EMP001001/presences`) da 401 y la aplicación lo toma por sesión caducada.
+    // Se lanza como antes y el servidor dice lo que falta.
+    if (!employeeTypeCode || !employeeNumber) {
+      this.send();
+      return;
+    }
     this.presences
       .readEmployeePresencesByBusinessKey({
         ruleSystemCode: this.ruleSystemCodeState(),
-        employeeTypeCode: this.singleEmployeeTypeState(),
+        employeeTypeCode,
         employeeNumber,
       })
       .subscribe({
