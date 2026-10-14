@@ -185,7 +185,9 @@ const STATUS_LABELS: Record<string, string> = {
             >
               {{
                 store.descargando()
-                  ? 'Descargando…'
+                  ? payroll.status === 'DEFINITIVE'
+                    ? 'Descargando…'
+                    : 'Generando el borrador…'
                   : payroll.status === 'DEFINITIVE'
                     ? 'Descargar'
                     : 'Descargar borrador'

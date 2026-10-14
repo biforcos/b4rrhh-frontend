@@ -116,7 +116,15 @@
 }
 
 .descarga-dicho--error {
+  /* El porqué de un «Descargar» que no descarga tiene que verse (frontend#137): en la demo era
+     una línea gris de 11,5 px y la impresión fue «no hace nada». */
+  padding: 6px 10px;
+  border: 1px solid var(--error-border);
+  border-radius: 6px;
+  background: var(--error-bg);
   color: var(--error-text);
+  font-size: 12.5px;
+  text-align: left;
 }
 
 /* Una sola accion solida (validar); el resto, contorno. */

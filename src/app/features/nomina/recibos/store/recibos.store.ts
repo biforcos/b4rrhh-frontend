@@ -607,7 +607,13 @@ export class RecibosStore {
         error: (err: HttpErrorResponse) => {
           this.descargandoState.set(false);
           this.ultimaDescargaState.set(null);
-          this.descargaErrorState.set(this.mapDownloadError(err));
+          this.descargaErrorState.set(this.mapDownloadError(err, null));
+          // El cuerpo llega como Blob: se lee después y, si dice qué fichero falta, se nombra.
+          void archivoQueFalta(err).then((archivo) => {
+            if (archivo && arePayrollBusinessKeysEqual(this.selectedKeyState(), key)) {
+              this.descargaErrorState.set(this.mapDownloadError(err, archivo));
+            }
+          });
         },
       });
   }
@@ -627,19 +633,24 @@ export class RecibosStore {
   /**
    * Por qué no se ha podido traer el documento.
    *
-   * Se mira el código de estado y <b>no el cuerpo</b>, que es lo contrario de lo que hace
-   * `mapTransitionError`. La razón es concreta: esta petición va con `responseType: 'blob'`, así
-   * que `err.error` llega como un `Blob` también cuando el backend ha mandado su JSON con
-   * `code` y `message`. Leerlo exigiría descodificarlo de forma asíncrona para acabar diciendo lo
-   * mismo que ya dice el código.
+   * La frase sale del código de estado, que es lo contrario de lo que hace `mapTransitionError`:
+   * esta petición va con `responseType: 'blob'`, así que `err.error` llega como un `Blob` también
+   * cuando el backend ha mandado su JSON con `code` y `message`. Del cuerpo sólo se saca, después
+   * y de forma asíncrona, el fichero que falta en un 409 (`archivoQueFalta`), que el código no
+   * dice y que en la demo es lo que explica el fallo (`b4rrhh/frontend#137`).
    */
-  private mapDownloadError(err: HttpErrorResponse): string {
+  private mapDownloadError(err: HttpErrorResponse, archivo: string | null): string {
     if (err.status === 404) return 'Este recibo ya no está.';
-    // El recibo está cerrado y su documento no está guardado: sólo les puede pasar a los que se
-    // cerraron antes de que cerrar emitiera el papel. No se regenera, y por eso esto no ofrece
+    // El recibo está cerrado y su documento no está guardado. Le pasa a los que se cerraron antes
+    // de que cerrar emitiera el papel y, en la demo, a todos los cerrados de la semilla, que trae
+    // la base y no los documentos (b4rrhh/frontend#137). No se regenera, y por eso esto no ofrece
     // «volver a intentarlo»: intentarlo otra vez daría lo mismo.
     if (err.status === 409)
-      return 'Este recibo está cerrado y su documento no está archivado. No se genera otro.';
+      return (
+        'Este recibo está cerrado, pero su documento no está en el almacén' +
+        (archivo ? ` (${archivo})` : '') +
+        '. No se genera otro: sería un documento distinto del mismo recibo.'
+      );
     // Y el único que sí se reintenta.
     if (err.status === 503)
       return 'El almacén de documentos no responde. Vuelve a intentarlo en un momento.';
@@ -799,6 +810,10 @@ export class RecibosStore {
       list.map((p) => (arePayrollBusinessKeysEqual(p, updated) ? { ...p, ...updated } : p)),
     );
     if (arePayrollBusinessKeysEqual(this.selectedKeyState(), updated)) {
+      // Lo que se dijo de la última descarga hablaba del recibo en el estado de entonces. Tras
+      // cerrarlo, «ha llegado un borrador: este recibo ya no está cerrado» sería mentira
+      // (b4rrhh/frontend#137, visto en la demo).
+      if (this.selectedPayrollState()?.status !== updated.status) this.olvidarDescarga();
       this.selectedPayrollState.set(updated);
     }
   }
@@ -839,5 +854,21 @@ export class RecibosStore {
       return err.error?.message ?? 'El cálculo falló por la reglamentación configurada.';
     if (err.status === 404) return 'Nómina no encontrada.';
     return describeFailure('No se pudo cambiar el estado del recibo', toHttpFailure(err));
+  }
+}
+
+/**
+ * El fichero que el backend dice que falta, si lo dice: el cuerpo del 409 trae `message` con la ruta
+ * entre paréntesis. Llega como `Blob` porque la petición pide un PDF.
+ */
+async function archivoQueFalta(err: HttpErrorResponse): Promise<string | null> {
+  if (err.status !== 409 || !(err.error instanceof Blob)) return null;
+  try {
+    const cuerpo = JSON.parse(await err.error.text()) as { message?: unknown };
+    const ruta =
+      typeof cuerpo.message === 'string' ? /\(([^)]+\.pdf)\)/.exec(cuerpo.message) : null;
+    return ruta ? ruta[1] : null;
+  } catch {
+    return null;
   }
 }

@@ -183,8 +183,35 @@ describe('Descargar el documento del recibo', () => {
 
       store.descargarDocumento(KEY);
 
-      expect(store.descargaError()).toContain('no está archivado');
+      expect(store.descargaError()).toContain('no está en el almacén');
       expect(store.descargaError()).not.toContain('Vuelve a intentarlo');
+    });
+
+    /**
+     * En la demo, los cerrados de la semilla no tienen su PDF (b4rrhh/frontend#137): el backend lo
+     * dice con la ruta, y la pantalla la nombra.
+     */
+    it('si el backend dice qué fichero falta, se nombra', async () => {
+      const cuerpo = new Blob(
+        [
+          JSON.stringify({
+            code: 'PAYSLIP_DOCUMENT_NOT_ARCHIVED',
+            message:
+              'El recibo esta cerrado y su documento no esta en el almacen (ESP/202608/NORMAL/INTERNAL/EMP000001-2.pdf). No se regenera.',
+          }),
+        ],
+        { type: 'application/json' },
+      );
+      gatewayMock.getDocument.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 409, statusText: 'x', error: cuerpo })),
+      );
+      gatewayMock.getDetail.mockReturnValue(of(detalle('DEFINITIVE')));
+      store.selectPayroll(KEY);
+
+      store.descargarDocumento(KEY);
+      await vi.waitFor(() =>
+        expect(store.descargaError()).toContain('(ESP/202608/NORMAL/INTERNAL/EMP000001-2.pdf)'),
+      );
     });
 
     it('y un fallo no deja el gesto colgado', () => {
@@ -193,6 +220,30 @@ describe('Descargar el documento del recibo', () => {
       store.descargarDocumento(KEY);
 
       expect(store.descargando()).toBe(false);
+    });
+  });
+
+  /**
+   * Visto en la demo (b4rrhh/frontend#137): se descargó el borrador, se cerró el recibo y debajo
+   * seguía «Ha llegado un borrador: este recibo ya no está cerrado», que ya era mentira.
+   */
+  describe('al cambiar el estado del recibo', () => {
+    it('lo que se dijo de la descarga de antes deja de decirse', () => {
+      gatewayMock.getDetail.mockReturnValue(of(detalle('CALCULATED')));
+      store.selectPayroll(KEY);
+      gatewayMock.getDocument.mockReturnValue(
+        of(documento(false, 'recibo-EMP000001-202609-borrador.pdf')),
+      );
+      store.descargarDocumento(KEY);
+      expect(store.ultimaDescarga()).not.toBeNull();
+
+      (gatewayMock as unknown as { finalize: ReturnType<typeof vi.fn> }).finalize = vi.fn(() =>
+        of({ ...KEY, status: 'DEFINITIVE', calculatedAt: '2026-09-20T16:04:37Z' }),
+      );
+      store.finalize(KEY);
+
+      expect(store.selectedPayroll()?.status).toBe('DEFINITIVE');
+      expect(store.ultimaDescarga()).toBeNull();
     });
   });
 
