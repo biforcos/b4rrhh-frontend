@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 import { EmployeePhotoService } from '../data-access/employee-photo.service';
 import { EmployeeDetailModel, EmployeeStatus } from '../models/employee-detail.model';
+import { GlobalMessageService } from '../data-access/employee-global-message.store';
 import { EmployeeIdentityBarComponent } from './employee-identity-bar.component';
 
 const KEY = { ruleSystemCode: 'ESP', employeeTypeCode: 'INTERNAL', employeeNumber: 'EMP000003' };
@@ -169,13 +170,58 @@ describe('EmployeeIdentityBarComponent', () => {
     expect(refresh).toHaveBeenCalledWith(KEY);
   });
 
-  it('copia la matrícula al portapapeles', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal('navigator', { clipboard: { writeText } });
-    (render().componentInstance as unknown as { copyMatricula(): void }).copyMatricula();
-    await Promise.resolve();
-    expect(writeText).toHaveBeenCalledWith('EMP000003');
-    vi.unstubAllGlobals();
+  /**
+   * «Estoy en el empleado 3 y me copia el 1» (`b4rrhh/frontend#138`): copia la de la ficha en la
+   * que está, también después de navegar de una a otra, y dice que lo hizo.
+   */
+  describe('copiar la matrícula', () => {
+    const copiar = (fixture: ReturnType<typeof render>) =>
+      (fixture.componentInstance as unknown as { copyMatricula(): Promise<void> }).copyMatricula();
+    const mensajes = () =>
+      TestBed.inject(GlobalMessageService)
+        .messages()
+        .map((m) => m.text);
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('de una ficha a otra, copia la del segundo y lo dice', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      vi.stubGlobal('navigator', { clipboard: { writeText } });
+      const fixture = render();
+      fixture.componentRef.setInput('employeeKey', { ...KEY, employeeNumber: 'EMP000001' });
+      fixture.detectChanges();
+      fixture.componentRef.setInput('employeeKey', KEY);
+      fixture.detectChanges();
+
+      await copiar(fixture);
+
+      expect(writeText).toHaveBeenCalledWith('EMP000003');
+      expect(mensajes()).toContain('Matrícula EMP000003 copiada.');
+    });
+
+    it('sin el API del portapapeles (http en la demo) no falla en silencio: lo dice, con el número', async () => {
+      vi.stubGlobal('navigator', {});
+      const execCommand = vi.fn().mockReturnValue(false);
+      Object.defineProperty(document, 'execCommand', { configurable: true, value: execCommand });
+
+      await copiar(render());
+
+      expect(execCommand).toHaveBeenCalledWith('copy');
+      expect(mensajes().join(' ')).toContain('El navegador no deja escribir en el portapapeles');
+      expect(mensajes().join(' ')).toContain('EMP000003');
+    });
+
+    it('sin el API, el camino de siempre copia y lo dice', async () => {
+      vi.stubGlobal('navigator', {});
+      Object.defineProperty(document, 'execCommand', {
+        configurable: true,
+        value: vi.fn().mockReturnValue(true),
+      });
+
+      await copiar(render());
+
+      expect(mensajes()).toContain('Matrícula EMP000003 copiada.');
+    });
   });
 
   // Un empleado que no existe no está de baja (`b4rrhh/frontend#101`): la cabecera lo dice con

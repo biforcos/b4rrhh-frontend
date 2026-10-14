@@ -10,7 +10,9 @@ import {
 import { TagModule } from 'primeng/tag';
 
 import { B4IconComponent } from '../../../shared/ui/icon/b4-icon.component';
+import { copyText } from '../../../shared/utils/copy-text.util';
 import { formatDisplayDate, parseLocalDate } from '../../../shared/utils/local-date.util';
+import { GlobalMessageService } from '../data-access/employee-global-message.store';
 import { EmployeeDetailStore } from '../data-access/employee-detail.store';
 import { EmployeePhotoService } from '../data-access/employee-photo.service';
 import { employeeTexts } from '../employee.texts';
@@ -29,6 +31,8 @@ import { EmployeePhotoUploadDialogComponent } from '../photo/employee-photo-uplo
  * - Las acciones de página se proyectan a la derecha (`[identityActions]`); la miga, encima
  *   (`[identityBreadcrumb]`).
  */
+const COPY_FEEDBACK_SOURCE = 'identity-copy';
+
 @Component({
   selector: 'app-employee-identity-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +56,7 @@ export class EmployeeIdentityBarComponent {
 
   private readonly photoService = inject(EmployeePhotoService);
   private readonly detailStore = inject(EmployeeDetailStore);
+  private readonly globalMessageService = inject(GlobalMessageService);
 
   protected readonly texts = employeeTexts;
   protected readonly uploadDialogVisible = signal(false);
@@ -138,8 +143,29 @@ export class EmployeeIdentityBarComponent {
     this.editIdentityRequested.emit();
   }
 
-  protected copyMatricula(): void {
-    void navigator.clipboard.writeText(this.employeeKey().employeeNumber);
+  /**
+   * Copia la matrícula de esta ficha y dice si lo hizo (`b4rrhh/frontend#138`). Antes no decía nada:
+   * cuando el navegador no dejaba copiar, el portapapeles se quedaba con la matrícula de antes y
+   * parecía que había copiado la de otro empleado.
+   */
+  protected async copyMatricula(): Promise<void> {
+    const employeeNumber = this.employeeKey().employeeNumber;
+    const copied = await copyText(employeeNumber);
+    if (copied) {
+      this.globalMessageService.clearSourceMessages(COPY_FEEDBACK_SOURCE);
+      this.globalMessageService.success(`Matrícula ${employeeNumber} copiada.`, {
+        id: 'identity-copy-done',
+        autoHideMs: 2500,
+      });
+      return;
+    }
+    this.globalMessageService.setSourceMessages(COPY_FEEDBACK_SOURCE, [
+      {
+        id: 'identity-copy-failed',
+        level: 'error',
+        text: `El navegador no deja escribir en el portapapeles: la matrícula es ${employeeNumber}, cópiala a mano.`,
+      },
+    ]);
   }
 
   protected openUploadDialog(): void {
