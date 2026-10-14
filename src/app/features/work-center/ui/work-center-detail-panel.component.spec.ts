@@ -110,6 +110,30 @@ describe('WorkCenterDetailPanelComponent', () => {
     expect(hostText).toContain('hq@example.com');
   });
 
+  // La empresa es obligatoria: la base la exige y el alta sin ella era un 500 (b4rrhh/backend#167).
+  it('does not submit a work center without a company', () => {
+    const component = fixture.componentInstance;
+    const emitSpy = vi.spyOn(component.submitted, 'emit');
+    fixture.componentRef.setInput('mode', 'create');
+    fixture.componentRef.setInput('detail', null);
+    fixture.detectChanges();
+
+    component.form.setValue({
+      ruleSystemCode: 'ESP',
+      workCenterCode: 'MADRID-HQ',
+      name: 'Madrid HQ',
+      description: '',
+      startDate: new Date(2026, 0, 1),
+      companyCode: '  ',
+    });
+    (fixture.nativeElement.querySelector('form') as HTMLFormElement).dispatchEvent(
+      new Event('submit'),
+    );
+
+    expect(emitSpy).not.toHaveBeenCalled();
+    expect(component.form.get('companyCode')?.valid).toBe(false);
+  });
+
   it('emits submitted base form value in create mode', () => {
     const component = fixture.componentInstance;
     const emitSpy = vi.spyOn(component.submitted, 'emit');

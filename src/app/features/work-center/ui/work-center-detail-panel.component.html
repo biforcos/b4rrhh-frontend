@@ -129,9 +129,10 @@
           </div>
 
           <div class="work-center-detail-panel__field">
-            <label for="companyCode" class="work-center-detail-panel__label">{{
-              texts.fieldCompanyCodeLabel
-            }}</label>
+            <label for="companyCode" class="work-center-detail-panel__label">
+              {{ texts.fieldCompanyCodeLabel }}
+              <span class="work-center-detail-panel__required">*</span>
+            </label>
             <input pInputText id="companyCode" formControlName="companyCode" maxlength="30" />
           </div>
         </div>

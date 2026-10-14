@@ -179,7 +179,9 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
       startDate: [{ value: '', disabled: false }, [Validators.required]],
-      companyCode: ['', [Validators.maxLength(30)]],
+      // La base la exige desde la V40, y el alta sin ella era un 500 (b4rrhh/backend#167). Con
+      // algo más que espacios: el backend la recorta y la rechazaría igual.
+      companyCode: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(30)]],
     });
 
     this.contactForm = this.fb.group({

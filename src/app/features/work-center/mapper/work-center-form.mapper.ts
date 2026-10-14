@@ -43,7 +43,7 @@ export function mapWorkCenterFormValueToCreateRequest(
     name: normalizeText(formValue.name),
     description: normalizeOptional(formValue.description),
     startDate: formValue.startDate,
-    companyCode: normalizeOptionalCode(formValue.companyCode),
+    companyCode: normalizeRequired(formValue.companyCode),
     address: mapAddress(formValue),
   };
 }
