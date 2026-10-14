@@ -46,6 +46,8 @@ export interface TerritoryPostalCodeCheck {
   provinceName: string | null;
   suggestedMunicipalityCode: string | null;
   suggestedMunicipalityName: string | null;
+  /** Si el CP está en el maestro: sin él, la dirección se guarda «sin normalizar» (backend#170). */
+  known: boolean;
   /** Por qué no hay provincia, cuando no la hay. */
   message: string | null;
 }
@@ -126,6 +128,7 @@ function toPostalCodeCheck(source: TerritoryPostalCodeResponse): TerritoryPostal
     provinceName: source.province?.name ?? null,
     suggestedMunicipalityCode: source.suggestedMunicipality?.code ?? null,
     suggestedMunicipalityName: source.suggestedMunicipality?.name ?? null,
+    known: source.known,
     message: source.message ?? null,
   };
 }

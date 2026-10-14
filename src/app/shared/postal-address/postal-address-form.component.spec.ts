@@ -48,6 +48,16 @@ const POSTAL_CODES: Record<string, TerritoryPostalCodeCheck> = {
     provinceName: 'Valencia',
     suggestedMunicipalityCode: null,
     suggestedMunicipalityName: null,
+    known: false,
+    message: null,
+  },
+  '46112': {
+    postalCode: '46112',
+    provinceCode: '46',
+    provinceName: 'Valencia',
+    suggestedMunicipalityCode: null,
+    suggestedMunicipalityName: null,
+    known: true,
     message: null,
   },
   '46001': {
@@ -56,6 +66,7 @@ const POSTAL_CODES: Record<string, TerritoryPostalCodeCheck> = {
     provinceName: 'Valencia',
     suggestedMunicipalityCode: '46250',
     suggestedMunicipalityName: 'Valencia',
+    known: true,
     message: null,
   },
 };
@@ -263,6 +274,28 @@ describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
       streetName: 'Mayor',
       municipalityCode: null,
     });
+  });
+
+  it('says before saving that the postal code is not in the master, once the check says so', async () => {
+    await type(municipalityInput(), 'Vale');
+    choose('Valencia (46250)');
+    const streetType = el().querySelector('select[id$="street-type"]') as HTMLSelectElement;
+    streetType.value = 'CL';
+    streetType.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await typeInLabelled('Nombre de la vía', 'Mayor');
+    await typeInLabelled('Código postal', '46363');
+    // Sin salir del campo todavía no se sabe: no se avisa de lo que no se sabe.
+    expect(notices().some((notice) => notice.startsWith('Se guardará'))).toBe(false);
+
+    await typeInLabelled('Código postal', '46363', true);
+    expect(notices()).toContain(
+      'Se guardará «sin normalizar»: el código postal no está en el maestro.',
+    );
+
+    // 46112 es de la misma provincia, tampoco sugiere municipio, y sí está en el maestro.
+    await typeInLabelled('Código postal', '46112', true);
+    expect(notices().some((notice) => notice.startsWith('Se guardará'))).toBe(false);
   });
 
   it('chooses the street type from the catalog, written as people read it', () => {

@@ -209,19 +209,30 @@ export class PostalAddressFormComponent {
   });
 
   /**
-   * Por qué se guardaría «sin normalizar», con el texto de la marca: lo que el formulario sabe sin
-   * preguntar. Lo demás —un CP que no está en el maestro— lo dice la marca al guardar. Sólo cuando
-   * ya hay algo escrito: un formulario vacío no avisa de nada.
+   * Por qué se guardaría «sin normalizar», con el texto de la marca y en el orden en que lo mira
+   * el backend (`PostalAddressValidator`): el municipio, el CP y el tipo de vía. Que el CP esté en
+   * el maestro lo dice la comprobación al salir del campo (backend#170); hasta entonces no se
+   * sabe, y no se avisa. Sólo cuando ya hay algo escrito: un formulario vacío no avisa de nada.
    */
   protected readonly pendingIssue = computed<string | null>(() => {
     const value = this.value();
     if (!this.isSpain() || !(value.streetName.trim() || value.postalCode.trim())) return null;
     const issue = !value.municipalityCode
       ? 'MUNICIPIO_DESCONOCIDO'
-      : !value.streetTypeCode
-        ? 'TIPO_DE_VIA_DESCONOCIDO'
-        : null;
+      : this.postalCodeUnknown()
+        ? 'CP_DESCONOCIDO'
+        : !value.streetTypeCode
+          ? 'TIPO_DE_VIA_DESCONOCIDO'
+          : null;
     return issue ? this.texts.willBeSavedNotNormalized(POSTAL_ADDRESS_ISSUE_TEXTS[issue]) : null;
+  });
+
+  /** El CP no vale para normalizar: vacío, sin sus cinco cifras, o fuera del maestro. */
+  private readonly postalCodeUnknown = computed(() => {
+    const postalCode = this.value().postalCode.trim();
+    if (!SPANISH_POSTAL_CODE.test(postalCode)) return true;
+    const check = this.postalCheck();
+    return !!check && check.postalCode === postalCode && !check.known;
   });
 
   constructor() {
