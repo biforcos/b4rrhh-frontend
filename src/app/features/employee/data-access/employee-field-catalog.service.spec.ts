@@ -25,6 +25,14 @@ describe('EmployeeFieldCatalogService', () => {
           active: true,
         },
       ],
+      'employee.identifier': [
+        {
+          fieldCode: 'identifierTypeCode',
+          catalogKind: CatalogFieldBindingResponseCatalogKindEnum.Direct,
+          ruleEntityTypeCode: 'EMPLOYEE_IDENTIFIER_TYPE',
+          active: true,
+        },
+      ],
       'employee.presence': [
         {
           fieldCode: 'companyCode',
@@ -72,6 +80,11 @@ describe('EmployeeFieldCatalogService', () => {
     };
 
     const directItemsByEntity: Record<string, ReadonlyArray<unknown>> = {
+      EMPLOYEE_IDENTIFIER_TYPE: [
+        { code: 'NATIONAL_ID', name: 'DNI', active: true, startDate: '1900-01-01' },
+        { code: 'PASSPORT', name: 'Pasaporte', active: true, startDate: '1900-01-01' },
+        { code: 'NO_NAME', name: null, active: true, startDate: '1900-01-01' },
+      ],
       CONTACT_TYPE: [
         {
           code: 'WORK_EMAIL',
@@ -490,5 +503,18 @@ describe('EmployeeFieldCatalogService', () => {
     expect(result).toEqual([
       { value: 'PERM', label: 'Indefinido · PERM', effective: true, note: null },
     ]);
+  });
+
+  it('los tipos de documento van sólo con su nombre: «DNI», no «DNI · NATIONAL_ID» (b4rrhh/frontend#142)', () => {
+    let labels: string[] = [];
+    service.loadIdentifierTypeOptions('ESP').subscribe((options) => {
+      labels = options.map((option) => option.label);
+    });
+
+    expect(labels).toContain('DNI');
+    expect(labels).toContain('Pasaporte');
+    // Sin nombre no queda otra cosa que el código.
+    expect(labels).toContain('NO_NAME');
+    expect(labels.some((label) => label.includes(' · '))).toBe(false);
   });
 });

@@ -211,6 +211,14 @@
 }
 
 // Por qué un campo está cerrado todavía, o qué se espera en él (b4rrhh/frontend#95).
+// Lo raro es lo opcional, y es lo que se marca; lo obligatorio va sin nada (frontend#142).
+.hire-field-optional {
+  margin-left: 0.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 .hire-field-hint {
   color: var(--text-secondary);
   font-size: 0.85rem;

@@ -227,6 +227,13 @@
 }
 
 /* La confirmacion del cierre: dos clics, y el primero no cierra nada. */
+/* A cuántos afecta lo que se va a pulsar (frontend#142). */
+.ops-page__scope {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .ops-page__confirm {
   display: grid;
   gap: 0.4rem;

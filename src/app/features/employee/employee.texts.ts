@@ -567,6 +567,8 @@ export const employeeTexts = {
   laborPresenceBlockTitle: 'Presence',
   laborPresenceBlockDescription:
     'Area conectada al vertical de presencia con capacidad de historial y estado activo.',
+  // Junto al rótulo de un campo que se puede dejar vacío (b4rrhh/frontend#142).
+  fieldOptionalMark: 'opcional',
   presenceBlockTitle: 'Presencia',
   presenceBlockCurrentLabel: 'Presencia actual',
   presenceBlockCurrentActiveSectionLabel: 'Presencia activa',

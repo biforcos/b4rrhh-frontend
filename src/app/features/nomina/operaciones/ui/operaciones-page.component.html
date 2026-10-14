@@ -119,12 +119,39 @@
     >
       <h2 class="ops-page__panel-title ops-page__panel-title--invalidate">Invalidar masivamente</h2>
 
-      <app-ui-button
-        [label]="store.invalidating() ? 'Invalidando…' : 'Invalidar'"
-        severity="danger"
-        [disabled]="!store.canInvalidate()"
-        (pressed)="store.invalidate()"
-      />
+      <!-- A cuántos afecta, antes de pulsar; y a más de uno, se confirma (frontend#142). -->
+      <p class="ops-page__scope" data-testid="invalidate-scope">
+        Afecta a {{ store.scope().label }}.
+      </p>
+
+      @if (!store.invalidateArmed()) {
+        <app-ui-button
+          [label]="store.invalidating() ? 'Invalidando…' : 'Invalidar'"
+          severity="danger"
+          [disabled]="!store.canInvalidate()"
+          (pressed)="store.requestInvalidate()"
+        />
+      } @else {
+        <div class="ops-page__confirm" data-testid="invalidate-confirm">
+          <p class="ops-page__confirm-text">
+            Se van a invalidar {{ store.invalidateScopeLabel() }}. Habrá que volver a calcularlos.
+          </p>
+          <div class="ops-page__confirm-actions">
+            <app-ui-button
+              label="Sí, invalidar"
+              severity="danger"
+              [disabled]="!store.canInvalidate()"
+              (pressed)="store.invalidate()"
+            />
+            <app-ui-button
+              label="Cancelar"
+              severity="secondary"
+              [text]="true"
+              (pressed)="store.disarmInvalidate()"
+            />
+          </div>
+        </div>
+      }
 
       @if (store.invalidateError()) {
         <p class="ops-page__error">{{ store.invalidateError() }}</p>
@@ -250,7 +277,36 @@
         }
       </div>
 
-      <app-ui-button label="Lanzar" [disabled]="!store.canLaunch()" (pressed)="store.launch()" />
+      <p class="ops-page__scope" data-testid="launch-scope">
+        Calcula {{ store.periodLabel() }} para {{ store.scope().label }}.
+      </p>
+
+      @if (!store.launchArmed()) {
+        <app-ui-button
+          label="Lanzar"
+          [disabled]="!store.canLaunch()"
+          (pressed)="store.requestLaunch()"
+        />
+      } @else {
+        <div class="ops-page__confirm" data-testid="launch-confirm">
+          <p class="ops-page__confirm-text">
+            Se va a calcular {{ store.periodLabel() }} para {{ store.scope().label }}.
+          </p>
+          <div class="ops-page__confirm-actions">
+            <app-ui-button
+              label="Sí, lanzar"
+              [disabled]="!store.canLaunch()"
+              (pressed)="store.launch()"
+            />
+            <app-ui-button
+              label="Cancelar"
+              severity="secondary"
+              [text]="true"
+              (pressed)="store.disarmLaunch()"
+            />
+          </div>
+        </div>
+      }
 
       <p class="ops-page__status-text">Al lanzar se abre la ejecución, que cuenta por dónde va.</p>
 

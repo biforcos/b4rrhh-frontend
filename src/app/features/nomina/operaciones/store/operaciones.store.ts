@@ -12,6 +12,8 @@ import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { TargetSelectionMode, buildTargetSelectionPayload } from '../models/target-selection.model';
 import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
+import { formatPayrollPeriodMonthName } from '../../../../shared/utils/payroll-period.util';
+import { RecibosGateway } from '../../recibos/gateway/recibos.gateway';
 
 function currentPeriod(): number {
   const now = new Date();
@@ -95,7 +97,8 @@ export function monthInputToPeriod(value: string): number | null {
 export class OperacionesStore {
   private readonly gateway = inject(OperacionesGateway);
   private readonly router = inject(Router);
-  private readonly scope = inject(RuleSystemScopeStore);
+  private readonly ruleSystemScope = inject(RuleSystemScopeStore);
+  private readonly recibos = inject(RecibosGateway);
   private readonly presences = inject(EmployeePresenceReadClient);
 
   /** Vacío hasta que se resuelve el ámbito: ningún sistema de reglas escrito a mano (frontend#124). */
@@ -126,6 +129,11 @@ export class OperacionesStore {
    * que es lo que impide cerrar el mes con el clic que iba a otra cosa.
    */
   private readonly finalizeArmedState = signal<boolean>(false);
+  /** Invalidar y lanzar a más de uno se confirman, con el alcance dicho (`b4rrhh/frontend#142`). */
+  private readonly invalidateArmedState = signal<boolean>(false);
+  private readonly launchArmedState = signal<boolean>(false);
+  /** Cuántos recibos calculados tiene el período, para decir a cuántos afecta invalidar «todos». */
+  private readonly calculatedCountState = signal<number | null>(null);
 
   private readonly engineCodeState = signal<string>('GRAPH');
   private readonly engineVersionState = signal<string>('1.0');
@@ -180,6 +188,43 @@ export class OperacionesStore {
   readonly finalizeResult = this.finalizeResultState.asReadonly();
   readonly finalizeError = this.finalizeErrorState.asReadonly();
   readonly finalizeArmed = this.finalizeArmedState.asReadonly();
+  readonly invalidateArmed = this.invalidateArmedState.asReadonly();
+  readonly launchArmed = this.launchArmedState.asReadonly();
+
+  /**
+   * A quién afecta lo que se va a pulsar, en palabras (`b4rrhh/frontend#142`): «me da miedo manejar
+   * Operaciones y tengo que pedir ayuda». El miedo es no saber el alcance.
+   */
+  readonly scope = computed<{ label: string; many: boolean }>(() => {
+    const period = this.periodState();
+    const month = `${formatPayrollPeriodMonthName(period)} de ${Math.floor(period / 100)}`;
+    switch (this.targetModeState()) {
+      case 'SINGLE':
+        return { label: `1 empleado: ${this.singleEmployeeNumberState().trim()}`, many: false };
+      case 'LIST': {
+        const numbers = this.employeeListTextState()
+          .split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0);
+        const shown = numbers.slice(0, 3).join(', ');
+        const rest = numbers.length > 3 ? ` y ${numbers.length - 3} más` : '';
+        return {
+          label: `${numbers.length} ${numbers.length === 1 ? 'empleado' : 'empleados'}: ${shown}${rest}`,
+          many: numbers.length > 1,
+        };
+      }
+      default:
+        return { label: `todos los empleados con presencia en ${month}`, many: true };
+    }
+  });
+
+  /** Lo que invalidar «todos» va a tocar: los recibos calculados del mes, contados. */
+  readonly invalidateScopeLabel = computed(() => {
+    const count = this.calculatedCountState();
+    if (this.targetModeState() !== 'ALL' || count === null) return this.scope().label;
+    const period = this.periodState();
+    return `${count} ${count === 1 ? 'recibo calculado' : 'recibos calculados'} de ${formatPayrollPeriodMonthName(period)} de ${Math.floor(period / 100)}`;
+  });
   readonly engineCode = this.engineCodeState.asReadonly();
   readonly engineVersion = this.engineVersionState.asReadonly();
   readonly launching = this.launchingState.asReadonly();
@@ -252,7 +297,7 @@ export class OperacionesStore {
 
   constructor() {
     // Arranca en el ámbito. Si antes de resolverse ya se escribió otro, se respeta lo escrito.
-    this.scope.whenResolved().subscribe((code) => {
+    this.ruleSystemScope.whenResolved().subscribe((code) => {
       if (code !== null && this.ruleSystemCodeState() === '') {
         this.ruleSystemCodeState.set(code);
         this.loadEmployeeTypes();
@@ -282,31 +327,31 @@ export class OperacionesStore {
   setRuleSystemCode(v: string): void {
     this.ruleSystemCodeState.set(v);
     this.loadEmployeeTypes();
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setPayrollTypeCode(v: 'NORMAL' | 'EXTRA'): void {
     this.payrollTypeCodeState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setTargetMode(v: TargetSelectionMode): void {
     this.targetModeState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setEmployeeListText(v: string): void {
     this.employeeListTextState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setListEmployeeType(v: string): void {
     this.listEmployeeTypeState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setSingleEmployeeType(v: string): void {
     this.singleEmployeeTypeState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setSingleEmployeeNumber(v: string): void {
     this.singleEmployeeNumberState.set(v);
-    this.disarmFinalize();
+    this.disarmAll();
   }
   setEngineCode(v: string): void {
     this.engineCodeState.set(v);
@@ -329,17 +374,17 @@ export class OperacionesStore {
   setPeriod(v: number): void {
     this.periodState.set(v);
     this.followPeriodWithProposedLimit();
-    this.disarmFinalize();
+    this.disarmAll();
   }
   prevPeriod(): void {
     this.periodState.update((p) => movePeriod(p, -1));
     this.followPeriodWithProposedLimit();
-    this.disarmFinalize();
+    this.disarmAll();
   }
   nextPeriod(): void {
     this.periodState.update((p) => movePeriod(p, 1));
     this.followPeriodWithProposedLimit();
-    this.disarmFinalize();
+    this.disarmAll();
   }
 
   private followPeriodWithProposedLimit(): void {
@@ -347,8 +392,57 @@ export class OperacionesStore {
     this.retroLimitPeriodState.set(this.retroLimitProposal());
   }
 
+  /**
+   * El botón «Invalidar»: a uno, invalida; a más de uno, primero dice a cuántos y pide confirmar
+   * (`b4rrhh/frontend#142`). Con «todos», cuenta los recibos calculados del mes.
+   */
+  requestInvalidate(): void {
+    if (!this.canInvalidate()) return;
+    if (!this.scope().many) {
+      this.invalidate();
+      return;
+    }
+    this.calculatedCountState.set(null);
+    this.invalidateArmedState.set(true);
+    if (this.targetModeState() !== 'ALL') return;
+    const period = String(this.periodState());
+    this.recibos
+      .search({ payrollPeriodCode: period, employeeNumber: '', status: 'CALCULATED' }, 0, 1)
+      .subscribe({
+        next: (page) => {
+          if (String(this.periodState()) === period) this.calculatedCountState.set(page.total);
+        },
+        error: () => this.calculatedCountState.set(null),
+      });
+  }
+
+  disarmInvalidate(): void {
+    this.invalidateArmedState.set(false);
+  }
+
+  /** El botón «Lanzar»: a uno, lanza; a más de uno, dice a quién y pide confirmar. */
+  requestLaunch(): void {
+    if (!this.canLaunch()) return;
+    if (!this.scope().many) {
+      this.launch();
+      return;
+    }
+    this.launchArmedState.set(true);
+  }
+
+  disarmLaunch(): void {
+    this.launchArmedState.set(false);
+  }
+
+  private disarmAll(): void {
+    this.disarmFinalize();
+    this.disarmInvalidate();
+    this.disarmLaunch();
+  }
+
   invalidate(): void {
     if (!this.canInvalidate()) return;
+    this.invalidateArmedState.set(false);
     this.invalidatingState.set(true);
     this.invalidateResultState.set(null);
     this.invalidateErrorState.set(null);
@@ -440,6 +534,7 @@ export class OperacionesStore {
    */
   launch(): void {
     if (!this.canLaunch()) return;
+    this.launchArmedState.set(false);
     this.launchingState.set(true);
     this.launchErrorState.set(null);
     this.launchErrorMessageState.set(null);

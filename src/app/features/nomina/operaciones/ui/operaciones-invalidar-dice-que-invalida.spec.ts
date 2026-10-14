@@ -5,6 +5,7 @@ import { of, Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
+import { RecibosGateway } from '../../recibos/gateway/recibos.gateway';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
 import { OperacionesStore } from '../store/operaciones.store';
@@ -39,6 +40,12 @@ describe('Invalidar en masa', () => {
           },
         },
         { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
+        {
+          provide: RecibosGateway,
+          useValue: {
+            search: vi.fn().mockReturnValue(of({ items: [], page: 0, size: 1, total: 883 })),
+          },
+        },
       ],
     });
     TestBed.inject(OperacionesStore).setPeriod(202609);
@@ -48,27 +55,35 @@ describe('Invalidar en masa', () => {
     const panel = host.querySelector('.ops-page__panel--invalidate') as HTMLElement;
     const boton = () =>
       [...panel.querySelectorAll('button')].find((b) => /Invalid/.test(b.textContent ?? ''))!;
-    return { fixture, panel, boton, respuesta, bulkInvalidate };
+    // «Todos» afecta a más de uno: el primer clic dice a cuántos y el segundo confirma
+    // (b4rrhh/frontend#142).
+    const invalidar = () => {
+      boton().click();
+      fixture.detectChanges();
+      [...panel.querySelectorAll('button')]
+        .find((b) => /Sí, invalidar/.test(b.textContent ?? ''))!
+        .click();
+      fixture.detectChanges();
+    };
+    return { fixture, panel, boton, invalidar, respuesta, bulkInvalidate };
   }
 
   it('no pide motivo, y la petición no lo lleva', () => {
-    const { fixture, panel, boton, bulkInvalidate } = render();
+    const { panel, invalidar, bulkInvalidate } = render();
 
     expect(panel.textContent).not.toContain('Motivo');
     expect(panel.querySelector('input')).toBeNull();
 
-    boton().click();
-    fixture.detectChanges();
+    invalidar();
 
     expect(bulkInvalidate).toHaveBeenCalledTimes(1);
     expect(bulkInvalidate.mock.calls[0][0]).not.toHaveProperty('statusReasonCode');
   });
 
   it('al pulsar, el botón dice «Invalidando…» y se deshabilita, y el panel se ve ocupado', () => {
-    const { fixture, panel, boton } = render();
+    const { panel, boton, invalidar } = render();
 
-    boton().click();
-    fixture.detectChanges();
+    invalidar();
 
     expect(boton().textContent?.trim()).toBe('Invalidando…');
     expect(boton().disabled).toBe(true);
@@ -79,10 +94,9 @@ describe('Invalidar en masa', () => {
   });
 
   it('al responder, vuelven el literal de siempre y los contadores', () => {
-    const { fixture, panel, boton, respuesta } = render();
+    const { fixture, panel, boton, invalidar, respuesta } = render();
 
-    boton().click();
-    fixture.detectChanges();
+    invalidar();
     respuesta.next({
       totalCandidates: 883,
       totalFound: 883,
@@ -98,5 +112,21 @@ describe('Invalidar en masa', () => {
     expect(panel.getAttribute('aria-busy')).toBe('false');
     expect(panel.textContent).toContain('883');
     expect(panel.textContent).toContain('Invalidadas');
+  });
+
+  it('antes de invalidar dice a cuántos afecta, y con más de uno pide confirmar (b4rrhh/frontend#142)', () => {
+    const { fixture, panel, boton, bulkInvalidate } = render();
+
+    expect(panel.querySelector('[data-testid="invalidate-scope"]')?.textContent).toContain(
+      'todos los empleados con presencia en septiembre de 2026',
+    );
+
+    boton().click();
+    fixture.detectChanges();
+
+    expect(bulkInvalidate).not.toHaveBeenCalled();
+    expect(panel.querySelector('[data-testid="invalidate-confirm"]')?.textContent).toContain(
+      'Se van a invalidar 883 recibos calculados de septiembre de 2026',
+    );
   });
 });

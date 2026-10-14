@@ -77,6 +77,12 @@ export class EmployeeFieldCatalogService {
     );
   }
 
+  /**
+   * Los tipos de documento, sólo con su nombre: «DNI», «NIE», «Pasaporte» (`b4rrhh/frontend#142`).
+   * «El desplegable de documentos es código y literal; ¿no es mejor sólo literales?»: quien da de
+   * alta reconoce el documento por su nombre, y `NATIONAL_ID` al lado sólo estorba. Si un tipo no
+   * tiene nombre, queda el código, que es lo único que hay.
+   */
   loadIdentifierTypeOptions(
     ruleSystemCode: string,
     referenceDate?: string | null,
@@ -85,6 +91,15 @@ export class EmployeeFieldCatalogService {
       ruleSystemCode,
       employeeCatalogFields.identifierType,
       referenceDate,
+    ).pipe(
+      map((options) =>
+        options.map((option) => {
+          const suffix = ` · ${option.value}`;
+          return option.label.endsWith(suffix)
+            ? { ...option, label: option.label.slice(0, -suffix.length) }
+            : option;
+        }),
+      ),
     );
   }
 

@@ -41,7 +41,7 @@
       <p-card [header]="texts.personAreaLabel" class="hire-employee-area">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
-            <label for="ruleSystemCode">{{ texts.detailHeaderRuleSystemLabel }} *</label>
+            <label for="ruleSystemCode">{{ texts.detailHeaderRuleSystemLabel }}</label>
             <p-select
               id="ruleSystemCode"
               formControlName="ruleSystemCode"
@@ -56,29 +56,35 @@
           </div>
 
           <div class="flex flex-column gap-2">
-            <label for="firstName">{{ texts.detailHeaderFirstNameLabel }} *</label>
+            <label for="firstName">{{ texts.detailHeaderFirstNameLabel }}</label>
             <input pInputText id="firstName" formControlName="firstName" class="w-full" />
           </div>
 
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="lastName1">{{ texts.detailHeaderLastName1Label }} *</label>
+              <label for="lastName1">{{ texts.detailHeaderLastName1Label }}</label>
               <input pInputText id="lastName1" formControlName="lastName1" class="w-full" />
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="lastName2">{{ texts.detailHeaderLastName2Label }}</label>
+              <label for="lastName2"
+                >{{ texts.detailHeaderLastName2Label }}
+                <span class="hire-field-optional">{{ texts.fieldOptionalMark }}</span></label
+              >
               <input pInputText id="lastName2" formControlName="lastName2" class="w-full" />
             </div>
           </div>
 
           <div class="flex flex-column gap-2">
-            <label for="preferredName">{{ texts.detailHeaderPreferredNameLabel }}</label>
+            <label for="preferredName"
+              >{{ texts.detailHeaderPreferredNameLabel }}
+              <span class="hire-field-optional">{{ texts.fieldOptionalMark }}</span></label
+            >
             <input pInputText id="preferredName" formControlName="preferredName" class="w-full" />
           </div>
 
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="identifierTypeCode">{{ texts.hireEmployeeIdentityTypeLabel }} *</label>
+              <label for="identifierTypeCode">{{ texts.hireEmployeeIdentityTypeLabel }}</label>
               <p-select
                 id="identifierTypeCode"
                 formControlName="identifierTypeCode"
@@ -96,7 +102,7 @@
               }
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="identifierValue">{{ texts.hireEmployeeIdentityValueLabel }} *</label>
+              <label for="identifierValue">{{ texts.hireEmployeeIdentityValueLabel }}</label>
               <input
                 pInputText
                 id="identifierValue"
@@ -141,12 +147,12 @@
       <p-card [header]="texts.relationAreaLabel" class="hire-employee-area">
         <div class="flex flex-column gap-3">
           <div class="flex flex-column gap-2">
-            <label for="hireDate">{{ texts.employeePageHeaderHireDateLabel }} *</label>
+            <label for="hireDate">{{ texts.employeePageHeaderHireDateLabel }}</label>
             <app-ui-date-input inputId="hireDate" formControlName="hireDate" />
           </div>
 
           <div class="flex flex-column gap-2">
-            <label for="companyCode">{{ texts.presenceBlockCompanyLabel }} *</label>
+            <label for="companyCode">{{ texts.presenceBlockCompanyLabel }}</label>
             <p-select
               id="companyCode"
               formControlName="companyCode"
@@ -165,7 +171,7 @@
           </div>
 
           <div class="flex flex-column gap-2">
-            <label for="workCenterCode">{{ texts.workCenterSectionCodeLabel }} *</label>
+            <label for="workCenterCode">{{ texts.workCenterSectionCodeLabel }}</label>
             <p-select
               id="workCenterCode"
               formControlName="workCenterCode"
@@ -185,7 +191,7 @@
 
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="contractTypeCode">{{ texts.contractSectionContractLabel }} *</label>
+              <label for="contractTypeCode">{{ texts.contractSectionContractLabel }}</label>
               <p-select
                 id="contractTypeCode"
                 formControlName="contractTypeCode"
@@ -203,7 +209,10 @@
               }
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="contractSubtypeCode">{{ texts.contractSectionSubtypeLabel }}</label>
+              <label for="contractSubtypeCode"
+                >{{ texts.contractSectionSubtypeLabel }}
+                <span class="hire-field-optional">{{ texts.fieldOptionalMark }}</span></label
+              >
               <p-select
                 id="contractSubtypeCode"
                 formControlName="contractSubtypeCode"
@@ -224,9 +233,9 @@
 
           <div class="grid">
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="agreementCode"
-                >{{ texts.laborClassificationSectionAgreementLabel }} *</label
-              >
+              <label for="agreementCode">{{
+                texts.laborClassificationSectionAgreementLabel
+              }}</label>
               <p-select
                 id="agreementCode"
                 formControlName="agreementCode"
@@ -244,9 +253,9 @@
               }
             </div>
             <div class="col-12 sm:col-6 flex flex-column gap-2">
-              <label for="agreementCategoryCode"
-                >{{ texts.laborClassificationSectionCategoryLabel }} *</label
-              >
+              <label for="agreementCategoryCode">{{
+                texts.laborClassificationSectionCategoryLabel
+              }}</label>
               <p-select
                 id="agreementCategoryCode"
                 formControlName="agreementCategoryCode"

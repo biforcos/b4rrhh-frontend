@@ -139,4 +139,27 @@ describe('Operaciones: el tipo de empleado', () => {
 
     expect(launchCalculation).toHaveBeenCalled();
   });
+
+  it('lanzar a más de uno dice a quién y espera la confirmación; a uno, lanza (b4rrhh/frontend#142)', () => {
+    const launchCalculation = vi.fn().mockReturnValue(of({ runId: 7 }));
+    const store = montar(['INTERNAL'], launchCalculation, [
+      { startDate: '2000-01-01', endDate: null },
+    ]);
+    store.setTargetMode('LIST');
+    store.setEmployeeListText(['EMP000001', 'EMP000002', 'EMP000003', 'EMP000004'].join('\n'));
+
+    store.requestLaunch();
+
+    expect(launchCalculation).not.toHaveBeenCalled();
+    expect(store.launchArmed()).toBe(true);
+    expect(store.scope().label).toBe('4 empleados: EMP000001, EMP000002, EMP000003 y 1 más');
+
+    store.setTargetMode('SINGLE');
+    expect(store.launchArmed()).toBe(false);
+    store.setSingleEmployeeNumber('EMP000025');
+    store.requestLaunch();
+
+    expect(store.scope().label).toBe('1 empleado: EMP000025');
+    expect(launchCalculation).toHaveBeenCalledTimes(1);
+  });
 });
