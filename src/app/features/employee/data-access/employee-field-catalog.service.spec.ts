@@ -25,6 +25,14 @@ describe('EmployeeFieldCatalogService', () => {
           active: true,
         },
       ],
+      'employee.absence': [
+        {
+          fieldCode: 'absenceTypeCode',
+          catalogKind: CatalogFieldBindingResponseCatalogKindEnum.Direct,
+          ruleEntityTypeCode: 'EMPLOYEE_ABSENCE_TYPE',
+          active: true,
+        },
+      ],
       'employee.identifier': [
         {
           fieldCode: 'identifierTypeCode',
@@ -516,5 +524,32 @@ describe('EmployeeFieldCatalogService', () => {
     // Sin nombre no queda otra cosa que el código.
     expect(labels).toContain('NO_NAME');
     expect(labels.some((label) => label.includes(' · '))).toBe(false);
+  });
+
+  it('una cita con etiqueta común va con la etiqueta delante y la cita detrás (b4rrhh/backend#173)', () => {
+    apiMock.getDirectCatalogOptions.mockReturnValueOnce(
+      of({
+        ruleSystemCode: 'ESP',
+        ruleEntityTypeCode: 'EMPLOYEE_ABSENCE_TYPE',
+        referenceDate: '2026-10-15',
+        items: [
+          {
+            code: 'IT_COMMON',
+            name: 'IT Contingencia Común',
+            commonLabel: 'Baja por enfermedad común',
+            active: true,
+            startDate: '1900-01-01',
+          },
+          { code: 'VACATION', name: 'Vacaciones', active: true, startDate: '1900-01-01' },
+        ],
+      }),
+    );
+    let labels: string[] = [];
+    service.loadAbsenceTypeOptions('ESP').subscribe((options) => {
+      labels = options.map((option) => option.label);
+    });
+
+    expect(labels).toContain('Baja por enfermedad común · IT Contingencia Común');
+    expect(labels).toContain('Vacaciones · VACATION');
   });
 });

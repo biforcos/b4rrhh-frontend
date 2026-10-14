@@ -12329,6 +12329,14 @@ components:
           type: string
           format: date
           nullable: true
+        commonLabel:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: >-
+            The plain-words label of a regulatory citation (backend#173, ADR-054 §3 note): it goes
+            in front and the citation, which is the name and is never translated, behind it
+            ("Baja por enfermedad común · IT Contingencia Común"). Null for everything else.
     DirectCatalogOptionsResponse:
       type: object
       required:

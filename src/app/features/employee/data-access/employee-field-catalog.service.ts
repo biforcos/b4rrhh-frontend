@@ -367,8 +367,15 @@ export class EmployeeFieldCatalogService {
   ): ReadonlyArray<SlotKeyOption<string>> {
     return items
       .map((item) => {
+        // Una cita reglamentaria con etiqueta común (backend#173): la etiqueta en palabras delante y
+        // la cita, que es el nombre, detrás. «IT Contingencia Común» sola no la encontraba quien
+        // buscaba «enfermedad».
         const display = getCatalogDisplay(item.name, item.code);
-        const label = display.code ? `${display.label} · ${display.code}` : display.label;
+        const label = item.commonLabel
+          ? `${item.commonLabel} · ${display.label}`
+          : display.code
+            ? `${display.label} · ${display.code}`
+            : display.label;
         const effective = item.active === true;
 
         return {
