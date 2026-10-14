@@ -57,6 +57,42 @@
       </dl>
     </header>
 
+    <!--
+      El estado, que no se pueda no ver (b4rrhh/frontend#140): «he estado un rato mirando la
+      pantalla sin tener claro si había terminado». Calculando con su barra viva, Terminada con lo
+      que hizo y a dónde ir, o Fallida con el motivo. Cambia solo, con el sondeo.
+    -->
+    <div
+      class="ejecucion-page__state"
+      [class.ejecucion-page__state--running]="!isFinished(run)"
+      [class.ejecucion-page__state--done]="isFinished(run) && !hasFailed(run)"
+      [class.ejecucion-page__state--failed]="hasFailed(run)"
+      [attr.aria-busy]="!isFinished(run)"
+      role="status"
+      aria-live="polite"
+      data-testid="run-state"
+    >
+      @if (!isFinished(run)) {
+        <p class="ejecucion-page__state-title">Calculando…</p>
+      } @else if (hasFailed(run)) {
+        <p class="ejecucion-page__state-title">Fallida</p>
+        <p class="ejecucion-page__state-detail">
+          {{ store.failureReason() ?? 'No dejó motivo: mira los mensajes de abajo.' }}
+        </p>
+      } @else {
+        <p class="ejecucion-page__state-title">Terminada · {{ doneSummary(run) }}</p>
+        @if (resultActionLabel(run); as label) {
+          <app-ui-button
+            size="small"
+            severity="primary"
+            [label]="label"
+            (pressed)="openResult(run)"
+            data-testid="run-result-link"
+          />
+        }
+      }
+    </div>
+
     <!-- Mientras la ejecucion corre no hay veredicto que dar: lo que hay es por donde va. El
          veredicto llega cuando termina, y solo si llego al final. -->
     @if (!isFinished(run)) {

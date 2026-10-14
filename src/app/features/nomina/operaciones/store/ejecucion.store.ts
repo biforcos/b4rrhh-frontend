@@ -4,6 +4,7 @@ import { Observable, Subscription, forkJoin, interval, switchMap, takeWhile } fr
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import {
   CalculationRunMessage,
+  messageIsExecuted,
   messageIsListed,
   messageNeedsAttention,
 } from '../models/calculation-run-message.model';
@@ -73,6 +74,14 @@ export class EjecucionStore implements OnDestroy {
   );
 
   readonly totalMessages = computed(() => this.listedMessages().length);
+
+  /** Las unidades que acabaron en recibo: a dónde lleva el «Terminada» (`b4rrhh/frontend#140`). */
+  readonly executedMessages = computed(() => this.messagesState().filter(messageIsExecuted));
+
+  /** El motivo de una ejecución fallida: el primer error que dejó, con sus palabras. */
+  readonly failureReason = computed(
+    () => this.messagesState().find((m) => m.severityCode === 'ERROR')?.message ?? null,
+  );
 
   /** Cuántas se quedaron fuera de la lista por tener ya recibo. */
   readonly alreadyHadAReceipt = computed(

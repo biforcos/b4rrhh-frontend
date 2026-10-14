@@ -38,6 +38,11 @@ const EXECUTED_MESSAGE_CODE = 'UNIT_ELIGIBLE_REAL_EXECUTED';
 /** La unidad que se salta porque ya tenía recibo: lo esperable al relanzar, y nada que hacer. */
 const ALREADY_HAD_A_RECEIPT_MESSAGE_CODE = 'UNIT_NOT_ELIGIBLE';
 
+/** Si la unidad del mensaje acabó en recibo. */
+export function messageIsExecuted(message: CalculationRunMessage): boolean {
+  return message.messageCode === EXECUTED_MESSAGE_CODE;
+}
+
 export interface CalculationRunMessageUnit {
   ruleSystemCode: string;
   employeeTypeCode: string;

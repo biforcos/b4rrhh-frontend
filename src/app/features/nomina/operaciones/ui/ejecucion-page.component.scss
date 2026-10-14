@@ -98,6 +98,81 @@
   color: var(--text-primary);
 }
 
+/* El estado de la ejecución en grande (frontend#140). */
+.ejecucion-page__state {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  overflow: hidden;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+}
+
+.ejecucion-page__state-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ejecucion-page__state-detail {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.ejecucion-page__state--done {
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+.ejecucion-page__state--done .ejecucion-page__state-title {
+  color: var(--success-text);
+}
+
+.ejecucion-page__state--failed {
+  border-color: var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.ejecucion-page__state--failed .ejecucion-page__state-title {
+  color: var(--error-text);
+}
+
+/* Mientras corre, la barra viva de Operaciones (frontend#107). */
+.ejecucion-page__state--running::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 3px;
+  background: var(--accent-primary);
+  animation: ejecucion-busy-bar 1.1s ease-in-out infinite;
+}
+
+@keyframes ejecucion-busy-bar {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ejecucion-page__state--running::before {
+    width: 100%;
+    animation: none;
+  }
+}
+
 .ejecucion-page__verdict {
   margin: 0;
   border: 1px solid var(--border-default);

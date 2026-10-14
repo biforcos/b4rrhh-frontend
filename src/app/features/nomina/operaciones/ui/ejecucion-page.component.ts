@@ -1,3 +1,5 @@
+import { PayrollBusinessKey } from '../../recibos/models/payroll-business-key.model';
+import { buildPayrollDetailRouteCommands } from '../../recibos/routing/payroll-route-key.util';
 import { DatePipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -191,6 +193,45 @@ export class EjecucionPageComponent {
     if (seconds < 60) return `${seconds} s`;
     const minutes = Math.floor(seconds / 60);
     return `${minutes} min ${seconds % 60} s`;
+  }
+
+  /** «1 recibo calculado en 2 s», y los avisos si los hay (`b4rrhh/frontend#140`). */
+  protected doneSummary(run: CalculationRun): string {
+    const n = run.totalCalculated;
+    const parts = [
+      `${n} ${n === 1 ? 'recibo calculado' : 'recibos calculados'} en ${this.durationLabel(run)}`,
+    ];
+    const warnings = this.store.attentionMessages().length;
+    if (warnings > 0) parts.push(`con ${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}`);
+    return parts.join(' · ');
+  }
+
+  /** A dónde ir después: su recibo si es uno, la lista si son varios, nada si no hubo ninguno. */
+  protected resultActionLabel(run: CalculationRun): string | null {
+    const executed = this.store.executedMessages();
+    if (run.totalCalculated === 1 && executed.length === 1 && executed[0].employeeNumber) {
+      return `Ver el recibo de ${executed[0].employeeNumber}`;
+    }
+    return run.totalCalculated > 1 ? `Ver los recibos de ${run.payrollPeriodCode}` : null;
+  }
+
+  protected openResult(run: CalculationRun): void {
+    const executed = this.store.executedMessages();
+    const unit = executed.length === 1 ? messageUnit(executed[0]) : null;
+    if (run.totalCalculated === 1 && unit && unit.presenceNumber !== null) {
+      void this.router.navigate(
+        buildPayrollDetailRouteCommands({
+          ruleSystemCode: unit.ruleSystemCode,
+          employeeTypeCode: unit.employeeTypeCode,
+          employeeNumber: unit.employeeNumber,
+          payrollPeriodCode: run.payrollPeriodCode,
+          payrollTypeCode: run.payrollTypeCode as PayrollBusinessKey['payrollTypeCode'],
+          presenceNumber: unit.presenceNumber,
+        }) as string[],
+      );
+      return;
+    }
+    void this.router.navigate(['/nomina/recibos']);
   }
 
   protected unitLabel(message: CalculationRunMessage): string | null {
