@@ -128,4 +128,32 @@ describe('ningún error genérico en pantalla', () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  // b4rrhh/frontend#133: «Uno o más valores de catálogo son inválidos… pero no sé qué catálogo es».
+  // El alta tiraba el mensaje del servidor para dos códigos y ponía un literal que no empezaba por
+  // «No se pudo», así que la regla de arriba no lo veía. Ésta mira la forma: un `mapErrorMessage`
+  // que devuelve un texto propio antes de mirar si el servidor dijo algo.
+  it('ningún mapErrorMessage devuelve un texto propio antes de mirar lo que dijo el servidor', () => {
+    // La definición, con su tipo de retorno: una llamada no tiene cuerpo que mirar.
+    const DEFINITION = /\bmapErrorMessage\([^)]*\)\s*:\s*[^{;]*\{/g;
+    // Y que mira algo: hoy son dos, el alta y la readmisión.
+    expect(files.filter((f) => f.text.match(DEFINITION)).length).toBe(2);
+    const offenders = files.flatMap((f) =>
+      [...f.text.matchAll(DEFINITION)].flatMap((m) => {
+        const start = (m.index ?? 0) + m[0].length;
+        let depth = 1;
+        let end = start;
+        while (depth > 0 && end < f.text.length) {
+          if (f.text[end] === '{') depth += 1;
+          if (f.text[end] === '}') depth -= 1;
+          end += 1;
+        }
+        const body = f.text.slice(start, end);
+        const server = body.indexOf('serverMessage');
+        const ownText = body.search(/return this\.texts\./);
+        return ownText >= 0 && (server < 0 || ownText < server) ? [f.rel] : [];
+      }),
+    );
+    expect(offenders).toEqual([]);
+  });
 });

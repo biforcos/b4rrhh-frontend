@@ -855,8 +855,6 @@ export const employeeTexts = {
   hireEmployeeSuccessMessage: 'Empleado contratado correctamente.',
   hireEmployeeErrorMessage: 'No se pudo completar la contratación',
   hireEmployeeConflictMessage: 'El empleado ya existe en el sistema.',
-  hireEmployeeInvalidCatalogMessage:
-    'Uno o más valores de catálogo son inválidos para la fecha seleccionada.',
   hireEmployeeWorkingTimeTitle: 'Jornada inicial',
   hireEmployeeWorkingTimeHint: 'Las horas se calculan automáticamente a partir del porcentaje.',
   hireEmployeeWorkingTimeRequiredMessage: 'Indica el porcentaje de jornada inicial.',
@@ -886,8 +884,6 @@ export const employeeTexts = {
   rehireEmployeeInvalidDistributionMessage: 'La distribución de centros de coste no es válida.',
   rehireEmployeeInvalidDependentRelationMessage:
     'Existe una relación dependiente no válida para la reincorporación.',
-  rehireEmployeeInvalidCatalogMessage:
-    'Uno o más valores de catálogo son inválidos para la fecha seleccionada.',
   rehireEmployeeRequestFailedMessage: 'No se pudo completar la reincorporación',
   rehireEmployeeMissingKeyRouteMessage: 'Falta la clave del empleado en la ruta.',
   rehireEmployeeMissingKeyMessage: 'Falta la clave del empleado.',

@@ -13,6 +13,7 @@ import {
 import { HireEmployeeResult, HireIdentifierOwner } from '../../../models/employee-hiring.model';
 import { provideRouter } from '@angular/router';
 import { employeeTexts } from '../../../employee.texts';
+import { HttpFailure } from '../../../../../shared/utils/http-failure.util';
 import { HireEmployeePageComponent } from './hire-employee-page.component';
 
 class MockEmployeeHiringStore {
@@ -25,7 +26,8 @@ class MockEmployeeHiringStore {
   readonly hiring = this.hiringState.asReadonly();
   readonly identifierOwner = this.identifierOwnerState.asReadonly();
   readonly identifierProblem = this.identifierProblemState.asReadonly();
-  readonly failure = signal(null).asReadonly();
+  readonly failureState = signal<HttpFailure | null>(null);
+  readonly failure = this.failureState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly result = this.resultState.asReadonly();
 
@@ -98,6 +100,27 @@ describe('HireEmployeePageComponent', () => {
     fixture = TestBed.createComponent(HireEmployeePageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  // b4rrhh/frontend#133: «Uno o más valores de catálogo son inválidos… pero no sé qué catálogo es».
+  it('shows what the server said, also for an invalid catalog value', () => {
+    const globalMessages = TestBed.inject(
+      GlobalMessageService,
+    ) as unknown as MockGlobalMessageService;
+    hiringStore.failureState.set({
+      status: 422,
+      serverMessage: 'El tipo de contrato 999 no existe en el catálogo de ESP',
+    });
+    hiringStore.errorState.set('invalid-catalog-value');
+    fixture.detectChanges();
+
+    const texts = globalMessages.setSourceMessages.mock.calls
+      .flatMap((call) => call[1] as ReadonlyArray<{ text: string }>)
+      .map((message) => message.text);
+    expect(texts).toContain(
+      'No se pudo completar la contratación: El tipo de contrato 999 no existe en el catálogo de ESP.',
+    );
+    expect(texts.join(' ')).not.toContain('valores de catálogo');
   });
 
   it('renders the working time block inside the hire workflow form', () => {

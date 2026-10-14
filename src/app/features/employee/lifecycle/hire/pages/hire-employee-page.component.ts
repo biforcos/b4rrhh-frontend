@@ -541,19 +541,19 @@ export class HireEmployeePageComponent {
     return messages;
   }
 
+  /**
+   * Lo que dijo el servidor, siempre que lo dijera (`b4rrhh/frontend#133`): «Este DNI ya es
+   * EMP000123…», «El DNI 12345678A no es válido: la letra debería ser Z.». Antes un documento mal
+   * escrito salía como «Uno o más valores de catálogo son inválidos» y nadie sabía qué catálogo era.
+   */
   private mapErrorMessage(code: HireEmployeeErrorCode): string {
+    const failure = this.hiringStore.failure();
+    if (failure?.serverMessage) {
+      return describeFailure(this.texts.hireEmployeeErrorMessage, failure);
+    }
     if (code === 'already-exists') {
-      // El servidor dice quién es («Este DNI ya es EMP000123…»): eso vale más que un genérico.
-      const failure = this.hiringStore.failure();
-      return failure?.serverMessage
-        ? describeFailure(this.texts.hireEmployeeErrorMessage, failure)
-        : this.texts.hireEmployeeConflictMessage;
+      return this.texts.hireEmployeeConflictMessage;
     }
-
-    if (code === 'invalid-catalog-value' || code === 'invalid-dependent-relation') {
-      return this.texts.hireEmployeeInvalidCatalogMessage;
-    }
-
-    return describeFailure(this.texts.hireEmployeeErrorMessage, this.hiringStore.failure());
+    return describeFailure(this.texts.hireEmployeeErrorMessage, failure);
   }
 }

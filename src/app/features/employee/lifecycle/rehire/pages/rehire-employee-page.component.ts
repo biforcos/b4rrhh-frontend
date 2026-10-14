@@ -265,7 +265,15 @@ export class RehireEmployeePageComponent {
     void this.router.navigate(buildEmployeeDetailRouteCommands(key, 'relacion'));
   }
 
+  /**
+   * Lo que dijo el servidor, siempre que lo dijera (`b4rrhh/frontend#133`); los textos de aquí son
+   * para cuando no dijo nada.
+   */
   mapErrorMessage(code: RehireEmployeeErrorCode | null): string {
+    const failure = this.rehireStore.failure();
+    if (failure?.serverMessage) {
+      return describeFailure(this.texts.rehireEmployeeRequestFailedMessage, failure);
+    }
     switch (code) {
       case 'employee-not-found':
         return this.texts.rehireEmployeeNotFoundMessage;
@@ -281,13 +289,8 @@ export class RehireEmployeePageComponent {
         return this.texts.rehireEmployeeInvalidDistributionMessage;
       case 'invalid-dependent-relation':
         return this.texts.rehireEmployeeInvalidDependentRelationMessage;
-      case 'invalid-catalog-value':
-        return this.texts.rehireEmployeeInvalidCatalogMessage;
       default:
-        return describeFailure(
-          this.texts.rehireEmployeeRequestFailedMessage,
-          this.rehireStore.failure(),
-        );
+        return describeFailure(this.texts.rehireEmployeeRequestFailedMessage, failure);
     }
   }
 
