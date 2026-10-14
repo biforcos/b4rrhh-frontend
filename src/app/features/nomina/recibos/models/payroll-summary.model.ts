@@ -17,6 +17,11 @@ export interface PayrollSummaryModel extends PayrollBusinessKey {
  */
 export interface PayrollListItemModel extends PayrollSummaryModel {
   sharesPeriodWithAnotherPresence: boolean;
+  /**
+   * El nombre del empleado (`b4rrhh/frontend#143`): al buscar por nombre, la lista tiene que enseñar
+   * por qué entra cada fila. Sólo de la lista: las transiciones no lo traen y no lo pisan.
+   */
+  employeeName?: string | null;
 }
 
 export interface PayrollCompanyProfileModel {

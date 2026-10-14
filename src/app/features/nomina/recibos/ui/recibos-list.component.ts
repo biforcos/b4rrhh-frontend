@@ -84,6 +84,10 @@ const STATUS_LABELS: Record<string, string> = {
                 statusLabel(payroll.status)
               }}</span>
             </div>
+            <!-- Quién es, bajo la matrícula y en secundario (frontend#143). -->
+            @if (payroll.employeeName; as nombre) {
+              <div class="row-name">{{ nombre }}</div>
+            }
             <!-- La presencia sólo cuando distingue algo, y como marca (frontend#104). -->
             <div class="row-sub">
               {{ payroll.payrollPeriodCode }} · {{ payroll.payrollTypeCode }}

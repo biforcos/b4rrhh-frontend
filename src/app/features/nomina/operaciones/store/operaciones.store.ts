@@ -14,6 +14,7 @@ import { TargetSelectionMode, buildTargetSelectionPayload } from '../models/targ
 import { describeFailure, toHttpFailure } from '../../../../shared/utils/http-failure.util';
 import { formatPayrollPeriodMonthName } from '../../../../shared/utils/payroll-period.util';
 import { RecibosGateway } from '../../recibos/gateway/recibos.gateway';
+import { OpenPayrollPeriodService } from '../../recibos/store/open-payroll-period.service';
 
 function currentPeriod(): number {
   const now = new Date();
@@ -99,11 +100,14 @@ export class OperacionesStore {
   private readonly router = inject(Router);
   private readonly ruleSystemScope = inject(RuleSystemScopeStore);
   private readonly recibos = inject(RecibosGateway);
+  private readonly openPeriod = inject(OpenPayrollPeriodService);
   private readonly presences = inject(EmployeePresenceReadClient);
 
   /** Vacío hasta que se resuelve el ámbito: ningún sistema de reglas escrito a mano (frontend#124). */
   private readonly ruleSystemCodeState = signal<string>('');
   private readonly periodState = signal<number>(currentPeriod());
+  /** Si alguien ya ha movido el período: entonces el abierto, cuando llegue, no lo pisa. */
+  private periodTouched = false;
   private readonly payrollTypeCodeState = signal<'NORMAL' | 'EXTRA'>('NORMAL');
   private readonly targetModeState = signal<TargetSelectionMode>('ALL');
   private readonly employeeListTextState = signal<string>('');
@@ -296,6 +300,15 @@ export class OperacionesStore {
   );
 
   constructor() {
+    // Abre en el período abierto, que es donde se opera, y no en el mes de hoy (b4rrhh/frontend#143),
+    // como ya hace Recibos (frontend#93). Mientras no contesta, el mes de hoy; si nadie ha movido el
+    // período entre medias. Sin recibos todavía no hay período abierto que decir, y se queda en hoy.
+    this.openPeriod.find().then(
+      (open) => {
+        if (open !== null && !this.periodTouched) this.moveTo(Number(open));
+      },
+      () => undefined,
+    );
     // Arranca en el ámbito. Si antes de resolverse ya se escribió otro, se respeta lo escrito.
     this.ruleSystemScope.whenResolved().subscribe((code) => {
       if (code !== null && this.ruleSystemCodeState() === '') {
@@ -372,17 +385,19 @@ export class OperacionesStore {
     this.retroLimitPeriodState.set(this.retroLimitProposal());
   }
   setPeriod(v: number): void {
-    this.periodState.set(v);
-    this.followPeriodWithProposedLimit();
-    this.disarmAll();
+    this.periodTouched = true;
+    this.moveTo(v);
   }
   prevPeriod(): void {
-    this.periodState.update((p) => movePeriod(p, -1));
-    this.followPeriodWithProposedLimit();
-    this.disarmAll();
+    this.periodTouched = true;
+    this.moveTo(movePeriod(this.periodState(), -1));
   }
   nextPeriod(): void {
-    this.periodState.update((p) => movePeriod(p, 1));
+    this.periodTouched = true;
+    this.moveTo(movePeriod(this.periodState(), 1));
+  }
+  private moveTo(period: number): void {
+    this.periodState.set(period);
     this.followPeriodWithProposedLimit();
     this.disarmAll();
   }

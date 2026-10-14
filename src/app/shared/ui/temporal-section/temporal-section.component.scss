@@ -100,8 +100,14 @@ app-temporal-section {
   white-space: nowrap;
 }
 
+/*
+ * La columna de acciones se ajusta a su botón más ancho y ninguno se parte (frontend#143): con un
+ * ancho fijo de 80 px, «Corregir fecha de alta» salía en tres líneas. El 1 % es el ancho mínimo
+ * de la tabla, que crece lo justo para que quepa lo que no se parte.
+ */
 .temporal-section__td--actions {
-  width: 80px;
+  width: 1%;
+  white-space: nowrap;
 }
 
 /* Un dato secundario en gris y monoespaciada que no es un código de catálogo (las horas al día de

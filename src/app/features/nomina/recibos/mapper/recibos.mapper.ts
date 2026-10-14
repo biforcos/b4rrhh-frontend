@@ -28,6 +28,7 @@ export function mapPayrollSummaryResponseToModel(
     status: response.status,
     calculatedAt: response.calculatedAt,
     sharesPeriodWithAnotherPresence: response.sharesPeriodWithAnotherPresence,
+    employeeName: response.employeeName ?? null,
   };
 }
 

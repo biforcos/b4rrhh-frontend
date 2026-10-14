@@ -130,6 +130,15 @@ select:focus-visible {
   font-weight: 600;
 }
 
+.row-name {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .row-sub {
   font-family: var(--font-mono);
   color: var(--text-tertiary);

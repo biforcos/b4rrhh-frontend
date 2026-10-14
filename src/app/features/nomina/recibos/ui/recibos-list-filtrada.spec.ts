@@ -79,6 +79,15 @@ describe('La lista de recibos filtrada por un empleado', () => {
     resultado = [];
   });
 
+  /** Al buscar por nombre se ve por qué entra cada fila (`b4rrhh/frontend#143`). */
+  it('cada fila lleva el nombre del empleado bajo la matrícula', () => {
+    resultado = [{ ...RECIBO_DE_EMP1, employeeName: 'Eva Torres' }];
+    montar({ employeeNumber: 'EMP000001' });
+
+    const fila = (fixture.nativeElement as HTMLElement).querySelector('.payroll-row');
+    expect(fila?.querySelector('.row-name')?.textContent?.trim()).toBe('Eva Torres');
+  });
+
   it('busca sola cuando el número llega en la dirección', () => {
     resultado = [RECIBO_DE_EMP1];
     montar({ employeeNumber: 'EMP000001' });
