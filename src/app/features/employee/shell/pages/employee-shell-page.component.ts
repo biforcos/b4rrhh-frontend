@@ -183,6 +183,23 @@ export class EmployeeShellPageComponent {
   }
 
   /** Abrir una fila es llegar a uno solo: sin cola (dos contenidos según cómo llegues, #20). */
+  /**
+   * Enter en el buscador con una sola coincidencia la abre (`b4rrhh/frontend#141`): «25» y Enter
+   * es EMP000025. Con varias se queda la lista, que es la respuesta. Mientras escribe no se abre
+   * nada: abrir a mitad de palabra sería quitarle la pantalla de debajo de los dedos.
+   */
+  protected openSingleMatch(): void {
+    const employees = this.directoryStore.employees();
+    if (
+      this.directoryStore.loading() ||
+      this.directoryStore.total() !== 1 ||
+      employees.length !== 1
+    ) {
+      return;
+    }
+    this.openEmployee(employees[0]);
+  }
+
   protected openEmployee(employee: EmployeeListItemModel): void {
     this.workQueueStore.leave();
     this.recentsService.add(employee);

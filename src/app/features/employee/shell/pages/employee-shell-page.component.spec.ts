@@ -13,6 +13,8 @@ import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.
 import { EmployeeJourneyStore } from '../../data-access/employee-journey.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 
+import { EmployeeListItemModel } from '../../models/employee-list-item.model';
+
 function buildSnapshot(paths: string[], queryParams: Record<string, string | null> = {}) {
   let current: any = {
     url: [],
@@ -59,9 +61,11 @@ describe('EmployeeShellPageComponent', () => {
     events: routerEvents.asObservable(),
     navigate: vi.fn(() => Promise.resolve(true)),
   };
+  const directoryEmployees = signal<EmployeeListItemModel[]>([]);
+  const directoryTotal = signal<number | null>(null);
   const directoryStoreMock = {
-    employees: signal([]).asReadonly(),
-    total: signal<number | null>(null).asReadonly(),
+    employees: directoryEmployees.asReadonly(),
+    total: directoryTotal.asReadonly(),
     query: signal('').asReadonly(),
     status: signal<string | null>(null).asReadonly(),
     page: signal(0).asReadonly(),
@@ -190,5 +194,52 @@ describe('EmployeeShellPageComponent', () => {
     );
 
     expect(directoryStoreMock.refreshDirectory).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Enter en el buscador con una sola coincidencia la abre (b4rrhh/frontend#141); con varias, se
+   * queda la lista.
+   */
+  describe('Enter en el buscador', () => {
+    const eva: EmployeeListItemModel = {
+      ruleSystemCode: 'ESP',
+      employeeTypeCode: 'INTERNAL',
+      employeeNumber: 'EMP000025',
+      displayName: 'Eva Torres',
+      workCenter: null,
+      statusLabel: 'Activo',
+    };
+    // El spec monta la página sin plantilla: se llama a lo que hace el Enter del buscador.
+    const pulsarEnter = () =>
+      (fixture.componentInstance as unknown as { openSingleMatch(): void }).openSingleMatch();
+
+    afterEach(() => {
+      directoryEmployees.set([]);
+      directoryTotal.set(null);
+    });
+
+    it('con una sola coincidencia, la abre', () => {
+      directoryEmployees.set([eva]);
+      directoryTotal.set(1);
+
+      pulsarEnter();
+
+      expect(routerMock.navigate).toHaveBeenCalledWith([
+        '/personas/empleados',
+        'ESP',
+        'INTERNAL',
+        'EMP000025',
+        'relacion',
+      ]);
+    });
+
+    it('con varias, se queda en la lista', () => {
+      directoryEmployees.set([eva, { ...eva, employeeNumber: 'EMP000125' }]);
+      directoryTotal.set(2);
+
+      pulsarEnter();
+
+      expect(routerMock.navigate).not.toHaveBeenCalled();
+    });
   });
 });

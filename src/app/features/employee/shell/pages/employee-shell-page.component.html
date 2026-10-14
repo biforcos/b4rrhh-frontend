@@ -20,6 +20,7 @@
         [placeholder]="texts.searchPlaceholder"
         [value]="searchValue()"
         (input)="updateSearch($any($event.target).value)"
+        (keydown.enter)="openSingleMatch()"
       />
     </p-iconfield>
     <app-ui-select

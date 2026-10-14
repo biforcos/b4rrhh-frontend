@@ -82,7 +82,10 @@ paths:
           schema:
             type: string
             maxLength: 100
-          description: Free text search over employee number and name-related fields.
+          description: >-
+            Free text search over employee number and name-related fields. The employee number is
+            also matched by its digits without the padding zeros ("25", "0025" and "EMP25" find
+            EMP000025), and the exact number comes first (b4rrhh/frontend#141).
         - in: query
           name: ruleSystemCode
           required: false
@@ -5360,6 +5363,17 @@ paths:
           required: false
           schema:
             type: string
+          description: The exact employee number (the jump from the employee file).
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+          description: >-
+            What is typed in the list (b4rrhh/frontend#141): part of the employee number, case and
+            leading zeros aside ("25", "0025" and "EMP25" find EMP000025), or part of the employee's
+            name. When present it takes over from employeeNumber.
         - name: status
           in: query
           required: false

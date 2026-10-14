@@ -25,7 +25,9 @@ export class RecibosClient {
   ): Observable<PayrollSearchPageResponse> {
     return this.api.searchPayrolls({
       payrollPeriodCode: filters.payrollPeriodCode || undefined,
-      employeeNumber: filters.employeeNumber || undefined,
+      // Lo escrito en «Número o nombre…», en parte: «25», «0025», «EMP25» o «Torres»
+      // (b4rrhh/frontend#141). El salto desde la ficha pone la matrícula entera, que también vale.
+      q: filters.employeeNumber.trim() || undefined,
       status: filters.status || undefined,
       page,
       size,

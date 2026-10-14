@@ -107,9 +107,10 @@ const STATUS_LABELS: Record<string, string> = {
           -->
           <div class="list-empty">
             @if (empleadoBuscado(); as numero) {
-              <p class="list-empty__title">{{ numero }} no tiene ningún recibo.</p>
+              <p class="list-empty__title">Ningún recibo de «{{ numero }}».</p>
               <p class="list-empty__body">
-                No es que no se encuentre: es que no se le ha calculado ninguna nómina todavía.
+                Ni por su número ni por su nombre. Si es un empleado, no se le ha calculado ninguna
+                nómina todavía.
               </p>
             } @else {
               <p class="list-empty__title">Ningún recibo con estos filtros.</p>

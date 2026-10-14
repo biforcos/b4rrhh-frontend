@@ -145,7 +145,7 @@ describe('La lista de recibos filtrada por un empleado', () => {
       fixture.detectChanges();
 
       const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
-      expect(texto).toContain('EMP000014 no tiene ningún recibo');
+      expect(texto).toContain('Ningún recibo de «EMP000014»');
       expect(texto).toContain('no se le ha calculado ninguna nómina');
     });
 
@@ -158,7 +158,7 @@ describe('La lista de recibos filtrada por un empleado', () => {
       fixture.detectChanges();
 
       const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
-      expect(texto).not.toContain('no tiene ningún recibo');
+      expect(texto).not.toContain('Ningún recibo de');
       expect(texto).not.toContain('Ningún recibo con estos filtros');
     });
   });
