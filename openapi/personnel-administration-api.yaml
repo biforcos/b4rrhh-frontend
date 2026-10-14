@@ -14487,6 +14487,7 @@ components:
       required:
         - postalCode
         - countryCode
+        - known
       properties:
         postalCode:
           type: string
@@ -14504,6 +14505,13 @@ components:
             - $ref: "#/components/schemas/TerritoryMunicipalityRefResponse"
           nullable: true
           description: A suggestion from GeoNames (CC BY 4.0), never a validation.
+        known:
+          type: boolean
+          description: >-
+            Whether the postal code is in the geo master (backend#170). A Spanish address is normalized
+            only with a known one (backend#155): false here is the CP_DESCONOCIDO it would be saved
+            with. Always false outside the countries the master has postal codes of.
+          example: true
         message:
           type: string
           nullable: true
