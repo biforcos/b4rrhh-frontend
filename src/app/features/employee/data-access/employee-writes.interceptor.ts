@@ -35,6 +35,16 @@ const RUTA_DE_EMPLEADO = /\/employees\/([^/?]+)\/([^/?]+)\/([^/?]+)\//;
 const PREGUNTA_SIN_ESCRITURA = /\/plan(\?|$)/;
 
 /**
+ * Lo mismo, dicho en el cuerpo: la rectificación de una presencia ensaya con `dryRun: true` antes de
+ * confirmar (`b4rrhh/backend#172`), y el ensayo no escribe.
+ */
+function esUnEnsayo(body: unknown): boolean {
+  return (
+    typeof body === 'object' && body !== null && (body as { dryRun?: unknown }).dryRun === true
+  );
+}
+
+/**
  * Un solo sitio para todas las secciones, y no una llamada en cada tienda: una sección nueva que guarde
  * queda cubierta sin que nadie se acuerde de avisar. Sólo cuando el guardado **ha ido bien**: un 4xx no
  * ha creado ninguna marca.
@@ -47,7 +57,7 @@ export const employeeWritesInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
   const ruta = RUTA_DE_EMPLEADO.exec(req.url);
-  if (!ruta || PREGUNTA_SIN_ESCRITURA.test(req.url)) {
+  if (!ruta || PREGUNTA_SIN_ESCRITURA.test(req.url) || esUnEnsayo(req.body)) {
     return next(req);
   }
   const notifier = inject(EmployeeWritesNotifier);

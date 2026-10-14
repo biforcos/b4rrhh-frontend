@@ -102,6 +102,16 @@
                       (pressed)="deleteClicked.emit(index)"
                     />
                   }
+                  @for (action of row.actions ?? []; track action.id) {
+                    <app-ui-button
+                      size="small"
+                      severity="secondary"
+                      [outlined]="true"
+                      [label]="action.label"
+                      [ariaLabel]="action.ariaLabel"
+                      (pressed)="actionClicked.emit({ index, actionId: action.id })"
+                    />
+                  }
                 </div>
               </td>
             </tr>

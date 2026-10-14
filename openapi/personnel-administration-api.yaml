@@ -788,6 +788,152 @@ paths:
         "409":
           description: Presence already closed
 
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/presences/{presenceNumber}/rectify-start-date:
+    post:
+      operationId: rectifyPresenceStartDate
+      summary: Rectify the hire date of a presence
+      description: >
+        backend#172. Rectifica la fecha de alta de una presencia que se tecleó mal, y con ella todo lo
+        que empezó ese mismo día (contrato, jornada, centro, clasificación,
+        régimen de pagas, centros de coste, dirección). Con dryRun sólo dice lo
+        que movería. Se niega si la presencia tiene recibos definitivos que la fecha afecta, si pisa otra
+        presencia o si algo de la presencia no puede moverse con ella. Deja rastro: quién, cuándo y de qué
+        fecha a cuál.
+      tags:
+        - Employee Presence
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: presenceNumber
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RectifyPresenceDateRequest"
+      responses:
+        "200":
+          description: Lo que se movió, o se movería con dryRun
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RectifyPresenceDateResponse"
+        "400":
+          description: Fecha inválida (PRESENCE_RECTIFICATION_INVALID)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+        "404":
+          description: Empleado o presencia inexistentes (PRESENCE_RECTIFICATION_NOT_FOUND)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+        "409":
+          description: >
+            Recibos definitivos (PRESENCE_RECTIFICATION_PAID), otra presencia
+            (PRESENCE_RECTIFICATION_OVERLAP) o algo que no puede moverse (PRESENCE_RECTIFICATION_CONFLICT)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/presences/{presenceNumber}/rectify-end-date:
+    post:
+      operationId: rectifyPresenceEndDate
+      summary: Rectify the termination date of a presence
+      description: >
+        backend#172. Rectifica la fecha de cese de una presencia que se tecleó mal, y con ella todo lo
+        que acabó ese mismo día (contrato, jornada, centro, clasificación,
+        régimen de pagas, centros de coste). Con dryRun sólo dice lo
+        que movería. Se niega si la presencia tiene recibos definitivos que la fecha afecta, si pisa otra
+        presencia o si algo de la presencia no puede moverse con ella. Deja rastro: quién, cuándo y de qué
+        fecha a cuál.
+      tags:
+        - Employee Presence
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - in: path
+          name: ruleSystemCode
+          required: true
+          schema:
+            type: string
+            maxLength: 5
+        - in: path
+          name: employeeTypeCode
+          required: true
+          schema:
+            type: string
+            maxLength: 30
+        - in: path
+          name: employeeNumber
+          required: true
+          schema:
+            type: string
+            maxLength: 15
+        - in: path
+          name: presenceNumber
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RectifyPresenceDateRequest"
+      responses:
+        "200":
+          description: Lo que se movió, o se movería con dryRun
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RectifyPresenceDateResponse"
+        "400":
+          description: Fecha inválida (PRESENCE_RECTIFICATION_INVALID)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+        "404":
+          description: Empleado o presencia inexistentes (PRESENCE_RECTIFICATION_NOT_FOUND)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+        "409":
+          description: >
+            Recibos definitivos (PRESENCE_RECTIFICATION_PAID), otra presencia
+            (PRESENCE_RECTIFICATION_OVERLAP) o algo que no puede moverse (PRESENCE_RECTIFICATION_CONFLICT)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresenceRectificationErrorResponse"
+
   /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/addresses:
     post:
       operationId: createAddressByBusinessKey
@@ -9997,6 +10143,84 @@ components:
           type: string
           format: date
           nullable: true
+    RectifyPresenceDateRequest:
+      type: object
+      required:
+        - newDate
+      properties:
+        newDate:
+          type: string
+          format: date
+        dryRun:
+          type: boolean
+          default: false
+          description: Sólo decir lo que movería, sin escribir.
+    RectifyPresenceDateResponse:
+      type: object
+      required:
+        - presenceNumber
+        - field
+        - oldDate
+        - newDate
+        - dryRun
+        - moves
+      properties:
+        presenceNumber:
+          type: integer
+          format: int32
+        field:
+          type: string
+          enum:
+            - START_DATE
+            - END_DATE
+        oldDate:
+          type: string
+          format: date
+        newDate:
+          type: string
+          format: date
+        dryRun:
+          type: boolean
+        moves:
+          type: array
+          items:
+            $ref: "#/components/schemas/PresenceRectificationMove"
+    PresenceRectificationMove:
+      type: object
+      required:
+        - vertical
+        - label
+        - startDate
+        - newStartDate
+      properties:
+        vertical:
+          type: string
+        label:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        newStartDate:
+          type: string
+          format: date
+        newEndDate:
+          type: string
+          format: date
+          nullable: true
+    PresenceRectificationErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
     ClosePresenceRequest:
       type: object
       required:

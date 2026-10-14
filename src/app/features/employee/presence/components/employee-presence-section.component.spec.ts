@@ -1,7 +1,14 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { BASE_PATH } from '../../../../core/api/generated/variables';
+import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { EmployeePresenceStore } from '../../data-access/employee-presence.store';
@@ -25,6 +32,14 @@ describe('EmployeePresenceSectionComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: EmployeePresenceStore, useValue: { presences: presences.asReadonly() } },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideNoopAnimations(),
+        { provide: BASE_PATH, useValue: 'http://localhost:8080' },
+        {
+          provide: GlobalMessageService,
+          useValue: { success: vi.fn(), setSourceMessages: vi.fn(), clearSourceMessages: vi.fn() },
+        },
         {
           provide: EmployeeFieldCatalogService,
           useValue: {
@@ -84,7 +99,8 @@ describe('EmployeePresenceSectionComponent', () => {
     expect(rows[1].textContent).toContain('11/03/2024 — en vigor');
     expect(fixture.nativeElement.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     // Sin editar ni borrar: los periodos de presencia los mueven los flujos.
-    expect(fixture.nativeElement.querySelector('[aria-label^="Corregir"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label^="Corregir el período"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label^="Borrar"]')).toBeNull();
   });
 
   it('sin catálogo, el código va solo y no se inventa un literal', () => {
@@ -103,5 +119,70 @@ describe('EmployeePresenceSectionComponent', () => {
     const row: HTMLElement = fixture.nativeElement.querySelector('.temporal-section__row');
     expect(row.textContent).toContain('XX99');
     expect(row.querySelectorAll('.ui-catalog-label__code')).toHaveLength(0);
+  });
+
+  describe('corregir sus fechas (b4rrhh/frontend#135)', () => {
+    const closedAndCurrent: EmployeePresenceModel[] = [
+      {
+        presenceNumber: 2,
+        companyCode: 'ES01',
+        entryReasonCode: 'HIRING',
+        exitReasonCode: null,
+        startDate: '2024-03-11',
+        endDate: null,
+        isActive: true,
+      },
+      {
+        presenceNumber: 1,
+        companyCode: 'ES01',
+        entryReasonCode: 'HIRING',
+        exitReasonCode: 'END',
+        startDate: '2023-10-02',
+        endDate: '2023-12-05',
+        isActive: false,
+      },
+    ];
+
+    const labels = (row: Element) =>
+      Array.from(row.querySelectorAll('[aria-label]')).map((b) => b.getAttribute('aria-label'));
+
+    it('el alta en la vigente y el cese en la cerrada, con el verbo escrito y la fecha', () => {
+      presences.set(closedAndCurrent);
+      const rows = Array.from(render().nativeElement.querySelectorAll('.temporal-section__row'));
+
+      expect(labels(rows[0] as Element)).toEqual(['Corregir fecha de alta del 11/03/2024']);
+      expect(labels(rows[1] as Element)).toEqual(['Corregir fecha de cese del 05/12/2023']);
+    });
+
+    it('el verbo abre la corrección de esa presencia y esa fecha', () => {
+      presences.set(closedAndCurrent);
+      const fixture = render();
+      (
+        fixture.nativeElement.querySelector(
+          'button[aria-label="Corregir fecha de cese del 05/12/2023"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+
+      const dialog = document.body.querySelector('app-period-modal [role="dialog"]');
+      expect(dialog?.textContent).toContain('Presencia 1: cese del 05/12/2023');
+    });
+
+    it('desde la contratación (?corregir=alta) se abre sola, una vez', () => {
+      const navigate = vi.fn(() => Promise.resolve(true));
+      TestBed.overrideProvider(ActivatedRoute, {
+        useValue: { queryParamMap: of(convertToParamMap({ corregir: 'alta' })) },
+      });
+      TestBed.overrideProvider(Router, { useValue: { navigate } });
+      presences.set(closedAndCurrent);
+      render();
+
+      const dialog = document.body.querySelector('app-period-modal [role="dialog"]');
+      expect(dialog?.textContent).toContain('Presencia 2: alta del 11/03/2024');
+      expect(navigate).toHaveBeenCalledWith(
+        [],
+        expect.objectContaining({ queryParams: { corregir: null }, replaceUrl: true }),
+      );
+    });
   });
 });

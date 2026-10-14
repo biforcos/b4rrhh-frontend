@@ -588,6 +588,19 @@ export const employeeTexts = {
   presenceBlockCompanyLabel: 'Empresa',
   presenceBlockEntryReasonLabel: 'Motivo entrada',
   presenceBlockExitReasonLabel: 'Motivo salida',
+  // La rectificación de la fecha de alta o de cese (b4rrhh/frontend#135, b4rrhh/backend#172).
+  presenceCorrectStartAction: 'Corregir fecha de alta',
+  presenceCorrectEndAction: 'Corregir fecha de cese',
+  presenceCorrectStartTitle: 'Corregir la fecha de alta',
+  presenceCorrectEndTitle: 'Corregir la fecha de cese',
+  presenceCorrectNewDateLabel: 'Fecha correcta',
+  presenceCorrectSubmitAction: 'Corregir la fecha',
+  presenceCorrectCheckingMessage: 'Comprobando qué cambia con la fecha nueva…',
+  presenceCorrectPromptMessage: 'Escribe la fecha que tenía que ser.',
+  presenceCorrectAlsoMovesLabel: 'También cambian:',
+  presenceCorrectNothingElseMovesLabel: 'No cambia nada más: sólo la presencia.',
+  presenceCorrectCheckAction: 'Comprobar la fecha',
+  presenceCorrectDoneMessage: 'Fecha corregida',
   laborContractBlockTitle: 'Contract',
   laborContractBlockDescription:
     'Bloque reservado para tipo contractual, fechas clave y cambios vigentes.',
@@ -861,6 +874,7 @@ export const employeeTexts = {
   hireEmployeeWorkingTimeRangeMessage:
     'El porcentaje de jornada debe ser mayor que 0 y menor o igual que 100.',
   hireEmployeeSummaryTitle: 'Resultado de la contratación',
+  hireEmployeeOpenFichaAction: 'Abrir la ficha',
   hireEmployeeSummaryEmployeeLabel: 'Empleado',
   hireEmployeeSummaryStatusLabel: 'Estado',
   hireEmployeeSummaryHireDateLabel: 'Fecha de alta',

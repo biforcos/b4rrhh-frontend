@@ -29,7 +29,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { MessageModule } from 'primeng/message';
 import { HIRE_EMPLOYEE_DEFAULTS } from '../../../models/hire-employee.defaults';
-import { HireIdentifierOwner } from '../../../models/employee-hiring.model';
+import { HireEmployeeResult, HireIdentifierOwner } from '../../../models/employee-hiring.model';
 import { GlobalMessageRailComponent } from '../../../shell/components/global-message-rail.component';
 import {
   buildWorkingTimePreview,
@@ -427,6 +427,12 @@ export class HireEmployeePageComponent {
     // Quitar sólo el nuestro: los validadores vuelven a decir lo suyo.
     control.updateValueAndValidity({ emitEvent: false });
     this.form.updateValueAndValidity();
+  }
+
+  /** La ficha de quien se acaba de contratar, en la relación, que es donde está su presencia. */
+  protected hiredRoute(result: HireEmployeeResult): string[] {
+    const { ruleSystemCode, employeeTypeCode, employeeNumber } = result.employeeKey;
+    return ['/personas/empleados', ruleSystemCode, employeeTypeCode, employeeNumber, 'relacion'];
   }
 
   /** La ficha de quien ya tiene el documento. */

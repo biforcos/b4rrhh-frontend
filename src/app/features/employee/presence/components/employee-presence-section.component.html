@@ -5,6 +5,7 @@
   [addLabel]="null"
   [emptyMessage]="texts.presenceBlockEmptyMessage"
   anchorId="employee-section-presence"
+  (actionClicked)="actionClicked($event)"
 >
   <ng-template #columnHeaders>
     <th class="temporal-section__th">{{ texts.presenceBlockCompanyLabel }}</th>
@@ -28,3 +29,15 @@
     </td>
   </ng-template>
 </app-temporal-section>
+
+@if (correction(); as c) {
+  @if (employeeKey(); as key) {
+    <app-employee-presence-date-correction
+      [employeeKey]="key"
+      [presenceNumber]="c.presenceNumber"
+      [field]="c.field"
+      [currentDate]="c.currentDate"
+      (closed)="correction.set(null)"
+    />
+  }
+}

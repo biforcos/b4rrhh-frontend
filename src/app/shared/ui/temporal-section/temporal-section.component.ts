@@ -82,6 +82,8 @@ export class TemporalSectionComponent<T extends TemporalSectionRow = TemporalSec
   readonly editClicked = output<number>();
   readonly deleteClicked = output<number>();
   readonly closeClicked = output<number>();
+  /** Una de las acciones con nombre propio de la fila (`TemporalSectionRow.actions`). */
+  readonly actionClicked = output<{ index: number; actionId: string }>();
 
   @ContentChild('columnHeaders') readonly columnHeadersTemplate: TemplateRef<unknown> | null = null;
   @ContentChild('cellContent') readonly cellContentTemplate: TemplateRef<{

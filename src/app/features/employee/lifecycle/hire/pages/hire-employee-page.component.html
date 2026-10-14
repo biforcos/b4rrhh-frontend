@@ -331,6 +331,19 @@
             </div>
           </div>
 
+          <!-- Si la fecha de alta estaba mal, el camino a un clic (b4rrhh/frontend#135). -->
+          <div class="hire-summary__actions">
+            <a [routerLink]="hiredRoute(result)" data-testid="hire-result-open">{{
+              texts.hireEmployeeOpenFichaAction
+            }}</a>
+            <a
+              [routerLink]="hiredRoute(result)"
+              [queryParams]="{ corregir: 'alta' }"
+              data-testid="hire-result-correct-start"
+              >{{ texts.presenceCorrectStartAction }}</a
+            >
+          </div>
+
           @if (result.workingTime; as workingTime) {
             <div class="hire-summary__working-time" data-testid="hire-working-time-summary">
               <h3 class="hire-summary__working-time-title">
