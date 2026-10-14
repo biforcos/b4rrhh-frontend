@@ -443,7 +443,8 @@ export const employeeTexts = {
   identifiersSectionIsPrimaryLabel: 'Identificador principal',
   identifiersSectionRequestFailedMessage: 'No se pudo procesar la operación de identificadores',
   identifiersSectionDuplicateTypeMessage: 'Ya existe un identificador para ese tipo.',
-  identifiersSectionInvalidDniMessage: 'DNI no válido',
+  // El motivo es el del servidor, el mismo del alta (b4rrhh/backend#171).
+  identifiersSectionInvalidDniMessage: (reason: string) => `No es válido: ${reason}.`,
   identifiersSectionPrimaryBadge: 'Principal',
   identifiersSectionExpirationPrefix: 'Caduca',
   identifiersSectionCreateSuccessMessage: 'Identificador creado correctamente.',
@@ -842,6 +843,8 @@ export const employeeTexts = {
   hireEmployeeIdentityValueHint:
     'DNI o NIE con su letra. Con él se comprueba que no esté ya dado de alta.',
   hireEmployeeOwnerOpenAction: 'Abrir su ficha',
+  // El motivo es el del servidor, el mismo con que el alta lo rechazaría (b4rrhh/backend#171).
+  hireEmployeeIdentifierInvalid: (reason: string) => `No es válido: ${reason}.`,
   hireEmployeeOwnerRehireAction: 'Readmitirlo',
   hireEmployeeNeedsRuleSystem: 'Elige primero el sistema de reglas.',
   hireEmployeeNeedsCompany: 'Elige primero la empresa: cada centro es de una empresa.',

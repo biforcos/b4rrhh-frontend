@@ -217,6 +217,13 @@
 }
 
 // El documento ya es de otro empleado (b4rrhh/backend#141): quién es y el camino bueno.
+/* El documento mal escrito, debajo del campo y en cuanto se sale de él (b4rrhh/frontend#134). */
+.hire-identifier-problem {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--error-text);
+}
+
 .hire-owner {
   display: flex;
   flex-direction: column;

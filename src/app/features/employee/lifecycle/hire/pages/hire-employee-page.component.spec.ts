@@ -20,9 +20,11 @@ class MockEmployeeHiringStore {
   readonly errorState = signal<HireEmployeeErrorCode | null>(null);
   readonly resultState = signal<HireEmployeeResult | null>(null);
   readonly identifierOwnerState = signal<HireIdentifierOwner | null>(null);
+  readonly identifierProblemState = signal<string | null>(null);
 
   readonly hiring = this.hiringState.asReadonly();
   readonly identifierOwner = this.identifierOwnerState.asReadonly();
+  readonly identifierProblem = this.identifierProblemState.asReadonly();
   readonly failure = signal(null).asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly result = this.resultState.asReadonly();
@@ -405,7 +407,31 @@ describe('HireEmployeePageComponent', () => {
         'ESP',
         'NATIONAL_ID',
         '00000002W',
+        'ESP',
       );
+    });
+
+    // b4rrhh/frontend#134: «el DNI estaba mal puesto (ni lo comprueba en tiempo real…)».
+    it('a badly written document says why under the field and keeps «Contratar» off', () => {
+      fillValidForm();
+      hiringStore.identifierProblemState.set('la letra debería ser Z');
+      fixture.detectChanges();
+
+      const problem = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="hire-identifier-problem"]',
+      );
+      expect(problem?.textContent?.trim()).toBe('No es válido: la letra debería ser Z.');
+      expect(component.form.controls.identifierValue.hasError('identifierInvalid')).toBe(true);
+      expect(component.submitDisabled()).toBe(true);
+
+      hiringStore.identifierProblemState.set(null);
+      fixture.detectChanges();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector(
+          '[data-testid="hire-identifier-problem"]',
+        ),
+      ).toBeNull();
+      expect(component.submitDisabled()).toBe(false);
     });
 
     it('with an owner, shows him under the field and keeps «Contratar» off, the rest empty', () => {
@@ -453,6 +479,7 @@ describe('HireEmployeePageComponent', () => {
         'ESP',
         'PASSPORT',
         '00000003A',
+        null,
       );
     });
   });

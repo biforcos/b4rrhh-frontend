@@ -37,6 +37,16 @@ export interface HireIdentifierOwner {
   message: string;
 }
 
+/**
+ * Lo que se sabe de un documento al salir del campo (`b4rrhh/backend#171`): si está bien escrito,
+ * por qué no («la letra debería ser Z») y, si lo está, de quién es ya.
+ */
+export interface HireIdentifierCheck {
+  valid: boolean;
+  reason: string | null;
+  owner: HireIdentifierOwner | null;
+}
+
 export interface HireEmployeeDraft {
   ruleSystemCode: string;
   employeeTypeCode?: string;

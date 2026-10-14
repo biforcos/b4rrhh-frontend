@@ -6,6 +6,7 @@ import {
   inject,
   input,
   signal,
+  WritableSignal,
   untracked,
 } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,7 +23,7 @@ import { EmployeeIdentifierStore } from '../../data-access/employee-identifier.s
 import { employeeTexts } from '../../employee.texts';
 import { EmployeeBusinessKey } from '../../models/employee-business-key.model';
 import { EmployeeIdentifierModel } from '../../models/employee-identifier.model';
-import { isValidSpanishDni } from '../../shared/utils/spanish-dni.util';
+import { EmployeeHiringGateway } from '../../data-access/employee-hiring.gateway';
 import { SlotKeyOption } from '../../shared/ui/section/editable-slot-section.model';
 import { SectionMode, SectionUiState } from '../../shared/ui/section/section-ui-state.model';
 import { UiDateInputComponent } from '../../../../shared/ui/date-input/ui-date-input.component';
@@ -59,6 +60,11 @@ export class EmployeeIdentifierSectionComponent {
   private readonly identifierStore = inject(EmployeeIdentifierStore);
   private readonly fieldCatalogService = inject(EmployeeFieldCatalogService);
   private readonly globalMessageService = inject(GlobalMessageService);
+  private readonly hiringGateway = inject(EmployeeHiringGateway);
+  /** Por qué el documento escrito no vale (`b4rrhh/frontend#134`); null si vale o no se sabe. */
+  private readonly createProblemState = signal<string | null>(null);
+  private readonly editProblemState = signal<string | null>(null);
+  private checkRequestId = 0;
   private readonly creatingState = signal(false);
   private readonly editingKeyState = signal<string | null>(null);
   private readonly deletingKeyState = signal<string | null>(null);
@@ -97,12 +103,10 @@ export class EmployeeIdentifierSectionComponent {
   protected readonly catalogOptionsLoading = this.catalogLoadingState.asReadonly();
   protected readonly editingKey = this.editingKeyState.asReadonly();
   protected readonly deletingKey = this.deletingKeyState.asReadonly();
-  protected readonly isCreateDniInvalid = computed(() =>
-    this.isDraftDniInvalid(this.createDraftState()),
-  );
-  protected readonly isEditDniInvalid = computed(() =>
-    this.isDraftDniInvalid(this.editDraftState()),
-  );
+  protected readonly createProblem = this.createProblemState.asReadonly();
+  protected readonly editProblem = this.editProblemState.asReadonly();
+  protected readonly isCreateDniInvalid = computed(() => this.createProblemState() !== null);
+  protected readonly isEditDniInvalid = computed(() => this.editProblemState() !== null);
   protected readonly canSaveCreate = computed(() => {
     const draft = this.createDraftState();
     const normalizedTypeCode = this.normalizeIdentifierTypeCode(draft.key);
@@ -235,6 +239,7 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   protected updateCreateDraftKey(identifierTypeCode: string | null): void {
+    this.createProblemState.set(null);
     this.createDraftState.update((draft) => ({
       ...draft,
       key: identifierTypeCode,
@@ -243,6 +248,7 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   protected updateCreateDraftValue(identifierValue: string): void {
+    this.createProblemState.set(null);
     this.createDraftState.update((draft) => ({
       ...draft,
       value: identifierValue,
@@ -251,6 +257,7 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   protected updateCreateDraftIssuingCountryCode(issuingCountryCode: string): void {
+    this.createProblemState.set(null);
     this.createDraftState.update((draft) => ({
       ...draft,
       issuingCountryCode,
@@ -275,6 +282,7 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   protected updateEditDraftValue(identifierValue: string): void {
+    this.editProblemState.set(null);
     this.editDraftState.update((draft) => ({
       ...draft,
       value: identifierValue,
@@ -283,6 +291,7 @@ export class EmployeeIdentifierSectionComponent {
   }
 
   protected updateEditDraftIssuingCountryCode(issuingCountryCode: string): void {
+    this.editProblemState.set(null);
     this.editDraftState.update((draft) => ({
       ...draft,
       issuingCountryCode,
@@ -306,6 +315,14 @@ export class EmployeeIdentifierSectionComponent {
     this.clearInteractionFeedback();
   }
 
+  protected checkCreateDraft(): void {
+    this.checkDraft(this.createDraftState(), this.createProblemState);
+  }
+
+  protected checkEditDraft(): void {
+    this.checkDraft(this.editDraftState(), this.editProblemState);
+  }
+
   protected submitCreate(): void {
     const activeEmployeeKey = this.employeeKey();
     if (!activeEmployeeKey || this.identifierStore.mutating()) {
@@ -324,7 +341,7 @@ export class EmployeeIdentifierSectionComponent {
       return;
     }
 
-    if (!this.validateDraftDniForCurrentContext(draft)) {
+    if (this.isCreateDniInvalid()) {
       return;
     }
 
@@ -356,7 +373,7 @@ export class EmployeeIdentifierSectionComponent {
       key: normalizedTypeCode,
     };
 
-    if (!this.validateDraftDniForCurrentContext(draft)) {
+    if (this.isEditDniInvalid()) {
       return;
     }
 
@@ -391,37 +408,33 @@ export class EmployeeIdentifierSectionComponent {
     return identifierTypeCode?.trim().toUpperCase() ?? '';
   }
 
-  private validateDraftDniForCurrentContext(draft: IdentifierDraft): boolean {
-    if (!this.isDniValidationApplicable(draft)) {
-      return true;
-    }
-
-    if (isValidSpanishDni(draft.value)) {
-      return true;
-    }
-
-    this.localErrorMessageState.set(this.texts.identifiersSectionInvalidDniMessage);
-    return false;
-  }
-
-  private isDniValidationApplicable(draft: IdentifierDraft): boolean {
+  /**
+   * Pregunta al backend si el documento escrito vale (`b4rrhh/backend#171`), con el mismo validador
+   * que el alta y el mismo motivo en palabras. Al salir del campo, no a cada tecla.
+   */
+  private checkDraft(draft: IdentifierDraft, target: WritableSignal<string | null>): void {
+    const key = this.employeeKey();
     const identifierTypeCode = this.normalizeIdentifierTypeCode(draft.key);
-    const issuingCountryCode = (draft.issuingCountryCode ?? '').trim().toUpperCase();
-
-    return identifierTypeCode === 'NATIONAL_ID' && issuingCountryCode === 'ESP';
-  }
-
-  private isDraftDniInvalid(draft: IdentifierDraft): boolean {
-    if (!this.isDniValidationApplicable(draft)) {
-      return false;
-    }
-
-    const normalizedValue = draft.value.trim();
-    if (normalizedValue.length === 0) {
-      return false;
-    }
-
-    return !isValidSpanishDni(normalizedValue);
+    const value = draft.value.trim();
+    const requestId = ++this.checkRequestId;
+    target.set(null);
+    if (!key || !identifierTypeCode || !value) return;
+    this.hiringGateway
+      .checkIdentifier(
+        key.ruleSystemCode,
+        identifierTypeCode,
+        value,
+        (draft.issuingCountryCode ?? '').trim().toUpperCase() || null,
+      )
+      .pipe(take(1))
+      .subscribe({
+        next: (check) => {
+          if (requestId !== this.checkRequestId) return;
+          target.set(check.valid ? null : check.reason);
+        },
+        // Si la consulta falla no se inventa nada: el backend se niega al guardar, con su motivo.
+        error: () => undefined,
+      });
   }
 
   private resetInteractionState(): void {

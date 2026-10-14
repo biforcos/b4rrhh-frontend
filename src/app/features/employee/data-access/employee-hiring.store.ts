@@ -37,6 +37,9 @@ export class EmployeeHiringStore {
    * (`b4rrhh/frontend#106`) o el que nombra el 409 si el servidor se niega de todos modos.
    */
   readonly identifierOwner = this.identifierOwnerState.asReadonly();
+  /** Por qué el documento escrito no vale, en palabras (`b4rrhh/backend#171`); null si vale. */
+  private readonly identifierProblemState = signal<string | null>(null);
+  readonly identifierProblem = this.identifierProblemState.asReadonly();
 
   hire(draft: HireEmployeeDraft): void {
     if (this.hiringState()) return;
@@ -67,40 +70,45 @@ export class EmployeeHiringStore {
   }
 
   /**
-   * Pregunta de quién es el documento en cuanto se sale del campo (`b4rrhh/frontend#106`). Es
-   * cortesía, no garantía: si la consulta falla no se dice nada, y el 409 del alta sigue siendo lo
-   * que impide dar dos veces a la misma persona. La respuesta que llega tarde se tira.
+   * Pregunta, en cuanto se sale del campo, si el documento está bien escrito y de quién es
+   * (`b4rrhh/frontend#106`, `b4rrhh/frontend#134`). Es cortesía, no garantía: si la consulta falla no
+   * se dice nada, y el alta sigue siendo lo que se niega. La respuesta que llega tarde se tira.
    */
   checkIdentifierOwner(
     ruleSystemCode: string,
     identifierTypeCode: string,
     identifierValue: string,
+    issuingCountryCode: string | null = null,
   ): void {
     const requestId = ++this.ownerRequestId;
     const value = identifierValue.trim();
     if (!ruleSystemCode || !identifierTypeCode || !value) {
       this.identifierOwnerState.set(null);
+      this.identifierProblemState.set(null);
       return;
     }
     this.gateway
-      .findIdentifierOwner(ruleSystemCode, identifierTypeCode, value)
+      .checkIdentifier(ruleSystemCode, identifierTypeCode, value, issuingCountryCode)
       .pipe(take(1))
       .subscribe({
-        next: (owner) => {
+        next: (check) => {
           if (requestId !== this.ownerRequestId) return;
-          this.identifierOwnerState.set(owner);
+          this.identifierOwnerState.set(check.owner);
+          this.identifierProblemState.set(check.valid ? null : check.reason);
         },
         error: () => {
           if (requestId !== this.ownerRequestId) return;
           this.identifierOwnerState.set(null);
+          this.identifierProblemState.set(null);
         },
       });
   }
 
-  /** El valor cambió: el dueño que había ya no es de este documento, y lo que esté en vuelo tampoco. */
+  /** El valor cambió: lo que se sabía del anterior ya no vale, y lo que esté en vuelo tampoco. */
   forgetIdentifierOwner(): void {
     this.ownerRequestId++;
     this.identifierOwnerState.set(null);
+    this.identifierProblemState.set(null);
   }
 
   private mapError(error: any): HireEmployeeErrorCode {
@@ -116,6 +124,7 @@ export class EmployeeHiringStore {
     this.failureState.set(null);
     this.resultState.set(null);
     this.identifierOwnerState.set(null);
+    this.identifierProblemState.set(null);
   }
 }
 

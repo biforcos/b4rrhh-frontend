@@ -121,6 +121,8 @@ export class HireEmployeePageComponent {
   readonly result = this.hiringStore.result;
   /** Quién tiene ya el documento, si el servidor se negó por eso (`b4rrhh/backend#141`). */
   readonly identifierOwner = this.hiringStore.identifierOwner;
+  /** Por qué el documento escrito no vale (`b4rrhh/frontend#134`); null si vale o no se sabe. */
+  readonly identifierProblem = this.hiringStore.identifierProblem;
   readonly globalMessages = this.globalMessageService.messages;
   readonly globalMessageSummary = this.globalMessageService.summary;
   readonly globalMessageExpanded = this.globalMessageService.expanded;
@@ -192,7 +194,14 @@ export class HireEmployeePageComponent {
     // motivo va en el control, como los campos cerrados del #95, y la plantilla lo cuenta debajo.
     effect(() => {
       const owned = this.identifierOwner() !== null;
-      untracked(() => this.markIdentifierOwned(owned));
+      untracked(() => this.markIdentifierError('identifierOwned', owned));
+    });
+
+    // Lo mismo si está mal escrito (`b4rrhh/frontend#134`): el motivo va debajo del campo en cuanto
+    // se sale de él, y «Contratar» no se ofrece mientras tanto.
+    effect(() => {
+      const invalid = this.identifierProblem() !== null;
+      untracked(() => this.markIdentifierError('identifierInvalid', invalid));
     });
 
     this.form.get('ruleSystemCode')?.valueChanges.subscribe((rs: any) => {
@@ -403,14 +412,16 @@ export class HireEmployeePageComponent {
       ruleSystemCode ?? '',
       identifierTypeCode ?? '',
       identifierValue ?? '',
+      // El mismo país que manda el alta: el DNI y el NIE se juzgan expedidos en España.
+      identifierTypeCode === HIRE_IDENTIFIER_DEFAULT_TYPE ? 'ESP' : null,
     );
   }
 
-  private markIdentifierOwned(owned: boolean): void {
+  private markIdentifierError(error: 'identifierOwned' | 'identifierInvalid', on: boolean): void {
     const control = this.form.controls.identifierValue;
-    if (owned === control.hasError('identifierOwned')) return;
-    if (owned) {
-      control.setErrors({ ...control.errors, identifierOwned: true });
+    if (on === control.hasError(error)) return;
+    if (on) {
+      control.setErrors({ ...control.errors, [error]: true });
       return;
     }
     // Quitar sólo el nuestro: los validadores vuelven a decir lo suyo.

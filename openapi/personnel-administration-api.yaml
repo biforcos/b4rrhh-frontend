@@ -175,7 +175,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/HireEmployeeResponse"
         "400":
-          description: Invalid request payload.
+          description: >-
+            Invalid request payload. A document that is not well written for its type is
+            `INVALID_IDENTIFIER`, with `details.field` = `identifier` and the reason in words in
+            `message`, the same the identifier-owner query gives (b4rrhh/backend#171): «El DNI
+            12345678A no es válido: la letra debería ser Z.»
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HireEmployeeErrorResponse"
         "404":
           description: Required catalog dependency not found (rule system, company, etc).
         "409":
@@ -201,15 +209,17 @@ paths:
   /employees/identifier-owner:
     get:
       operationId: findIdentifierOwner
-      summary: Who already owns an identity document in a rule system
+      summary: Whether an identity document is well written and who already owns it in a rule system
       tags:
         - Employee Lifecycle
       description: >-
-        Read-only question the hire screen asks before the hire is sent (b4rrhh/backend#149):
-        the owner is the same one the hire's 409 `HIRE_IDENTIFIER_ALREADY_EXISTS` names, found
-        by the same lookup, so the value is compared without case or surrounding spaces. It is
-        a courtesy, not the guarantee: two hires at once with the same document are only told
-        apart by the hire itself.
+        Read-only question the hire screen asks before the hire is sent (b4rrhh/backend#149,
+        backend#171). First, whether the document is well written for its type, with the
+        validator the hire uses and the same reason in words («la letra debería ser Z»); a
+        document that is not has no owner. Then the owner, the same one the hire's 409
+        `HIRE_IDENTIFIER_ALREADY_EXISTS` names, found by the same lookup, so the value is compared
+        without case or surrounding spaces. It is a courtesy, not the guarantee: two hires at once
+        with the same document are only told apart by the hire itself.
       parameters:
         - in: query
           name: ruleSystemCode
@@ -229,15 +239,24 @@ paths:
           schema:
             type: string
             maxLength: 100
+        - in: query
+          name: issuingCountryCode
+          required: false
+          description: >-
+            The country that issued it. A Spanish NATIONAL_ID (DNI or NIE) is only judged with ESP
+            here, as the hire judges it; without it, only the owner is asked.
+          schema:
+            type: string
+            maxLength: 3
       responses:
         "200":
-          description: The document already belongs to this employee.
+          description: >-
+            Whether it is well written and, when it is and has an owner, who. A free, well written
+            document comes back valid and without owner.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/IdentifierOwnerResponse"
-        "204":
-          description: No employee of the rule system has this document.
         "400":
           description: A query parameter is missing.
 
@@ -9078,20 +9097,30 @@ components:
     IdentifierOwnerResponse:
       type: object
       description: >-
-        The employee who already owns a document (b4rrhh/backend#149), with the same fields
-        as the `details` of the hire's `HIRE_IDENTIFIER_ALREADY_EXISTS`, plus the sentence.
+        Whether a document is well written (b4rrhh/backend#171) and, when it is and has an owner,
+        the employee who owns it (b4rrhh/backend#149), with the same fields as the `details` of the
+        hire's `HIRE_IDENTIFIER_ALREADY_EXISTS`, plus the sentence. The owner's fields are absent
+        when there is none.
       required:
-        - employeeTypeCode
-        - employeeNumber
-        - active
-        - message
+        - valid
       properties:
+        valid:
+          type: boolean
+          description: Well written for its type; false has no owner.
+        reason:
+          type: string
+          nullable: true
+          description: Why it is not, in words, the same the hire gives.
+          example: la letra debería ser Z
         employeeTypeCode:
           type: string
+          nullable: true
         employeeNumber:
           type: string
+          nullable: true
         active:
           type: boolean
+          nullable: true
           description: Has a presence open today or ending in the future.
         ceasedOn:
           type: string
@@ -9100,6 +9129,7 @@ components:
           description: The last day of his last presence, when ceased.
         message:
           type: string
+          nullable: true
           description: '«Este DNI ya es EMP000123 (cesado el 13/05/2026)», or «…, que está de alta».'
 
     RehireEmployeeRequest:

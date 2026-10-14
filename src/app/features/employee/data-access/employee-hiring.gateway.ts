@@ -4,7 +4,7 @@ import { EmployeeLifecycleService } from '../../../core/api/generated/api/employ
 import {
   HireEmployeeDraft,
   HireEmployeeResult,
-  HireIdentifierOwner,
+  HireIdentifierCheck,
 } from '../models/employee-hiring.model';
 import { mapDraftToHireRequest, mapResponseToResult } from './employee-hiring.mapper';
 
@@ -23,31 +23,41 @@ export class EmployeeHiringGateway {
   }
 
   /**
-   * Quién tiene ya este documento en el sistema de reglas (`b4rrhh/backend#149`), o `null` si está
-   * libre (el servidor responde 204 sin cuerpo). Es el mismo dueño que nombraría el 409 del alta.
+   * Si el documento está bien escrito y quién lo tiene ya en el sistema de reglas
+   * (`b4rrhh/backend#149`, `b4rrhh/backend#171`). El dueño es el mismo que nombraría el 409 del alta,
+   * y el motivo, el mismo con que el alta lo rechazaría.
    */
-  findIdentifierOwner(
+  checkIdentifier(
     ruleSystemCode: string,
     identifierTypeCode: string,
     identifierValue: string,
-  ): Observable<HireIdentifierOwner | null> {
+    issuingCountryCode: string | null,
+  ): Observable<HireIdentifierCheck> {
     return this.api
-      .findIdentifierOwner({ ruleSystemCode, identifierTypeCode, identifierValue })
+      .findIdentifierOwner({
+        ruleSystemCode,
+        identifierTypeCode,
+        identifierValue,
+        ...(issuingCountryCode ? { issuingCountryCode } : {}),
+      })
       .pipe(
-        map((owner) =>
-          owner
-            ? {
-                employeeKey: {
-                  ruleSystemCode,
-                  employeeTypeCode: owner.employeeTypeCode,
-                  employeeNumber: owner.employeeNumber,
-                },
-                active: owner.active,
-                ceasedOn: owner.ceasedOn ?? null,
-                message: owner.message,
-              }
-            : null,
-        ),
+        map((check) => ({
+          valid: check.valid,
+          reason: check.reason ?? null,
+          owner:
+            check.employeeTypeCode && check.employeeNumber
+              ? {
+                  employeeKey: {
+                    ruleSystemCode,
+                    employeeTypeCode: check.employeeTypeCode,
+                    employeeNumber: check.employeeNumber,
+                  },
+                  active: check.active === true,
+                  ceasedOn: check.ceasedOn ?? null,
+                  message: check.message ?? '',
+                }
+              : null,
+        })),
       );
   }
 }

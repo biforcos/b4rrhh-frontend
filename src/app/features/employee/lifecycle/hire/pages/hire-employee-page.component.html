@@ -109,6 +109,12 @@
           </div>
           <small class="hire-field-hint">{{ texts.hireEmployeeIdentityValueHint }}</small>
 
+          @if (identifierProblem(); as problem) {
+            <p class="hire-identifier-problem" role="alert" data-testid="hire-identifier-problem">
+              {{ texts.hireEmployeeIdentifierInvalid(problem) }}
+            </p>
+          }
+
           @if (identifierOwner(); as owner) {
             <div class="hire-owner" role="alert" data-testid="hire-identifier-owner">
               <p class="hire-owner__message">{{ owner.message }}</p>

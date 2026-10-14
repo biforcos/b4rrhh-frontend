@@ -35,10 +35,11 @@
                 [attr.aria-invalid]="isCreateDniInvalid() ? 'true' : null"
                 [value]="createDraft().value"
                 (input)="updateCreateDraftValue($any($event.target).value)"
+                (blur)="checkCreateDraft()"
               />
-              @if (isCreateDniInvalid()) {
+              @if (createProblem(); as problem) {
                 <small class="slot-section__field-error">{{
-                  texts.identifiersSectionInvalidDniMessage
+                  texts.identifiersSectionInvalidDniMessage(problem)
                 }}</small>
               }
             </label>
@@ -108,10 +109,11 @@
                   [attr.aria-invalid]="isEditDniInvalid() ? 'true' : null"
                   [value]="editDraft().value"
                   (input)="updateEditDraftValue($any($event.target).value)"
+                  (blur)="checkEditDraft()"
                 />
-                @if (isEditDniInvalid()) {
+                @if (editProblem(); as problem) {
                   <small class="slot-section__field-error">{{
-                    texts.identifiersSectionInvalidDniMessage
+                    texts.identifiersSectionInvalidDniMessage(problem)
                   }}</small>
                 }
               </label>
