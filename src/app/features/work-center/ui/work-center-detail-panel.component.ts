@@ -109,6 +109,8 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   readonly form: FormGroup;
   /** La dirección no es un control del formulario: la lleva el formulario común (frontend#126). */
   protected readonly addressDraft = signal<PostalAddressDraft>(emptyPostalAddressDraft());
+  /** Un CP que contradice a la provincia: el backend lo rechaza, así que no se ofrece guardar. */
+  protected readonly addressBlocked = signal(false);
   readonly contactForm: FormGroup;
   protected readonly isCreateMode = computed(() => this.mode() === 'create');
   protected readonly isEditMode = computed(() => this.mode() === 'edit');
@@ -338,7 +340,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   protected onSubmit(): void {
-    if (this.form.invalid || this.submitting()) {
+    if (this.form.invalid || this.submitting() || this.addressBlocked()) {
       this.form.markAllAsTouched();
       return;
     }

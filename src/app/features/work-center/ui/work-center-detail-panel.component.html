@@ -180,6 +180,7 @@
           [value]="addressDraft()"
           [disabled]="submitting()"
           (valueChanged)="updateAddress($event)"
+          (savingBlockedChanged)="addressBlocked.set($event)"
         />
       }
     </app-section-card>
@@ -350,7 +351,11 @@
         [disabled]="submitting()"
         (pressed)="onCancel()"
       />
-      <app-ui-button [type]="'submit'" [label]="texts.formSaveAction" [disabled]="submitting()" />
+      <app-ui-button
+        [type]="'submit'"
+        [label]="texts.formSaveAction"
+        [disabled]="submitting() || addressBlocked()"
+      />
     </footer>
   }
 </form>

@@ -67,10 +67,12 @@ const POSTAL_CODES: Record<string, TerritoryPostalCodeCheck> = {
     ruleSystemCode="ESP"
     [value]="draft()"
     (valueChanged)="draft.set($event)"
+    (savingBlockedChanged)="blocked.set($event)"
   />`,
 })
 class HostComponent {
   readonly draft = signal<PostalAddressDraft>(emptyPostalAddressDraft());
+  readonly blocked = signal(false);
 }
 
 describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
@@ -219,6 +221,20 @@ describe('PostalAddressFormComponent (b4rrhh/frontend#126)', () => {
     await typeInLabelled('Código postal', '46363', true);
 
     expect(notices()).toContain('46363 es de Valencia; has elegido Madrid.');
+  });
+
+  it('blocks saving while the postal code contradicts the province, as the backend would', async () => {
+    await type(municipalityInput(), 'Mad');
+    choose('Madrid');
+    await typeInLabelled('Código postal', '46363');
+
+    // Sin salir del campo: la provincia de un CP son sus dos primeras cifras, no hay que preguntar.
+    expect(notices()).toContain('46363 es de Valencia; has elegido Madrid.');
+    expect(host.blocked()).toBe(true);
+
+    await typeInLabelled('Código postal', '28001');
+    expect(host.blocked()).toBe(false);
+    expect(notices().some((notice) => notice.includes('has elegido'))).toBe(false);
   });
 
   it('offers the municipality the postal code suggests, without putting it', async () => {

@@ -202,6 +202,32 @@ describe('EmployeeAddressSectionComponent', () => {
     expect(component.isSubmitEnabled()).toBe(true);
   });
 
+  it('does not offer to save an address whose postal code contradicts its province', () => {
+    const component = fix.componentInstance as any;
+    component.openAdd();
+    component.updateDraft('addressTypeCode', 'HOME');
+    component.updateDraft('startDate', '2026-03-01');
+    component.updateAddress({
+      ...component.draft().address,
+      streetName: 'Mayor',
+      countryCode: 'ESP',
+      municipalityCode: '28079',
+      municipalityName: 'Madrid',
+      subdivisionCode: '28',
+      postalCode: '46363',
+    });
+    store.planState.set(plan({}));
+    fix.detectChanges();
+
+    expect(component.addressBlocked()).toBe(true);
+    expect(component.isSubmitEnabled()).toBe(false);
+
+    component.updateAddress({ ...component.draft().address, postalCode: '28001' });
+    fix.detectChanges();
+    expect(component.addressBlocked()).toBe(false);
+    expect(component.isSubmitEnabled()).toBe(true);
+  });
+
   it('plans a removal by address number and removes only once the plan accepts it', () => {
     store.addressesState.set([domicile]);
     fix.detectChanges();

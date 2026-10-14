@@ -104,6 +104,7 @@
         [value]="draft().address"
         [disabled]="saving()"
         (valueChanged)="updateAddress($event)"
+        (savingBlockedChanged)="addressBlocked.set($event)"
       />
     </div>
   }

@@ -115,6 +115,8 @@ export class EmployeeAddressSectionComponent {
   protected readonly editingNumber = signal<number | null>(null);
   protected readonly editingPeriod = signal<string | null>(null);
   protected readonly draft = signal<AddressCreateDraft>(createEmptyAddressDraft());
+  /** Un CP que contradice a la provincia: el backend lo rechaza, así que no se ofrece guardar. */
+  protected readonly addressBlocked = signal(false);
   protected readonly addressTypeOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   protected readonly catalogLoading = signal(false);
   /** Qué tipos son obligatorios y cuáles opcionales, según el catálogo (`b4rrhh/backend#145`). */
@@ -234,6 +236,7 @@ export class EmployeeAddressSectionComponent {
       const address = this.draft().address;
       const required = [address.streetName, address.countryCode];
       if (!required.every((value) => value.trim().length > 0)) return false;
+      if (this.addressBlocked()) return false;
     }
     return this.plan()?.accepted === true;
   });

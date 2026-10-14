@@ -92,6 +92,11 @@ export class PostalAddressFormComponent {
   readonly disabled = input(false);
 
   readonly valueChanged = output<PostalAddressDraft>();
+  /**
+   * Si la dirección no se puede guardar tal como está: un CP que contradice a la provincia, que el
+   * backend rechaza (backend#155). La pantalla que lo monta desactiva «Guardar» mientras dure.
+   */
+  readonly savingBlockedChanged = output<boolean>();
 
   private readonly territory = inject(TerritoryReadClient);
   private readonly scope = inject(RuleSystemScopeStore);
@@ -147,11 +152,41 @@ export class PostalAddressFormComponent {
       this.municipalityQuery().trim().length >= 2,
   );
 
+  /**
+   * El CP contradice a la provincia: la misma regla con que el backend lo rechaza
+   * (`rejectAPostalCodeOfAnotherProvince`), cinco cifras que no empiezan por la provincia elegida.
+   * No hace falta preguntar: la provincia de un CP español son sus dos primeras cifras.
+   */
+  private readonly postalCodeContradictsProvince = computed(() => {
+    const postalCode = this.value().postalCode.trim();
+    const province = this.value().subdivisionCode;
+    return (
+      this.isSpain() &&
+      SPANISH_POSTAL_CODE.test(postalCode) &&
+      !!province &&
+      !postalCode.startsWith(province)
+    );
+  });
+
   protected readonly postalCodeNotice = computed<PostalCodeNotice | null>(() => {
     if (!this.isSpain()) return null;
     const postalCode = this.value().postalCode.trim();
     if (this.postalCodeMalformed()) {
       return { tone: 'error', text: this.texts.postalCodeNotFiveDigits, offer: null };
+    }
+    if (this.postalCodeContradictsProvince()) {
+      const itsCode = postalCode.slice(0, 2);
+      const itsName =
+        this.provinces().find((province) => province.code === itsCode)?.name ?? itsCode;
+      return {
+        tone: 'error',
+        text: this.texts.postalCodeOfAnotherProvince(
+          postalCode,
+          itsName,
+          this.provinceName() || this.value().subdivisionCode,
+        ),
+        offer: null,
+      };
     }
     const check = this.postalCheck();
     if (!check || check.postalCode !== postalCode) return null;
@@ -159,18 +194,6 @@ export class PostalAddressFormComponent {
       return {
         tone: 'error',
         text: check.message ?? this.texts.postalCodeWithoutProvince(postalCode),
-        offer: null,
-      };
-    }
-    const chosen = this.value().subdivisionCode;
-    if (chosen && chosen !== check.provinceCode) {
-      return {
-        tone: 'error',
-        text: this.texts.postalCodeOfAnotherProvince(
-          postalCode,
-          check.provinceName ?? check.provinceCode,
-          this.provinceName() || chosen,
-        ),
         offer: null,
       };
     }
@@ -202,6 +225,8 @@ export class PostalAddressFormComponent {
   });
 
   constructor() {
+    effect(() => this.savingBlockedChanged.emit(this.postalCodeContradictsProvince()));
+
     // Los catálogos del territorio, una vez por reglamentación.
     effect(() => {
       const ruleSystemCode = this.ruleSystemCode()?.trim() ?? '';
