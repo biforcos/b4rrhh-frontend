@@ -19,19 +19,9 @@
   color: var(--text-tertiary);
 }
 
-.address-form__field input.p-inputtext {
-  width: 100%;
-}
-
-.address-form__field--wide,
-.address-form__hint {
+/* La dirección, el formulario común de los tres sitios (b4rrhh/frontend#126), a todo lo ancho. */
+.address-form__address {
   grid-column: 1 / -1;
-}
-
-.address-form__hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-tertiary);
 }
 
 .address-row__locality {
@@ -50,4 +40,15 @@
   font-weight: 500;
   background: var(--warning-bg);
   color: var(--warning-text);
+}
+
+.address-row__correct {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
 }

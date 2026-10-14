@@ -1,4 +1,4 @@
-import { PostalAddressModel } from '../../../core/api/mappers/postal-address.mapper';
+import { PostalAddressDraft } from '../../../core/api/mappers/postal-address.mapper';
 
 export interface CompanyFormValue {
   // Identity
@@ -12,17 +12,9 @@ export interface CompanyFormValue {
   taxIdentifier: string;
   /** La actividad economica, en CNAE (`b4rrhh/backend#122`). */
   cnaeCode: string;
-  // Address
-  streetName: string;
-  streetNumber: string;
-  floor: string;
-  door: string;
-  locality: string;
-  postalCode: string;
-  countryCode: string;
   /**
-   * La dirección que había al abrir el formulario. Se manda entera (b4rrhh/backend#155), y lo que
-   * aquí no se edita —municipio, provincia, tipo de vía— se conserva de ella.
+   * La dirección, la del formulario común de los tres sitios (b4rrhh/frontend#126). Se manda
+   * entera: el backend la sustituye y no la parchea (b4rrhh/backend#155).
    */
-  previousAddress: PostalAddressModel | null;
+  address: PostalAddressDraft;
 }

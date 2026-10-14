@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
+import { emptyPostalAddressDraft } from '../../../core/api/mappers/postal-address.mapper';
 import { CompanyGateway } from '../gateway/company.gateway';
 import { CompanyDetailModel } from '../models/company-detail.model';
 import { CompanyListItemModel } from '../models/company-list-item.model';
@@ -96,14 +97,13 @@ describe('CompanyStore', () => {
       legalName: 'Acme Spain SA',
       taxIdentifier: 'A12345678',
       cnaeCode: '4719',
-      streetName: 'Gran Via 1',
-      streetNumber: '',
-      floor: '',
-      door: '',
-      locality: 'Madrid',
-      postalCode: '28013',
-      countryCode: 'ESP',
-      previousAddress: null,
+      address: {
+        ...emptyPostalAddressDraft(),
+        streetName: 'Gran Via 1',
+        locality: 'Madrid',
+        postalCode: '28013',
+        countryCode: 'ESP',
+      },
     });
 
     expect(gatewayMock.createCompany).toHaveBeenCalledTimes(1);
@@ -146,14 +146,13 @@ describe('CompanyStore', () => {
         legalName: 'Acme Spain SA',
         taxIdentifier: 'A12345678',
         cnaeCode: '4719',
-        streetName: 'Gran Via 1',
-        streetNumber: '',
-        floor: '',
-        door: '',
-        locality: 'Madrid',
-        postalCode: '28013',
-        countryCode: 'ESP',
-        previousAddress: null,
+        address: {
+          ...emptyPostalAddressDraft(),
+          streetName: 'Gran Via 1',
+          locality: 'Madrid',
+          postalCode: '28013',
+          countryCode: 'ESP',
+        },
       },
     );
 
@@ -194,14 +193,7 @@ describe('CompanyStore', () => {
       legalName: 'Acme Spain SA',
       taxIdentifier: '',
       cnaeCode: '4719',
-      streetName: '',
-      streetNumber: '',
-      floor: '',
-      door: '',
-      locality: '',
-      postalCode: '',
-      countryCode: 'XXX',
-      previousAddress: null,
+      address: { ...emptyPostalAddressDraft(), countryCode: 'XXX' },
     });
 
     expect(store.submitError()).toBe('countryCode is invalid');

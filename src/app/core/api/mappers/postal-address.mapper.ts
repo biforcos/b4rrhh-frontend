@@ -28,17 +28,27 @@ export interface PostalAddressModel {
 }
 
 /**
- * Lo que hoy se edita de una dirección. Municipio, provincia y tipo de vía llegan con el
- * formulario de verdad (b4rrhh/frontend#126); mientras, se conservan los que ya tenía.
+ * Una dirección mientras se escribe (b4rrhh/frontend#126): todo texto, vacío y no null. Es lo que
+ * edita `app-postal-address-form`, el mismo en los tres sitios. El nombre del municipio no viaja al
+ * backend —manda el código—, pero el formulario lo necesita para enseñarlo.
  */
 export interface PostalAddressDraft {
-  streetName: string;
-  streetNumber: string;
-  floor: string;
-  door: string;
+  countryCode: string;
+  municipalityCode: string;
+  municipalityName: string;
+  /** La provincia, por su código INE: la del municipio elegido, nunca escrita a mano. */
+  subdivisionCode: string;
   locality: string;
   postalCode: string;
-  countryCode: string;
+  streetTypeCode: string;
+  streetName: string;
+  streetNumber: string;
+  numberQualifier: string;
+  block: string;
+  portal: string;
+  stair: string;
+  floor: string;
+  door: string;
 }
 
 export function mapPostalAddressResponseToModel(source: PostalAddressResponse): PostalAddressModel {
@@ -75,60 +85,69 @@ export function mapOptionalPostalAddressResponseToModel(
 
 export function emptyPostalAddressDraft(): PostalAddressDraft {
   return {
-    streetName: '',
-    streetNumber: '',
-    floor: '',
-    door: '',
+    countryCode: '',
+    municipalityCode: '',
+    municipalityName: '',
+    subdivisionCode: '',
     locality: '',
     postalCode: '',
-    countryCode: '',
+    streetTypeCode: '',
+    streetName: '',
+    streetNumber: '',
+    numberQualifier: '',
+    block: '',
+    portal: '',
+    stair: '',
+    floor: '',
+    door: '',
   };
 }
 
 export function mapPostalAddressToDraft(source: PostalAddressModel | null): PostalAddressDraft {
   if (!source) return emptyPostalAddressDraft();
   return {
-    streetName: source.streetName ?? '',
-    streetNumber: source.streetNumber ?? '',
-    floor: source.floor ?? '',
-    door: source.door ?? '',
-    // Sin municipio, la población que se escribió está en la localidad.
+    countryCode: source.countryCode,
+    municipalityCode: source.municipalityCode ?? '',
+    municipalityName: source.municipalityName ?? '',
+    subdivisionCode: source.subdivisionCode ?? '',
     locality: source.locality ?? '',
     postalCode: source.postalCode ?? '',
-    countryCode: source.countryCode,
+    streetTypeCode: source.streetTypeCode ?? '',
+    streetName: source.streetName ?? '',
+    streetNumber: source.streetNumber ?? '',
+    numberQualifier: source.numberQualifier ?? '',
+    block: source.block ?? '',
+    portal: source.portal ?? '',
+    stair: source.stair ?? '',
+    floor: source.floor ?? '',
+    door: source.door ?? '',
   };
 }
 
 /**
- * La dirección que se envía: entera, porque el backend la sustituye y no la parchea. Lo que este
- * formulario no edita se conserva de `previous`; null si el formulario está vacío.
+ * La dirección que se envía: entera, porque el backend la sustituye y no la parchea. Null si no hay
+ * nada más que el país, que el formulario pone solo: eso no es una dirección.
  */
 export function mapPostalAddressDraftToRequest(
   draft: PostalAddressDraft,
-  previous: PostalAddressModel | null = null,
 ): PostalAddressRequest | null {
-  const edited = {
+  const request = {
+    streetTypeCode: optional(draft.streetTypeCode),
     streetName: optional(draft.streetName),
     streetNumber: optional(draft.streetNumber),
+    numberQualifier: optional(draft.numberQualifier),
+    block: optional(draft.block),
+    portal: optional(draft.portal),
+    stair: optional(draft.stair),
     floor: optional(draft.floor),
     door: optional(draft.door),
     locality: optional(draft.locality),
+    municipalityCode: optional(draft.municipalityCode),
+    subdivisionCode: optional(draft.subdivisionCode),
     postalCode: optional(draft.postalCode),
-    countryCode: optional(draft.countryCode)?.toUpperCase() ?? null,
   };
-  if (Object.values(edited).every((value) => value === null)) return null;
-
-  return {
-    streetTypeCode: previous?.streetTypeCode ?? null,
-    numberQualifier: previous?.numberQualifier ?? null,
-    block: previous?.block ?? null,
-    portal: previous?.portal ?? null,
-    stair: previous?.stair ?? null,
-    municipalityCode: previous?.municipalityCode ?? null,
-    subdivisionCode: previous?.subdivisionCode ?? null,
-    ...edited,
-    countryCode: edited.countryCode ?? '',
-  };
+  if (Object.values(request).every((value) => value === null)) return null;
+  return { ...request, countryCode: optional(draft.countryCode)?.toUpperCase() ?? '' };
 }
 
 /** La vía en una línea: «CL Mayor, 3, 3º D». Vacía si no hay vía. */

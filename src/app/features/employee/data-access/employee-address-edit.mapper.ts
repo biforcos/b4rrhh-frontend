@@ -18,13 +18,14 @@ import {
 } from '../models/employee-address-plan.model';
 import {
   PostalAddressDraft,
-  PostalAddressModel,
   mapPostalAddressDraftToRequest,
 } from '../../../core/api/mappers/postal-address.mapper';
 
 /** El alta de una dirección: su tipo, su tramo y sus datos. Lo que se cierra lo dice el plan (ADR-057). */
-export interface AddressCreateDraft extends PostalAddressDraft {
+export interface AddressCreateDraft {
   addressTypeCode: string;
+  /** La dirección, la del formulario común de los tres sitios (b4rrhh/frontend#126). */
+  address: PostalAddressDraft;
   startDate: string;
   /** Vacío para una dirección que queda en vigor. */
   endDate: string;
@@ -34,14 +35,11 @@ export interface AddressCreateDraft extends PostalAddressDraft {
  * La corrección de una dirección: sus datos y su tramo. El tipo no está: nombra la serie a la
  * que pertenece la ocurrencia y una corrección no la cambia de serie.
  */
-export interface AddressCorrectDraft extends PostalAddressDraft {
+export interface AddressCorrectDraft {
+  /** La dirección entera: el backend la sustituye y no la parchea (b4rrhh/backend#155). */
+  address: PostalAddressDraft;
   startDate: string;
   endDate: string;
-  /**
-   * La dirección que se corrige. La corrección manda la dirección entera (b4rrhh/backend#155), y lo
-   * que este formulario no edita —municipio, provincia, tipo de vía— se conserva de aquí.
-   */
-  previous: PostalAddressModel | null;
 }
 
 /**
@@ -59,7 +57,7 @@ export function mapAddressDraftToCreateAddressRequest(
 ): CreateAddressRequest {
   return {
     addressTypeCode: normalizeCode(draft.addressTypeCode),
-    address: mapPostalAddressDraftToRequest(draft) ?? { countryCode: '' },
+    address: mapPostalAddressDraftToRequest(draft.address) ?? { countryCode: '' },
     startDate: normalizeRequiredValue(draft.startDate),
     endDate: normalizeOptionalValue(draft.endDate),
   };
@@ -69,7 +67,7 @@ export function mapAddressCorrectDraftToUpdateAddressRequest(
   draft: AddressCorrectDraft,
 ): UpdateAddressRequest {
   return {
-    address: mapPostalAddressDraftToRequest(draft, draft.previous) ?? { countryCode: '' },
+    address: mapPostalAddressDraftToRequest(draft.address) ?? { countryCode: '' },
     // Las fechas corregidas viajan: corregir una dirección son sus datos y su tramo (ADR-057,
     // decisión 3). Dejarlas fuera hacía que cambiar el inicio no cambiara nada. El inicio
     // además es obligatorio en el contrato desde el backend#69: omitirlo es un 400, no un

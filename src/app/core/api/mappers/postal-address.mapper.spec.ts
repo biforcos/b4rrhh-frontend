@@ -61,11 +61,12 @@ describe('postal-address.mapper (b4rrhh/backend#155)', () => {
     ).toBe('ESP');
   });
 
-  it('sends the whole address, keeping what the form does not edit', () => {
-    const request = mapPostalAddressDraftToRequest(
-      { ...mapPostalAddressToDraft(address), streetNumber: '5', floor: '' },
-      address,
-    );
+  it('sends the whole address, the one the form has', () => {
+    const request = mapPostalAddressDraftToRequest({
+      ...mapPostalAddressToDraft(address),
+      streetNumber: '5',
+      floor: '',
+    });
 
     expect(request).toEqual({
       streetTypeCode: 'CL',

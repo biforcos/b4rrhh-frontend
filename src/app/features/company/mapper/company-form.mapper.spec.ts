@@ -47,7 +47,7 @@ describe('buildEmptyCompanyFormValue', () => {
 
     expect(form.ruleSystemCode).toBe('');
     expect(form.name).toBe('');
-    expect(form.countryCode).toBe('');
+    expect(form.address.countryCode).toBe('');
   });
 });
 
@@ -58,8 +58,8 @@ describe('buildCompanyFormValueFromDetail', () => {
     expect(form.ruleSystemCode).toBe('ESP');
     expect(form.companyCode).toBe('ES01');
     expect(form.name).toBe('Company Spain');
-    expect(form.streetName).toBe('Mayor');
-    expect(form.countryCode).toBe('ESP');
+    expect(form.address.streetName).toBe('Mayor');
+    expect(form.address.countryCode).toBe('ESP');
   });
 
   it('converts null optional fields to empty strings', () => {
@@ -117,7 +117,7 @@ describe('mapCompanyFormValueToCreateRequest', () => {
 
     expect(result.address).toBeDefined();
     expect(result.address?.streetName).toBe('Mayor');
-    // Lo que el formulario no edita se conserva de la que había (b4rrhh/backend#155).
+    // El municipio viaja: lo edita el formulario común (b4rrhh/frontend#126).
     expect(result.address?.municipalityCode).toBe('28079');
   });
 });

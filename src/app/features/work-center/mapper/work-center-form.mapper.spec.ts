@@ -45,7 +45,7 @@ describe('buildEmptyWorkCenterFormValue', () => {
 
     expect(form.workCenterCode).toBe('');
     expect(form.name).toBe('');
-    expect(form.countryCode).toBe('');
+    expect(form.address.countryCode).toBe('');
   });
 });
 
@@ -55,8 +55,8 @@ describe('buildWorkCenterFormValueFromDetail', () => {
 
     expect(form.ruleSystemCode).toBe('ESP');
     expect(form.workCenterCode).toBe('MAD-01');
-    expect(form.streetName).toBe('Mayor');
-    expect(form.countryCode).toBe('ESP');
+    expect(form.address.streetName).toBe('Mayor');
+    expect(form.address.countryCode).toBe('ESP');
   });
 
   it('converts null optional fields to empty strings', () => {
@@ -110,7 +110,7 @@ describe('mapWorkCenterFormValueToCreateRequest', () => {
     );
 
     expect(result.address?.streetName).toBe('Mayor');
-    // Lo que el formulario no edita se conserva de la que había (b4rrhh/backend#155).
+    // El municipio viaja: lo edita el formulario común (b4rrhh/frontend#126).
     expect(result.address?.municipalityCode).toBe('28079');
   });
 });

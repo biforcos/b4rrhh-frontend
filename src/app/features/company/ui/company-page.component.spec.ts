@@ -53,7 +53,10 @@ describe('CompanyPageComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: RuleSystemScopeStore, useValue: { activeCode: signal('ESP') } },
+        {
+          provide: RuleSystemScopeStore,
+          useValue: { activeCode: signal('ESP'), items: signal([]) },
+        },
         {
           provide: CompanyGateway,
           useValue: {
@@ -83,7 +86,8 @@ describe('CompanyPageComponent', () => {
     expect(host.querySelector('app-company-detail-panel')).not.toBeNull();
     expect(host.querySelector('app-display-name-format-card')).toBeNull();
     expect(host.querySelector('app-employee-numbering-config-card')).toBeNull();
-    http.expectNone(() => true);
+    // Las tarjetas no piden nada; el formulario de dirección sí pide el territorio (frontend#126).
+    http.expectNone((req) => !req.url.includes('/territory/'));
   });
 
   it('saca las tarjetas en cuanto la empresa está creada', () => {

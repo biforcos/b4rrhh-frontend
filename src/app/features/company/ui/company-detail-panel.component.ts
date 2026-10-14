@@ -7,12 +7,16 @@ import {
   inject,
   input,
   output,
+  signal,
 } from '@angular/core';
 import {
+  PostalAddressDraft,
   describeStreetLine,
   describeNormalizationIssue,
   describeTownLine,
+  emptyPostalAddressDraft,
 } from '../../../core/api/mappers/postal-address.mapper';
+import { PostalAddressFormComponent } from '../../../shared/postal-address/postal-address-form.component';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -52,6 +56,7 @@ export type CompanyDetailMode = 'create' | 'view' | 'edit';
     UiButtonComponent,
     EntityHeaderComponent,
     SectionCardComponent,
+    PostalAddressFormComponent,
   ],
   templateUrl: './company-detail-panel.component.html',
   styleUrl: './company-detail-panel.component.scss',
@@ -72,6 +77,8 @@ export class CompanyDetailPanelComponent implements OnChanges {
   private readonly scope = inject(RuleSystemScopeStore);
 
   readonly form: FormGroup;
+  /** La dirección no es un control del formulario: la lleva el formulario común (frontend#126). */
+  protected readonly addressDraft = signal<PostalAddressDraft>(emptyPostalAddressDraft());
   protected readonly isCreateMode = computed(() => this.mode() === 'create');
   protected readonly isEditMode = computed(() => this.mode() === 'edit');
   protected readonly isViewMode = computed(() => this.mode() === 'view');
@@ -92,13 +99,6 @@ export class CompanyDetailPanelComponent implements OnChanges {
       legalName: ['', [Validators.required, Validators.maxLength(200)]],
       taxIdentifier: ['', [Validators.maxLength(50)]],
       cnaeCode: ['', [Validators.maxLength(10)]],
-      streetName: ['', [Validators.maxLength(200)]],
-      streetNumber: ['', [Validators.maxLength(10)]],
-      floor: ['', [Validators.maxLength(10)]],
-      door: ['', [Validators.maxLength(10)]],
-      locality: ['', [Validators.maxLength(120)]],
-      postalCode: ['', [Validators.maxLength(20)]],
-      countryCode: ['', [Validators.maxLength(3)]],
     });
   }
 
@@ -209,12 +209,21 @@ export class CompanyDetailPanelComponent implements OnChanges {
     return describeTownLine(this.detail()?.address ?? null);
   }
 
-  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
   /** El motivo de la marca, para la ficha (b4rrhh/backend#155). */
   protected get addressNormalizationIssue(): string {
     return describeNormalizationIssue(this.detail()?.address ?? null);
   }
 
+  /** La reglamentación de la dirección: la de la empresa, o la que se está escribiendo en el alta. */
+  protected get addressRuleSystemCode(): string | null {
+    return this.detail()?.ruleSystemCode ?? this.scope.activeCode();
+  }
+
+  protected updateAddress(address: PostalAddressDraft): void {
+    this.addressDraft.set(address);
+  }
+
+  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
   protected get addressNotNormalized(): boolean {
     const address = this.detail()?.address;
     return !!address && !address.normalized;
@@ -263,6 +272,11 @@ export class CompanyDetailPanelComponent implements OnChanges {
         });
 
     this.form.reset(initialValue);
+    this.addressDraft.set(
+      detail
+        ? buildCompanyFormValueFromDetail(detail).address
+        : buildEmptyCompanyFormValue().address,
+    );
     this.form.markAsPristine();
     this.form.markAsUntouched();
 
@@ -278,8 +292,8 @@ export class CompanyDetailPanelComponent implements OnChanges {
   }
 
   private toFormState(value: CompanyFormValue): Record<string, string | Date | null> {
-    // La dirección que había no es un control: viaja aparte, en getRawFormValue.
-    const { previousAddress: _previousAddress, ...controls } = value;
+    // La dirección no es un control: viaja aparte, en getRawFormValue.
+    const { address: _address, ...controls } = value;
     return {
       ...controls,
       startDate: value.startDate ? this.parseDate(value.startDate) : null,
@@ -300,14 +314,7 @@ export class CompanyDetailPanelComponent implements OnChanges {
       legalName: raw['legalName'] ?? '',
       taxIdentifier: raw['taxIdentifier'] ?? '',
       cnaeCode: raw['cnaeCode'] ?? '',
-      streetName: raw['streetName'] ?? '',
-      streetNumber: raw['streetNumber'] ?? '',
-      floor: raw['floor'] ?? '',
-      door: raw['door'] ?? '',
-      locality: raw['locality'] ?? '',
-      postalCode: raw['postalCode'] ?? '',
-      countryCode: raw['countryCode'] ?? '',
-      previousAddress: this.detail()?.address ?? null,
+      address: this.addressDraft(),
     };
   }
 

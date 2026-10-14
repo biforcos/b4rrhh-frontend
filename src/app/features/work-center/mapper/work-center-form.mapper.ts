@@ -16,8 +16,7 @@ export function buildEmptyWorkCenterFormValue(): WorkCenterFormValue {
     description: '',
     startDate: '',
     companyCode: '',
-    ...emptyPostalAddressDraft(),
-    previousAddress: null,
+    address: emptyPostalAddressDraft(),
   };
 }
 
@@ -31,8 +30,7 @@ export function buildWorkCenterFormValueFromDetail(
     description: detail.description ?? '',
     startDate: detail.startDate,
     companyCode: detail.companyCode ?? '',
-    ...mapPostalAddressToDraft(detail.address),
-    previousAddress: detail.address,
+    address: mapPostalAddressToDraft(detail.address),
   };
 }
 
@@ -62,7 +60,7 @@ export function mapWorkCenterFormValueToUpdateRequest(
 }
 
 function mapAddress(formValue: WorkCenterFormValue) {
-  return mapPostalAddressDraftToRequest(formValue, formValue.previousAddress) ?? undefined;
+  return mapPostalAddressDraftToRequest(formValue.address) ?? undefined;
 }
 
 function normalizeRequired(value: string): string {

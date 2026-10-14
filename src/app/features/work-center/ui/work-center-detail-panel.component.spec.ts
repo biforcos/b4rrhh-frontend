@@ -1,7 +1,10 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
+import { emptyPostalAddressDraft } from '../../../core/api/mappers/postal-address.mapper';
 import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 import { WorkCenterFieldCatalogService } from '../data-access/work-center-field-catalog.service';
 import { WorkCenterContactModel } from '../models/work-center-contact.model';
@@ -68,7 +71,13 @@ describe('WorkCenterDetailPanelComponent', () => {
       imports: [WorkCenterDetailPanelComponent],
       providers: [
         { provide: WorkCenterFieldCatalogService, useValue: fieldCatalogServiceMock },
-        { provide: RuleSystemScopeStore, useValue: { activeCode: scopeCode } },
+        {
+          provide: RuleSystemScopeStore,
+          useValue: { activeCode: scopeCode, items: signal([]) },
+        },
+        // El formulario de dirección pide el territorio: aquí no sale a la red (frontend#126).
+        provideHttpClient(),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 
@@ -125,10 +134,10 @@ describe('WorkCenterDetailPanelComponent', () => {
       description: 'Headquarters',
       startDate: new Date(2026, 0, 1),
       companyCode: 'ACME',
+    });
+    (component as any).updateAddress({
+      ...emptyPostalAddressDraft(),
       streetName: 'Gran Via 1',
-      streetNumber: '',
-      floor: '',
-      door: '',
       locality: 'Madrid',
       postalCode: '28013',
       countryCode: 'ESP',
@@ -146,14 +155,13 @@ describe('WorkCenterDetailPanelComponent', () => {
       description: 'Headquarters',
       startDate: '2026-01-01',
       companyCode: 'ACME',
-      streetName: 'Gran Via 1',
-      streetNumber: '',
-      floor: '',
-      door: '',
-      locality: 'Madrid',
-      postalCode: '28013',
-      countryCode: 'ESP',
-      previousAddress: null,
+      address: {
+        ...emptyPostalAddressDraft(),
+        streetName: 'Gran Via 1',
+        locality: 'Madrid',
+        postalCode: '28013',
+        countryCode: 'ESP',
+      },
     });
   });
 

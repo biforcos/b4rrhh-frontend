@@ -13,7 +13,7 @@
     <th class="temporal-section__th">{{ texts.addressesSectionTypeLabel }}</th>
     <th class="temporal-section__th">{{ texts.addressesSectionAddressColumn }}</th>
   </ng-template>
-  <ng-template #cellContent let-row>
+  <ng-template #cellContent let-row let-index="index">
     <!-- ADR-051 §4: el código nunca va solo. -->
     <td class="temporal-section__td">
       <app-ui-catalog-label [name]="row.addressTypeName" [code]="row.addressTypeCode" />
@@ -21,11 +21,14 @@
     <td class="temporal-section__td">
       {{ row.street }}
       @if (!row.normalized) {
-        <span class="address-row__not-normalized" [title]="texts.addressesSectionNotNormalizedHint">
+        <span class="address-row__not-normalized">
           {{ texts.addressesSectionNotNormalizedLabel }}
           @if (row.normalizationIssue) {
             · {{ row.normalizationIssue }}
           }
+          <button type="button" class="address-row__correct" (click)="openCorrect(index)">
+            {{ texts.addressesSectionNotNormalizedAction }}
+          </button>
         </span>
       }
       <span class="temporal-section__secondary address-row__locality">
@@ -94,69 +97,14 @@
           (valueChanged)="updateDraft('endDate', $event)"
         />
       </label>
-      <label class="address-form__field address-form__field--wide">
-        <span>{{ texts.addressesSectionStreetLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().streetName"
-          (input)="updateDraft('streetName', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionStreetNumberLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().streetNumber"
-          (input)="updateDraft('streetNumber', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionFloorLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().floor"
-          (input)="updateDraft('floor', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionDoorLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().door"
-          (input)="updateDraft('door', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionPostalCodeLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().postalCode"
-          (input)="updateDraft('postalCode', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionLocalityLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().locality"
-          (input)="updateDraft('locality', $any($event.target).value)"
-        />
-      </label>
-      <label class="address-form__field">
-        <span>{{ texts.addressesSectionCountryLabel }}</span>
-        <input
-          pInputText
-          type="text"
-          [value]="draft().countryCode"
-          (input)="updateDraft('countryCode', $any($event.target).value)"
-        />
-      </label>
+      <app-postal-address-form
+        class="address-form__address"
+        [ruleSystemCode]="employeeKey()?.ruleSystemCode ?? null"
+        [referenceDate]="draft().startDate"
+        [value]="draft().address"
+        [disabled]="saving()"
+        (valueChanged)="updateAddress($event)"
+      />
     </div>
   }
 </app-period-modal>

@@ -8,7 +8,6 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { InputTextModule } from 'primeng/inputtext';
 import { take } from 'rxjs';
 
 import {
@@ -17,13 +16,14 @@ import {
 } from '../../data-access/employee-address-edit.mapper';
 import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import {
-  PostalAddressModel,
+  PostalAddressDraft,
   describeStreetLine,
   describeNormalizationIssue,
   describeTownLine,
   emptyPostalAddressDraft,
   mapPostalAddressToDraft,
 } from '../../../../core/api/mappers/postal-address.mapper';
+import { PostalAddressFormComponent } from '../../../../shared/postal-address/postal-address-form.component';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { employeeTexts } from '../../employee.texts';
@@ -73,21 +73,15 @@ interface AddressPeriodRow extends TemporalSectionRow {
   normalizationIssue: string;
 }
 
-/** Los campos de texto del formulario: todos menos la dirección que se corrige. */
-type AddressDraftField = Exclude<keyof AddressFormDraft, 'previous'>;
+/** Los campos del formulario que no son la dirección, que tiene el suyo (b4rrhh/frontend#126). */
+type AddressDraftField = Exclude<keyof AddressCreateDraft, 'address'>;
 
-/** El formulario: el alta y, al corregir, la dirección que había. */
-interface AddressFormDraft extends AddressCreateDraft {
-  previous: PostalAddressModel | null;
-}
-
-function createEmptyAddressDraft(): AddressFormDraft {
+function createEmptyAddressDraft(): AddressCreateDraft {
   return {
     addressTypeCode: '',
-    ...emptyPostalAddressDraft(),
+    address: emptyPostalAddressDraft(),
     startDate: currentLocalDate(),
     endDate: '',
-    previous: null,
   };
 }
 
@@ -100,7 +94,7 @@ function createEmptyAddressDraft(): AddressFormDraft {
     UiDateInputComponent,
     UiSelectComponent,
     UiCatalogLabelComponent,
-    InputTextModule,
+    PostalAddressFormComponent,
   ],
   templateUrl: './employee-address-section.component.html',
   styleUrl: './employee-address-section.component.scss',
@@ -120,7 +114,7 @@ export class EmployeeAddressSectionComponent {
   /** La dirección que se corrige o se borra. */
   protected readonly editingNumber = signal<number | null>(null);
   protected readonly editingPeriod = signal<string | null>(null);
-  protected readonly draft = signal<AddressFormDraft>(createEmptyAddressDraft());
+  protected readonly draft = signal<AddressCreateDraft>(createEmptyAddressDraft());
   protected readonly addressTypeOptions = signal<ReadonlyArray<SlotKeyOption<string>>>([]);
   protected readonly catalogLoading = signal(false);
   /** Qué tipos son obligatorios y cuáles opcionales, según el catálogo (`b4rrhh/backend#145`). */
@@ -237,8 +231,8 @@ export class EmployeeAddressSectionComponent {
   protected readonly isSubmitEnabled = computed(() => {
     if (!this.planDraft()) return false;
     if (this.modalMode() !== 'remove') {
-      const draft = this.draft();
-      const required = [draft.streetName, draft.countryCode];
+      const address = this.draft().address;
+      const required = [address.streetName, address.countryCode];
       if (!required.every((value) => value.trim().length > 0)) return false;
     }
     return this.plan()?.accepted === true;
@@ -306,10 +300,9 @@ export class EmployeeAddressSectionComponent {
     this.editingPeriod.set(this.describeDates(address.startDate, address.endDate));
     this.draft.set({
       addressTypeCode: address.addressTypeCode,
-      ...mapPostalAddressToDraft(address.address),
+      address: mapPostalAddressToDraft(address.address),
       startDate: address.startDate,
       endDate: address.endDate ?? '',
-      previous: address.address,
     });
     this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, this.draft().startDate);
     this.modalVisible.set(true);
@@ -379,6 +372,10 @@ export class EmployeeAddressSectionComponent {
     if (field === 'startDate') {
       this.loadCatalogOptions(this.employeeKey()?.ruleSystemCode ?? null, value ?? '');
     }
+  }
+
+  protected updateAddress(address: PostalAddressDraft): void {
+    this.draft.update((draft) => ({ ...draft, address }));
   }
 
   private loadCoverages(ruleSystemCode: string | null): void {

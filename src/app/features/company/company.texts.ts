@@ -57,17 +57,12 @@ export const companyTexts = {
   fieldCnaeLabel: 'CNAE',
 
   sectionAddressTitle: 'Dirección',
+  // Sólo los de la ficha: los del formulario son los del formulario común (b4rrhh/frontend#126).
   fieldStreetLabel: 'Vía',
-  fieldStreetNumberLabel: 'Número',
-  fieldFloorLabel: 'Piso',
-  fieldDoorLabel: 'Puerta',
-  fieldLocalityLabel: 'Localidad',
   fieldTownLabel: 'Población',
-  fieldPostalCodeLabel: 'Código postal',
   addressNotNormalizedLabel: 'Sin normalizar',
-  addressNotNormalizedHint:
-    'No cuadra con el maestro del territorio: se guardó igual y queda pendiente de revisar.',
-  fieldCountryCodeLabel: 'País (ISO 3166-1 alpha-3)',
+  addressNotNormalizedAction: 'Corregir',
+  fieldCountryCodeLabel: 'País',
 
   detailLoadingMessage: 'Cargando detalle...',
   detailLoadFailedMessage: 'No se pudo cargar el detalle de la empresa',

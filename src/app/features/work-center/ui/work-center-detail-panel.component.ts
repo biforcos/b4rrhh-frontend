@@ -10,10 +10,13 @@ import {
   signal,
 } from '@angular/core';
 import {
+  PostalAddressDraft,
   describeStreetLine,
   describeNormalizationIssue,
   describeTownLine,
+  emptyPostalAddressDraft,
 } from '../../../core/api/mappers/postal-address.mapper';
+import { PostalAddressFormComponent } from '../../../shared/postal-address/postal-address-form.component';
 import { UiDateInputComponent } from '../../../shared/ui/date-input/ui-date-input.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take } from 'rxjs';
@@ -63,6 +66,7 @@ export type WorkCenterDetailMode = 'create' | 'view' | 'edit';
     UiSelectComponent,
     EntityHeaderComponent,
     SectionCardComponent,
+    PostalAddressFormComponent,
   ],
   templateUrl: './work-center-detail-panel.component.html',
   styleUrl: './work-center-detail-panel.component.scss',
@@ -103,6 +107,8 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   private contactTypeRequestId = 0;
 
   readonly form: FormGroup;
+  /** La dirección no es un control del formulario: la lleva el formulario común (frontend#126). */
+  protected readonly addressDraft = signal<PostalAddressDraft>(emptyPostalAddressDraft());
   readonly contactForm: FormGroup;
   protected readonly isCreateMode = computed(() => this.mode() === 'create');
   protected readonly isEditMode = computed(() => this.mode() === 'edit');
@@ -172,13 +178,6 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
       description: ['', [Validators.maxLength(500)]],
       startDate: [{ value: '', disabled: false }, [Validators.required]],
       companyCode: ['', [Validators.maxLength(30)]],
-      streetName: ['', [Validators.maxLength(200)]],
-      streetNumber: ['', [Validators.maxLength(10)]],
-      floor: ['', [Validators.maxLength(10)]],
-      door: ['', [Validators.maxLength(10)]],
-      locality: ['', [Validators.maxLength(120)]],
-      postalCode: ['', [Validators.maxLength(20)]],
-      countryCode: ['', [Validators.maxLength(3)]],
     });
 
     this.contactForm = this.fb.group({
@@ -280,9 +279,9 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   protected get entityLocation(): string {
-    const raw = this.form.getRawValue();
-    const location = [raw['locality'], raw['countryCode']]
-      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    const address = this.addressDraft();
+    const location = [address.municipalityName || address.locality, address.countryCode]
+      .map((value) => value.trim())
       .filter((value) => value.length > 0)
       .join(' · ');
     return location || this.texts.detailViewEmptyValue;
@@ -306,12 +305,21 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
     return describeTownLine(this.detail()?.address ?? null);
   }
 
-  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
   /** El motivo de la marca, para la ficha (b4rrhh/backend#155). */
   protected get addressNormalizationIssue(): string {
     return describeNormalizationIssue(this.detail()?.address ?? null);
   }
 
+  /** La reglamentación de la dirección: la del centro, o la del ámbito en el alta. */
+  protected get addressRuleSystemCode(): string | null {
+    return this.detail()?.ruleSystemCode ?? this.scope.activeCode();
+  }
+
+  protected updateAddress(address: PostalAddressDraft): void {
+    this.addressDraft.set(address);
+  }
+
+  /** «Sin normalizar» (b4rrhh/backend#155): guardada sin pasar la validación del territorio. */
   protected get addressNotNormalized(): boolean {
     const address = this.detail()?.address;
     return !!address && !address.normalized;
@@ -416,6 +424,11 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
         });
 
     this.form.reset(initialValue);
+    this.addressDraft.set(
+      detail
+        ? buildWorkCenterFormValueFromDetail(detail).address
+        : buildEmptyWorkCenterFormValue().address,
+    );
     this.form.markAsPristine();
     this.form.markAsUntouched();
 
@@ -431,8 +444,8 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
   }
 
   private toFormState(value: WorkCenterFormValue): Record<string, string | Date | null> {
-    // La dirección que había no es un control: viaja aparte, en getRawFormValue.
-    const { previousAddress: _previousAddress, ...controls } = value;
+    // La dirección no es un control: viaja aparte, en getRawFormValue.
+    const { address: _address, ...controls } = value;
     return {
       ...controls,
       startDate: value.startDate ? this.parseDate(value.startDate) : null,
@@ -451,14 +464,7 @@ export class WorkCenterDetailPanelComponent implements OnChanges {
           ? this.toIsoDate(raw['startDate'])
           : (raw['startDate'] ?? ''),
       companyCode: raw['companyCode'] ?? '',
-      streetName: raw['streetName'] ?? '',
-      streetNumber: raw['streetNumber'] ?? '',
-      floor: raw['floor'] ?? '',
-      door: raw['door'] ?? '',
-      locality: raw['locality'] ?? '',
-      postalCode: raw['postalCode'] ?? '',
-      countryCode: raw['countryCode'] ?? '',
-      previousAddress: this.detail()?.address ?? null,
+      address: this.addressDraft(),
     };
   }
 

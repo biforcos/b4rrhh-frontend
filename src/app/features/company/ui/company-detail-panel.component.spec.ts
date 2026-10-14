@@ -1,6 +1,9 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { emptyPostalAddressDraft } from '../../../core/api/mappers/postal-address.mapper';
 import { RuleSystemScopeStore } from '../../../core/scope/rule-system-scope.store';
 
 import { CompanyDetailModel } from '../models/company-detail.model';
@@ -46,7 +49,15 @@ describe('CompanyDetailPanelComponent', () => {
     scopeCode.set('ESP');
     await TestBed.configureTestingModule({
       imports: [CompanyDetailPanelComponent],
-      providers: [{ provide: RuleSystemScopeStore, useValue: { activeCode: scopeCode } }],
+      providers: [
+        {
+          provide: RuleSystemScopeStore,
+          useValue: { activeCode: scopeCode, items: signal([]) },
+        },
+        // El formulario de dirección pide el territorio: aquí no sale a la red (frontend#126).
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CompanyDetailPanelComponent);
@@ -124,14 +135,9 @@ describe('CompanyDetailPanelComponent', () => {
       'Razón social',
       'CIF/NIF',
       'CNAE',
-      'Vía',
-      'Número',
-      'Piso',
-      'Puerta',
-      'Código postal',
-      'Localidad',
-      'País (ISO 3166-1 alpha-3)',
     ]);
+    // Los de la dirección son los del formulario común (b4rrhh/frontend#126).
+    expect(fixture.nativeElement.querySelector('app-postal-address-form')).not.toBeNull();
   });
 
   /**
@@ -181,10 +187,10 @@ describe('CompanyDetailPanelComponent', () => {
       legalName: 'Empresa Uno SA',
       taxIdentifier: 'A12345678',
       cnaeCode: '4719',
+    });
+    (component as any).updateAddress({
+      ...emptyPostalAddressDraft(),
       streetName: 'Gran Via 1',
-      streetNumber: '',
-      floor: '',
-      door: '',
       locality: 'Madrid',
       postalCode: '28013',
       countryCode: 'ESP',
@@ -203,14 +209,13 @@ describe('CompanyDetailPanelComponent', () => {
       legalName: 'Empresa Uno SA',
       taxIdentifier: 'A12345678',
       cnaeCode: '4719',
-      streetName: 'Gran Via 1',
-      streetNumber: '',
-      floor: '',
-      door: '',
-      locality: 'Madrid',
-      postalCode: '28013',
-      countryCode: 'ESP',
-      previousAddress: null,
+      address: {
+        ...emptyPostalAddressDraft(),
+        streetName: 'Gran Via 1',
+        locality: 'Madrid',
+        postalCode: '28013',
+        countryCode: 'ESP',
+      },
     });
   });
 

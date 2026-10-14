@@ -1,0 +1,186 @@
+:host {
+  display: block;
+  /* Manda el ancho del formulario y no el de la ventana: va en un modal y en una tarjeta. */
+  container-type: inline-size;
+}
+
+/* Seis columnas: país, municipio, provincia y comunidad de dos en dos; la vía en tres trozos. */
+.postal-address-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.postal-address-form__field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  align-content: start;
+}
+
+.postal-address-form__field--half {
+  grid-column: span 3;
+}
+
+.postal-address-form__field--third {
+  grid-column: span 2;
+}
+
+.postal-address-form__field--sixth {
+  grid-column: span 1;
+}
+
+.postal-address-form__field--street {
+  grid-column: span 3;
+}
+
+.postal-address-form__field--street-wide {
+  grid-column: span 5;
+}
+
+.postal-address-form__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.postal-address-form__optional {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.postal-address-form__field input.p-inputtext {
+  width: 100%;
+}
+
+/* Provincia y comunidad: se leen, no se escriben. */
+.postal-address-form__field input[readonly] {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.postal-address-form__combobox {
+  position: relative;
+}
+
+.postal-address-form__suggestions {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-panel);
+}
+
+.postal-address-form__suggestions--empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.postal-address-form__suggestion {
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.postal-address-form__suggestion--active,
+.postal-address-form__suggestion:hover {
+  background: var(--surface-hover);
+}
+
+/* Lo que dice el CP, y lo que se guardará sin normalizar: dice, no bloquea. */
+.postal-address-form__notice {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--warning-text);
+}
+
+.postal-address-form__notice--error {
+  color: var(--error-text);
+}
+
+.postal-address-form__link {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--text-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.postal-address-form__more {
+  grid-column: 1 / -1;
+}
+
+.postal-address-form__more-summary {
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.postal-address-form__more-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: 8px;
+}
+
+/* En un modal: cuatro columnas, y el pliegue en dos filas de tres. */
+@container (width < 640px) {
+  .postal-address-form {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .postal-address-form__more-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .postal-address-form__field--half,
+  .postal-address-form__field--street {
+    grid-column: span 2;
+  }
+
+  .postal-address-form__field--third,
+  .postal-address-form__field--sixth {
+    grid-column: span 1;
+  }
+
+  .postal-address-form__field--street-wide {
+    grid-column: span 3;
+  }
+}
+
+/* En un teléfono, un campo por fila. */
+@container (width < 360px) {
+  .postal-address-form,
+  .postal-address-form__more-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .postal-address-form__field--half,
+  .postal-address-form__field--third,
+  .postal-address-form__field--sixth,
+  .postal-address-form__field--street,
+  .postal-address-form__field--street-wide {
+    grid-column: 1 / -1;
+  }
+}

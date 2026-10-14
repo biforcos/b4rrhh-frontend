@@ -1,8 +1,11 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
+import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
 import { EmployeeAddressStore } from '../../data-access/employee-address.store';
 import { EmployeeFieldCatalogService } from '../../data-access/employee-field-catalog.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
@@ -103,6 +106,10 @@ describe('EmployeeAddressSectionComponent', () => {
           provide: GlobalMessageService,
           useValue: { setSourceMessages: vi.fn(), clearSourceMessages: vi.fn() },
         },
+        { provide: RuleSystemScopeStore, useValue: { items: signal([]) } },
+        // El formulario de dirección pide el territorio: aquí no sale a la red (frontend#126).
+        provideHttpClient(),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 
@@ -130,12 +137,17 @@ describe('EmployeeAddressSectionComponent', () => {
       },
     ]);
     fix.detectChanges();
-    expect(
-      fix.nativeElement
-        .querySelector('.address-row__not-normalized')
-        ?.textContent?.replace(/\s+/g, ' ')
-        .trim(),
-    ).toBe('Sin normalizar · el código postal no está en el maestro');
+    const mark = fix.nativeElement.querySelector('.address-row__not-normalized') as HTMLElement;
+    expect(mark.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Sin normalizar · el código postal no está en el maestro Corregir',
+    );
+
+    // Con su salida al lado (b4rrhh/frontend#126): corregir esa dirección.
+    (mark.querySelector('button') as HTMLButtonElement).click();
+    fix.detectChanges();
+    const component = fix.componentInstance as any;
+    expect(component.modalMode()).toBe('correct');
+    expect(component.editingNumber()).toBe(1);
   });
 
   it('names the series by type when planning an add', () => {
@@ -164,9 +176,12 @@ describe('EmployeeAddressSectionComponent', () => {
     component.openAdd();
     component.updateDraft('addressTypeCode', 'HOME');
     component.updateDraft('startDate', '2026-03-01');
-    component.updateDraft('streetName', 'Calle Mayor 10');
-    component.updateDraft('locality', 'Madrid');
-    component.updateDraft('countryCode', 'ESP');
+    component.updateAddress({
+      ...component.draft().address,
+      streetName: 'Calle Mayor 10',
+      locality: 'Madrid',
+      countryCode: 'ESP',
+    });
 
     store.planState.set(plan({ accepted: false, rejection: 'GAP_NOT_ALLOWED', gaps }));
     fix.detectChanges();

@@ -18,8 +18,7 @@ export function buildEmptyCompanyFormValue(): CompanyFormValue {
     legalName: '',
     taxIdentifier: '',
     cnaeCode: '',
-    ...emptyPostalAddressDraft(),
-    previousAddress: null,
+    address: emptyPostalAddressDraft(),
   };
 }
 
@@ -33,8 +32,7 @@ export function buildCompanyFormValueFromDetail(detail: CompanyDetailModel): Com
     legalName: detail.legalName,
     taxIdentifier: detail.taxIdentifier ?? '',
     cnaeCode: detail.cnaeCode ?? '',
-    ...mapPostalAddressToDraft(detail.address),
-    previousAddress: detail.address,
+    address: mapPostalAddressToDraft(detail.address),
   };
 }
 
@@ -67,5 +65,5 @@ export function mapCompanyFormValueToUpdateRequest(form: CompanyFormValue): Upda
 }
 
 function buildAddressPayload(form: CompanyFormValue) {
-  return mapPostalAddressDraftToRequest(form, form.previousAddress) ?? undefined;
+  return mapPostalAddressDraftToRequest(form.address) ?? undefined;
 }

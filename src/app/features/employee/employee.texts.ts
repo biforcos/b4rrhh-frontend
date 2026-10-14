@@ -486,16 +486,9 @@ export const employeeTexts = {
   addressesSectionInvalidRequestMessage: 'Completa los datos obligatorios de la dirección.',
   addressesSectionTypeLabel: 'Tipo de dirección',
   addressesSectionAddressColumn: 'Dirección',
-  addressesSectionStreetLabel: 'Vía',
-  addressesSectionStreetNumberLabel: 'Número',
-  addressesSectionFloorLabel: 'Piso',
-  addressesSectionDoorLabel: 'Puerta',
-  addressesSectionLocalityLabel: 'Localidad',
-  addressesSectionCountryLabel: 'País',
-  addressesSectionPostalCodeLabel: 'Código postal',
   addressesSectionNotNormalizedLabel: 'Sin normalizar',
-  addressesSectionNotNormalizedHint:
-    'No cuadra con el maestro del territorio: se guardó igual y queda pendiente de revisar.',
+  // La marca lleva su salida al lado (b4rrhh/frontend#126): corregirla, no un title que explique.
+  addressesSectionNotNormalizedAction: 'Corregir',
   addressesSectionStartDateLabel: 'Fecha de inicio',
   addressesSectionEndDateLabel: 'Fecha de fin',
   workCenterSectionTitle: 'Centro de trabajo',

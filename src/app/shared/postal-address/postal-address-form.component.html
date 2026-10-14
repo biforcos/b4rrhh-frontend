@@ -1,0 +1,252 @@
+<div class="postal-address-form">
+  <label class="postal-address-form__field postal-address-form__field--half">
+    <span class="postal-address-form__label">{{ texts.countryLabel }}</span>
+    <app-ui-select
+      [inputId]="id('country')"
+      [value]="value().countryCode"
+      [options]="countryOptions()"
+      [placeholder]="texts.countryLabel"
+      [disabled]="disabled()"
+      (valueChanged)="changeCountry($event)"
+    />
+  </label>
+
+  @if (isSpain()) {
+    <div class="postal-address-form__field postal-address-form__field--half">
+      <label class="postal-address-form__label" [for]="id('municipality')">{{
+        texts.municipalityLabel
+      }}</label>
+      <div class="postal-address-form__combobox">
+        <input
+          pInputText
+          type="text"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          [id]="id('municipality')"
+          [attr.aria-expanded]="suggestionsOpen()"
+          [attr.aria-controls]="id('municipality-list')"
+          [attr.aria-activedescendant]="
+            activeSuggestion() >= 0 ? id('municipality-' + activeSuggestion()) : null
+          "
+          [placeholder]="texts.municipalityPlaceholder"
+          [disabled]="disabled()"
+          [value]="municipalityQuery()"
+          (input)="typeMunicipality($any($event.target).value)"
+          (keydown)="municipalityKeydown($event)"
+          (blur)="closeSuggestions()"
+        />
+        @if (suggestionsOpen() && suggestions().length > 0) {
+          <ul
+            class="postal-address-form__suggestions"
+            role="listbox"
+            [id]="id('municipality-list')"
+          >
+            @for (municipality of suggestions(); track municipality.code; let index = $index) {
+              <!-- mousedown y no click: el click llega después del blur, que ya ha cerrado la lista. -->
+              <li
+                role="option"
+                class="postal-address-form__suggestion"
+                [class.postal-address-form__suggestion--active]="index === activeSuggestion()"
+                [id]="id('municipality-' + index)"
+                [attr.aria-selected]="index === activeSuggestion()"
+                (mousedown)="$event.preventDefault(); chooseMunicipality(municipality)"
+              >
+                {{ suggestionLabel(municipality) }}
+              </li>
+            }
+          </ul>
+        }
+        @if (showNoResults()) {
+          <p class="postal-address-form__suggestions postal-address-form__suggestions--empty">
+            {{ texts.municipalityNoResults }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <div class="postal-address-form__field postal-address-form__field--half">
+      <span class="postal-address-form__label">
+        {{ texts.provinceLabel }}
+        <app-ui-more>{{ texts.provinceAndRegionMore }}</app-ui-more>
+      </span>
+      <input pInputText type="text" readonly tabindex="-1" [value]="provinceName()" />
+    </div>
+
+    <div class="postal-address-form__field postal-address-form__field--half">
+      <span class="postal-address-form__label">{{ texts.regionLabel }}</span>
+      <input pInputText type="text" readonly tabindex="-1" [value]="regionName()" />
+    </div>
+  }
+
+  <label class="postal-address-form__field postal-address-form__field--half">
+    <span class="postal-address-form__label">
+      {{ isSpain() ? texts.localityLabel : texts.townLabel }}
+      @if (isSpain()) {
+        <span class="postal-address-form__optional">{{ texts.localityOptional }}</span>
+      }
+    </span>
+    <input
+      pInputText
+      type="text"
+      maxlength="120"
+      [disabled]="disabled()"
+      [value]="value().locality"
+      (input)="changeText('locality', $any($event.target).value)"
+    />
+  </label>
+
+  <label class="postal-address-form__field postal-address-form__field--half">
+    <span class="postal-address-form__label">{{ texts.postalCodeLabel }}</span>
+    <input
+      pInputText
+      type="text"
+      inputmode="numeric"
+      maxlength="20"
+      [id]="id('postal-code')"
+      [disabled]="disabled()"
+      [value]="value().postalCode"
+      (input)="changeText('postalCode', $any($event.target).value)"
+      (blur)="checkPostalCode()"
+    />
+  </label>
+
+  @if (postalCodeNotice(); as notice) {
+    <p
+      class="postal-address-form__notice"
+      [class.postal-address-form__notice--error]="notice.tone === 'error'"
+      role="status"
+    >
+      {{ notice.text }}
+      @if (notice.offer; as offer) {
+        <button
+          type="button"
+          class="postal-address-form__link"
+          [disabled]="disabled()"
+          (click)="acceptSuggestion(offer)"
+        >
+          {{ texts.postalCodeSuggestionAction(offer.name) }}
+        </button>
+      }
+    </p>
+  }
+
+  @if (isSpain()) {
+    <label class="postal-address-form__field postal-address-form__field--third">
+      <span class="postal-address-form__label">{{ texts.streetTypeLabel }}</span>
+      <app-ui-select
+        [inputId]="id('street-type')"
+        [value]="value().streetTypeCode"
+        [options]="streetTypeOptions()"
+        [placeholder]="texts.streetTypeLabel"
+        [disabled]="disabled()"
+        (valueChanged)="changeStreetType($event)"
+      />
+    </label>
+  }
+
+  <label
+    class="postal-address-form__field"
+    [class.postal-address-form__field--street]="isSpain()"
+    [class.postal-address-form__field--street-wide]="!isSpain()"
+  >
+    <span class="postal-address-form__label">{{ texts.streetNameLabel }}</span>
+    <input
+      pInputText
+      type="text"
+      maxlength="200"
+      [id]="id('street-name')"
+      [disabled]="disabled()"
+      [value]="value().streetName"
+      (input)="changeText('streetName', $any($event.target).value)"
+    />
+  </label>
+
+  <label class="postal-address-form__field postal-address-form__field--sixth">
+    <span class="postal-address-form__label">{{ texts.streetNumberLabel }}</span>
+    <input
+      pInputText
+      type="text"
+      maxlength="10"
+      [disabled]="disabled()"
+      [value]="value().streetNumber"
+      (input)="changeText('streetNumber', $any($event.target).value)"
+    />
+  </label>
+
+  <details class="postal-address-form__more" [open]="moreOpen()" (toggle)="toggleMore($event)">
+    <summary class="postal-address-form__more-summary">{{ texts.moreLabel }}</summary>
+    <div class="postal-address-form__more-row">
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.numberQualifierLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().numberQualifier"
+          (input)="changeText('numberQualifier', $any($event.target).value)"
+        />
+      </label>
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.blockLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().block"
+          (input)="changeText('block', $any($event.target).value)"
+        />
+      </label>
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.portalLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().portal"
+          (input)="changeText('portal', $any($event.target).value)"
+        />
+      </label>
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.stairLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().stair"
+          (input)="changeText('stair', $any($event.target).value)"
+        />
+      </label>
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.floorLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().floor"
+          (input)="changeText('floor', $any($event.target).value)"
+        />
+      </label>
+      <label class="postal-address-form__field">
+        <span class="postal-address-form__label">{{ texts.doorLabel }}</span>
+        <input
+          pInputText
+          type="text"
+          maxlength="10"
+          [disabled]="disabled()"
+          [value]="value().door"
+          (input)="changeText('door', $any($event.target).value)"
+        />
+      </label>
+    </div>
+  </details>
+
+  @if (pendingIssue(); as pending) {
+    <p class="postal-address-form__notice">{{ pending }}</p>
+  }
+</div>

@@ -47,16 +47,11 @@ export const workCenterTexts = {
   fieldDescriptionLabel: 'Descripción',
   fieldStartDateLabel: 'Fecha inicio',
   fieldCompanyCodeLabel: 'Empresa',
+  // Sólo los de la ficha: los del formulario son los del formulario común (b4rrhh/frontend#126).
   fieldStreetLabel: 'Vía',
-  fieldStreetNumberLabel: 'Número',
-  fieldFloorLabel: 'Piso',
-  fieldDoorLabel: 'Puerta',
-  fieldLocalityLabel: 'Localidad',
   fieldTownLabel: 'Población',
-  fieldPostalCodeLabel: 'Código postal',
   addressNotNormalizedLabel: 'Sin normalizar',
-  addressNotNormalizedHint:
-    'No cuadra con el maestro del territorio: se guardó igual y queda pendiente de revisar.',
+  addressNotNormalizedAction: 'Corregir',
   fieldCountryCodeLabel: 'País',
 
   contactsLoadingMessage: 'Cargando contactos... ',
