@@ -139,4 +139,13 @@ describe('La tira del año', () => {
     expect(bars()).toHaveLength(0);
     expect(host.querySelectorAll('.year-strip__dot')).toHaveLength(0);
   });
+
+  it('los meses posteriores al abierto van marcados «sin abrir todavía» (b4rrhh/frontend#136)', () => {
+    fixture.componentRef.setInput('openPeriod', 202609);
+    fixture.detectChanges();
+
+    expect(months()[8].getAttribute('aria-label')).not.toContain('sin abrir');
+    expect(months()[9].getAttribute('aria-label')).toContain('octubre de 2026 · sin abrir todavía');
+    expect(months()[9].classList).toContain('year-strip__month--not-open');
+  });
 });

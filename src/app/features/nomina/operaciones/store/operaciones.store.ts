@@ -2,6 +2,11 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
+import { EmployeePresenceReadClient } from '../../../../core/api/clients/employee-presence-read.client';
+import {
+  firstPayrollOf,
+  noPayrollInPeriodMessage,
+} from '../../../employee/data-access/employee-first-payroll.util';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { BulkFinalizeResult } from '../models/bulk-finalize-result.model';
 import { BulkInvalidateResult } from '../models/bulk-invalidate-result.model';
@@ -91,6 +96,7 @@ export class OperacionesStore {
   private readonly gateway = inject(OperacionesGateway);
   private readonly router = inject(Router);
   private readonly scope = inject(RuleSystemScopeStore);
+  private readonly presences = inject(EmployeePresenceReadClient);
 
   /** Vacío hasta que se resuelve el ámbito: ningún sistema de reglas escrito a mano (frontend#124). */
   private readonly ruleSystemCodeState = signal<string>('');
@@ -434,10 +440,52 @@ export class OperacionesStore {
    */
   launch(): void {
     if (!this.canLaunch()) return;
-    const floor = this.retroFloorPeriodState();
     this.launchingState.set(true);
     this.launchErrorState.set(null);
     this.launchErrorMessageState.set(null);
+    if (this.targetModeState() !== 'SINGLE') {
+      this.send();
+      return;
+    }
+    // Un empleado suelto que no está de alta ese mes no tiene nómina que calcular: se dice antes de
+    // lanzar, con su primer mes si empieza después (b4rrhh/frontend#136). Sin presencias que leer
+    // —no existe, o no se pudieron leer— se lanza igual: el servidor dice mejor «no existe».
+    const employeeNumber = this.singleEmployeeNumberState().trim();
+    const period = this.periodState();
+    this.presences
+      .readEmployeePresencesByBusinessKey({
+        ruleSystemCode: this.ruleSystemCodeState(),
+        employeeTypeCode: this.singleEmployeeTypeState(),
+        employeeNumber,
+      })
+      .subscribe({
+        next: (presences) => {
+          if (presences.length === 0) {
+            this.send();
+            return;
+          }
+          const reason = noPayrollInPeriodMessage(
+            employeeNumber,
+            firstPayrollOf(
+              presences.map((p) => ({ startDate: p.startDate, endDate: p.endDate ?? null })),
+              period,
+            ),
+            period,
+          );
+          if (reason) {
+            this.launchingState.set(false);
+            this.launchErrorState.set('no-payroll-in-period');
+            this.launchErrorMessageState.set(reason);
+            return;
+          }
+          this.send();
+        },
+        error: () => this.send(),
+      });
+  }
+
+  private send(): void {
+    const floor = this.retroFloorPeriodState();
     this.gateway
       .launchCalculation({
         ruleSystemCode: this.ruleSystemCodeState(),

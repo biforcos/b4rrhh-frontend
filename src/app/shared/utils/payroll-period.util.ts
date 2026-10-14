@@ -22,6 +22,21 @@ const MONTH_SHORT_NAMES = [
   'Dic',
 ] as const;
 
+const MONTH_NAMES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+] as const;
+
 /** El mes del calendario de hoy. */
 export function currentPayrollPeriod(today: Date = new Date()): PayrollPeriod {
   return today.getFullYear() * 100 + today.getMonth() + 1;
@@ -32,6 +47,11 @@ export function formatPayrollPeriodLabel(period: PayrollPeriod): string {
   const month = period % 100;
   const year = Math.floor(period / 100);
   return `${MONTH_SHORT_NAMES[month - 1]} ${year}`;
+}
+
+/** `202610` como `octubre`, que es como se dice en una frase (`b4rrhh/frontend#136`). */
+export function formatPayrollPeriodMonthName(period: PayrollPeriod): string {
+  return MONTH_NAMES[(period % 100) - 1];
 }
 
 /** `202608` como `08/2026`, que es como se lee en el recibo. */

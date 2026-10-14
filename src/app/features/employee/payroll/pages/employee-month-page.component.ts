@@ -11,6 +11,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
+import { OpenPayrollPeriodService } from '../../../nomina/recibos/store/open-payroll-period.service';
+import { notOpenYetMessage } from '../../data-access/employee-first-payroll.util';
 import { EmployeeAbsenceStore } from '../../data-access/employee-absence.store';
 import { EmployeePayrollInputStore } from '../../data-access/employee-payroll-input.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
@@ -58,6 +60,14 @@ export class EmployeeMonthPageComponent {
   private readonly payrollInputStore = inject(EmployeePayrollInputStore);
   private readonly globalMessageService = inject(GlobalMessageService);
   protected readonly yearStore = inject(EmployeeYearStore);
+  private readonly openPeriodService = inject(OpenPayrollPeriodService);
+
+  /** El período abierto, si se sabe (`b4rrhh/frontend#136`); sin él no se avisa de nada. */
+  protected readonly openPeriod = signal<PayrollPeriod | null>(null);
+  protected readonly notOpenYet = computed(() => {
+    const open = this.openPeriod();
+    return open === null ? null : notOpenYetMessage(this.period(), open);
+  });
 
   private previousAbsenceSuccess: 'saved' | 'deleted' | null = null;
   private previousRetroMarkSuccess: string | null = null;
@@ -88,6 +98,10 @@ export class EmployeeMonthPageComponent {
   );
 
   constructor() {
+    this.openPeriodService.find().then(
+      (open) => this.openPeriod.set(open === null ? null : Number(open)),
+      () => this.openPeriod.set(null),
+    );
     // Un mes de otro año —por el atajo o desde una sección— se lleva la tira a su año.
     effect(() => {
       const year = Math.floor(this.period() / 100);

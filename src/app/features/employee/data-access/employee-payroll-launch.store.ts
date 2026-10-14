@@ -8,6 +8,7 @@ import {
   shiftPeriod,
 } from '../../nomina/operaciones/store/operaciones.store';
 import { RecibosGateway } from '../../nomina/recibos/gateway/recibos.gateway';
+import { OpenPayrollPeriodService } from '../../nomina/recibos/store/open-payroll-period.service';
 import { PayrollBusinessKey } from '../../nomina/recibos/models/payroll-business-key.model';
 import { PayrollSummaryModel } from '../../nomina/recibos/models/payroll-summary.model';
 import { describeFailure, toHttpFailure } from '../../../shared/utils/http-failure.util';
@@ -70,6 +71,15 @@ export class EmployeePayrollLaunchStore {
   private readonly recibos = inject(RecibosGateway);
   private readonly operaciones = inject(OperacionesGateway);
   private readonly router = inject(Router);
+  private readonly openPeriodService = inject(OpenPayrollPeriodService);
+
+  /**
+   * El período abierto, para decir antes de ofrecer el botón si hay nómina que calcular
+   * (`b4rrhh/frontend#136`). `null` mientras no se sabe, o si no hay ningún recibo todavía: entonces el
+   * botón se ofrece como antes y `prepare` lo dice al pulsarlo.
+   */
+  private readonly openPeriodSignal = signal<string | null>(null);
+  readonly openPeriod = this.openPeriodSignal.asReadonly();
 
   private readonly stateSignal = signal<EmployeePayrollLaunchState>({ kind: 'idle' });
   readonly state = this.stateSignal.asReadonly();
@@ -80,7 +90,7 @@ export class EmployeePayrollLaunchStore {
   ): Promise<void> {
     this.stateSignal.set({ kind: 'preparing' });
     try {
-      const period = await this.openPeriod();
+      const period = await this.resolveOpenPeriod();
       const label = periodLabel(period);
       if (!presences.some((presence) => coversPeriod(presence, period))) {
         this.stateSignal.set({
@@ -170,19 +180,21 @@ export class EmployeePayrollLaunchStore {
     this.stateSignal.set({ kind: 'idle' });
   }
 
+  /** Pregunta cuál es el período abierto. Si falla, se queda sin saberlo: el botón sale como antes. */
+  async loadOpenPeriod(): Promise<void> {
+    try {
+      this.openPeriodSignal.set(await this.openPeriodService.find());
+    } catch {
+      this.openPeriodSignal.set(null);
+    }
+  }
+
   /**
    * El período abierto: el del recibo más reciente si no está cerrado, y el siguiente si lo está
    * (la misma regla que la lista de recibos, `b4rrhh/frontend#93`). Sin ningún recibo, el mes de hoy.
    */
-  private async openPeriod(): Promise<string> {
-    const first = await firstValueFrom(
-      this.recibos.search({ payrollPeriodCode: '', employeeNumber: '', status: '' }, 0, 1),
-    );
-    const latest = first.items[0];
-    if (!latest) return String(currentPeriod());
-    return latest.status === 'DEFINITIVE'
-      ? String(shiftPeriod(Number(latest.payrollPeriodCode), 1))
-      : latest.payrollPeriodCode;
+  private async resolveOpenPeriod(): Promise<string> {
+    return (await this.openPeriodService.find()) ?? String(currentPeriod());
   }
 
   private async receiptsOf(

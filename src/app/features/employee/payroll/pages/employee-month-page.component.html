@@ -12,6 +12,7 @@
       [year]="stripYear()"
       [data]="yearStore.year()"
       [selectedPeriod]="period()"
+      [openPeriod]="openPeriod()"
       [absenceTypeLabels]="absenceTypeLabels()"
       (yearRequested)="stripYear.set($event)"
       (periodPicked)="pickPeriod($event)"
@@ -24,6 +25,11 @@
       <app-employee-month-navigator [(period)]="period" />
     </div>
   </div>
+
+  <!-- Un mes posterior al abierto se puede cargar, pero se dice (b4rrhh/frontend#136). -->
+  @if (notOpenYet(); as notice) {
+    <p class="employee-area__not-open" role="status" data-testid="month-not-open">{{ notice }}</p>
+  }
 
   <!--
     Los bloques de esta página son secciones, no cajas (`frontend#56`): van con rótulo, filete y

@@ -57,6 +57,11 @@ export class EmployeeYearStripComponent {
   readonly selectedPeriod = input<PayrollPeriod | null>(null);
   /** El nombre de cada tipo de ausencia; sin él se enseña el código. */
   readonly absenceTypeLabels = input<ReadonlyMap<string, string>>(new Map());
+  /**
+   * El período abierto, si se sabe (`b4rrhh/frontend#136`): los meses posteriores se marcan «sin
+   * abrir». Se puede cargar en ellos por adelantado; lo que no se puede es no saberlo.
+   */
+  readonly openPeriod = input<PayrollPeriod | null>(null);
   /** Hasta dónde llega una ausencia abierta. Entrada para poder fijarlo en las pruebas. */
   readonly today = input<string>(currentLocalDate());
 
@@ -79,6 +84,7 @@ export class EmployeeYearStripComponent {
         name,
         present: present[i],
         closed: month?.payrollState === 'CLOSED',
+        notOpen: this.openPeriod() !== null && period > this.openPeriod()!,
         inputs: month?.payrollInputCount ?? 0,
         activeMarks: month?.activeRetroMarkCount ?? 0,
         consumedMarks: month?.consumedRetroMarkCount ?? 0,
@@ -95,9 +101,15 @@ export class EmployeeYearStripComponent {
 
   protected readonly lanes = computed(() => Math.max(1, ...this.bars().map((b) => b.lane + 1)));
 
-  protected monthLabel(m: { name: string; present: boolean; closed: boolean }): string {
+  protected monthLabel(m: {
+    name: string;
+    present: boolean;
+    closed: boolean;
+    notOpen: boolean;
+  }): string {
     const parts = [`${m.name} de ${this.year()}`];
     if (m.closed) parts.push('entregado');
+    if (m.notOpen) parts.push('sin abrir todavía');
     if (!m.present) parts.push('no estaba');
     return parts.join(' · ');
   }

@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { BASE_PATH } from '../../../../core/api/generated/variables';
+import { OpenPayrollPeriodService } from '../../../nomina/recibos/store/open-payroll-period.service';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeAbsenceSectionComponent } from '../../presence/components/employee-absence-section.component';
 import { EmployeePayrollInputSectionComponent } from '../components/employee-payroll-input-section.component';
@@ -20,7 +21,7 @@ import { EmployeeMonthPageComponent } from './employee-month-page.component';
  * entradas, y las otras dos enseñaban todo lo del empleado sin decir de qué mes.
  */
 describe('EmployeeMonthPageComponent', () => {
-  function montar() {
+  function montar(abierto: string | null = null) {
     const paramMap = convertToParamMap({
       ruleSystemCode: 'ESP',
       employeeTypeCode: 'INTERNAL',
@@ -37,6 +38,7 @@ describe('EmployeeMonthPageComponent', () => {
           provide: ActivatedRoute,
           useValue: { paramMap: of(paramMap), fragment: of(null), snapshot: { paramMap } },
         },
+        { provide: OpenPayrollPeriodService, useValue: { find: () => Promise.resolve(abierto) } },
       ],
     });
     const fixture = TestBed.createComponent(EmployeeMonthPageComponent);
@@ -191,5 +193,43 @@ describe('EmployeeMonthPageComponent', () => {
     expect(textos.some((t) => t.includes('No existe el empleado ESP/INTERNAL/EMP000025.'))).toBe(
       true,
     );
+  });
+
+  /**
+   * Un mes posterior al abierto (`b4rrhh/frontend#136`): «se las puse a octubre» sin que nada le
+   * dijera que octubre no existe todavía. Se puede, pero se dice, en el mes y en la tira.
+   */
+  describe('un mes que aún no está abierto', () => {
+    const aviso = (fixture: ReturnType<typeof montar>) =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="month-not-open"]');
+
+    it('octubre con septiembre abierto lo dice, en el mes y en la tira', async () => {
+      const fixture = montar('202609');
+      await fixture.whenStable();
+      fixture.debugElement
+        .query(By.directive(EmployeeYearStripComponent))
+        .componentInstance.periodPicked.emit(202610);
+      fixture.detectChanges();
+
+      expect(aviso(fixture)?.textContent?.trim()).toBe(
+        'Octubre no está abierto todavía; lo que metas aquí se paga cuando se abra.',
+      );
+      expect(
+        fixture.debugElement
+          .query(By.directive(EmployeeYearStripComponent))
+          .componentInstance.openPeriod(),
+      ).toBe(202609);
+    });
+
+    it('el mes abierto no avisa', async () => {
+      const fixture = montar('202609');
+      await fixture.whenStable();
+      fixture.debugElement
+        .query(By.directive(EmployeeYearStripComponent))
+        .componentInstance.periodPicked.emit(202609);
+      fixture.detectChanges();
+
+      expect(aviso(fixture)).toBeNull();
+    });
   });
 });

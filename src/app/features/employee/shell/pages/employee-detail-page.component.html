@@ -65,16 +65,23 @@
           >
             {{ texts.pageActionsMenuLabel }} <b4-icon name="chevron-abajo" [size]="16" />
           </button>
-          <button
-            class="employee-detail__btn-primary"
-            type="button"
-            data-testid="employee-calculate-payroll"
-            [disabled]="launchBusy()"
-            (click)="prepareCalculation(key)"
-          >
-            <b4-icon name="nomina" [size]="16" />
-            {{ texts.pageActionCalculatePayroll }}
-          </button>
+          <!-- Sin nómina en el período abierto no hay botón que falle: se dice (b4rrhh/frontend#136). -->
+          @if (firstPayrollNote(); as note) {
+            <p class="employee-detail__first-payroll" data-testid="employee-first-payroll">
+              {{ note }}
+            </p>
+          } @else {
+            <button
+              class="employee-detail__btn-primary"
+              type="button"
+              data-testid="employee-calculate-payroll"
+              [disabled]="launchBusy()"
+              (click)="prepareCalculation(key)"
+            >
+              <b4-icon name="nomina" [size]="16" />
+              {{ texts.pageActionCalculatePayroll }}
+            </button>
+          }
           <!-- Una línea que dice qué va a hacer antes de hacerlo (b4rrhh/frontend#97). Anclada a la
                derecha del botón y creciendo hacia dentro: nunca se sale de la ventana. -->
           @switch (launchState().kind) {

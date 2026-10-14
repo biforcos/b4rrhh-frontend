@@ -3,7 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { EmployeePresenceReadClient } from '../../../../core/api/clients/employee-presence-read.client';
 import { RuleSystemScopeStore } from '../../../../core/scope/rule-system-scope.store';
+import { formatPayrollPeriodMonthName } from '../../../../shared/utils/payroll-period.util';
 import { OperacionesGateway } from '../gateway/operaciones.gateway';
 import { OperacionesStore } from './operaciones.store';
 
@@ -15,7 +17,11 @@ import { OperacionesStore } from './operaciones.store';
  * tipos del sistema de reglas, y si sólo hay uno viene puesto y no se pregunta.
  */
 describe('Operaciones: el tipo de empleado', () => {
-  function montar(tipos: string[], launchCalculation = vi.fn()): OperacionesStore {
+  function montar(
+    tipos: string[],
+    launchCalculation = vi.fn(),
+    presences: ReadonlyArray<{ startDate: string; endDate: string | null }> = [],
+  ): OperacionesStore {
     TestBed.configureTestingModule({
       providers: [
         OperacionesStore,
@@ -31,6 +37,10 @@ describe('Operaciones: el tipo de empleado', () => {
         },
         { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
         { provide: RuleSystemScopeStore, useValue: { whenResolved: () => of('ESP') } },
+        {
+          provide: EmployeePresenceReadClient,
+          useValue: { readEmployeePresencesByBusinessKey: vi.fn().mockReturnValue(of(presences)) },
+        },
       ],
     });
     return TestBed.inject(OperacionesStore);
@@ -96,5 +106,37 @@ describe('Operaciones: el tipo de empleado', () => {
     expect(store.launchErrorMessage()).toBe(
       'No se pudo lanzar el cálculo: No existe el empleado «EMP999» de tipo INTERNAL en el sistema de reglas ESP.',
     );
+  });
+
+  it('un empleado suelto que empieza después del mes no se lanza: se dice antes, con su primer mes', () => {
+    const launchCalculation = vi.fn().mockReturnValue(of({ runId: 7 }));
+    const store = montar(['INTERNAL'], launchCalculation, [
+      { startDate: '2099-03-01', endDate: null },
+    ]);
+    store.setTargetMode('SINGLE');
+    store.setSingleEmployeeNumber('EMP000901');
+
+    store.launch();
+
+    expect(launchCalculation).not.toHaveBeenCalled();
+    const today = new Date();
+    const month = formatPayrollPeriodMonthName(today.getFullYear() * 100 + today.getMonth() + 1);
+    expect(store.launchErrorMessage()).toBe(
+      `EMP000901 no está de alta ningún día de ${month} de ${today.getFullYear()}: su primera nómina es la de marzo de 2099.`,
+    );
+    expect(store.launching()).toBe(false);
+  });
+
+  it('si está de alta ese mes, se lanza', () => {
+    const launchCalculation = vi.fn().mockReturnValue(of({ runId: 7 }));
+    const store = montar(['INTERNAL'], launchCalculation, [
+      { startDate: '2000-01-01', endDate: null },
+    ]);
+    store.setTargetMode('SINGLE');
+    store.setSingleEmployeeNumber('EMP000901');
+
+    store.launch();
+
+    expect(launchCalculation).toHaveBeenCalled();
   });
 });

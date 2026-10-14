@@ -89,6 +89,12 @@
   background: var(--surface-hover);
 }
 
+.year-strip__month--not-open {
+  font-style: italic;
+  color: var(--text-tertiary);
+  text-decoration: underline dotted;
+}
+
 .year-strip__month--selected {
   color: var(--text-primary);
   font-weight: 600;

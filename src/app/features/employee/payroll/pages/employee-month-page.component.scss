@@ -20,6 +20,17 @@
   gap: 8px;
 }
 
+/* El mes elegido aún no está abierto (frontend#136): se avisa, no se prohíbe. */
+.employee-area__not-open {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--warning-border);
+  border-radius: 6px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 13px;
+}
+
 /* El navegador de período de la página, uno para las tres secciones (frontend#90). */
 .employee-area__month {
   display: flex;

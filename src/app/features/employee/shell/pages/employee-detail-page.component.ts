@@ -31,6 +31,7 @@ import { EmployeeWorkCenterStore } from '../../data-access/employee-work-center.
 import { EmployeeContactStore } from '../../data-access/employee-contact.store';
 import { GlobalMessageService } from '../../data-access/employee-global-message.store';
 import { EmployeeWorkQueueStore } from '../../data-access/employee-work-queue.store';
+import { firstPayrollMessage, firstPayrollOf } from '../../data-access/employee-first-payroll.util';
 import { EmployeePayrollLaunchStore } from '../../data-access/employee-payroll-launch.store';
 import { EmployeeFichaRefresher } from '../services/employee-ficha-refresher';
 import { EmployeePdfService } from '../services/employee-pdf.service';
@@ -127,6 +128,19 @@ export class EmployeeDetailPageComponent {
     const state = this.launchState();
     return state.kind === 'blocked' || state.kind === 'failed' ? state.reason : '';
   });
+  /**
+   * La frase que va en lugar de «Calcular nómina» si el empleado no tiene nómina en el período
+   * abierto (`b4rrhh/frontend#136`): quien empieza en octubre con septiembre abierto. Sólo con las
+   * presencias de este empleado ya leídas; mientras, el botón.
+   */
+  protected readonly firstPayrollNote = computed(() => {
+    const open = this.launchStore.openPeriod();
+    const key = this.activeEmployeeKey();
+    const loadedFor = this.presenceStore.selectedEmployeeKey();
+    if (!open || !key || this.presenceStore.loading() || this.presenceStore.error()) return null;
+    if (!loadedFor || loadedFor.employeeNumber !== key.employeeNumber) return null;
+    return firstPayrollMessage(firstPayrollOf(this.presences(), Number(open)), Number(open));
+  });
   private highlightedSectionResetHandle: number | null = null;
   private previousIdentitySuccess: 'updated' | null = null;
 
@@ -207,6 +221,7 @@ export class EmployeeDetailPageComponent {
   constructor() {
     // Cualquier acción que toque al empleado relee la ficha, sin F5 (b4rrhh/frontend#99).
     inject(EmployeeFichaRefresher).follow(this.activeEmployeeKey);
+    void this.launchStore.loadOpenPeriod();
 
     this.router.events
       .pipe(

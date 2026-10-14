@@ -4,6 +4,7 @@ import { firstValueFrom, take } from 'rxjs';
 
 import { GuardarFicheroService } from '../descarga/guardar-fichero.service';
 import { RecibosGateway } from '../gateway/recibos.gateway';
+import { OpenPayrollPeriodService } from './open-payroll-period.service';
 import { lineasQueSeMovieron } from './lineas-movidas.util';
 import { PayrollBusinessKey } from '../models/payroll-business-key.model';
 import { PayrollCalculationStepModel } from '../models/payroll-calculation-step.model';
@@ -75,6 +76,7 @@ function esElMismoRecibo(alaVista: PayrollSummaryModel, delServidor: PayrollSumm
 @Injectable({ providedIn: 'root' })
 export class RecibosStore {
   private readonly gateway = inject(RecibosGateway);
+  private readonly openPeriod = inject(OpenPayrollPeriodService);
   private readonly guardarFichero = inject(GuardarFicheroService);
 
   private readonly payrollsState = signal<ReadonlyArray<PayrollListItemModel>>([]);
@@ -330,14 +332,7 @@ export class RecibosStore {
    */
   async findOpenPeriod(): Promise<string | null> {
     try {
-      const first = await firstValueFrom(
-        this.gateway.search({ payrollPeriodCode: '', employeeNumber: '', status: '' }, 0, 1),
-      );
-      const latest = first.items[0];
-      if (!latest) return null;
-      return latest.status === 'DEFINITIVE'
-        ? nextPeriodCode(latest.payrollPeriodCode)
-        : latest.payrollPeriodCode;
+      return await this.openPeriod.find();
     } catch {
       return null;
     }
@@ -845,11 +840,4 @@ export class RecibosStore {
     if (err.status === 404) return 'Nómina no encontrada.';
     return describeFailure('No se pudo cambiar el estado del recibo', toHttpFailure(err));
   }
-}
-
-/** `202612` → `202701`: el mes siguiente a un período `yyyyMM`. */
-function nextPeriodCode(period: string): string {
-  const year = Number(period.slice(0, 4));
-  const month = Number(period.slice(4, 6));
-  return month === 12 ? `${year + 1}01` : `${year}${String(month + 1).padStart(2, '0')}`;
 }

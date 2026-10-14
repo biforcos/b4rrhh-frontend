@@ -42,6 +42,8 @@
         class="year-strip__month"
         [style.grid-column]="i + 2"
         [class.year-strip__month--selected]="m.period === selectedPeriod()"
+        [class.year-strip__month--not-open]="m.notOpen"
+        [attr.title]="m.notOpen ? 'Sin abrir todavía' : null"
         [attr.aria-pressed]="m.period === selectedPeriod()"
         [attr.aria-label]="monthLabel(m)"
         (click)="periodPicked.emit(m.period)"
