@@ -5588,7 +5588,9 @@ paths:
         "200":
           description: >-
             The payslip document. Archived when the payroll is DEFINITIVE, rendered on
-            demand and marked as a draft otherwise.
+            demand and marked as a draft otherwise. A DEFINITIVE payroll whose document is
+            missing from the store has it redrawn from its definitive rows, stored and
+            served: the PDF is a pure function of those rows, so it is the same document.
           headers:
             X-Payslip-Document-Definitive:
               description: >-
@@ -5607,16 +5609,6 @@ paths:
                 format: binary
         "404":
           description: Payroll not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PayrollErrorResponse"
-        "409":
-          description: >-
-            PAYSLIP_DOCUMENT_NOT_ARCHIVED. The payroll is closed and its document is not in
-            the store, which can only happen for payrolls closed before closing emitted the
-            document. It is not regenerated: that would be another document of the same
-            payslip.
           content:
             application/json:
               schema:
