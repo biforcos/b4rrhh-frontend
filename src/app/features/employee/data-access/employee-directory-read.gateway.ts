@@ -46,6 +46,10 @@ export class EmployeeDirectoryReadGateway {
       displayName: source.displayName,
       workCenter: source.workCenter,
       statusLabel: source.statusLabel,
+      firstName: source.firstName,
+      lastName1: source.lastName1,
+      preferredName: source.preferredName,
+      photoUrl: source.photoUrl,
     };
   }
 }

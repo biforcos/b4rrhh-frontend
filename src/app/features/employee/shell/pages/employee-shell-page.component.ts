@@ -8,6 +8,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 
 import { UiTagComponent } from '../../../../shared/ui/tag/ui-tag.component';
+import { UiAvatarComponent } from '../../../../shared/ui/avatar/ui-avatar.component';
 import { UiButtonComponent } from '../../../../shared/ui/button/ui-button.component';
 import { UiSelectComponent } from '../../../../shared/ui/select/ui-select.component';
 import { EmployeeDirectoryStore } from '../../data-access/employee-directory.store';
@@ -37,6 +38,7 @@ const ALL_STATUSES = 'ALL';
     IconFieldModule,
     InputIconModule,
     UiTagComponent,
+    UiAvatarComponent,
     UiButtonComponent,
     UiSelectComponent,
     B4IconComponent,

@@ -98,6 +98,15 @@
           (keydown.enter)="openEmployee(employee)"
         >
           <td class="employee-directory__td employee-directory__td--name">
+            <!-- La cara, o las iniciales sobre fondo neutro (frontend#144). -->
+            <app-ui-avatar
+              class="employee-directory__avatar"
+              [photoUrl]="employee.photoUrl"
+              [firstName]="employee.firstName"
+              [lastName1]="employee.lastName1"
+              [preferredName]="employee.preferredName"
+              [displayName]="employee.displayName"
+            />
             {{ employee.displayName }}
             <!-- ADR-050 §5: lo normal calla; la excepcion, en linea y despues del nombre para no
                  romper la columna de lectura (frontend#29). Buscar bajas a proposito es del filtro. -->

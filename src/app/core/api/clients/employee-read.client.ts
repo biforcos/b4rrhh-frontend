@@ -38,8 +38,13 @@ export interface EmployeeDirectoryApiModel {
   employeeTypeCode: string;
   employeeNumber: string;
   displayName: string;
+  firstName: string;
+  lastName1: string;
+  preferredName: string | null;
   status: string;
   workCenterCode: string | null;
+  /** El enlace de la foto, relativo y de la API (b4rrhh/backend#177); `null` sin foto. */
+  photoUrl: string | null;
 }
 
 /** Lo que se le pide al directorio: el filtro y la página. Filtra y pagina el servidor (frontend#27). */
@@ -143,8 +148,12 @@ export class EmployeeReadClient {
       employeeTypeCode: source.employeeTypeCode,
       employeeNumber: source.employeeNumber,
       displayName: source.displayName,
+      firstName: source.firstName,
+      lastName1: source.lastName1,
+      preferredName: source.preferredName ?? null,
       status: source.status,
       workCenterCode: source.workCenterCode ?? null,
+      photoUrl: source.photoUrl ?? null,
     };
   }
 

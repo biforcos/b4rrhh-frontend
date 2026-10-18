@@ -5,6 +5,14 @@ export interface EmployeeListItemModel extends EmployeeBusinessKey {
   /** Código del centro de trabajo vigente; `null` si no tiene. */
   workCenter: string | null;
   statusLabel: string;
+  /**
+   * Para el avatar (frontend#144). Opcionales porque los recientes que el navegador guardó antes no
+   * los traen: sin ellos, el avatar saca las iniciales del nombre visible y no pinta foto.
+   */
+  firstName?: string;
+  lastName1?: string;
+  preferredName?: string | null;
+  photoUrl?: string | null;
 }
 
 /** El filtro y la página que se piden al servidor; la cola del raíl (#20) será esto mismo. */

@@ -8,6 +8,11 @@ export interface EmployeeDirectoryReadModel {
   /** El código del centro vigente, o `null` cuando no hay ninguno: el literal lo pone la pantalla. */
   workCenter: string | null;
   statusLabel: string;
+  /** Para el avatar del directorio (frontend#144): las iniciales son nombre + primer apellido. */
+  firstName: string;
+  lastName1: string;
+  preferredName: string | null;
+  photoUrl: string | null;
 }
 
 export function mapEmployeeDirectoryApiToDirectoryModel(
@@ -20,6 +25,10 @@ export function mapEmployeeDirectoryApiToDirectoryModel(
     displayName: source.displayName,
     workCenter: normalizeWorkCenter(source.workCenterCode),
     statusLabel: source.status,
+    firstName: source.firstName,
+    lastName1: source.lastName1,
+    preferredName: source.preferredName,
+    photoUrl: source.photoUrl,
   };
 }
 
