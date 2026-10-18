@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, switchMap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { DefaultService } from '../../../core/api/generated/api/default.service';
@@ -11,31 +10,22 @@ import { EmployeeBusinessKey } from '../models/employee-business-key.model';
 @Injectable({ providedIn: 'root' })
 export class EmployeePhotoService {
   private readonly api = inject(DefaultService);
-  private readonly http = inject(HttpClient);
 
+  /**
+   * One request to the API, which stores the JPEG and answers with the employee and its new photoUrl
+   * (backend#177). It used to be three: a presigned URL, a direct PUT to the store and a
+   * confirmation, and the presigned URL named a store host that no browser outside the backend's
+   * machine could reach.
+   */
   uploadPhoto(key: EmployeeBusinessKey, blob: Blob): Observable<EmployeeReadApiModel> {
     return this.api
-      .generatePhotoUploadUrl({
+      .uploadEmployeePhoto({
         ruleSystemCode: key.ruleSystemCode,
         employeeTypeCode: key.employeeTypeCode,
         employeeNumber: key.employeeNumber,
+        body: blob,
       })
-      .pipe(
-        switchMap(({ uploadUrl, objectKey }) =>
-          this.http.put(uploadUrl!, blob, { headers: { 'Content-Type': 'image/jpeg' } }).pipe(
-            switchMap(() =>
-              this.api
-                .confirmEmployeePhoto({
-                  ruleSystemCode: key.ruleSystemCode,
-                  employeeTypeCode: key.employeeTypeCode,
-                  employeeNumber: key.employeeNumber,
-                  confirmEmployeePhotoRequest: { objectKey: objectKey! },
-                })
-                .pipe(map((r) => this.toApiModel(r))),
-            ),
-          ),
-        ),
-      );
+      .pipe(map((r) => this.toApiModel(r)));
   }
 
   deletePhoto(key: EmployeeBusinessKey): Observable<void> {

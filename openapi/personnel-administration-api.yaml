@@ -6781,10 +6781,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmployeePayrollInputErrorResponse"
 
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/photo/upload-url:
-    post:
-      operationId: generatePhotoUploadUrl
-      summary: Generate a presigned MinIO PUT URL for employee photo upload
+  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/photo:
+    # La foto viaja siempre por la API (backend#177): el almacen no se ve desde fuera,
+    # y photoUrl del empleado es el enlace relativo a este GET, con ?v=.
+    get:
+      operationId: getEmployeePhoto
+      summary: The employee photo, served by the API
+      description: >-
+        Needs no token, on purpose: an <img> does not send the Authorization header. The key is
+        v, the UUID of the current photo, which only someone who read the employee with a token
+        knows (it comes inside photoUrl). Without it, or with an old one, the answer is 404, the
+        same as for an employee without a photo. Cached for a year: a new photo is a new link.
+      security: []
       parameters:
         - name: ruleSystemCode
           in: path
@@ -6801,18 +6809,42 @@ paths:
           required: true
           schema:
             type: string
+        - name: v
+          in: query
+          required: false
+          description: The version of the photo, as it comes in photoUrl.
+          schema:
+            type: string
       responses:
         '200':
-          description: Presigned upload URL and object key
+          description: The photo
+          headers:
+            ETag:
+              description: The storage key of the photo.
+              schema: { type: string }
+            Cache-Control:
+              description: public, max-age=31536000, immutable
+              schema: { type: string }
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No photo for that employee and version.
+        '503':
+          description: PHOTO_STORAGE_UNAVAILABLE. The photo store did not answer.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneratePhotoUploadUrlResponse'
-
-  /employees/{ruleSystemCode}/{employeeTypeCode}/{employeeNumber}/photo:
+                $ref: '#/components/schemas/EmployeePhotoErrorResponse'
     put:
-      operationId: confirmEmployeePhoto
-      summary: Confirm photo upload and persist the public URL
+      operationId: uploadEmployeePhoto
+      summary: Upload the employee photo in one request
+      description: >-
+        The body is the JPEG itself. The API checks it (it has to start like a JPEG and weigh at
+        most 2 MB), stores it under a new key and only then removes the previous one. Replaces the
+        three-step flow of a presigned URL, a direct upload and a confirmation.
       parameters:
         - name: ruleSystemCode
           in: path
@@ -6832,19 +6864,44 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          image/jpeg:
             schema:
-              $ref: '#/components/schemas/ConfirmEmployeePhotoRequest'
+              type: string
+              format: binary
       responses:
         '200':
-          description: Updated employee with new photoUrl
+          description: Updated employee with its new photoUrl
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmployeeResponse'
+        '404':
+          description: EMPLOYEE_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeePhotoErrorResponse'
+        '413':
+          description: PHOTO_TOO_LARGE. More than 2 MB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeePhotoErrorResponse'
+        '415':
+          description: PHOTO_NOT_JPEG. The body is not a JPEG, whatever its Content-Type says.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeePhotoErrorResponse'
+        '503':
+          description: PHOTO_STORAGE_UNAVAILABLE. The photo store did not answer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeePhotoErrorResponse'
     delete:
       operationId: deleteEmployeePhoto
-      summary: Delete employee photo from MinIO and clear photo_url
+      summary: Delete the employee photo
       parameters:
         - name: ruleSystemCode
           in: path
@@ -9866,6 +9923,10 @@ components:
         photoUrl:
           type: string
           nullable: true
+          description: >-
+            Link to the photo, relative and served by the API:
+            /api/employees/ESP/INTERNAL/EMP000025/photo?v=<uuid>. Null without a photo. The v
+            changes with every new photo (backend#177).
         displayName:
           type: string
           description: Computed display name based on the rule system's configured format.
@@ -14368,20 +14429,15 @@ components:
         active:
           type: boolean
 
-    GeneratePhotoUploadUrlResponse:
-      type: object
-      properties:
-        uploadUrl:
-          type: string
-        objectKey:
-          type: string
-
-    ConfirmEmployeePhotoRequest:
+    EmployeePhotoErrorResponse:
       type: object
       required:
-        - objectKey
+        - code
+        - message
       properties:
-        objectKey:
+        code:
+          type: string
+        message:
           type: string
 
     CreateEmployeeTaxInformationRequest:
